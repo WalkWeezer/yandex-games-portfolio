@@ -1,0 +1,2618 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Neon Bullet — Портфель Яндекс Игры</title>
+<link rel="stylesheet" href="../assets/dashboard.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="../portfolio-dashboard.html">Портфель<br/><span>Яндекс Игры</span></a>
+    <div class="side-section">Навигация</div>
+    <a class="nav-link" href="../portfolio-dashboard.html">Все проекты</a>
+    <div class="side-section">Игры</div>
+    <div class="nav-games"><a class="nav-game active" href="neon-bullet.html">01. Neon Bullet</a>
+<a class="nav-game " href="deadline-escape.html">02. Работник месяца</a>
+<a class="nav-game " href="tide-of-relics.html">03. Море Реликвий</a>
+<a class="nav-game " href="legends-of-the-pitch.html">04. Легенды Поля</a>
+<a class="nav-game " href="merge-bazaar.html">05. Базар Слияний</a>
+<a class="nav-game " href="crystal-archipelago.html">06. Кристаллы Архипелага</a>
+<a class="nav-game " href="idle-forge.html">07. Кузница Вечности</a>
+<a class="nav-game " href="cozy-plot.html">08. Уютный Участок</a>
+<a class="nav-game " href="auto-towers.html">09. Автобашни</a>
+<a class="nav-game " href="night-courier.html">10. Ночной Курьер</a></div>
+    <div class="side-foot">Код запрещён до статуса<br/><strong>Подтверждён</strong></div>
+  </aside>
+  <main class="main">
+
+    <header class="page-head project-head">
+      <div class="crumb"><a href="../portfolio-dashboard.html">← Все проекты</a></div>
+      <div class="project-hero">
+        <div class="hero-art" style="background-image:url('../../games/neon-bullet/refs/art/key-art.png')"></div>
+        <div>
+          <div class="muted">01 · P1 · Волна 3 — LTV</div>
+          <h1>Neon Bullet</h1>
+          <p class="lead">Top-down экшен · Экшен / 14–35</p>
+          <div class="inline-status">
+            Статус дизайна: <span class="status-pill" data-status-for="neon-bullet">Черновик</span>
+            · Гейт: <span data-gate-label-for="neon-bullet">—</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="overview">Обзор</button>
+      <button class="tab" data-tab="demo">Демка</button>
+      <button class="tab" data-tab="classic">Классический диздок</button>
+      <button class="tab" data-tab="llm">LLM-спека</button>
+      <button class="tab" data-tab="refs">Референсы</button>
+      <button class="tab" data-tab="prompts">Промпты</button>
+      <button class="tab" data-tab="manage">Управление</button>
+    </nav>
+
+    <section class="tab-panel active" id="tab-overview">
+      <div class="two-col">
+        <div class="panel">
+          <h3>Что смотреть</h3>
+          <ul class="checklist-static">
+            <li><strong>Демка</strong> — сначала пощупай feel простыми фигурами</li>
+            <li>Классический GDD — видение, лупы, экономика</li>
+            <li>LLM-спека — контракты для агентов, UI, уровни, ассеты</li>
+            <li>Референсы — арт, вайрфреймы, уровни, спрайты</li>
+            <li>Промпты — готовые задания для арт/код агентов</li>
+          </ul>
+          <h3>Правило</h3>
+          <p class="warn">Пока статус не <strong>Подтверждён</strong>, папку <code>src/</code> не создавать. CONFIRM только после playtest демки (F1→F2). См. <code>docs/METHODOLOGY.md</code>.</p>
+        </div>
+        <div class="panel">
+          <h3>Файлы проекта</h3>
+          <ul class="file-list">
+            <li><code>games/neon-bullet/docs/DESIGN.md</code></li>
+            <li><code>games/neon-bullet/docs/DESIGN_LLM.md</code></li>
+            <li><code>games/neon-bullet/docs/REFS.md</code></li>
+            <li><code>games/neon-bullet/prompts/*.md</code></li>
+            <li><code>games/neon-bullet/refs/**</code></li>
+            <li><code>management/demos/</code> — feel demo</li>
+          </ul>
+          <div class="progress big"><i data-progress-for="neon-bullet"></i></div>
+          <div class="muted" style="margin-top:8px">Прогресс готовности (дизайн + гейты)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-demo">
+      <div class="panel demo-wrap">
+        <h3>Feel-демка (простые фигуры)</h3>
+        <p class="lead">Цель — проверить управление и «хочу ещё раз». На телефоне удобнее через LAN-сервер.</p>
+        <div class="lan-box">С телефона: запусти <code>serve-dashboard.bat</code> на ПК, открой URL из окна батника (одна Wi-Fi сеть).</div>
+        <p class="muted" style="margin:0 0 8px">«Работник месяца» = ядро chas-pik (сетка, 3 колонны, 09:00→18:00).</p>
+        <p class="demo-hint" id="demo-hint">Загрузка демки…</p>
+        <canvas id="feel-demo" width="360" height="640" aria-label="Feel demo"></canvas>
+        <div class="demo-actions">
+          <button class="btn" type="button" id="demo-restart">Рестарт</button>
+          <span class="muted">Стик: левая половина экрана · WASD/стрелки · кнопки справа</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-classic">
+      <article class="doc"><h1 id="neon-bullet-game-design-document">Neon Bullet — Game Design Document</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Slug</strong></td>
+<td><code>neon-bullet</code></td>
+</tr>
+<tr>
+<td><strong>Рабочее название</strong></td>
+<td>Neon Bullet</td>
+</tr>
+<tr>
+<td><strong>Жанр</strong></td>
+<td>2D top-down экшен (Hotline Miami-like)</td>
+</tr>
+<tr>
+<td><strong>Платформа</strong></td>
+<td>Яндекс Игры (HTML5)</td>
+</tr>
+<tr>
+<td><strong>Стек</strong></td>
+<td>Phaser 3 + TypeScript + Vite</td>
+</tr>
+<tr>
+<td><strong>Сегмент ЦА</strong></td>
+<td>A — экшен / «крутой» казуал, 14–35</td>
+</tr>
+<tr>
+<td><strong>Приоритет портфеля</strong></td>
+<td>P1</td>
+</tr>
+<tr>
+<td><strong>Статус дизайна</strong></td>
+<td><code>DRAFT</code> — <strong>не кодировать до <code>CONFIRMED</code></strong></td>
+</tr>
+<tr>
+<td><strong>Версия документа</strong></td>
+<td>1.0</td>
+</tr>
+<tr>
+<td><strong>Дата</strong></td>
+<td>2026-07-17</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-vision">1. Vision</h2>
+<p><strong>One-liner:</strong> Короткие кроваво-стильные рейды сверху: зайди в локацию, зачисть всех, не умри от одной пули — и сделай это под неоновый саундтрек.</p>
+<p><strong>Fantasy:</strong> Неоновый нуар конца 80-х. Игрок — наёмник в маске, выполняющий «грязные» заказы в ночном городе. Уровни — квартиры, клубы, парковки, склады. Эстетика важнее реализма: розовый/циан неон, резкий контраст, ударный саунд, стилизованное насилие без расчленёнки.</p>
+<p><strong>Эмоциональный хук:</strong> «Я король комнаты» — чувство контроля через скорость, комбо и рискованный агрессивный стиль. Смерть мгновенна, но рестарт мгновенный. Каждая миссия — 60–120 секунд чистого напряжения.</p>
+<p><strong>Почему Яндекс Игры:</strong> короткий session loop идеально стыкуется с interstitial/RV; маски и оружие дают IAP/косметику; рейтинги миссий — лидерборды платформы; midcore-экшен закрывает сегмент A портфеля.</p>
+<hr />
+<h2 id="2-design-pillars">2. Design Pillars</h2>
+<ol>
+<li><strong>Tension through fragility</strong> — 1–2 хита до смерти; ошибка наказывается мгновенно.</li>
+<li><strong>Style over realism</strong> — неон, hitstop, shake, blood splatter как VFX-язык, не gore.</li>
+<li><strong>Readable chaos</strong> — силуэты врагов и оружия читаются за 0.2 сек на мобильном.</li>
+<li><strong>Restart is the loop</strong> — смерть → (опционально RV continue) → мгновенный рестарт той же миссии.</li>
+<li><strong>Fair monetization</strong> — ads на паузах; RV = convenience; IAP = косметика/удобство, не урон.</li>
+</ol>
+<hr />
+<h2 id="3-audience-positioning">3. Audience &amp; Positioning</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Primary</strong></td>
+<td>16–28, м+ж, любят аркадный экшен, Hotline/Katana Zero vibe</td>
+</tr>
+<tr>
+<td><strong>Secondary</strong></td>
+<td>14–35 казуалы, пришедшие за «крутой» эстетикой и короткими ранами</td>
+</tr>
+<tr>
+<td><strong>Не для</strong></td>
+<td>игроков, ищущих длинный нарратив или сложный stealth-симулятор</td>
+</tr>
+<tr>
+<td><strong>Конкуренты-референсы</strong></td>
+<td>Hotline Miami (темп), Enter the Gungeon (комбо-juice), мобильные top-down shooters</td>
+</tr>
+<tr>
+<td><strong>Дифференциатор</strong></td>
+<td>свой неоновый IP + маски как пассивные скиллы + рейтинг стиля под Яндекс-лидерборд</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-core-loop">4. Core Loop</h2>
+<pre><code>Хаб города → выбор маски + оружия → миссия (60–120с)
+        ↓
+Зачистка комнат (движение + прицел + стрельба/нож)
+        ↓
+Смерть ──→ RV Continue / мгновенный рестарт
+Победа ──→ рейтинг S/A/B/C → soft currency + шанс скина
+        ↓
+Мета: районы, маски, оружие, daily contract
+</code></pre>
+<h3 id="session-structure">Session structure</h3>
+<table>
+<thead>
+<tr>
+<th>Фаза</th>
+<th>Длительность</th>
+<th>Цель</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Boot → Menu</td>
+<td>≤3 с</td>
+<td>SDK init, cloud load</td>
+</tr>
+<tr>
+<td>Hub / loadout</td>
+<td>10–30 с</td>
+<td>выбор маски, оружия, миссии</td>
+</tr>
+<tr>
+<td>Mission</td>
+<td>60–120 с</td>
+<td>зачистка</td>
+</tr>
+<tr>
+<td>Result</td>
+<td>5–15 с</td>
+<td>оценка, currency, CTA (RV x2)</td>
+</tr>
+<tr>
+<td>Interstitial</td>
+<td>после result / death (не mid-fight)</td>
+<td>ads</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-gameplay-systems-overview">5. Gameplay Systems (overview)</h2>
+<h3 id="51-movement-aim">5.1 Movement &amp; Aim</h3>
+<ul>
+<li>WASD / виртуальный стик — движение.</li>
+<li>Мышь / правый стик / aim-relative touch — прицел.</li>
+<li>Скорость базы: ~180 px/s при tile 32px; sprint нет (маска может дать +move).</li>
+<li>Коллизии: стены, мебель (partial cover для врагов, не для игрока как «неуязвимость»).</li>
+</ul>
+<h3 id="52-combat">5.2 Combat</h3>
+<table>
+<thead>
+<tr>
+<th>Оружие</th>
+<th>ДПС / роль</th>
+<th>Патроны</th>
+<th>Особенность</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Нож</td>
+<td>ближний, тихий старт</td>
+<td>∞</td>
+<td>1 hit kill сзади/вблизи</td>
+</tr>
+<tr>
+<td>Пистолет</td>
+<td>универсал</td>
+<td>12 + pickup</td>
+<td>средний урон, быстрый</td>
+</tr>
+<tr>
+<td>Дробовик</td>
+<td>комната</td>
+<td>6</td>
+<td>конус, высокий урон вблизи</td>
+</tr>
+<tr>
+<td>SMG (временный)</td>
+<td>зачистка</td>
+<td>40</td>
+<td>pickup на уровне</td>
+</tr>
+</tbody>
+</table>
+<p>Игрок: <strong>1 HP</strong> (база) или 2 HP с маской «броня». Враги: 1–3 HP по типу.</p>
+<h3 id="53-enemies-mvp">5.3 Enemies (MVP)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Имя</th>
+<th>Поведение</th>
+<th>HP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>en_thug</code></td>
+<td>Бандит</td>
+<td>патруль → chase → melee</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>en_gunner</code></td>
+<td>Стрелок</td>
+<td>патруль → aim → shoot</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>en_brute</code></td>
+<td>Громила</td>
+<td>slow chase, 2 HP, melee knockback</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Boss ×3</td>
+<td>см. контент</td>
+<td>уникальные арены</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Alert states: <code>idle → suspicious → alert → combat</code>. Звук выстрела алертует комнату.</p>
+<h3 id="54-combo-ranking">5.4 Combo &amp; Ranking</h3>
+<ul>
+<li>Убийства в окне ≤2.5 с увеличивают combo.</li>
+<li>Множители: скорость, no-damage, melee kills, weapon variety.</li>
+<li>Итог: <strong>S / A / B / C</strong> → множитель soft currency (×2 / ×1.5 / ×1.2 / ×1).</li>
+<li>Лучший ранг миссии → Yandex Leaderboard <code>lb_district_&lt;id&gt;</code>.</li>
+</ul>
+<h3 id="55-masks-meta-passives">5.5 Masks (meta passives)</h3>
+<table>
+<thead>
+<tr>
+<th>Маска</th>
+<th>Пассив</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Default</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Speed</td>
+<td>+15% move</td>
+</tr>
+<tr>
+<td>Ghost</td>
+<td>quieter footsteps (меньше радиус alert)</td>
+</tr>
+<tr>
+<td>Ammo</td>
+<td>+25% ammo capacity</td>
+</tr>
+<tr>
+<td>Armor</td>
+<td>2 HP</td>
+</tr>
+<tr>
+<td>Lucky</td>
+<td>+10% soft currency</td>
+</tr>
+</tbody>
+</table>
+<h3 id="56-death-continue">5.6 Death / Continue</h3>
+<ul>
+<li>Смерть → overlay: Restart / <strong>RV Continue</strong> (1 раз за попытку миссии) / Hub.</li>
+<li>Continue: полный HP, враги на карте остаются, комбо сбрасывается.</li>
+<li>Interstitial: после отказа от continue / после result screen (частота по политике SDK).</li>
+</ul>
+<hr />
+<h2 id="6-level-design-vision">6. Level Design Vision</h2>
+<ul>
+<li><strong>Комнатный граф:</strong> 3–7 комнат на миссию, двери/проходы, 1–2 pickup.</li>
+<li><strong>Читаемость:</strong> тёмный пол, неоновые акценты на стенах/вывесках, враги — контрастные силуэты.</li>
+<li><strong>Flow:</strong> вход → разведка/агро → пик плотности → выход/цель.</li>
+<li><strong>MVP:</strong> 12 миссий + 3 босса; Store Ready: 15–25 миссий.</li>
+<li>Биомы: квартира, клуб, парковка, склад, офис мафии, крыша.</li>
+</ul>
+<p>Детальная грамматика — в <code>DESIGN_LLM.md</code>.</p>
+<hr />
+<h2 id="7-meta-progression">7. Meta Progression</h2>
+<ol>
+<li><strong>Районы города</strong> — хаб, разблокировка цепочек миссий.</li>
+<li><strong>Маски и оружейный шкаф</strong> — за soft / hard / RV trial.</li>
+<li><strong>Daily contract</strong> — 1 миссия дня с бонусом ×3 soft.</li>
+<li><strong>Season pass</strong> (post-MVP) — 30 уровней косметики.</li>
+<li><strong>Cloud save</strong> — прогресс, лучшие ранги, инвентарь.</li>
+</ol>
+<hr />
+<h2 id="8-economy-monetization-yandex-hybrid">8. Economy &amp; Monetization (Yandex hybrid)</h2>
+<h3 id="currencies">Currencies</h3>
+<table>
+<thead>
+<tr>
+<th>Валюта</th>
+<th>Источник</th>
+<th>Sink</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Soft (<code>coins</code>)</td>
+<td>миссии, daily, achievements</td>
+<td>маски (часть), апгрейды шкафа</td>
+</tr>
+<tr>
+<td>Hard (<code>neon</code>)</td>
+<td>IAP, редкие daily, season</td>
+<td>премиум-маски, скины, battle pass</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ads">Ads</h3>
+<table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Когда</th>
+<th>Нельзя</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Interstitial</td>
+<td>после result / death (не mid-fight)</td>
+<td>во время боя, при прицеливании</td>
+</tr>
+<tr>
+<td>Rewarded</td>
+<td>Continue, ×2 награда, trial маска 1 ран</td>
+<td>принудительно</td>
+</tr>
+<tr>
+<td>Sticky</td>
+<td>опционально в хабе</td>
+<td>поверх HUD боя</td>
+</tr>
+</tbody>
+</table>
+<h3 id="iap-mvp">IAP (MVP)</h3>
+<ol>
+<li>Remove Ads  </li>
+<li>Soft currency pack  </li>
+<li>Hard currency pack  </li>
+<li>Premium mask (косметика + уникальный пассив, не pay-to-win DPS)  </li>
+<li>Battle Pass (post-MVP ok)</li>
+</ol>
+<p><strong>Запрещено:</strong> paywall на базовый прогресс; покупка урона/неуязвимости.</p>
+<hr />
+<h2 id="9-ui-ux-overview">9. UI / UX Overview</h2>
+<p>Экраны: Boot → Main Menu → City Hub → Loadout → Mission HUD → Pause → Death/Continue → Result → Shop.</p>
+<p>Принципы: крупный touch (≥44px), прицел не перекрыт UI, неон-акценты CTA, русский UI по умолчанию.</p>
+<hr />
+<h2 id="10-content-list-mvp-store">10. Content List (MVP → Store)</h2>
+<table>
+<thead>
+<tr>
+<th>Контент</th>
+<th>MVP</th>
+<th>Store Ready</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Миссии</td>
+<td>12</td>
+<td>20+</td>
+</tr>
+<tr>
+<td>Боссы</td>
+<td>1</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Типы врагов</td>
+<td>3</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Маски</td>
+<td>5</td>
+<td>12</td>
+</tr>
+<tr>
+<td>Оружие</td>
+<td>4</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Биомы</td>
+<td>3</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td>да</td>
+<td>да + weekly ranked</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="11-audio-juice">11. Audio / Juice</h2>
+<ul>
+<li>Саундтрек: darksynth / neon pulse, loop на миссию.</li>
+<li>SFX: выстрелы, melee, death stinger, door, pickup, UI click.</li>
+<li>Juice: hitstop 40–80 ms, screen shake, muzzle flash, blood VFX (стилизованный), combo popup.</li>
+</ul>
+<hr />
+<h2 id="12-technical-constraints">12. Technical Constraints</h2>
+<ul>
+<li>Phaser 3 + TS + Vite, static <code>dist/</code>.</li>
+<li>Yandex Games SDK: adv, rewarded, payments, leaderboard, player, cloud.</li>
+<li>Mobile-first + desktop; target 60 fps на mid mobile.</li>
+<li>Туториал ≤90 сек.</li>
+<li>Без серверной логики.</li>
+</ul>
+<hr />
+<h2 id="13-risks-mitigations">13. Risks &amp; Mitigations</h2>
+<table>
+<thead>
+<tr>
+<th>Риск</th>
+<th>Митигация</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Слишком хардкор → отток</td>
+<td>маски Armor/Continue RV; мягче первые 3 миссии</td>
+</tr>
+<tr>
+<td>Цензура насилия</td>
+<td>стилизованная кровь, без расчленёнки, маски скрывают лица</td>
+</tr>
+<tr>
+<td>«Клон Hotline»</td>
+<td>уникальный неон-IP, маски, рейтинги, свой саунд</td>
+</tr>
+<tr>
+<td>Touch aim плохой</td>
+<td>auto-aim soft assist (опционально в настройках), крупные hitbox</td>
+</tr>
+<tr>
+<td>Scope creep комнат</td>
+<td>строгий бюджет 12 миссий MVP</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="14-kpis-success-metrics">14. KPIs &amp; Success Metrics</h2>
+<table>
+<thead>
+<tr>
+<th>Метрика</th>
+<th>Цель closed test</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tutorial completion</td>
+<td>≥70%</td>
+</tr>
+<tr>
+<td>D1 retention</td>
+<td>≥25%</td>
+</tr>
+<tr>
+<td>Avg session</td>
+<td>≥8 мин</td>
+</tr>
+<tr>
+<td>Missions cleared / user D1</td>
+<td>≥3</td>
+</tr>
+<tr>
+<td>RV CTR (continue)</td>
+<td>≥15% impressions→start</td>
+</tr>
+<tr>
+<td>Crash-free 30 мин</td>
+<td>≥99%</td>
+</tr>
+<tr>
+<td>Store rating</td>
+<td>≥4.2 после 100 отзывов</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="15-open-questions">15. Open Questions</h2>
+<ol>
+<li>Soft auto-aim по умолчанию на mobile — on/off?</li>
+<li>Stealth как опциональный слой или только «тише шаги»?</li>
+<li>Season pass в MVP или сразу после soft launch?</li>
+</ol>
+<hr />
+<h2 id="16-gate">16. Gate</h2>
+<p><strong>Код (<code>games/neon-bullet/src/</code>) не пишется, пока статус дизайна в portfolio-dashboard = <code>CONFIRMED</code>.</strong></p>
+<p>Связанные файлы: <code>DESIGN_LLM.md</code>, <code>prompts/*</code>, концепт <code>docs/concepts/01-neon-bullet.md</code>.</p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-llm">
+      <article class="doc"><h1 id="neon-bullet-design_llm">Neon Bullet — DESIGN_LLM (исполняемая спецификация)</h1>
+<blockquote>
+<p><strong>СТАТУС:</strong> <code>DRAFT</code><br />
+<strong>ЯЗЫК:</strong> русский (UI-копирайт и ID — как указано)<br />
+<strong>ПРАВИЛО:</strong> не начинать кодирование <code>src/</code>, пока дизайн не <strong>CONFIRMED</strong> в <code>management/portfolio-dashboard.html</code>.<br />
+<strong>ДЛЯ:</strong> арт-агентов, level-агентов, code-агентов, UI-агентов. Этот файл — единственный source of truth после CONFIRM.</p>
+</blockquote>
+<hr />
+<h2 id="0-project-contract">0. Project Contract</h2>
+<h3 id="01-identity">0.1 Identity</h3>
+<table>
+<thead>
+<tr>
+<th>Ключ</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>slug</code></td>
+<td><code>neon-bullet</code></td>
+</tr>
+<tr>
+<td><code>displayName.ru</code></td>
+<td>Neon Bullet</td>
+</tr>
+<tr>
+<td><code>displayName.en</code></td>
+<td>Neon Bullet</td>
+</tr>
+<tr>
+<td><code>engine</code></td>
+<td>Phaser 3.80+</td>
+</tr>
+<tr>
+<td><code>language</code></td>
+<td>TypeScript 5.x (strict)</td>
+</tr>
+<tr>
+<td><code>bundler</code></td>
+<td>Vite 5.x</td>
+</tr>
+<tr>
+<td><code>platform</code></td>
+<td>Yandex Games HTML5</td>
+</tr>
+<tr>
+<td><code>orientation</code></td>
+<td>landscape preferred; portrait supported with virtual sticks</td>
+</tr>
+<tr>
+<td><code>targetFPS</code></td>
+<td>60</td>
+</tr>
+<tr>
+<td><code>baseResolution</code></td>
+<td>1280×720 logical; scale FIT</td>
+</tr>
+<tr>
+<td><code>tileSize</code></td>
+<td>32×32 px</td>
+</tr>
+<tr>
+<td><code>pixelsPerUnit</code></td>
+<td>1 px = 1 world unit</td>
+</tr>
+</tbody>
+</table>
+<h3 id="02-folder-layout">0.2 Folder layout (обязательный)</h3>
+<pre><code>games/neon-bullet/
+  docs/
+    DESIGN.md
+    DESIGN_LLM.md          ← этот файл
+  prompts/
+    ART_PROMPTS.md
+    SPRITE_ANIM_PROMPTS.md
+    UI_PROMPTS.md
+    LEVEL_PROMPTS.md
+    CODE_AGENT_PROMPT.md
+  refs/
+    art/ ui/ levels/ sprites/
+  public/
+    assets/
+      textures/
+        characters/
+        enemies/
+        weapons/
+        vfx/
+        tiles/
+        ui/
+        keyart/
+      audio/
+        sfx/
+        music/
+      levels/              # JSON tilemaps
+  src/
+    main.ts
+    game/
+      scenes/
+      systems/
+      entities/
+      ui/
+      data/
+      sdk/
+    styles/
+  STATUS.md
+  STORE_CHECKLIST.md
+  README.md
+  package.json
+  index.html
+</code></pre>
+<h3 id="03-naming-conventions">0.3 Naming conventions</h3>
+<table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Правило</th>
+<th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Файлы TS</td>
+<td><code>PascalCase</code> для классов/сцен, <code>camelCase</code> для утилит</td>
+<td><code>MissionScene.ts</code>, <code>mathUtils.ts</code></td>
+</tr>
+<tr>
+<td>Asset keys Phaser</td>
+<td><code>snake_case</code> с префиксом домена</td>
+<td><code>char_player_idle</code>, <code>en_gunner_walk</code></td>
+</tr>
+<tr>
+<td>Level IDs</td>
+<td><code>lvl_&lt;district&gt;_&lt;nn&gt;</code></td>
+<td><code>lvl_apt_01</code></td>
+</tr>
+<tr>
+<td>Data JSON</td>
+<td><code>camelCase</code> keys</td>
+<td><code>{ "enemyId": "en_thug" }</code></td>
+</tr>
+<tr>
+<td>CSS / DOM</td>
+<td>не использовать (canvas-only UI)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Commits</td>
+<td>conventional, scope <code>neon-bullet</code></td>
+<td><code>feat(neon-bullet): ...</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="04-asset-id-schema">0.4 Asset ID schema</h3>
+<p>Формат: <code>{domain}_{subject}_{variant}_{state}</code></p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Значения</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>char</code></td>
+<td>игрок, маски overlay</td>
+</tr>
+<tr>
+<td><code>en</code></td>
+<td>враги</td>
+</tr>
+<tr>
+<td><code>wpn</code></td>
+<td>оружие world/HUD</td>
+</tr>
+<tr>
+<td><code>vfx</code></td>
+<td>эффекты</td>
+</tr>
+<tr>
+<td><code>tile</code></td>
+<td>тайлы</td>
+</tr>
+<tr>
+<td><code>ui</code></td>
+<td>интерфейс</td>
+</tr>
+<tr>
+<td><code>bg</code></td>
+<td>фоны/параллакс</td>
+</tr>
+<tr>
+<td><code>sfx</code> / <code>mus</code></td>
+<td>аудио</td>
+</tr>
+</tbody>
+</table>
+<p>Примеры:
+- <code>char_player_body_idle</code>
+- <code>char_mask_ghost_equip</code>
+- <code>en_brute_walk</code>
+- <code>wpn_shotgun_muzzle</code>
+- <code>vfx_blood_splatter_a</code>
+- <code>tile_apt_floor_01</code>
+- <code>ui_btn_primary</code>
+- <code>lvl_club_03</code></p>
+<p>Путь на диске зеркалит domain:
+<code>public/assets/textures/enemies/en_gunner_sheet.png</code></p>
+<h3 id="05-coding-gate">0.5 Coding gate</h3>
+<pre><code>IF designStatus != CONFIRMED:
+  FORBIDDEN: create/edit games/neon-bullet/src/**
+  ALLOWED: docs, prompts, refs, STATUS.md notes
+</code></pre>
+<hr />
+<h2 id="1-scenes-flow-graph">1. Scenes &amp; Flow Graph</h2>
+<pre><code class="language-mermaid">stateDiagram-v2
+  [*] --&gt; BootScene
+  BootScene --&gt; MainMenuScene: sdk+assets ready
+  MainMenuScene --&gt; CityHubScene: Играть
+  MainMenuScene --&gt; ShopScene: Магазин
+  MainMenuScene --&gt; SettingsScene
+  CityHubScene --&gt; LoadoutScene: выбрать миссию
+  LoadoutScene --&gt; MissionScene: Старт
+  MissionScene --&gt; PauseOverlay: ESC/Pause
+  PauseOverlay --&gt; MissionScene: Продолжить
+  PauseOverlay --&gt; CityHubScene: В хаб
+  MissionScene --&gt; DeathOverlay: HP&lt;=0
+  DeathOverlay --&gt; MissionScene: Рестарт
+  DeathOverlay --&gt; MissionScene: RV Continue
+  DeathOverlay --&gt; CityHubScene: Хаб
+  MissionScene --&gt; ResultScene: все враги мертвы / цель
+  ResultScene --&gt; CityHubScene
+  ResultScene --&gt; LoadoutScene: Следующая
+  ResultScene --&gt; RewardedCTA: x2 / trial
+</code></pre>
+<h3 id="scene-acceptance">Scene acceptance</h3>
+<table>
+<thead>
+<tr>
+<th>Scene</th>
+<th>Must</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BootScene</td>
+<td>logo ≤1.5s, SDK init, asset pack load, cloud pull</td>
+</tr>
+<tr>
+<td>MainMenuScene</td>
+<td>CTA Играть, Магазин, лидерборд, настройки</td>
+</tr>
+<tr>
+<td>CityHubScene</td>
+<td>карта районов, lock/unlock, daily badge</td>
+</tr>
+<tr>
+<td>LoadoutScene</td>
+<td>маска + оружие + preview статов</td>
+</tr>
+<tr>
+<td>MissionScene</td>
+<td>gameplay 60fps, HUD, pause</td>
+</tr>
+<tr>
+<td>ResultScene</td>
+<td>rank, coins, buttons, interstitial hook</td>
+</tr>
+<tr>
+<td>ShopScene</td>
+<td>soft/hard tabs, IAP buttons</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-input-contract">2. Input Contract</h2>
+<h3 id="desktop">Desktop</h3>
+<ul>
+<li>Move: <code>W A S D</code></li>
+<li>Aim: mouse world position</li>
+<li>Fire: LMB</li>
+<li>Melee/knife: <code>F</code> or RMB if knife equipped</li>
+<li>Pause: <code>Esc</code></li>
+<li>Interact/door: <code>E</code> (если нужно)</li>
+</ul>
+<h3 id="mobile">Mobile</h3>
+<ul>
+<li>Left virtual stick: move</li>
+<li>Right half-screen drag: aim; fire button bottom-right OR auto-fire when aim held</li>
+<li>Pause: top-right button 48×48</li>
+<li><strong>Soft aim assist (mobile default ON):</strong> snap ±12° к ближайшему врагу в радиусе 220px</li>
+</ul>
+<h3 id="acceptance">Acceptance</h3>
+<ul>
+<li>[ ] Туториал показывает controls без стены текста</li>
+<li>[ ] Deadzone стика 0.15</li>
+<li>[ ] Fire не срабатывает от UI tap</li>
+</ul>
+<hr />
+<h2 id="3-gameplay-systems-acceptance-criteria">3. Gameplay Systems (детально + Acceptance Criteria)</h2>
+<h3 id="31-playercontroller">3.1 PlayerController</h3>
+<p><strong>Spec:</strong>
+- Body: circle collider r=10 на tile 32
+- Max speed base <code>moveSpeed = 180</code>
+- Acceleration <code>1200</code>, drag <code>800</code>
+- Facing = aim angle (radians)
+- Invuln frames: 0 (one-hit) unless mask Armor → 2 HP + 0.4s i-frames после удара</p>
+<p><strong>AC:</strong>
+- [ ] Игрок не проходит сквозь <code>collision</code> layer
+- [ ] Скорость стабильна на 60 и 30 fps (delta-based)
+- [ ] Маска Speed даёт ровно +15% к moveSpeed</p>
+<h3 id="32-weaponsystem">3.2 WeaponSystem</h3>
+<pre><code>WeaponDef {
+  id, displayName, fireRate, pelletCount, spreadDeg,
+  damage, projectileSpeed, range, reloadTime,
+  melee: boolean, noiseRadius
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>fireRate(/s)</th>
+<th>damage</th>
+<th>ammo</th>
+<th>noise</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>wpn_knife</code></td>
+<td>2.0 melee</td>
+<td>999</td>
+<td>∞</td>
+<td>40</td>
+</tr>
+<tr>
+<td><code>wpn_pistol</code></td>
+<td>4.0</td>
+<td>1</td>
+<td>12</td>
+<td>280</td>
+</tr>
+<tr>
+<td><code>wpn_shotgun</code></td>
+<td>1.2</td>
+<td>1×6 pellets</td>
+<td>6</td>
+<td>360</td>
+</tr>
+<tr>
+<td><code>wpn_smg</code></td>
+<td>10.0</td>
+<td>1</td>
+<td>40</td>
+<td>320</td>
+</tr>
+</tbody>
+</table>
+<p>Pickup на уровне: <code>pickup_ammo</code>, <code>pickup_wpn_smg</code> (временный, сбрасывается после миссии).</p>
+<p><strong>AC:</strong>
+- [ ] Нож убивает <code>en_thug</code>/<code>en_gunner</code> с 1 удара в радиусе 28px
+- [ ] Дробовик: 6 лучей, spread 30°, каждый pellet = 1 dmg
+- [ ] Пустой магазин → click SFX, нельзя fire до reload (auto reload on empty)</p>
+<h3 id="33-enemyai">3.3 EnemyAI</h3>
+<p>States: <code>Idle | Patrol | Suspicious | Alert | Combat | Dead</code></p>
+<table>
+<thead>
+<tr>
+<th>enemyId</th>
+<th>visionCone</th>
+<th>visionRange</th>
+<th>hearRadius</th>
+<th>HP</th>
+<th>attack</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>en_thug</code></td>
+<td>90°</td>
+<td>160</td>
+<td>120</td>
+<td>1</td>
+<td>melee CD 0.8s dmg 1</td>
+</tr>
+<tr>
+<td><code>en_gunner</code></td>
+<td>70°</td>
+<td>220</td>
+<td>200</td>
+<td>1</td>
+<td>shoot CD 1.1s</td>
+</tr>
+<tr>
+<td><code>en_brute</code></td>
+<td>60°</td>
+<td>140</td>
+<td>100</td>
+<td>2</td>
+<td>melee CD 1.2s + knockback 200</td>
+</tr>
+</tbody>
+</table>
+<p>Patrol: waypoints из level JSON.<br />
+Alert cascade: любой gunshot в <code>noiseRadius</code> → все враги в той же <code>roomId</code> → Alert.</p>
+<p><strong>AC:</strong>
+- [ ] Враг не видит сквозь <code>collision</code> (raycast)
+- [ ] Смерть врага → drop chance ammo 25%
+- [ ] Brute требует 2 пули пистолета / 1 shotgun point-blank (≥3 pellets)</p>
+<h3 id="34-roomgraph-stealth-lite">3.4 RoomGraph &amp; Stealth-lite</h3>
+<p>Level JSON содержит <code>rooms[]</code> с <code>id</code>, <code>bounds</code>, <code>doors[]</code>.<br />
+Stealth не обязателен: маска Ghost уменьшает <code>playerFootstepNoise</code> с 90 до 45.</p>
+<p><strong>AC:</strong>
+- [ ] Выстрел в room A не алертит room B без открытой двери (опциональное упрощение MVP: алерт по радиусу noise — допустимо; зафиксировать в level: <code>alertMode: "radius"</code>)</p>
+<h3 id="35-combosystem">3.5 ComboSystem</h3>
+<ul>
+<li><code>comboWindowMs = 2500</code></li>
+<li>+1 combo за kill</li>
+<li>Multipliers at end:</li>
+<li>timeUnderPar: +0.2</li>
+<li>noDamage: +0.3</li>
+<li>meleeKills≥3: +0.2</li>
+<li>comboMax≥8: +0.2</li>
+<li>Rank thresholds (score = kills<em>100 * multipliers - deaths</em>50):<br />
+  S≥900, A≥700, B≥500, else C</li>
+</ul>
+<p><strong>AC:</strong>
+- [ ] Combo UI обновляется в HUD
+- [ ] Death сбрасывает combo
+- [ ] Rank пишется в cloud <code>bestRank[levelId]</code></p>
+<h3 id="36-missionflow">3.6 MissionFlow</h3>
+<p>Win: <code>enemiesAlive == 0</code> OR <code>objective == "extract"</code> и игрок в zone (боссы).<br />
+Fail: HP≤0.</p>
+<p><strong>AC:</strong>
+- [ ] Win → ResultScene ≤0.5s после последнего kill (камера hold + stinger)
+- [ ] Restart перезагружает level state без утечки listeners</p>
+<h3 id="37-meta-unlock">3.7 Meta / Unlock</h3>
+<pre><code>Progress {
+  coins: number
+  neon: number
+  unlockedLevels: string[]
+  unlockedMasks: string[]
+  unlockedWeapons: string[]
+  bestRank: Record&lt;string, 'S'|'A'|'B'|'C'&gt;
+  daily: { dateISO, levelId, completed }
+  removeAds: boolean
+}
+</code></pre>
+<p>Unlock chain: <code>lvl_apt_01</code> free → clear → unlock next.<br />
+Mask prices: 200 / 350 / 500 soft; premium masks 40 neon or IAP.</p>
+<p><strong>AC:</strong>
+- [ ] Cloud save merge: max ranks, max currencies, OR unlocks
+- [ ] Daily resets 00:00 MSK</p>
+<hr />
+<h2 id="4-level-design-grammar">4. Level Design Grammar</h2>
+<h3 id="41-visual-grammar">4.1 Visual grammar (как уровни ВЫГЛЯДЯТ)</h3>
+<ul>
+<li><strong>Пол:</strong> тёмный асфальт/ковёр <code>#0B0B12</code>–<code>#1A1220</code></li>
+<li><strong>Стены:</strong> <code>#1E1A2E</code> + neon trim <code>#FF2BD6</code> / <code>#00F0FF</code></li>
+<li><strong>Мебель:</strong> силуэтные пропсы (диван, бар, машины) — коллизия прямоугольниками</li>
+<li><strong>Освещение:</strong> baked neon blobs на тайлах; динамический light optional post-MVP</li>
+<li><strong>Читаемость врагов:</strong> контур <code>#FFFFFF</code> 1px или яркая одежда vs тёмный пол</li>
+<li><strong>Двери:</strong> контрастный cyan frame</li>
+<li><strong>Не делать:</strong> фотореализм, грязный brown noir без неона, UI-элементы на тайлах</li>
+</ul>
+<h3 id="42-tile-rules">4.2 Tile rules</h3>
+<table>
+<thead>
+<tr>
+<th>Tile ID</th>
+<th>layer</th>
+<th>collision</th>
+<th>notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tile_floor_*</code></td>
+<td>ground</td>
+<td>no</td>
+<td>вариации 4+</td>
+</tr>
+<tr>
+<td><code>tile_wall_*</code></td>
+<td>collision</td>
+<td>yes</td>
+<td>autotile 16-set preferred</td>
+</tr>
+<tr>
+<td><code>tile_door_closed</code></td>
+<td>interaction</td>
+<td>yes until open</td>
+<td></td>
+</tr>
+<tr>
+<td><code>tile_door_open</code></td>
+<td>ground</td>
+<td>no</td>
+<td></td>
+</tr>
+<tr>
+<td><code>tile_cover_*</code></td>
+<td>props</td>
+<td>yes half</td>
+<td>блокирует пули врагов 50% (MVP: full block)</td>
+</tr>
+<tr>
+<td><code>tile_spawn_player</code></td>
+<td>meta</td>
+<td>no</td>
+<td>object</td>
+</tr>
+<tr>
+<td><code>tile_spawn_enemy</code></td>
+<td>meta</td>
+<td>no</td>
+<td>object + enemyId</td>
+</tr>
+<tr>
+<td><code>tile_pickup_*</code></td>
+<td>meta</td>
+<td>no</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Карта: Phaser Tilemap JSON (Tiled). Grid 32. Миссия размер: 40×28 … 64×40 тайлов.</p>
+<h3 id="43-encounter-recipes">4.3 Encounter recipes</h3>
+<p>Формат комнаты:</p>
+<pre><code>RoomBudget {
+  areaTiles: number
+  enemyPoints: number   // thug=1, gunner=2, brute=3
+  maxEnemies: number
+  pickups: 0..2
+  coverDensity: low|med|high
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Миссия tier</th>
+<th>enemyPoints</th>
+<th>rooms</th>
+<th>parTimeSec</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1 (1–3)</td>
+<td>4–6</td>
+<td>3</td>
+<td>45</td>
+</tr>
+<tr>
+<td>T2 (4–7)</td>
+<td>7–10</td>
+<td>4–5</td>
+<td>70</td>
+</tr>
+<tr>
+<td>T3 (8–12)</td>
+<td>11–16</td>
+<td>5–7</td>
+<td>90</td>
+</tr>
+<tr>
+<td>Boss</td>
+<td>special arena</td>
+<td>1–2</td>
+<td>120</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Рецепты:</strong>
+- <code>recipe_ambush</code>: 2 gunner за cover у входа + 1 thug
+- <code>recipe_patrol_cross</code>: 3 thug waypoints пересекаются
+- <code>recipe_brute_guard</code>: 1 brute + 1 gunner на балконе (line of sight)
+- <code>recipe_open_killbox</code>: мало cover, 4 gunner — учит dodge</p>
+<h3 id="44-difficulty-curve">4.4 Difficulty curve</h3>
+<pre><code>M01 tutorial safe
+M02–M03 introduce gunner
+M04 shotgun pickup teach
+M05 brute
+M06–M08 density up
+M09 club neon maze
+M10 parking cars cover
+M11 warehouse long sightlines
+M12 mini-boss OR hard clear
+</code></pre>
+<p><strong>AC levels:</strong>
+- [ ] Каждая миссия проходима на touch без маски Armor
+- [ ] S-rank возможен без RV
+- [ ] Нет softlock (закрытые двери без ключа — запрещены в MVP)</p>
+<h3 id="45-mvp-mission-list">4.5 MVP mission list</h3>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>biome</th>
+<th>recipe mix</th>
+<th>unlock</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lvl_apt_01</code></td>
+<td>apartment</td>
+<td>tutorial</td>
+<td>start</td>
+</tr>
+<tr>
+<td><code>lvl_apt_02</code></td>
+<td>apartment</td>
+<td>patrol</td>
+<td>clear 01</td>
+</tr>
+<tr>
+<td><code>lvl_apt_03</code></td>
+<td>apartment</td>
+<td>ambush</td>
+<td>clear 02</td>
+</tr>
+<tr>
+<td><code>lvl_club_01</code></td>
+<td>club</td>
+<td>killbox</td>
+<td>clear 03</td>
+</tr>
+<tr>
+<td><code>lvl_club_02</code></td>
+<td>club</td>
+<td>cross</td>
+<td>clear club_01</td>
+</tr>
+<tr>
+<td><code>lvl_club_03</code></td>
+<td>club</td>
+<td>brute_guard</td>
+<td>clear club_02</td>
+</tr>
+<tr>
+<td><code>lvl_park_01</code></td>
+<td>parking</td>
+<td>cover cars</td>
+<td>clear club_03</td>
+</tr>
+<tr>
+<td><code>lvl_park_02</code></td>
+<td>parking</td>
+<td>ambush</td>
+<td>clear park_01</td>
+</tr>
+<tr>
+<td><code>lvl_wh_01</code></td>
+<td>warehouse</td>
+<td>long sight</td>
+<td>clear park_02</td>
+</tr>
+<tr>
+<td><code>lvl_wh_02</code></td>
+<td>warehouse</td>
+<td>mix</td>
+<td>clear wh_01</td>
+</tr>
+<tr>
+<td><code>lvl_wh_03</code></td>
+<td>warehouse</td>
+<td>dense</td>
+<td>clear wh_02</td>
+</tr>
+<tr>
+<td><code>lvl_boss_01</code></td>
+<td>arena</td>
+<td>boss_maskmaker</td>
+<td>clear wh_03</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-ui-component-map-wireframes">5. UI Component Map &amp; Wireframes</h2>
+<h3 id="51-component-inventory">5.1 Component inventory</h3>
+<table>
+<thead>
+<tr>
+<th>Component ID</th>
+<th>Screen</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ui_btn_primary</code></td>
+<td>all</td>
+<td>neon fill CTA</td>
+</tr>
+<tr>
+<td><code>ui_btn_secondary</code></td>
+<td>all</td>
+<td>outline</td>
+</tr>
+<tr>
+<td><code>ui_btn_rv</code></td>
+<td>death/result</td>
+<td>rewarded icon + label</td>
+</tr>
+<tr>
+<td><code>ui_hud_hp</code></td>
+<td>mission</td>
+<td>hearts 1–2</td>
+</tr>
+<tr>
+<td><code>ui_hud_ammo</code></td>
+<td>mission</td>
+<td>digits + weapon icon</td>
+</tr>
+<tr>
+<td><code>ui_hud_combo</code></td>
+<td>mission</td>
+<td>multiplier</td>
+</tr>
+<tr>
+<td><code>ui_stick_left</code></td>
+<td>mission mobile</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ui_btn_fire</code></td>
+<td>mission mobile</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ui_pause_panel</code></td>
+<td>pause</td>
+<td>resume/hub/settings</td>
+</tr>
+<tr>
+<td><code>ui_rank_badge</code></td>
+<td>result</td>
+<td>S/A/B/C</td>
+</tr>
+<tr>
+<td><code>ui_shop_card</code></td>
+<td>shop</td>
+<td>buy</td>
+</tr>
+<tr>
+<td><code>ui_mask_slot</code></td>
+<td>loadout</td>
+<td>select</td>
+</tr>
+<tr>
+<td><code>ui_toast</code></td>
+<td>global</td>
+<td>unlock msgs</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-boot">5.2 Boot</h3>
+<pre><code>┌──────────────────────────────────────────┐
+│              [LOGO Neon Bullet]          │
+│                 ░░ LOAD ░░               │
+│              ████████░░░░ 62%            │
+└──────────────────────────────────────────┘
+</code></pre>
+<h3 id="53-main-menu">5.3 Main Menu</h3>
+<pre><code>┌──────────────────────────────────────────┐
+│ NEON BULLET                    [⚙] [LB]  │
+│                                          │
+│     ┌──────── key art / loop ────────┐   │
+│     │   silhouette + neon alley      │   │
+│     └────────────────────────────────┘   │
+│                                          │
+│           [  ИГРАТЬ  ]                   │
+│           [  МАГАЗИН ]                   │
+│           [ ЕЖЕДНЕВНО ]                  │
+└──────────────────────────────────────────┘
+</code></pre>
+<h3 id="54-city-hub">5.4 City Hub</h3>
+<pre><code>┌──────────────────────────────────────────┐
+│ Район: Восточный     💰 1200  ◆ 40       │
+│  (apt)──(club)──(park)──(wh)──(boss)     │
+│    ✓      ✓      🔒      🔒     🔒       │
+│                                          │
+│  [Выбрать миссию]     [Daily ★]          │
+└──────────────────────────────────────────┘
+</code></pre>
+<h3 id="55-loadout">5.5 Loadout</h3>
+<pre><code>┌────────────────┬─────────────────────────┐
+│ Маски          │ Preview sprite          │
+│ (o) Default    │ stats: SPD / HP / NOISE  │
+│ ( ) Speed      │                         │
+│ ( ) Ghost      │ Оружие: [Pistol v]      │
+│ ...            │                         │
+│                │      [ СТАРТ ]          │
+└────────────────┴─────────────────────────┘
+</code></pre>
+<h3 id="56-hud-mission">5.6 HUD (Mission)</h3>
+<pre><code>┌──────────────────────────────────────────┐
+│ ❤    🔫 12        COMBO x4         [❚❚] │
+│                                          │
+│              (game view)                 │
+│                                          │
+│ (stick)                          [FIRE]  │
+└──────────────────────────────────────────┘
+</code></pre>
+<h3 id="57-pause">5.7 Pause</h3>
+<pre><code>┌──────────────┐
+│   ПАУЗА      │
+│ [Продолжить] │
+│ [Настройки]  │
+│ [В хаб]      │
+└──────────────┘
+</code></pre>
+<h3 id="58-death-continue">5.8 Death / Continue</h3>
+<pre><code>┌────────────────────────────┐
+│       ВЫ УБИТЫ             │
+│  [Рестарт]                 │
+│  [▶ Реклама: Продолжить]   │
+│  [В хаб]                   │
+└────────────────────────────┘
+</code></pre>
+<h3 id="59-result">5.9 Result</h3>
+<pre><code>┌────────────────────────────┐
+│  MISSION CLEAR             │
+│     RANK  S                │
+│  +240 💰   [▶ x2 за RV]    │
+│  [Дальше]  [Повтор]        │
+└────────────────────────────┘
+</code></pre>
+<h3 id="510-shop-rewarded-cta">5.10 Shop + Rewarded CTA</h3>
+<pre><code>┌──────────────────────────────────────────┐
+│ МАГАЗИН     Soft | Hard | IAP            │
+│ ┌──────┐ ┌──────┐ ┌──────┐               │
+│ │Mask  │ │Pack  │ │No Ads│               │
+│ │200💰 │ │◆30   │ │IAP   │               │
+│ └──────┘ └──────┘ └──────┘               │
+│ [▶ Попробовать маску 1 ран — RV]         │
+└──────────────────────────────────────────┘
+</code></pre>
+<pre><code class="language-mermaid">flowchart LR
+  Result --&gt;|tap x2| RV{Rewarded}
+  RV --&gt;|success| GrantX2
+  RV --&gt;|fail/cancel| Stay
+  Death --&gt;|Continue| RV2{Rewarded}
+  RV2 --&gt;|success| Respawn
+</code></pre>
+<hr />
+<h2 id="6-art-bible">6. Art Bible</h2>
+<h3 id="61-style-locks">6.1 Style locks</h3>
+<ul>
+<li><strong>Perspective:</strong> true top-down (90°) for gameplay sprites; key art may be 3/4.</li>
+<li><strong>Line:</strong> hard silhouette, minimal internal detail.</li>
+<li><strong>Shading:</strong> 2–3 bands + neon emissive accents.</li>
+<li><strong>Blood:</strong> magenta/pink splat decals, not realistic red gore.</li>
+<li><strong>Characters:</strong> masked mercenary, exaggerated shoulders, readable weapons.</li>
+<li><strong>Env:</strong> 80s retro-futurism, wet streets optional sheen.</li>
+</ul>
+<h3 id="62-palette-hex">6.2 Palette (HEX)</h3>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Hex</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BG void</td>
+<td><code>#07060C</code></td>
+</tr>
+<tr>
+<td>Floor</td>
+<td><code>#12101A</code></td>
+</tr>
+<tr>
+<td>Wall</td>
+<td><code>#1C1830</code></td>
+</tr>
+<tr>
+<td>Neon pink</td>
+<td><code>#FF2BD6</code></td>
+</tr>
+<tr>
+<td>Neon cyan</td>
+<td><code>#00F0FF</code></td>
+</tr>
+<tr>
+<td>Neon purple</td>
+<td><code>#8B5CFF</code></td>
+</tr>
+<tr>
+<td>Danger</td>
+<td><code>#FF3B4A</code></td>
+</tr>
+<tr>
+<td>Safe/HP</td>
+<td><code>#39FF14</code></td>
+</tr>
+<tr>
+<td>Text primary</td>
+<td><code>#F5F2FF</code></td>
+</tr>
+<tr>
+<td>Text dim</td>
+<td><code>#9A94B8</code></td>
+</tr>
+<tr>
+<td>Blood VFX</td>
+<td><code>#FF4FA3</code></td>
+</tr>
+<tr>
+<td>Muzzle</td>
+<td><code>#FFE66D</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="63-do-dont">6.3 Do / Don't</h3>
+<p><strong>Do:</strong> high contrast silhouettes; neon trim; readable enemy hats/weapons; pixel-crisp at 1x/2x.<br />
+<strong>Don't:</strong> brown muddy noir; realistic gore; tiny UI text; purple-on-white generic AI look; cluttered particle spam hiding bullets.</p>
+<h3 id="64-resolution-sheets">6.4 Resolution &amp; sheets</h3>
+<ul>
+<li>Character body: 32×32 frame, sheet 8 cols.</li>
+<li>Weapons world: 32×32.</li>
+<li>Tiles: 32×32.</li>
+<li>UI buttons: 9-slice from 48×48 base.</li>
+<li>Key art: 1920×1080 PNG.</li>
+</ul>
+<hr />
+<h2 id="7-copy-paste-image-generation-prompts">7. Copy-paste Image Generation Prompts</h2>
+<blockquote>
+<p>Полные пакеты также в <code>prompts/ART_PROMPTS.md</code>. Здесь — канон.</p>
+</blockquote>
+<h3 id="71-key-art">7.1 Key art</h3>
+<pre><code>Top-down adjacent key art for mobile game &quot;Neon Bullet&quot;: masked mercenary in black jacket and glowing cyan-pink mask standing in rainy neon alley, Hotline Miami energy but original design, magenta and cyan neon signs, wet asphalt reflections, stylized non-gory, cinematic poster, 1920x1080, high contrast, no text, no logo, no UI
+</code></pre>
+<h3 id="72-environment">7.2 Environment</h3>
+<pre><code>Seamless top-down game environment tileset, 32x32 pixel art style but clean HD pixel, neon noir apartment interior: dark floors, neon-trimmed walls, sofa props, bloodless crime scene vibe, magenta cyan lighting, packed tileset sheet, transparent background where needed, game-ready
+</code></pre>
+<h3 id="73-characters">7.3 Characters</h3>
+<pre><code>Top-down 32x32 pixel character spritesheet, masked neon mercenary, idle walk and strike frames, readable silhouette, cyan mask glow, black outfit, game asset, orthographic top-down, transparent background
+</code></pre>
+<h3 id="74-enemies">7.4 Enemies</h3>
+<pre><code>Top-down 32x32 enemy sprites: thug, gunner, brute, distinct silhouettes, neon noir clothing, patrol and attack poses, no gore, transparent background, game-ready sheet
+</code></pre>
+<h3 id="75-weapons">7.5 Weapons</h3>
+<pre><code>Top-down pixel weapon icons and held angles: knife, pistol, shotgun, SMG, neon muzzle accents, 32x32, transparent, crisp
+</code></pre>
+<h3 id="76-vfx">7.6 VFX</h3>
+<pre><code>Pixel VFX sheet: magenta blood splatter stylized, cyan muzzle flash, hit sparks, door light, combo burst, transparent background, 32x32 and 64x64 frames
+</code></pre>
+<h3 id="77-tileset">7.7 Tileset</h3>
+<pre><code>32x32 neon noir tileset autotile walls floors doors cover furniture, dark purple base, pink cyan emissive edges, packed PNG, game tileset
+</code></pre>
+<h3 id="78-ui-kit">7.8 UI kit</h3>
+<pre><code>Game UI kit neon noir: primary button, secondary button, hearts, ammo counter frame, pause icon, rank badges S A B C, shop card, rewarded video button with play icon, magenta cyan accents on dark #07060C, 9-slice friendly, no mockup device
+</code></pre>
+<hr />
+<h2 id="8-sprite-sheet-layout-specs">8. Sprite Sheet Layout Specs</h2>
+<h3 id="81-player-char_player_sheetpng">8.1 Player <code>char_player_sheet.png</code></h3>
+<ul>
+<li>Frame: <strong>32×32</strong>, columns: <strong>8</strong>, rows: <strong>6</strong></li>
+<li>Animations:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>Frames</th>
+<th>Count</th>
+<th>Loop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>idle</td>
+<td>0–3</td>
+<td>4</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>walk</td>
+<td>4–11</td>
+<td>8</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>melee</td>
+<td>12–15</td>
+<td>4</td>
+<td>no</td>
+</tr>
+<tr>
+<td>shoot</td>
+<td>16–18</td>
+<td>3</td>
+<td>no</td>
+</tr>
+<tr>
+<td>death</td>
+<td>19–23</td>
+<td>5</td>
+<td>no</td>
+</tr>
+<tr>
+<td>(spare)</td>
+<td>24–47</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Mask overlays: separate sheet <code>char_mask_&lt;id&gt;_sheet.png</code> 32×32, same pivots, recolor glow.</p>
+<h3 id="82-enemies">8.2 Enemies</h3>
+<p>Each <code>en_&lt;type&gt;_sheet.png</code>: 32×32, 8 cols.</p>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>frames</th>
+<th>count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>idle</td>
+<td>0–3</td>
+<td>4</td>
+</tr>
+<tr>
+<td>walk</td>
+<td>4–11</td>
+<td>8</td>
+</tr>
+<tr>
+<td>attack</td>
+<td>12–15</td>
+<td>4</td>
+</tr>
+<tr>
+<td>death</td>
+<td>16–20</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+<h3 id="83-vfx-vfx_combat_sheetpng">8.3 VFX <code>vfx_combat_sheet.png</code></h3>
+<p>64×64 frames for splatter/muzzle; 4 cols × 4 rows per effect.</p>
+<h3 id="84-animation-timing-tables">8.4 Animation timing tables</h3>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>fps</th>
+<th>duration hint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>player idle</td>
+<td>6</td>
+<td>—</td>
+</tr>
+<tr>
+<td>player walk</td>
+<td>12</td>
+<td>—</td>
+</tr>
+<tr>
+<td>player melee</td>
+<td>16</td>
+<td>~0.25s</td>
+</tr>
+<tr>
+<td>player shoot</td>
+<td>20</td>
+<td>~0.15s</td>
+</tr>
+<tr>
+<td>player death</td>
+<td>10</td>
+<td>~0.5s</td>
+</tr>
+<tr>
+<td>enemy walk</td>
+<td>10</td>
+<td>—</td>
+</tr>
+<tr>
+<td>enemy attack</td>
+<td>12</td>
+<td>—</td>
+</tr>
+<tr>
+<td>muzzle flash</td>
+<td>24</td>
+<td>3 frames</td>
+</tr>
+<tr>
+<td>blood splatter</td>
+<td>14</td>
+<td>5 frames oneshot</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-audio-ids-brief">9. Audio IDs (brief)</h2>
+<p><code>mus_mission_01</code>, <code>mus_hub</code>, <code>sfx_shoot_pistol</code>, <code>sfx_shoot_shotgun</code>, <code>sfx_melee</code>, <code>sfx_hit</code>, <code>sfx_death_player</code>, <code>sfx_death_enemy</code>, <code>sfx_ui_click</code>, <code>sfx_pickup</code>, <code>sfx_combo</code>, <code>sfx_rank_s</code></p>
+<hr />
+<h2 id="10-integration-contracts-paths">10. Integration Contracts (paths)</h2>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Player sheet</td>
+<td><code>public/assets/textures/characters/char_player_sheet.png</code></td>
+</tr>
+<tr>
+<td>Masks</td>
+<td><code>public/assets/textures/characters/char_mask_&lt;id&gt;_sheet.png</code></td>
+</tr>
+<tr>
+<td>Enemies</td>
+<td><code>public/assets/textures/enemies/en_&lt;id&gt;_sheet.png</code></td>
+</tr>
+<tr>
+<td>Weapons</td>
+<td><code>public/assets/textures/weapons/wpn_&lt;id&gt;.png</code></td>
+</tr>
+<tr>
+<td>VFX</td>
+<td><code>public/assets/textures/vfx/vfx_&lt;name&gt;_sheet.png</code></td>
+</tr>
+<tr>
+<td>Tiles</td>
+<td><code>public/assets/textures/tiles/tile_&lt;biome&gt;_sheet.png</code></td>
+</tr>
+<tr>
+<td>UI</td>
+<td><code>public/assets/textures/ui/ui_kit.png</code> + atlas JSON</td>
+</tr>
+<tr>
+<td>Key art</td>
+<td><code>public/assets/textures/keyart/keyart_neon_bullet.png</code></td>
+</tr>
+<tr>
+<td>Levels</td>
+<td><code>public/assets/levels/lvl_&lt;id&gt;.json</code></td>
+</tr>
+<tr>
+<td>Audio</td>
+<td><code>public/assets/audio/sfx/</code>, <code>.../music/</code></td>
+</tr>
+<tr>
+<td>Data</td>
+<td><code>src/data/weapons.json</code>, <code>masks.json</code>, <code>missions.json</code></td>
+</tr>
+</tbody>
+</table>
+<p>Atlas: TexturePacker/Phaser hash JSON рядом с PNG: <code>*.json</code>.</p>
+<hr />
+<h2 id="11-yandex-sdk-hooks-code-contract">11. Yandex SDK Hooks (code contract)</h2>
+<pre><code class="language-ts">// src/sdk/yandex.ts
+showInterstitial(placement: 'result' | 'death'): Promise&lt;void&gt;
+showRewarded(placement: 'continue' | 'x2' | 'trial_mask'): Promise&lt;'rewarded'|'cancel'|'error'&gt;
+purchase(productId: 'remove_ads' | 'coins_m' | 'neon_s' | 'mask_premium'): Promise&lt;'ok'|'fail'&gt;
+leaderboardSet(lbId: string, value: number): Promise&lt;void&gt;
+cloudLoad(): Promise&lt;Progress|null&gt;
+cloudSave(p: Progress): Promise&lt;void&gt;
+</code></pre>
+<p>Leaderboard IDs: <code>lb_rank_total</code>, <code>lb_district_apt</code>, <code>lb_district_club</code>, ...</p>
+<hr />
+<h2 id="12-prompt-pack-index">12. Prompt Pack Index</h2>
+<p>Отправлять агентам как standalone:
+- <code>prompts/ART_PROMPTS.md</code>
+- <code>prompts/SPRITE_ANIM_PROMPTS.md</code>
+- <code>prompts/UI_PROMPTS.md</code>
+- <code>prompts/LEVEL_PROMPTS.md</code>
+- <code>prompts/CODE_AGENT_PROMPT.md</code></p>
+<p>Каждый пакет содержит: цель, входы, выходы (пути), DoD, запреты.</p>
+<hr />
+<h2 id="13-definition-of-ready-">13. Definition of Ready (этого дизайн-дока)</h2>
+<p>Чеклист перед переводом статуса в <code>REVIEW</code> → <code>CONFIRMED</code>:</p>
+<ul>
+<li>[x] Vision, pillars, loops описаны в DESIGN.md</li>
+<li>[x] Project contract (slug, engine, folders, naming, asset IDs)</li>
+<li>[x] Все gameplay systems с AC</li>
+<li>[x] Level grammar + mission list MVP</li>
+<li>[x] UI map + wireframes всех major screens</li>
+<li>[x] Art bible + palette hex + do/don't</li>
+<li>[x] Image gen prompts для key art/env/char/enemy/wpn/vfx/tiles/UI</li>
+<li>[x] Sprite sheet specs + timing tables</li>
+<li>[x] Integration paths</li>
+<li>[x] Monetization fair rules</li>
+<li>[x] Explicit no-code-until-CONFIRMED</li>
+<li>[ ] Продюсер review (человек)</li>
+<li>[ ] Статус в dashboard = CONFIRMED</li>
+</ul>
+<hr />
+<h2 id="14-explicit-coding-ban">14. Explicit Coding Ban</h2>
+<pre><code>⛔ DO NOT START CODING until design status is CONFIRMED.
+⛔ DO NOT invent systems contradicting this document.
+✅ DO update STATUS.md to DESIGN_DRAFT / DESIGN_REVIEW only.
+</code></pre>
+<hr />
+<h2 id="15-changelog">15. Changelog</h2>
+<table>
+<thead>
+<tr>
+<th>Ver</th>
+<th>Date</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.0</td>
+<td>2026-07-17</td>
+<td>Initial LLM bible</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="visual-ground-truth">Visual Ground Truth (обязательные референсы)</h2>
+<p>См. также <code>docs/REFS.md</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Путь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key art</td>
+<td><code>refs/art/key-art.png</code></td>
+</tr>
+<tr>
+<td>UI wireframe</td>
+<td><code>refs/ui/wireframe-main.png</code></td>
+</tr>
+<tr>
+<td>Level layout</td>
+<td><code>refs/levels/layout-main.png</code></td>
+</tr>
+<tr>
+<td>Sprite sheet</td>
+<td><code>refs/sprites/sheet-main.png</code></td>
+</tr>
+</tbody>
+</table>
+<p>Любой арт-агент обязан сверяться с этими файлами перед генерацией финальных ассетов.</p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-refs">
+      <div class="refs-intro doc"><p>﻿# Neon Bullet — Visual References Index</p>
+<blockquote>
+<p>Эти файлы — обязательный вход для арт/UI/level LLM-агентов.<br />
+При генерации новых ассетов держать стиль как у референсов ниже.</p>
+</blockquote>
+<h2 id="art">Art</h2>
+<p><img alt="Key art" src="../../games/neon-bullet/refs/art/key-art.png" /></p>
+<p><code>refs/art/key-art.png</code> — tonal/mood lock, palette, composition.</p>
+<h2 id="ui-wireframes">UI Wireframes</h2>
+<p><img alt="UI wireframe" src="../../games/neon-bullet/refs/ui/wireframe-main.png" /></p>
+<p><code>refs/ui/wireframe-main.png</code> — экраны, иерархия, CTA rewarded/IAP зоны.</p>
+<h2 id="level-content-layout">Level / Content Layout</h2>
+<p><img alt="Level layout" src="../../games/neon-bullet/refs/levels/layout-main.png" /></p>
+<p><code>refs/levels/layout-main.png</code> — грамматика уровней/доски/маршрута.</p>
+<h2 id="sprites-animation-sheet">Sprites / Animation Sheet</h2>
+<p><img alt="Sprites" src="../../games/neon-bullet/refs/sprites/sheet-main.png" /></p>
+<p><code>refs/sprites/sheet-main.png</code> — пропорции, кадры, иконки.</p>
+<h2 id="_1">Как использовать агентам</h2>
+<ol>
+<li>Открыть <code>DESIGN_LLM.md</code> (контракт).</li>
+<li>Открыть этот <code>REFS.md</code> (визуальный ground truth).</li>
+<li>Взять атомарный промпт из <code>prompts/</code> и <strong>приложить</strong> соответствующий png.</li>
+<li>Сохранять результат в пути из Integration Contract <code>DESIGN_LLM.md</code>.</li>
+</ol>
+<h2 id="dor-visuals">DoR visuals</h2>
+<ul>
+<li>[x] key-art</li>
+<li>[x] wireframe-main</li>
+<li>[x] layout-main</li>
+<li>[x] sheet-main</li>
+</ul></div>
+      <h3 class="gallery-title">Галерея референсов</h3>
+      <div class="ref-grid">
+            <figure class="ref-card">
+              <a href="../../games/neon-bullet/refs/art/key-art.png" target="_blank" rel="noopener">
+                <img src="../../games/neon-bullet/refs/art/key-art.png" alt="Ключевой арт" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Ключевой арт</strong>
+                <span>Настроение, палитра, композиция</span>
+                <code>art/key-art.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/neon-bullet/refs/ui/wireframe-main.png" target="_blank" rel="noopener">
+                <img src="../../games/neon-bullet/refs/ui/wireframe-main.png" alt="Вайрфрейм UI" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Вайрфрейм UI</strong>
+                <span>Экраны, иерархия, CTA рекламы/покупок</span>
+                <code>ui/wireframe-main.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/neon-bullet/refs/levels/layout-main.png" target="_blank" rel="noopener">
+                <img src="../../games/neon-bullet/refs/levels/layout-main.png" alt="Раскладка уровней" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Раскладка уровней</strong>
+                <span>Грамматика уровней / доски / маршрута</span>
+                <code>levels/layout-main.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/neon-bullet/refs/sprites/sheet-main.png" target="_blank" rel="noopener">
+                <img src="../../games/neon-bullet/refs/sprites/sheet-main.png" alt="Спрайт-лист" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Спрайт-лист</strong>
+                <span>Пропорции, кадры, иконки</span>
+                <code>sprites/sheet-main.png</code>
+              </figcaption>
+            </figure></div>
+    </section>
+
+    <section class="tab-panel" id="tab-prompts">
+      <p class="lead">Атомарные промпты — копируй в отдельного агента вместе с нужным референсом из вкладки «Референсы».</p>
+      
+          <details class="prompt-acc" open>
+            <summary>Арт <span class="muted">ART_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="neon-bullet-art_prompts">Neon Bullet — ART_PROMPTS</h1>
+<p><strong>Назначение:</strong> атомарный пакет для арт-агента / image-gen.<br />
+<strong>Канон:</strong> <code>games/neon-bullet/docs/DESIGN_LLM.md</code> §6–7.<br />
+<strong>Выход:</strong> файлы строго в путях §Integration ниже.<br />
+<strong>Запрет:</strong> не писать код <code>src/</code>.</p>
+<hr />
+<h2 id="_1">Контекст (вставь в начало любого сообщения агенту)</h2>
+<pre><code>Ты — арт-агент игры Neon Bullet (slug: neon-bullet).
+Стек визуала: top-down neon noir, palette:
+BG #07060C, Floor #12101A, Wall #1C1830, Pink #FF2BD6, Cyan #00F0FF,
+Purple #8B5CFF, Danger #FF3B4A, Blood VFX #FF4FA3, Text #F5F2FF.
+Стиль: hard silhouettes, 2–3 shade bands, stylized magenta blood (no gore),
+80s retro-futurism. НЕ делай generic purple-on-white AI aesthetic.
+Все ассеты game-ready, transparent where needed.
+Интеграция: public/assets/textures/...
+</code></pre>
+<hr />
+<h2 id="job-a-key-art">JOB A — Key art</h2>
+<p><strong>Промпт:</strong></p>
+<pre><code>Key art poster for HTML5 game Neon Bullet: masked mercenary cyan-pink glowing mask, black jacket, neon rainy alley, magenta and cyan signs, wet asphalt, Hotline Miami energy but ORIGINAL character, stylized non-gory, cinematic 1920x1080, high contrast, no text no logo no UI, dark void corners
+</code></pre>
+<p><strong>Выход:</strong> <code>public/assets/textures/keyart/keyart_neon_bullet.png</code><br />
+<strong>Также:</strong> <code>refs/art/keyart_ref.png</code> (копия для референса)</p>
+<hr />
+<h2 id="job-b-environment-moods">JOB B — Environment moods (референсы биомов)</h2>
+<p>Прогони 4 промпта → <code>refs/art/env_&lt;biome&gt;.png</code>:</p>
+<ol>
+<li><strong>apartment:</strong> top-down neon noir apartment crime scene, dark carpet, neon wall trim, sofa silhouette, readable for game level moodboard</li>
+<li><strong>club:</strong> top-down neon nightclub interior, dance floor glow cyan pink, bar counter, VIP booths moodboard</li>
+<li><strong>parking:</strong> top-down night parking garage, cars as cover blocks, cyan strip lights, wet concrete</li>
+<li><strong>warehouse:</strong> top-down industrial warehouse neon accents, long aisles, crates cover, magenta emergency lights</li>
+</ol>
+<hr />
+<h2 id="job-c-tileset-production">JOB C — Tileset production</h2>
+<p><strong>Промпт:</strong></p>
+<pre><code>32x32 game tileset sheet neon noir: floors walls doors cover furniture autotile candidates, dark purple base #1C1830, emissive pink #FF2BD6 and cyan #00F0FF edges, packed grid, pixel-crisp HD-pixel hybrid, no characters, no text
+</code></pre>
+<p><strong>Выход:</strong><br />
+- <code>public/assets/textures/tiles/tile_apt_sheet.png</code><br />
+- <code>public/assets/textures/tiles/tile_club_sheet.png</code><br />
+- <code>public/assets/textures/tiles/tile_park_sheet.png</code><br />
+- <code>public/assets/textures/tiles/tile_wh_sheet.png</code></p>
+<p>Каждый лист: минимум floor×4, wall autotile set, door open/closed, 3 cover props.</p>
+<hr />
+<h2 id="job-d-characters-enemies-static-hero-frames-sheet-bases">JOB D — Characters &amp; enemies (static hero frames + sheet bases)</h2>
+<p>См. также <code>SPRITE_ANIM_PROMPTS.md</code> для анимаций. Здесь — hero poses / turnarounds:</p>
+<pre><code>Top-down orthographic 32x32 character design sheet: neon masked mercenary, idle pose, readable weapon holster, cyan mask, black outfit, transparent background, game sprite
+</code></pre>
+<pre><code>Top-down orthographic enemy design sheet: thug bat, gunner pistol, brute thick silhouette, distinct read at 32px, neon noir wardrobe, transparent, no gore
+</code></pre>
+<p><strong>Выход refs:</strong> <code>refs/art/char_player_turnaround.png</code>, <code>refs/art/enemies_roster.png</code><br />
+<strong>Production sheets:</strong> по <code>SPRITE_ANIM_PROMPTS.md</code></p>
+<hr />
+<h2 id="job-e-weapons-vfx-stills">JOB E — Weapons &amp; VFX stills</h2>
+<pre><code>Top-down pixel weapons icons knife pistol shotgun SMG, 32x32, neon accents, transparent, crisp edges
+</code></pre>
+<pre><code>Stylized pixel VFX stickers: magenta blood splat, cyan muzzle, sparks, combo star burst, transparent
+</code></pre>
+<p><strong>Выход:</strong> <code>public/assets/textures/weapons/</code>, <code>public/assets/textures/vfx/</code></p>
+<hr />
+<h2 id="job-f-ui-kit-art">JOB F — UI kit art</h2>
+<pre><code>Neon noir game UI kit on #07060C: buttons primary/secondary, hearts, ammo frame, pause, rank badges S A B C in neon, shop card frame, rewarded button with play glyph, 9-slice friendly pads, magenta cyan accents, no phone mockup
+</code></pre>
+<p><strong>Выход:</strong> <code>public/assets/textures/ui/ui_kit.png</code> + slices в <code>refs/ui/</code></p>
+<hr />
+<h2 id="dod">DoD арта</h2>
+<ul>
+<li>[ ] Palette соблюдена (±5 RGB на emissive ок)</li>
+<li>[ ] Нет реалистичного gore</li>
+<li>[ ] Все production PNG в контрактных путях</li>
+<li>[ ] Key art без текста</li>
+<li>[ ] Tiles читаются как top-down game tiles, не isometric</li>
+</ul>
+<h2 id="_2">Запреты</h2>
+<ul>
+<li>Не менять DESIGN_LLM palette без эскалации</li>
+<li>Не генерировать mid-fight HUD в key art</li>
+<li>Не класть файлы вне <code>games/neon-bullet/</code></li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Спрайты и анимация <span class="muted">SPRITE_ANIM_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="neon-bullet-sprite_anim_prompts">Neon Bullet — SPRITE_ANIM_PROMPTS</h1>
+<p><strong>Назначение:</strong> спрайт-листы и тайминги анимаций.<br />
+<strong>Канон:</strong> <code>DESIGN_LLM.md</code> §8.<br />
+<strong>Запрет:</strong> не писать игровой код.</p>
+<hr />
+<h2 id="_1">Контекст для агента</h2>
+<pre><code>Игра Neon Bullet, Phaser 3, tile 32px, top-down orthographic sprites.
+Pivot: center of feet ≈ (16, 22) внутри кадра 32x32.
+Имена файлов и anim keys строго по schema: char_*, en_*, vfx_*.
+Export: PNG sheet + optional JSON frame names.
+Timing table ниже — закон для Animations.create в Phaser (когда код разрешён).
+</code></pre>
+<hr />
+<h2 id="player-sheet">Player sheet</h2>
+<p><strong>Файл:</strong> <code>public/assets/textures/characters/char_player_sheet.png</code><br />
+<strong>Layout:</strong> frame 32×32, <strong>8 columns × 6 rows</strong></p>
+<table>
+<thead>
+<tr>
+<th>Anim key</th>
+<th>Frames (col-major index)</th>
+<th>Count</th>
+<th>fps</th>
+<th>loop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>char_player_idle</code></td>
+<td>0–3</td>
+<td>4</td>
+<td>6</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>char_player_walk</code></td>
+<td>4–11</td>
+<td>8</td>
+<td>12</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>char_player_melee</code></td>
+<td>12–15</td>
+<td>4</td>
+<td>16</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>char_player_shoot</code></td>
+<td>16–18</td>
+<td>3</td>
+<td>20</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>char_player_death</code></td>
+<td>19–23</td>
+<td>5</td>
+<td>10</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Промпт генерации:</strong></p>
+<pre><code>Spritesheet 8x6 grid of 32x32 frames, top-down neon masked mercenary, row-major: idle 4, walk 8, melee 4, shoot 3, death 5, remaining empty, transparent background, consistent pivot, cyan mask glow, black jacket, pixel-crisp
+</code></pre>
+<hr />
+<h2 id="mask-overlays">Mask overlays</h2>
+<p>Для каждой маски: <code>char_mask_&lt;id&gt;_sheet.png</code> — только голова/маска 32×32, те же idle/walk кадры (4+8) или static glow.</p>
+<p>IDs: <code>default</code> (в теле), <code>speed</code>, <code>ghost</code>, <code>ammo</code>, <code>armor</code>, <code>lucky</code></p>
+<p><strong>Промпт:</strong></p>
+<pre><code>Top-down 32x32 mask overlay spritesheet, glowing neon mask variants (speed streaks, ghost translucent, ammo marks, armor plates, lucky charm), aligned for character head pivot, transparent, no body
+</code></pre>
+<hr />
+<h2 id="enemy-sheets">Enemy sheets</h2>
+<p>Файлы:
+- <code>public/assets/textures/enemies/en_thug_sheet.png</code>
+- <code>public/assets/textures/enemies/en_gunner_sheet.png</code>
+- <code>public/assets/textures/enemies/en_brute_sheet.png</code></p>
+<p>Layout: 32×32, 8 cols × 4 rows</p>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>frames</th>
+<th>count</th>
+<th>fps</th>
+<th>loop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>idle</td>
+<td>0–3</td>
+<td>4</td>
+<td>6</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>walk</td>
+<td>4–11</td>
+<td>8</td>
+<td>10</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>attack</td>
+<td>12–15</td>
+<td>4</td>
+<td>12</td>
+<td>no</td>
+</tr>
+<tr>
+<td>death</td>
+<td>16–20</td>
+<td>5</td>
+<td>10</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Промпт (подставь TYPE):</strong></p>
+<pre><code>Spritesheet top-down 32x32 enemy TYPE for Neon Bullet, 8 columns: idle4 walk8 attack4 death5, distinct silhouette, neon noir, transparent, no gore, consistent scale with 32px tile characters
+</code></pre>
+<p>TYPE ∈ {street thug with bat, gunner with pistol, bulky brute}</p>
+<hr />
+<h2 id="boss-mvp-en_boss_maskmaker_sheetpng">Boss (MVP) <code>en_boss_maskmaker_sheet.png</code></h2>
+<p>Frame <strong>64×64</strong>, 6 cols × 4 rows: idle4, walk6, attack6, special4, death6.</p>
+<p>fps: idle6 / walk8 / attack10 / special12 / death8</p>
+<hr />
+<h2 id="weapon-muzzle-held">Weapon muzzle / held</h2>
+<p><code>public/assets/textures/weapons/wpn_&lt;id&gt;_sheet.png</code> — optional angled holds 8 directions × 1 frame (32×32) OR rotate in engine (предпочтительно rotate single sprite).</p>
+<p>Muzzle VFX: <code>vfx_muzzle_sheet.png</code> 64×64, 4 frames @ 24fps oneshot.</p>
+<hr />
+<h2 id="vfx-sheets">VFX sheets</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Frame</th>
+<th>Anims</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vfx_blood_sheet.png</code></td>
+<td>64×64</td>
+<td>splat A 5f @14, splat B 5f @14</td>
+</tr>
+<tr>
+<td><code>vfx_muzzle_sheet.png</code></td>
+<td>64×64</td>
+<td>flash 3f @24</td>
+</tr>
+<tr>
+<td><code>vfx_hit_sheet.png</code></td>
+<td>32×32</td>
+<td>spark 4f @20</td>
+</tr>
+<tr>
+<td><code>vfx_combo_sheet.png</code></td>
+<td>64×64</td>
+<td>burst 6f @16</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Промпт:</strong></p>
+<pre><code>Pixel VFX spritesheet transparent: stylized magenta blood splat frames, cyan muzzle flash, hit sparks, combo burst, neon noir game, no photoreal gore
+</code></pre>
+<hr />
+<h2 id="dod">DoD</h2>
+<ul>
+<li>[ ] Все sheets в контрактных путях</li>
+<li>[ ] Кадры не обрезают силуэт</li>
+<li>[ ] Pivot визуально стабилен между кадрами walk</li>
+<li>[ ] Death oneshot читается за ≤0.5s</li>
+<li>[ ] JSON atlas optional; если есть — рядом с PNG</li>
+</ul>
+<h2 id="_2">Запреты</h2>
+<ul>
+<li>Не isometric</li>
+<li>Не 3/4 perspective в gameplay sprites</li>
+<li>Не менять frame size без обновления DESIGN_LLM</li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Интерфейс <span class="muted">UI_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="neon-bullet-ui_prompts">Neon Bullet — UI_PROMPTS</h1>
+<p><strong>Назначение:</strong> UI-арт + копирайт + wireframe-реализация для UI-агента.<br />
+<strong>Канон:</strong> <code>DESIGN_LLM.md</code> §5–6.<br />
+<strong>Запрет:</strong> mid-action interstitial; код только после CONFIRMED (этот пакет — дизайн/ассеты).</p>
+<hr />
+<h2 id="_1">Контекст</h2>
+<pre><code>Neon Bullet UI: canvas Phaser, русский язык по умолчанию.
+Palette: bg #07060C, text #F5F2FF, dim #9A94B8, CTA pink #FF2BD6, accent cyan #00F0FF.
+Touch targets ≥44px (prefer 48).
+Fonts: expressive display for titles (not Inter/Roboto); body readable sans.
+Screens: Boot, MainMenu, CityHub, Loadout, HUD, Pause, DeathContinue, Result, Shop, RewardedCTA, Settings.
+</code></pre>
+<hr />
+<h2 id="job-1-ui-kit-generation">JOB 1 — UI kit generation</h2>
+<p><strong>Промпт:</strong></p>
+<pre><code>Complete neon noir game UI kit, dark background #07060C, magenta #FF2BD6 and cyan #00F0FF accents: primary button 9-slice, secondary outline button, icon buttons pause settings, HP hearts, ammo counter frame, combo label style, rank badges S A B C glowing, shop item card, rewarded ad button with play triangle, modal panel, slider, toggle, scrollbar, no device mockup, export-ready flat panels
+</code></pre>
+<p><strong>Выход:</strong> <code>public/assets/textures/ui/ui_kit.png</code>, slices в <code>refs/ui/slices/</code></p>
+<hr />
+<h2 id="job-2-screen-copy-ru">JOB 2 — Screen copy (RU)</h2>
+<table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>Элементы</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MainMenu</td>
+<td>ИГРАТЬ / МАГАЗИН / ЕЖЕДНЕВНЫЙ КОНТРАКТ / ЛИДЕРБОРД / НАСТРОЙКИ</td>
+</tr>
+<tr>
+<td>Hub</td>
+<td>Район {name} / Выбрать миссию / Закрыто</td>
+</tr>
+<tr>
+<td>Loadout</td>
+<td>Маска / Оружие / СТАРТ / Скорость / Шум / HP</td>
+</tr>
+<tr>
+<td>Pause</td>
+<td>ПАУЗА / Продолжить / Настройки / В хаб</td>
+</tr>
+<tr>
+<td>Death</td>
+<td>ВЫ УБИТЫ / Рестарт / Продолжить (реклама) / В хаб</td>
+</tr>
+<tr>
+<td>Result</td>
+<td>МИССИЯ ВЫПОЛНЕНА / РАНГ {R} / +{n} монет / x2 за рекламу / Дальше / Повтор</td>
+</tr>
+<tr>
+<td>Shop</td>
+<td>МАГАЗИН / Мягкая валюта / Неон / Покупки / Отключить рекламу</td>
+</tr>
+<tr>
+<td>RV toast</td>
+<td>Награда получена / Реклама недоступна</td>
+</tr>
+<tr>
+<td>Tutorial</td>
+<td>Движение / Прицел / Стреляй / Не умри</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="job-3-wireframe-acceptance-ascii">JOB 3 — Wireframe acceptance (ASCII канон)</h2>
+<p>Сверяй с DESIGN_LLM §5.2–5.10. Любой UI-агент должен воспроизвести иерархию:</p>
+<ol>
+<li>Boot: logo + progress  </li>
+<li>Menu: keyart + 3 CTA  </li>
+<li>Hub: node map + currency  </li>
+<li>Loadout: list + preview + start  </li>
+<li>HUD: HP | ammo | combo | pause; mobile sticks  </li>
+<li>Pause modal center  </li>
+<li>Death modal with RV secondary visual weight &lt; Restart primary OR equal for monetization test  </li>
+<li>Result: rank hero moment  </li>
+<li>Shop: grid cards  </li>
+</ol>
+<pre><code class="language-mermaid">flowchart TB
+  Boot --&gt; Menu
+  Menu --&gt; Hub
+  Menu --&gt; Shop
+  Hub --&gt; Loadout --&gt; Mission
+  Mission --&gt; Pause
+  Mission --&gt; Death
+  Mission --&gt; Result
+  Death --&gt;|RV| Mission
+  Result --&gt;|RV x2| Result
+  Result --&gt; Hub
+</code></pre>
+<hr />
+<h2 id="job-4-component-specs">JOB 4 — Component specs</h2>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>size</th>
+<th>states</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ui_btn_primary</code></td>
+<td>min 220×56</td>
+<td>normal/hover/pressed/disabled</td>
+</tr>
+<tr>
+<td><code>ui_btn_secondary</code></td>
+<td>min 200×48</td>
+<td>same</td>
+</tr>
+<tr>
+<td><code>ui_btn_rv</code></td>
+<td>min 240×56</td>
+<td>normal + "▶" badge</td>
+</tr>
+<tr>
+<td><code>ui_hud_heart</code></td>
+<td>32×32</td>
+<td>on/off</td>
+</tr>
+<tr>
+<td><code>ui_rank_S</code></td>
+<td>128×128</td>
+<td>glow</td>
+</tr>
+<tr>
+<td><code>ui_stick_base</code></td>
+<td>128×128</td>
+<td>opacity 0.45</td>
+</tr>
+<tr>
+<td><code>ui_stick_knob</code></td>
+<td>64×64</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="dod">DoD</h2>
+<ul>
+<li>[ ] Все major screens имеют copy RU</li>
+<li>[ ] UI kit на диске</li>
+<li>[ ] RV кнопки visually distinct, не mimic fake close</li>
+<li>[ ] HUD не перекрывает &gt;15% центрального aim zone</li>
+</ul>
+<h2 id="_2">Запреты</h2>
+<ul>
+<li>Карточки в hero keyart menu — keyart full-bleed, CTA снизу  </li>
+<li>Sticky banner поверх Fire button  </li>
+<li>Английский UI без RU</li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Уровни <span class="muted">LEVEL_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="neon-bullet-level_prompts">Neon Bullet — LEVEL_PROMPTS</h1>
+<p><strong>Назначение:</strong> level-агент (Tiled JSON + encounter placement).<br />
+<strong>Канон:</strong> <code>DESIGN_LLM.md</code> §4.<br />
+<strong>Выход:</strong> <code>public/assets/levels/lvl_*.json</code> + превью в <code>refs/levels/</code>.</p>
+<hr />
+<h2 id="_1">Контекст</h2>
+<pre><code>Neon Bullet levels: Phaser Tilemap JSON from Tiled, tile 32x32.
+Layers: ground, props, collision, meta (objects).
+Object types: playerSpawn, enemySpawn{enemyId}, pickup{pickupId}, door, extractZone.
+alertMode default: &quot;radius&quot;.
+Biomes: apt, club, park, wh, boss.
+Difficulty tiers T1–T3 per DESIGN_LLM.
+Проходимо на touch; no softlock doors.
+</code></pre>
+<hr />
+<h2 id="job-generate-mission-pack-mvp-12">JOB — Generate mission pack MVP (12)</h2>
+<p>Для каждой миссии создай:</p>
+<ol>
+<li>Tiled map JSON  </li>
+<li><code>refs/levels/&lt;id&gt;_preview.png</code> (screenshot или paint overview)  </li>
+<li>Короткую карточку рецепта в комментарии JSON <code>properties.designNotes</code></li>
+</ol>
+<h3 id="_2">Шаблон карточки (копируй)</h3>
+<pre><code>LEVEL CARD
+id: lvl_apt_01
+biome: apartment
+tier: T1
+rooms: 3
+enemyPoints: 4
+recipes: tutorial_corridor + patrol_cross
+parTimeSec: 45
+pickups: pickup_ammo x1
+teach: move + knife OR pistol
+AC: clearable without taking damage by skilled player
+</code></pre>
+<h3 id="id">Список обязательных ID</h3>
+<p><code>lvl_apt_01..03</code>, <code>lvl_club_01..03</code>, <code>lvl_park_01..02</code>, <code>lvl_wh_01..03</code>, <code>lvl_boss_01</code></p>
+<h3 id="encounter-recipe-macros">Encounter recipe macros</h3>
+<pre><code>recipe_ambush: 2 gunner behind cover near entrance + 1 thug
+recipe_patrol_cross: 3 thug crossing waypoints
+recipe_brute_guard: 1 brute + 1 gunner sightline
+recipe_open_killbox: low cover, 4 gunner
+recipe_tutorial: 2 thug, wide corridors, no gunner
+recipe_boss_maskmaker: arena pillars, adds wave thug x4 at 50% HP
+</code></pre>
+<hr />
+<h2 id="llm-level-layouts">Промпт для LLM-level дизайнера (текстовые layouts)</h2>
+<pre><code>Спроектируй top-down уровень Neon Bullet id=lvl_club_02.
+Ограничения: grid 48x32 tiles, 5 rooms, enemyPoints=9, coverDensity=med,
+recipes: ambush + patrol_cross, neon club biome.
+Верни: ASCII карты (# wall, . floor, D door, P player, T thug, G gunner, B brute, A ammo),
+список roomId bounds, waypoints для патрулей, parTime 70.
+Не блокируй проход ключами. Обеспечь 2 фланговых пути в центральную комнату.
+</code></pre>
+<p>Повтори для каждого ID, меняя tier/biome.</p>
+<hr />
+<h2 id="tile-placement-rules">Tile placement rules (агент обязан)</h2>
+<ul>
+<li>Стены только на <code>collision</code></li>
+<li>Player spawn не в enemy LOS первой комнаты ближе 6 тайлов (T1) / 4 (T2+)</li>
+<li>Минимум 1 pickup ammo на миссиях с gunner≥3</li>
+<li>Boss arena: открытый центр + 4 pillar cover</li>
+</ul>
+<hr />
+<h2 id="difficulty-validation-checklist">Difficulty validation checklist</h2>
+<ul>
+<li>[ ] T1: deaths expected ≤2 для новичка  </li>
+<li>[ ] T3: требует peek &amp; clear  </li>
+<li>[ ] S-rank возможен без RV  </li>
+<li>[ ] Нет узких 1-tile коридоров длиннее 8 (touch pain)</li>
+</ul>
+<hr />
+<h2 id="integration-paths">Integration paths</h2>
+<pre><code>public/assets/levels/lvl_apt_01.json
+...
+public/assets/levels/lvl_boss_01.json
+src/data/missions.json  # манифест id→file, unlock, parTime, biome
+</code></pre>
+<p><code>missions.json</code> schema:</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;lvl_apt_01&quot;,
+  &quot;file&quot;: &quot;lvl_apt_01.json&quot;,
+  &quot;biome&quot;: &quot;apt&quot;,
+  &quot;tier&quot;: 1,
+  &quot;parTimeSec&quot;: 45,
+  &quot;unlockAfter&quot;: null,
+  &quot;leaderboard&quot;: &quot;lb_district_apt&quot;
+}
+</code></pre>
+<hr />
+<h2 id="dod">DoD</h2>
+<ul>
+<li>[ ] 12 JSON валидны для Phaser tilemap  </li>
+<li>[ ] Каждый уровень имеет designNotes  </li>
+<li>[ ] Манифест missions.json полный  </li>
+<li>[ ] Превью в refs/levels  </li>
+</ul>
+<h2 id="_3">Запреты</h2>
+<ul>
+<li>Случайная генерация без рецептов в MVP  </li>
+<li>Стелс-пазлы обязательные  </li>
+<li>Уровни &gt;64×48 без причины</li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Код-агент <span class="muted">CODE_AGENT_PROMPT.md</span></summary>
+            <article class="doc"><h1 id="neon-bullet-code_agent_prompt">Neon Bullet — CODE_AGENT_PROMPT</h1>
+<p><strong>Статус-гейт:</strong> ⛔ Не начинай писать <code>games/neon-bullet/src/**</code>, пока дизайн = <strong>CONFIRMED</strong>.<br />
+Если статус <code>DRAFT</code>/<code>REVIEW</code> — только уточняй docs/STATUS, не код.</p>
+<hr />
+<h2 id="copy-paste">Сообщение агенту (copy-paste целиком)</h2>
+<pre><code>Ты — code-агент игры Neon Bullet для Яндекс Игр.
+
+SOURCE OF TRUTH (читай в этом порядке):
+1) games/neon-bullet/docs/DESIGN_LLM.md
+2) games/neon-bullet/docs/DESIGN.md
+3) docs/concepts/01-neon-bullet.md
+4) docs/00-market-analysis-and-portfolio.md
+5) Промпт-пакеты в games/neon-bullet/prompts/ (ассеты уже должны лежать в public/assets по контрактам)
+
+STACK: Phaser 3 + TypeScript + Vite. Папка: games/neon-bullet/ только.
+Не трогай другие игры.
+
+GATE: Если дизайн не CONFIRMED — остановись и напиши это явно.
+
+КОГДА CONFIRMED — порядок работ:
+1) STATUS.md фазы + скелет Vite/Phaser (Boot→Menu→Hub→Loadout→Mission→Result)
+2) PlayerController, WeaponSystem, EnemyAI по AC из DESIGN_LLM §3
+3) Загрузка tilemap уровней из public/assets/levels
+4) Combo + Rank + Progress cloud schema
+5) UI screens по §5
+6) Yandex SDK wrapper: interstitial(result/death), rewarded(continue|x2|trial_mask),
+   payments(remove_ads|packs|premium_mask), leaderboards, cloud
+7) Mobile sticks + soft aim assist
+8) Tutorial ≤90s
+9) Juice: hitstop, shake, VFX keys
+10) STORE_CHECKLIST.md + npm run build + README
+
+ЖЁСТКИЕ ПРАВИЛА:
+- Нет interstitial mid-fight
+- Rewarded только opt-in
+- Нет P2W урона
+- Asset keys и пути строго по DESIGN_LLM §0.4 и §10
+- Delta-time movement
+- Русский UI
+
+Definition of Done:
+- 12 миссий проходимы на touch
+- Ads/IAP/LB/cloud через SDK или DEV_MOCK с тем же API
+- build зелёный, STATUS=DONE кандидатом к стору
+</code></pre>
+<hr />
+<h2 id="src">Минимальный список модулей <code>src/</code></h2>
+<pre><code>src/main.ts
+src/game/scenes/BootScene.ts
+src/game/scenes/MainMenuScene.ts
+src/game/scenes/CityHubScene.ts
+src/game/scenes/LoadoutScene.ts
+src/game/scenes/MissionScene.ts
+src/game/scenes/ResultScene.ts
+src/game/scenes/ShopScene.ts
+src/game/systems/PlayerController.ts
+src/game/systems/WeaponSystem.ts
+src/game/systems/EnemyAI.ts
+src/game/systems/ComboSystem.ts
+src/game/systems/MissionFlow.ts
+src/game/systems/ProgressService.ts
+src/game/ui/...
+src/game/sdk/yandex.ts
+src/data/weapons.json
+src/data/masks.json
+src/data/missions.json
+</code></pre>
+<hr />
+<h2 id="acceptance-smoke">Acceptance smoke (после кода)</h2>
+<ul>
+<li>[ ] Boot loads packs  </li>
+<li>[ ] Clear lvl_apt_01  </li>
+<li>[ ] Death → restart  </li>
+<li>[ ] RV mock continue  </li>
+<li>[ ] Result rank + coins  </li>
+<li>[ ] Cloud roundtrip mock  </li>
+</ul>
+<hr />
+<h2 id="_1">Запреты</h2>
+<ul>
+<li>Менять дизайн-экономику без обновления DESIGN_LLM  </li>
+<li>Добавлять стелс-сим симулятор  </li>
+<li>Серверный бэкенд</li>
+</ul></article>
+          </details>
+    </section>
+
+    <section class="tab-panel" id="tab-manage">
+      <div class="panel manage-panel" data-manage-slug="neon-bullet">
+        <h3>Статус дизайна</h3>
+        <div class="seg-btns" data-role="design-status">
+          <button data-v="DRAFT">Черновик</button>
+          <button data-v="REVIEW">На ревью</button>
+          <button data-v="CONFIRMED">Подтверждён</button>
+          <button data-v="BLOCKED">Заблокирован</button>
+        </div>
+
+        <h3>Готовность документов</h3>
+        <label class="check"><input type="checkbox" data-k="classic"/> Классический GDD прочитан</label>
+        <label class="check"><input type="checkbox" data-k="llm"/> LLM-спека прочитана</label>
+        <label class="check"><input type="checkbox" data-k="refs"/> Референсы проверены</label>
+
+        <h3>Гейт разработки</h3>
+        <p class="muted">Доступен только после статуса «Подтверждён».</p>
+        <select data-role="gate">
+          <option value="—">— не начато</option>
+          <option value="G0">G0 — Каркас</option>
+          <option value="G1">G1 — Вертикальный слайс</option>
+          <option value="G2">G2 — Контент MVP</option>
+          <option value="G3">G3 — Мета и удержание</option>
+          <option value="G4">G4 — SDK монетизация</option>
+          <option value="G5">G5 — Готово к стору</option>
+        </select>
+
+        <h3>Заметки</h3>
+        <textarea data-role="note" rows="5" placeholder="Комментарии к ревью..."></textarea>
+      </div>
+    </section>
+    
+  </main>
+</div>
+<script>
+window.PORTFOLIO_GAMES = [{"id": "01", "slug": "neon-bullet", "name": "Neon Bullet", "wave": 3, "prio": "P1"}, {"id": "02", "slug": "deadline-escape", "name": "Работник месяца", "wave": 1, "prio": "P0"}, {"id": "03", "slug": "tide-of-relics", "name": "Море Реликвий", "wave": 4, "prio": "P1"}, {"id": "04", "slug": "legends-of-the-pitch", "name": "Легенды Поля", "wave": 4, "prio": "P1"}, {"id": "05", "slug": "merge-bazaar", "name": "Базар Слияний", "wave": 1, "prio": "P0"}, {"id": "06", "slug": "crystal-archipelago", "name": "Кристаллы Архипелага", "wave": 2, "prio": "P0"}, {"id": "07", "slug": "idle-forge", "name": "Кузница Вечности", "wave": 2, "prio": "P0"}, {"id": "08", "slug": "cozy-plot", "name": "Уютный Участок", "wave": 3, "prio": "P1"}, {"id": "09", "slug": "auto-towers", "name": "Автобашни", "wave": 3, "prio": "P1"}, {"id": "10", "slug": "night-courier", "name": "Ночной Курьер", "wave": 1, "prio": "P0"}];
+window.CURRENT_SLUG = "neon-bullet";
+</script>
+<script src="../demos/demo-engine.js"></script>
+<script src="../demos/demos-01-02.js"></script>
+<script src="../demos/demos-03-06.js"></script>
+<script src="../demos/demos-07-10.js"></script>
+<script src="../assets/dashboard.js"></script>
+</body>
+</html>

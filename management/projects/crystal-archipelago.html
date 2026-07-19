@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Кристаллы Архипелага — Портфель Яндекс Игры</title>
+<link rel="stylesheet" href="../assets/dashboard.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="../portfolio-dashboard.html">Портфель<br/><span>Яндекс Игры</span></a>
+    <div class="side-section">Навигация</div>
+    <a class="nav-link" href="../portfolio-dashboard.html">Все проекты</a>
+    <div class="side-section">Игры</div>
+    <div class="nav-games"><a class="nav-game " href="neon-bullet.html">01. Neon Bullet</a>
+<a class="nav-game " href="deadline-escape.html">02. Работник месяца</a>
+<a class="nav-game " href="tide-of-relics.html">03. Море Реликвий</a>
+<a class="nav-game " href="legends-of-the-pitch.html">04. Легенды Поля</a>
+<a class="nav-game " href="merge-bazaar.html">05. Базар Слияний</a>
+<a class="nav-game active" href="crystal-archipelago.html">06. Кристаллы Архипелага</a>
+<a class="nav-game " href="idle-forge.html">07. Кузница Вечности</a>
+<a class="nav-game " href="cozy-plot.html">08. Уютный Участок</a>
+<a class="nav-game " href="auto-towers.html">09. Автобашни</a>
+<a class="nav-game " href="night-courier.html">10. Ночной Курьер</a></div>
+    <div class="side-foot">Код запрещён до статуса<br/><strong>Подтверждён</strong></div>
+  </aside>
+  <main class="main">
+
+    <header class="page-head project-head">
+      <div class="crumb"><a href="../portfolio-dashboard.html">← Все проекты</a></div>
+      <div class="project-hero">
+        <div class="hero-art" style="background-image:url('../../games/crystal-archipelago/refs/art/key-art.png')"></div>
+        <div>
+          <div class="muted">06 · P0 · Волна 2 — гибрид</div>
+          <h1>Кристаллы Архипелага</h1>
+          <p class="lead">Match-3 · Головоломки / 25–60</p>
+          <div class="inline-status">
+            Статус дизайна: <span class="status-pill" data-status-for="crystal-archipelago">Черновик</span>
+            · Гейт: <span data-gate-label-for="crystal-archipelago">—</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="overview">Обзор</button>
+      <button class="tab" data-tab="demo">Демка</button>
+      <button class="tab" data-tab="classic">Классический диздок</button>
+      <button class="tab" data-tab="llm">LLM-спека</button>
+      <button class="tab" data-tab="refs">Референсы</button>
+      <button class="tab" data-tab="prompts">Промпты</button>
+      <button class="tab" data-tab="manage">Управление</button>
+    </nav>
+
+    <section class="tab-panel active" id="tab-overview">
+      <div class="two-col">
+        <div class="panel">
+          <h3>Что смотреть</h3>
+          <ul class="checklist-static">
+            <li><strong>Демка</strong> — сначала пощупай feel простыми фигурами</li>
+            <li>Классический GDD — видение, лупы, экономика</li>
+            <li>LLM-спека — контракты для агентов, UI, уровни, ассеты</li>
+            <li>Референсы — арт, вайрфреймы, уровни, спрайты</li>
+            <li>Промпты — готовые задания для арт/код агентов</li>
+          </ul>
+          <h3>Правило</h3>
+          <p class="warn">Пока статус не <strong>Подтверждён</strong>, папку <code>src/</code> не создавать. CONFIRM только после playtest демки (F1→F2). См. <code>docs/METHODOLOGY.md</code>.</p>
+        </div>
+        <div class="panel">
+          <h3>Файлы проекта</h3>
+          <ul class="file-list">
+            <li><code>games/crystal-archipelago/docs/DESIGN.md</code></li>
+            <li><code>games/crystal-archipelago/docs/DESIGN_LLM.md</code></li>
+            <li><code>games/crystal-archipelago/docs/REFS.md</code></li>
+            <li><code>games/crystal-archipelago/prompts/*.md</code></li>
+            <li><code>games/crystal-archipelago/refs/**</code></li>
+            <li><code>management/demos/</code> — feel demo</li>
+          </ul>
+          <div class="progress big"><i data-progress-for="crystal-archipelago"></i></div>
+          <div class="muted" style="margin-top:8px">Прогресс готовности (дизайн + гейты)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-demo">
+      <div class="panel demo-wrap">
+        <h3>Feel-демка (простые фигуры)</h3>
+        <p class="lead">Цель — проверить управление и «хочу ещё раз». На телефоне удобнее через LAN-сервер.</p>
+        <div class="lan-box">С телефона: запусти <code>serve-dashboard.bat</code> на ПК, открой URL из окна батника (одна Wi-Fi сеть).</div>
+        <p class="muted" style="margin:0 0 8px">«Работник месяца» = ядро chas-pik (сетка, 3 колонны, 09:00→18:00).</p>
+        <p class="demo-hint" id="demo-hint">Загрузка демки…</p>
+        <canvas id="feel-demo" width="360" height="640" aria-label="Feel demo"></canvas>
+        <div class="demo-actions">
+          <button class="btn" type="button" id="demo-restart">Рестарт</button>
+          <span class="muted">Стик: левая половина экрана · WASD/стрелки · кнопки справа</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-classic">
+      <article class="doc"><h1 id="design-document-gdd">Кристаллы Архипелага — Design Document (GDD)</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Slug</strong></td>
+<td><code>crystal-archipelago</code></td>
+</tr>
+<tr>
+<td><strong>Название RU</strong></td>
+<td>Кристаллы Архипелага</td>
+</tr>
+<tr>
+<td><strong>Название EN</strong></td>
+<td>Crystal Archipelago</td>
+</tr>
+<tr>
+<td><strong>Жанр</strong></td>
+<td>Match-3 adventure</td>
+</tr>
+<tr>
+<td><strong>Платформа</strong></td>
+<td>Яндекс Игры (HTML5)</td>
+</tr>
+<tr>
+<td><strong>Движок</strong></td>
+<td>Phaser 3 + TypeScript + Vite</td>
+</tr>
+<tr>
+<td><strong>Сегмент ЦА</strong></td>
+<td>F — классический puzzle, 25–60</td>
+</tr>
+<tr>
+<td><strong>Приоритет</strong></td>
+<td>P0</td>
+</tr>
+<tr>
+<td><strong>Статус дизайна</strong></td>
+<td><code>DRAFT</code> (код запрещён до <code>CONFIRMED</code>)</td>
+</tr>
+<tr>
+<td><strong>Ключевой арт</strong></td>
+<td><code>refs/art/key-art.png</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-one-liner">1. One-liner</h2>
+<p>Классический match-3: очищай уровни на островах архипелага, собирай звёзды и открывай карту мира.</p>
+<h2 id="2">2. Видение</h2>
+<p>«Бессмертный» puzzle-кэшфлоу с гибридной экономикой бустеров/жизней. Differentiator — визуал тропического архипелага + карта островов + weekly challenge, а не изобретение нового match-правил.</p>
+<h3 id="_1">Рамки</h3>
+<table>
+<thead>
+<tr>
+<th>Делать</th>
+<th>НЕ делать</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Классический swap match-3</td>
+<td>Новые правила «hex-match» / RPG бои</td>
+</tr>
+<tr>
+<td>50 уровней волны 1</td>
+<td>500 уровней day-one</td>
+</tr>
+<tr>
+<td>5 цветов + спецки + 4 бустера</td>
+<td>12 цветов</td>
+</tr>
+<tr>
+<td>Карта 3 острова</td>
+<td>Открытый 3D мир</td>
+</tr>
+<tr>
+<td>Lives + RV +5 moves</td>
+<td>Pay-only walls на 1–20</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-fantasy">3. Fantasy</h2>
+<p>Тропические острова, лагуны, храмы, тики, радуга. Уровни = «очистить кристаллы / собрать N / освободить клетки». Кристаллы — гранёные самоцветы (рубин, сапфир, изумруд, аметист, топаз).</p>
+<h2 id="4-core-loop">4. Core loop</h2>
+<ol>
+<li>Карта → выбор уровня (звёзды 0–3).  </li>
+<li>Старт: цель + лимит ходов (+ пребустеры).  </li>
+<li>Swap adjacent → match 3+ → cascade → specials.  </li>
+<li>Win → 1–3★ → soft / прогресс.  </li>
+<li>Fail → RV +5 ходов / бустер / рестарт (−life).  </li>
+<li>Мета: жизни, сундуки, pass, daily challenge.</li>
+</ol>
+<pre><code class="language-mermaid">flowchart LR
+  Map[Карта островов] --&gt; Level[Уровень]
+  Level --&gt; Win[Победа ★]
+  Level --&gt; Fail[Поражение]
+  Fail --&gt; RV[RV ходы]
+  Fail --&gt; Retry[Рестарт]
+  Win --&gt; Map
+</code></pre>
+<h2 id="5-mvp">5. Механики MVP</h2>
+<h3 id="51">5.1 Поле</h3>
+<ul>
+<li>Базовый грид до <strong>8×8</strong>, формы уровней маской (дыры).  </li>
+<li>Swap соседних ортогонально.  </li>
+<li>Match ≥3 линия; T/L → спецкамни.</li>
+</ul>
+<h3 id="52">5.2 Специальные камни</h3>
+<table>
+<thead>
+<tr>
+<th>Форма</th>
+<th>Спец</th>
+<th>Эффект</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4 в ряд</td>
+<td>Ракета</td>
+<td>линия ряд/столбец</td>
+</tr>
+<tr>
+<td>T / L</td>
+<td>Бомба</td>
+<td>3×3</td>
+</tr>
+<tr>
+<td>5 в ряд</td>
+<td>Радуга/цвет</td>
+<td>бьёт весь цвет</td>
+</tr>
+<tr>
+<td>Ракета+Ракета</td>
+<td>крест</td>
+<td>2 линии</td>
+</tr>
+<tr>
+<td>и т.д.</td>
+<td>комбо</td>
+<td>по таблице</td>
+</tr>
+</tbody>
+</table>
+<h3 id="53">5.3 Цели уровней</h3>
+<ul>
+<li>Собрать N камней цвета.  </li>
+<li>Сломать блоки/кристаллы-оболочки.  </li>
+<li>Освободить клетки / собрать токены.  </li>
+<li>Достичь score (редко в early).</li>
+</ul>
+<h3 id="54-4">5.4 Бустеры (4)</h3>
+<ol>
+<li>Молот — уничтожить 1 клетку.  </li>
+<li>Веер — перемешать.  </li>
+<li>Линейный луч — ряд.  </li>
+<li>Цветовая кисть — покрасить / взорвать цвет (уточнение в LLM doc).</li>
+</ol>
+<h3 id="55">5.5 Жизни</h3>
+<ul>
+<li>Cap 5; реген 1 / 20–25 мин.  </li>
+<li>RV +1 life / IAP refill.</li>
+</ul>
+<h2 id="6">6. Контент</h2>
+<ul>
+<li><strong>50 уровней</strong> wave 1.  </li>
+<li><strong>3 острова</strong> на карте (≈15–20 / 15–20 / 10–15).  </li>
+<li>Daily challenge = модификатор на seed дня.  </li>
+<li>Цель live: 150+ уровней позже.</li>
+</ul>
+<h2 id="7-hybrid-classic">7. Монетизация (hybrid classic)</h2>
+<table>
+<thead>
+<tr>
+<th>Источник</th>
+<th>Как</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rewarded</td>
+<td>+5 ходов, free booster, +life</td>
+</tr>
+<tr>
+<td>Interstitial</td>
+<td>между островами / после fail (не mid-swap)</td>
+</tr>
+<tr>
+<td>IAP</td>
+<td>lives, booster packs, remove ads, pass</td>
+</tr>
+<tr>
+<td>Soft</td>
+<td>монеты за уровни → бустеры</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Early game:</strong> уровни 1–20 без обязательных бустеров; winrate первой попытки 60–75%.</p>
+<h2 id="8-ux">8. UX</h2>
+<ul>
+<li>Туториал: swap → match → special за ≤90 с.  </li>
+<li>Крупные клетки под палец; board не меньше safe area.  </li>
+<li>Чёткая цель уровня на престарте.  </li>
+<li>Cloud save прогресса карты/жизней.  </li>
+<li>Портрет.</li>
+</ul>
+<h2 id="9-mvp-store">9. MVP → Store</h2>
+<table>
+<thead>
+<tr>
+<th>Входит</th>
+<th>Не входит</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>50 levels, 4 boosters, lives</td>
+<td>гильдии, async PvP</td>
+</tr>
+<tr>
+<td>3 islands map</td>
+<td>meta RPG</td>
+</tr>
+<tr>
+<td>Daily + pass light</td>
+<td>10 типов блокеров day one</td>
+</tr>
+<tr>
+<td>Ads + IAP</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="10">10. Риски</h2>
+<table>
+<thead>
+<tr>
+<th>Риск</th>
+<th>Митигация</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Высокая конкуренция</td>
+<td>арт архипелага + weekly</td>
+</tr>
+<tr>
+<td>Стена баланса</td>
+<td>кривая winrate + QA table</td>
+</tr>
+<tr>
+<td>Производительность cascade</td>
+<td>object pool, 60 FPS target</td>
+</tr>
+</tbody>
+</table>
+<h2 id="11-store-criteria">11. Store criteria</h2>
+<ul>
+<li>Winrate early 60–75% first try.  </li>
+<li>Нет стен без бустеров на 1–20.  </li>
+<li>50 уровней стабильны.  </li>
+<li>60 FPS mid Android Chrome.  </li>
+<li>Платежи/ads по чеклисту.</li>
+</ul>
+<h2 id="12">12. Код</h2>
+<p><strong>До <code>CONFIRMED</code> — не начинать <code>src/</code>.</strong> Спека агентов: <code>docs/DESIGN_LLM.md</code>.</p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-llm">
+      <article class="doc"><h1 id="design_llm">Кристаллы Архипелага — DESIGN_LLM (исполняемая спецификация)</h1>
+<blockquote>
+<p><strong>Аудитория:</strong> LLM-агенты. <strong>Код <code>src/</code> запрещён</strong> до <code>CONFIRMED</code>.<br />
+GDD: <code>docs/DESIGN.md</code>. Промпты: <code>prompts/*.md</code>.</p>
+</blockquote>
+<hr />
+<h2 id="0-">0. Мета-контракт</h2>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>slug</td>
+<td><code>crystal-archipelago</code></td>
+</tr>
+<tr>
+<td>title_ru</td>
+<td>Кристаллы Архипелага</td>
+</tr>
+<tr>
+<td>title_en</td>
+<td>Crystal Archipelago</td>
+</tr>
+<tr>
+<td>engine</td>
+<td>Phaser 3 + TypeScript + Vite</td>
+</tr>
+<tr>
+<td>platform</td>
+<td>Яндекс Игры</td>
+</tr>
+<tr>
+<td>orientation</td>
+<td>portrait 720×1280</td>
+</tr>
+<tr>
+<td>design_status</td>
+<td><code>DRAFT</code></td>
+</tr>
+<tr>
+<td>coding_allowed</td>
+<td><code>false</code> until <code>CONFIRMED</code></td>
+</tr>
+<tr>
+<td>concept_ref</td>
+<td><code>docs/concepts/06-crystal-archipelago.md</code></td>
+</tr>
+<tr>
+<td>key_art</td>
+<td><code>games/crystal-archipelago/refs/art/key-art.png</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="_1">Запреты</h3>
+<ol>
+<li>Не менять жанр на RPG/shooter.  </li>
+<li>Не добавлять realtime multiplayer.  </li>
+<li>Не ставить paywall на уровнях 1–20.  </li>
+<li>Не запускать interstitial mid-cascade.</li>
+</ol>
+<hr />
+<h2 id="1-project-contract">1. Project contract</h2>
+<pre><code class="language-text">games/crystal-archipelago/
+├── docs/DESIGN.md
+├── docs/DESIGN_LLM.md
+├── prompts/ART_PROMPTS.md
+├── prompts/SPRITE_ANIM_PROMPTS.md
+├── prompts/UI_PROMPTS.md
+├── prompts/LEVEL_PROMPTS.md
+├── prompts/CODE_AGENT_PROMPT.md
+├── refs/{art,ui,levels,sprites}/
+├── public/assets/{images,atlases,audio,data}/
+├── src/  # after CONFIRMED
+├── STATUS.md
+└── STORE_CHECKLIST.md
+</code></pre>
+<h3 id="naming">Naming</h3>
+<table>
+<thead>
+<tr>
+<th>Entity</th>
+<th>Rule</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gem color</td>
+<td><code>gem_{color}</code></td>
+<td><code>gem_red</code></td>
+</tr>
+<tr>
+<td>Special</td>
+<td><code>gem_special_{type}</code></td>
+<td><code>gem_special_rocket_h</code></td>
+</tr>
+<tr>
+<td>Blocker</td>
+<td><code>block_{type}_{hp}</code></td>
+<td><code>block_crystal_2</code></td>
+</tr>
+<tr>
+<td>Level</td>
+<td><code>lvl_{island}_{nn}</code></td>
+<td><code>lvl_01_07</code></td>
+</tr>
+<tr>
+<td>Booster</td>
+<td><code>boost_{name}</code></td>
+<td><code>boost_hammer</code></td>
+</tr>
+<tr>
+<td>BG</td>
+<td><code>bg_island_{id}</code></td>
+<td><code>bg_island_lagoon</code></td>
+</tr>
+<tr>
+<td>UI</td>
+<td><code>ui_*</code></td>
+<td><code>ui_btn_play</code></td>
+</tr>
+<tr>
+<td>Save</td>
+<td><code>cra_{key}_v1</code></td>
+<td><code>cra_progress_v1</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="asset-id-schema">Asset ID schema</h3>
+<pre><code class="language-text">gem_red|gem_blue|gem_green|gem_purple|gem_yellow
+gem_special_rocket_h|rocket_v|bomb|rainbow
+block_stone_{1,2}|block_vine_{1,2}|block_chest
+tile_cell|tile_hole
+vfx_match|vfx_explode|vfx_rainbow
+ui_goal_*|ui_moves|ui_life
+bg_map|bg_island_*|bg_board_frame
+</code></pre>
+<p>Logical board cell: <strong>72×72</strong> (8×8 = 576 + frame).</p>
+<hr />
+<h2 id="2-gameplay-systems-ac">2. Gameplay systems + AC</h2>
+<h3 id="21-grid-swap">2.1 Grid &amp; Swap</h3>
+<ul>
+<li>Grid up to 8×8; mask <code>0=hole,1=cell</code>.  </li>
+<li>Swap orthogonal adjacent only.  </li>
+<li>If no match created → swap back (unless booster mode).</li>
+</ul>
+<p><strong>AC:</strong>
+- [ ] AC-GRD-01: invalid swap animates back ≤200ms.<br />
+- [ ] AC-GRD-02: input locked during resolve cascade.<br />
+- [ ] AC-GRD-03: holes never spawn gems.<br />
+- [ ] AC-GRD-04: gravity down; refill from top spawn table.<br />
+- [ ] AC-GRD-05: no infinite cascade softlock (max resolve steps 200 then force settle).</p>
+<h3 id="22-match-detection">2.2 Match detection</h3>
+<ul>
+<li>Lines ≥3 horizontal/vertical.  </li>
+<li>Multiple matches same resolve wave OK.  </li>
+<li>T/L shapes detected for bomb.</li>
+</ul>
+<p><strong>AC:</strong>
+- [ ] AC-MCH-01: match-3 always clears.<br />
+- [ ] AC-MCH-02: match-4 → rocket (orientation = line axis).<br />
+- [ ] AC-MCH-03: T/L ≥5 cells → bomb at pivot.<br />
+- [ ] AC-MCH-04: match-5 → rainbow.<br />
+- [ ] AC-MCH-05: specials created after clear of their pattern, before gravity (standard order documented in code comments later).</p>
+<h3 id="23-specials-combos">2.3 Specials &amp; combos</h3>
+<table>
+<thead>
+<tr>
+<th>Combo</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rocket + Rocket</td>
+<td>row + column cross</td>
+</tr>
+<tr>
+<td>Rocket + Bomb</td>
+<td>3 rows or fat line</td>
+</tr>
+<tr>
+<td>Bomb + Bomb</td>
+<td>5×5</td>
+</tr>
+<tr>
+<td>Rainbow + Color gem</td>
+<td>clear color</td>
+</tr>
+<tr>
+<td>Rainbow + Rocket/Bomb</td>
+<td>upgrade all of color then trigger</td>
+</tr>
+<tr>
+<td>Rainbow + Rainbow</td>
+<td>clear board (cap juice 1s)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>AC:</strong>
+- [ ] AC-SPC-01: double-tap/activate special on tap when moves allow (config).<br />
+- [ ] AC-SPC-02: combos prioritize neighbor swap activation.<br />
+- [ ] AC-SPC-03: VFX ≤1.2s; board readable after.</p>
+<h3 id="24-blockers">2.4 Blockers</h3>
+<p>MVP set:
+- <code>block_stone</code> HP1–2: ломается от соседнего match/special.<br />
+- <code>block_vine</code> HP1–2: на клетке с гемом или вместо.<br />
+- <code>block_crystal_shell</code>: gem inside, HP1–2.<br />
+- Collector tokens optional island3.</p>
+<p><strong>AC:</strong>
+- [ ] AC-BLK-01: blockers defined per-level JSON.<br />
+- [ ] AC-BLK-02: нельзя свапнуть locked cell.<br />
+- [ ] AC-BLK-03: first 10 levels ≤1 blocker type.</p>
+<h3 id="25-goals-moves">2.5 Goals &amp; moves</h3>
+<pre><code class="language-json">{
+  &quot;goals&quot;: [
+    { &quot;type&quot;: &quot;collect_color&quot;, &quot;color&quot;: &quot;red&quot;, &quot;count&quot;: 20 },
+    { &quot;type&quot;: &quot;break_blocker&quot;, &quot;blocker&quot;: &quot;block_stone&quot;, &quot;count&quot;: 8 }
+  ],
+  &quot;moves&quot;: 25,
+  &quot;starThresholds&quot;: [0.6, 0.85, 1.0]
+}
+</code></pre>
+<p>Stars: based on moves left and/or score ratio (MVP: moves left bands).</p>
+<p><strong>AC:</strong>
+- [ ] AC-GOL-01: win when all goals ≤0 and moves≥0.<br />
+- [ ] AC-GOL-02: fail when moves=0 and goals remain (after cascade settle).<br />
+- [ ] AC-GOL-03: prestart panel shows goals icons + moves.<br />
+- [ ] AC-GOL-04: RV +5 moves once per attempt (then IAP/boosters).</p>
+<h3 id="26-boosters">2.6 Boosters</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Effect</th>
+<th>Cost soft</th>
+<th>RV</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>boost_hammer</td>
+<td>destroy 1 cell/blocker hp</td>
+<td>100</td>
+<td>yes free daily</td>
+</tr>
+<tr>
+<td>boost_fan</td>
+<td>shuffle board</td>
+<td>80</td>
+<td></td>
+</tr>
+<tr>
+<td>boost_line</td>
+<td>clear row or col picker</td>
+<td>150</td>
+<td></td>
+</tr>
+<tr>
+<td>boost_chroma</td>
+<td>convert 4 gems to color / or clear one color lite</td>
+<td>200</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Pre-level slots: up to 3 preboosters (rocket/bomb/rainbow start).</p>
+<p><strong>AC:</strong>
+- [ ] AC-BOS-01: booster mode disables normal swap until used/cancel.<br />
+- [ ] AC-BOS-02: cannot use booster during cascade.<br />
+- [ ] AC-BOS-03: inventory persists cloud.</p>
+<h3 id="27-lives">2.7 Lives</h3>
+<table>
+<thead>
+<tr>
+<th>Param</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cap</td>
+<td>5</td>
+</tr>
+<tr>
+<td>regen</td>
+<td>1 / 22 min</td>
+</tr>
+<tr>
+<td>fail cost</td>
+<td>1 life (not if RV continue success)</td>
+</tr>
+<tr>
+<td>RV</td>
+<td>+1 life</td>
+</tr>
+<tr>
+<td>IAP</td>
+<td>full refill</td>
+</tr>
+</tbody>
+</table>
+<p><strong>AC:</strong>
+- [ ] AC-LIF-01: 0 lives → modal wait/RV/IAP; map locked start.<br />
+- [ ] AC-LIF-02: offline regen to cap.</p>
+<h3 id="28-map-meta">2.8 Map meta</h3>
+<ul>
+<li>3 islands, nodes linear with small branches optional (MVP linear).  </li>
+<li>Unlock next on ≥1★.  </li>
+<li>Chest every 5 levels.</li>
+</ul>
+<p><strong>AC:</strong>
+- [ ] AC-MAP-01: 50 nodes configured.<br />
+- [ ] AC-MAP-02: camera focuses current node.<br />
+- [ ] AC-MAP-03: island complete → interstitial allowed.</p>
+<h3 id="29-daily-pass">2.9 Daily / Pass</h3>
+<ul>
+<li>Daily: 1 level modifier (fewer moves / extra blocker) seeded by date.  </li>
+<li>Pass light: 20 levels boosters/lives/soft.</li>
+</ul>
+<p><strong>AC:</strong>
+- [ ] AC-DAY-01: daily resets 00:00 local or Yandex time config.<br />
+- [ ] AC-PAS-01: XP per win + stars.</p>
+<h3 id="210-monetization-ac">2.10 Monetization AC</h3>
+<ul>
+<li>[ ] AC-PAY-01: RV +5 moves on fail; free booster daily.  </li>
+<li>[ ] AC-PAY-02: interstitial island transit / fail exit — never mid-swap.  </li>
+<li>[ ] AC-PAY-03: IAP lives, booster packs, remove ads, pass.  </li>
+<li>[ ] AC-PAY-04: remove ads keeps RV opt-in.</li>
+</ul>
+<h3 id="211-save-ac">2.11 Save AC</h3>
+<ul>
+<li>[ ] AC-SAVE-01: progress stars, lives timestamp, boosters, pass, settings.  </li>
+<li>[ ] AC-SAVE-02: mid-level kill → level not won; lives not double-spent (spend life on fail confirm or on start — <strong>canonical: spend on level start</strong>).</li>
+</ul>
+<p><strong>Life spend rule (canonical):</strong> life списывается при <strong>старте</strong> уровня; RV continue не возвращает life; выход из престарта до старта — free.</p>
+<hr />
+<h2 id="3-level-design-grammar">3. Level design grammar</h2>
+<h3 id="31-looks">3.1 Как уровень LOOKS</h3>
+<ul>
+<li>Board frame gold dark rounded (key-art).  </li>
+<li>Gems faceted distinct shapes per color.  </li>
+<li>BG island vista behind board (lagoon/temple/peak).  </li>
+<li>Top: moves + goals. Bottom: boosters.</li>
+</ul>
+<h3 id="32-plays">3.2 Как PLAYS</h3>
+<ol>
+<li>Scan goals.  </li>
+<li>Build specials.  </li>
+<li>Cascade juice.  </li>
+<li>Spend last moves on objectives not random.</li>
+</ol>
+<h3 id="33-level-recipe-schema">3.3 Level recipe schema</h3>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;lvl_01_07&quot;,
+  &quot;island&quot;: 1,
+  &quot;index&quot;: 7,
+  &quot;board&quot;: { &quot;w&quot;: 8, &quot;h&quot;: 8, &quot;mask&quot;: [&quot;11111111&quot;, &quot;...&quot;] },
+  &quot;spawnColors&quot;: [&quot;red&quot;,&quot;blue&quot;,&quot;green&quot;,&quot;purple&quot;,&quot;yellow&quot;],
+  &quot;spawnWeights&quot;: [1,1,1,1,1],
+  &quot;moves&quot;: 28,
+  &quot;goals&quot;: [{ &quot;type&quot;: &quot;collect_color&quot;, &quot;color&quot;: &quot;yellow&quot;, &quot;count&quot;: 30 }],
+  &quot;blockers&quot;: [],
+  &quot;tutorial&quot;: null,
+  &quot;difficulty&quot;: 1,
+  &quot;starMoves&quot;: [10, 5, 0]
+}
+</code></pre>
+<h3 id="34-difficulty-curve">3.4 Difficulty curve</h3>
+<table>
+<thead>
+<tr>
+<th>Levels</th>
+<th>Diff</th>
+<th>Moves bias</th>
+<th>Blockers</th>
+<th>First-try WR target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1–5</td>
+<td>0</td>
+<td>+</td>
+<td>none</td>
+<td>85–95%</td>
+</tr>
+<tr>
+<td>6–15</td>
+<td>1</td>
+<td>normal</td>
+<td>stone1 intro</td>
+<td>70–80%</td>
+</tr>
+<tr>
+<td>16–30</td>
+<td>2</td>
+<td>−1–2</td>
+<td>stone2/vine</td>
+<td>60–70%</td>
+</tr>
+<tr>
+<td>31–40</td>
+<td>3</td>
+<td>tighter</td>
+<td>shells</td>
+<td>55–65%</td>
+</tr>
+<tr>
+<td>41–50</td>
+<td>4</td>
+<td>spikes</td>
+<td>mix</td>
+<td>50–60%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Hard rule:</strong> levels 1–20 solvable without boosters by median player (design intent).</p>
+<h3 id="35-goal-recipes">3.5 Goal recipes</h3>
+<table>
+<thead>
+<tr>
+<th>Goal type</th>
+<th>Early</th>
+<th>Late</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>collect_color</td>
+<td>15–25</td>
+<td>40–60</td>
+</tr>
+<tr>
+<td>break_blocker</td>
+<td>—</td>
+<td>8–20</td>
+</tr>
+<tr>
+<td>collect_token</td>
+<td>island2+</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>score</td>
+<td>rare</td>
+<td>optional</td>
+</tr>
+</tbody>
+</table>
+<h3 id="36-board-shape-grammar">3.6 Board shape grammar</h3>
+<ul>
+<li>Full 8×8 early.  </li>
+<li>Corners cut / donut / two wells mid.  </li>
+<li>Narrow corridors late (careful with unfair).</li>
+</ul>
+<h3 id="37-content-volume-mvp">3.7 Content volume MVP</h3>
+<table>
+<thead>
+<tr>
+<th>Content</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Levels</td>
+<td>50</td>
+</tr>
+<tr>
+<td>Islands</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Gem colors</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Specials</td>
+<td>4 base</td>
+</tr>
+<tr>
+<td>Blockers</td>
+<td>3 families</td>
+</tr>
+<tr>
+<td>Boosters</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td>template</td>
+</tr>
+<tr>
+<td>Pass levels</td>
+<td>20</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-ui-map-wireframes">4. UI map + wireframes</h2>
+<h3 id="screens">Screens</h3>
+<p><code>SC_Boot</code>, <code>SC_Map</code>, <code>SC_PreLevel</code>, <code>SC_Level</code>, <code>SC_Win</code>, <code>SC_Fail</code>, <code>SC_Shop</code>, <code>SC_Pass</code>, <code>SC_Settings</code>, <code>SC_Daily</code></p>
+<h3 id="map">Map</h3>
+<pre><code class="language-text">┌────────────────────────────┐
+│ ❤️5  💰  💎     [Pass]     │
+│     Island 1 Lagoon        │
+│   (1)─(2)─(3)─(4)─★chest   │
+│              \             │
+│               (5)          │
+│         [Daily]            │
+└────────────────────────────┘
+</code></pre>
+<h3 id="prelevel">PreLevel</h3>
+<pre><code class="language-text">┌────────────────────────────┐
+│      Уровень 7             │
+│   Goals: 🔴x20  🪨x8       │
+│   Ходы: 28                 │
+│  Preboosters [ ][ ][ ]     │
+│      [ Играть ]            │
+└────────────────────────────┘
+</code></pre>
+<h3 id="level-hud">Level HUD</h3>
+<pre><code class="language-text">┌────────────────────────────┐
+│ Ходы 24   🔴12/20  🪨3/8   │
+│ ┌────────────────────────┐ │
+│ │      8x8 BOARD         │ │
+│ └────────────────────────┘ │
+│ [🔨][🌀][➡️][🎨]            │
+└────────────────────────────┘
+</code></pre>
+<h3 id="fail">Fail</h3>
+<pre><code class="language-text">┌────────────────────────────┐
+│     Ходы закончились       │
+│ [▶ +5 ходов реклама]       │
+│ [Бустер] [Рестарт] [Карта] │
+└────────────────────────────┘
+</code></pre>
+<pre><code class="language-mermaid">flowchart TD
+  Map --&gt; Pre
+  Pre --&gt; Level
+  Level --&gt; Win
+  Level --&gt; Fail
+  Fail --&gt;|RV+5| Level
+  Fail --&gt; Map
+  Win --&gt; Map
+</code></pre>
+<h3 id="components">Components</h3>
+<p><code>BtnPlay</code>, <code>LifeBar</code>, <code>MovesCounter</code>, <code>GoalIcons</code>, <code>BoosterDock</code>, <code>BoardFrame</code>, <code>StarRow</code>, <code>ModalRV</code>, <code>MapNode</code>, <code>ChestNode</code></p>
+<hr />
+<h2 id="5-art-bible">5. Art bible</h2>
+<h3 id="style-locks">Style locks</h3>
+<ul>
+<li>High-polish casual match-3; faceted gems; tropical archipelago vistas.  </li>
+<li>Board dark gold frame floating over paradise.  </li>
+<li>Soft lighting, high saturation, cheerful.  </li>
+<li><strong>Не:</strong> grimdark, pixel, ultra-minimal abstract only, purple-white generic AI UI.</li>
+</ul>
+<h3 id="palette">Palette</h3>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Hex</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>lagoon</td>
+<td><code>#2EC4B6</code></td>
+</tr>
+<tr>
+<td>deep_sea</td>
+<td><code>#1B7A8F</code></td>
+</tr>
+<tr>
+<td>jungle</td>
+<td><code>#2F9E44</code></td>
+</tr>
+<tr>
+<td>sand</td>
+<td><code>#F2D6A0</code></td>
+</tr>
+<tr>
+<td>gold_frame</td>
+<td><code>#E6C35C</code></td>
+</tr>
+<tr>
+<td>board_dark</td>
+<td><code>#1A2430</code></td>
+</tr>
+<tr>
+<td>gem_red</td>
+<td><code>#E23D3D</code></td>
+</tr>
+<tr>
+<td>gem_blue</td>
+<td><code>#3D7AED</code></td>
+</tr>
+<tr>
+<td>gem_green</td>
+<td><code>#2FBE6A</code></td>
+</tr>
+<tr>
+<td>gem_purple</td>
+<td><code>#9B5DE5</code></td>
+</tr>
+<tr>
+<td>gem_yellow</td>
+<td><code>#F2C14E</code></td>
+</tr>
+<tr>
+<td>sky</td>
+<td><code>#6EC6FF</code></td>
+</tr>
+<tr>
+<td>text</td>
+<td><code>#14303D</code> / <code>#FFFFFF</code> on dark</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gem-shape-locks">Gem shape locks (читаемость)</h3>
+<ul>
+<li>Red: hexagon ruby  </li>
+<li>Blue: teardrop sapphire  </li>
+<li>Green: octagon emerald  </li>
+<li>Purple: hex amethyst  </li>
+<li>Yellow: diamond topaz  </li>
+</ul>
+<h3 id="dodont">Do/Don't</h3>
+<p><strong>Do:</strong> unique gem silhouettes; rainbow accents; readable goals.<br />
+<strong>Don't:</strong> same-shape recolors only; tiny gems; ad during cascade.</p>
+<hr />
+<h2 id="6-image-prompts">6. Image prompts (канон)</h2>
+<p>Полный пак: <code>prompts/ART_PROMPTS.md</code>.</p>
+<p>Key:</p>
+<pre><code class="language-text">Tropical archipelago match-3 scene, floating dark gold-framed 8x8 crystal gem board over turquoise lagoon islands waterfalls tiki statue sailboat thatched hut, faceted colorful gems, yellow column clear VFX shards, bright casual mobile game art, no text no logos
+</code></pre>
+<p>Gems:</p>
+<pre><code class="language-text">Five faceted match3 gems on transparent: red hexagon, blue teardrop, green octagon, purple hex, yellow diamond, glossy mobile game icons consistent lighting
+</code></pre>
+<hr />
+<h2 id="7-sprite-sheets-timing">7. Sprite sheets + timing</h2>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>Frames</th>
+<th>FPS</th>
+<th>Size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gem_land</td>
+<td>4</td>
+<td>20</td>
+<td>72</td>
+</tr>
+<tr>
+<td>gem_clear</td>
+<td>6</td>
+<td>20</td>
+<td>72</td>
+</tr>
+<tr>
+<td>rocket_fly</td>
+<td>8</td>
+<td>24</td>
+<td>72</td>
+</tr>
+<tr>
+<td>bomb_explode</td>
+<td>10</td>
+<td>20</td>
+<td>144</td>
+</tr>
+<tr>
+<td>rainbow_beam</td>
+<td>12</td>
+<td>24</td>
+<td>256</td>
+</tr>
+<tr>
+<td>cascade_spark</td>
+<td>6</td>
+<td>18</td>
+<td>64</td>
+</tr>
+<tr>
+<td>ui_star_gain</td>
+<td>8</td>
+<td>16</td>
+<td>96</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>ms</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>swap</td>
+<td>120</td>
+</tr>
+<tr>
+<td>clear</td>
+<td>180</td>
+</tr>
+<tr>
+<td>gravity step</td>
+<td>80–100</td>
+</tr>
+<tr>
+<td>special explode</td>
+<td>350–500</td>
+</tr>
+</tbody>
+</table>
+<p>Atlas: <code>atlas_gems</code>, <code>atlas_specials_vfx</code>, <code>atlas_ui_fx</code>.</p>
+<hr />
+<h2 id="8-prompt-packs">8. Prompt packs</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>prompts/ART_PROMPTS.md</code></td>
+<td>art</td>
+</tr>
+<tr>
+<td><code>prompts/SPRITE_ANIM_PROMPTS.md</code></td>
+<td>anim</td>
+</tr>
+<tr>
+<td><code>prompts/UI_PROMPTS.md</code></td>
+<td>ui</td>
+</tr>
+<tr>
+<td><code>prompts/LEVEL_PROMPTS.md</code></td>
+<td>50 levels JSON</td>
+</tr>
+<tr>
+<td><code>prompts/CODE_AGENT_PROMPT.md</code></td>
+<td>code after CONFIRMED</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-integration-paths">9. Integration paths</h2>
+<pre><code class="language-text">public/assets/images/gems/gem_red.png
+public/assets/images/gems/gem_blue.png
+public/assets/images/gems/gem_green.png
+public/assets/images/gems/gem_purple.png
+public/assets/images/gems/gem_yellow.png
+public/assets/images/gems/gem_special_rocket_h.png
+public/assets/images/gems/gem_special_rocket_v.png
+public/assets/images/gems/gem_special_bomb.png
+public/assets/images/gems/gem_special_rainbow.png
+public/assets/images/blockers/block_stone_1.png
+public/assets/images/blockers/block_stone_2.png
+public/assets/images/blockers/block_vine_1.png
+public/assets/images/bg/bg_map.png
+public/assets/images/bg/bg_island_lagoon.png
+public/assets/images/bg/bg_island_temple.png
+public/assets/images/bg/bg_island_peaks.png
+public/assets/images/ui/ui_board_frame.png
+public/assets/images/ui/ui_btn_play.png
+public/assets/images/boosters/boost_hammer.png
+public/assets/atlases/atlas_gems.png|.json
+public/assets/atlases/atlas_specials_vfx.png|.json
+public/assets/data/levels/lvl_01_01.json … lvl_03_xx.json
+public/assets/data/levels/index.json
+public/assets/data/boosters.json
+public/assets/data/economy.json
+public/assets/data/pass.json
+public/assets/data/i18n/ru.json
+public/assets/audio/bgm/bgm_map.mp3
+public/assets/audio/bgm/bgm_level.mp3
+public/assets/audio/sfx/sfx_match.mp3
+public/assets/audio/sfx/sfx_special.mp3
+</code></pre>
+<h3 id="code-modules">Code modules</h3>
+<p><code>BoardModel</code>, <code>MatchResolver</code>, <code>SpecialRules</code>, <code>LevelController</code>, <code>GoalTracker</code>, <code>BoosterService</code>, <code>LifeService</code>, <code>MapService</code>, <code>SaveService</code>, <code>YgSdkFacade</code></p>
+<h3 id="events">Events</h3>
+<pre><code class="language-text">EVT_Swap_Done
+EVT_Cascade_Step
+EVT_Goal_Progress
+EVT_Level_Win
+EVT_Level_Fail
+EVT_Booster_Used
+EVT_Life_Changed
+EVT_Cloud_Synced
+</code></pre>
+<hr />
+<h2 id="10-economy">10. Economy</h2>
+<table>
+<thead>
+<tr>
+<th>Win ★1/2/3</th>
+<th>Soft</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1★</td>
+<td>20</td>
+</tr>
+<tr>
+<td>2★</td>
+<td>35</td>
+</tr>
+<tr>
+<td>3★</td>
+<td>50</td>
+</tr>
+</tbody>
+</table>
+<p>Booster soft prices §2.6.<br />
+Early grant: hammer×2, fan×2 after tutorial.</p>
+<hr />
+<h2 id="11-tutorial">11. Tutorial</h2>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Teach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1</td>
+<td>Swap 2 gems to match</td>
+</tr>
+<tr>
+<td>T2</td>
+<td>Make match-4 → rocket</td>
+</tr>
+<tr>
+<td>T3</td>
+<td>Activate rocket</td>
+</tr>
+<tr>
+<td>T4</td>
+<td>Goal counter</td>
+</tr>
+<tr>
+<td>T5</td>
+<td>Map stars</td>
+</tr>
+</tbody>
+</table>
+<p>Levels 1–3 scripted masks.</p>
+<hr />
+<h2 id="12-performance-budget">12. Performance budget</h2>
+<ul>
+<li>Target 60 FPS Chrome Android mid.  </li>
+<li>Pool gem sprites.  </li>
+<li>Max particles 80.  </li>
+<li>Atlas over hundreds of loose PNGs for gems VFX.</li>
+</ul>
+<hr />
+<h2 id="13-definition-of-ready">13. Definition of Ready</h2>
+<ul>
+<li>[ ] DESIGN.md + this file reviewed  </li>
+<li>[ ] prompts/* present  </li>
+<li>[ ] Level grammar + curve signed  </li>
+<li>[ ] 50 level IDs listed (even if JSON draft)  </li>
+<li>[ ] Gem shape locks approved vs key-art  </li>
+<li>[ ] UI screens wired  </li>
+<li>[ ] Monetization points OK for Yandex  </li>
+<li>[ ] Life spend rule confirmed  </li>
+<li>[ ] Dashboard status → <strong>CONFIRMED</strong>  </li>
+</ul>
+<p><strong>No coding until CONFIRMED.</strong></p>
+<hr />
+<h2 id="14-store-dod">14. Store DoD</h2>
+<ul>
+<li>50 levels  </li>
+<li>Early WR 60–75%  </li>
+<li>No booster wall 1–20  </li>
+<li>Lives/RV/IAP  </li>
+<li>60 FPS target  </li>
+<li>Cloud save  </li>
+<li>STORE_CHECKLIST  </li>
+</ul>
+<h2 id="15-changelog">15. Changelog</h2>
+<table>
+<thead>
+<tr>
+<th>Ver</th>
+<th>Date</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.1</td>
+<td>2026-07-17</td>
+<td>Initial DESIGN_LLM</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="visual-ground-truth">Visual Ground Truth (обязательные референсы)</h2>
+<p>См. также <code>docs/REFS.md</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Путь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key art</td>
+<td><code>refs/art/key-art.png</code></td>
+</tr>
+<tr>
+<td>UI wireframe</td>
+<td><code>refs/ui/wireframe-main.png</code></td>
+</tr>
+<tr>
+<td>Level layout</td>
+<td><code>refs/levels/layout-main.png</code></td>
+</tr>
+<tr>
+<td>Sprite sheet</td>
+<td><code>refs/sprites/sheet-main.png</code></td>
+</tr>
+</tbody>
+</table>
+<p>Любой арт-агент обязан сверяться с этими файлами перед генерацией финальных ассетов.</p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-refs">
+      <div class="refs-intro doc"><p>﻿# Кристаллы Архипелага — Visual References Index</p>
+<blockquote>
+<p>Эти файлы — обязательный вход для арт/UI/level LLM-агентов.<br />
+При генерации новых ассетов держать стиль как у референсов ниже.</p>
+</blockquote>
+<h2 id="art">Art</h2>
+<p><img alt="Key art" src="../../games/crystal-archipelago/refs/art/key-art.png" /></p>
+<p><code>refs/art/key-art.png</code> — tonal/mood lock, palette, composition.</p>
+<h2 id="ui-wireframes">UI Wireframes</h2>
+<p><img alt="UI wireframe" src="../../games/crystal-archipelago/refs/ui/wireframe-main.png" /></p>
+<p><code>refs/ui/wireframe-main.png</code> — экраны, иерархия, CTA rewarded/IAP зоны.</p>
+<h2 id="level-content-layout">Level / Content Layout</h2>
+<p><img alt="Level layout" src="../../games/crystal-archipelago/refs/levels/layout-main.png" /></p>
+<p><code>refs/levels/layout-main.png</code> — грамматика уровней/доски/маршрута.</p>
+<h2 id="sprites-animation-sheet">Sprites / Animation Sheet</h2>
+<p><img alt="Sprites" src="../../games/crystal-archipelago/refs/sprites/sheet-main.png" /></p>
+<p><code>refs/sprites/sheet-main.png</code> — пропорции, кадры, иконки.</p>
+<h2 id="_1">Как использовать агентам</h2>
+<ol>
+<li>Открыть <code>DESIGN_LLM.md</code> (контракт).</li>
+<li>Открыть этот <code>REFS.md</code> (визуальный ground truth).</li>
+<li>Взять атомарный промпт из <code>prompts/</code> и <strong>приложить</strong> соответствующий png.</li>
+<li>Сохранять результат в пути из Integration Contract <code>DESIGN_LLM.md</code>.</li>
+</ol>
+<h2 id="dor-visuals">DoR visuals</h2>
+<ul>
+<li>[x] key-art</li>
+<li>[x] wireframe-main</li>
+<li>[x] layout-main</li>
+<li>[x] sheet-main</li>
+</ul></div>
+      <h3 class="gallery-title">Галерея референсов</h3>
+      <div class="ref-grid">
+            <figure class="ref-card">
+              <a href="../../games/crystal-archipelago/refs/art/key-art.png" target="_blank" rel="noopener">
+                <img src="../../games/crystal-archipelago/refs/art/key-art.png" alt="Ключевой арт" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Ключевой арт</strong>
+                <span>Настроение, палитра, композиция</span>
+                <code>art/key-art.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/crystal-archipelago/refs/ui/wireframe-main.png" target="_blank" rel="noopener">
+                <img src="../../games/crystal-archipelago/refs/ui/wireframe-main.png" alt="Вайрфрейм UI" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Вайрфрейм UI</strong>
+                <span>Экраны, иерархия, CTA рекламы/покупок</span>
+                <code>ui/wireframe-main.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/crystal-archipelago/refs/levels/layout-main.png" target="_blank" rel="noopener">
+                <img src="../../games/crystal-archipelago/refs/levels/layout-main.png" alt="Раскладка уровней" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Раскладка уровней</strong>
+                <span>Грамматика уровней / доски / маршрута</span>
+                <code>levels/layout-main.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/crystal-archipelago/refs/sprites/sheet-main.png" target="_blank" rel="noopener">
+                <img src="../../games/crystal-archipelago/refs/sprites/sheet-main.png" alt="Спрайт-лист" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Спрайт-лист</strong>
+                <span>Пропорции, кадры, иконки</span>
+                <code>sprites/sheet-main.png</code>
+              </figcaption>
+            </figure></div>
+    </section>
+
+    <section class="tab-panel" id="tab-prompts">
+      <p class="lead">Атомарные промпты — копируй в отдельного агента вместе с нужным референсом из вкладки «Референсы».</p>
+      
+          <details class="prompt-acc" open>
+            <summary>Арт <span class="muted">ART_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="art_prompts">ART_PROMPTS — Кристаллы Архипелага</h1>
+<blockquote>
+<p>Канон: <code>docs/DESIGN_LLM.md</code> §5–6, §9. Выход: <code>refs/art/</code> → <code>public/assets/images/</code>.</p>
+</blockquote>
+<h2 id="style-lock">Style lock</h2>
+<pre><code class="language-text">Bright polished casual match-3 art, tropical archipelago paradise, faceted crystal gems, turquoise water, lush islands, gold UI accents, sunny cheerful, mobile game, no text no logos no watermarks
+</code></pre>
+<h2 id="palette">Palette</h2>
+<p><code>#2EC4B6 #1B7A8F #2F9E44 #F2D6A0 #E6C35C #1A2430 #E23D3D #3D7AED #2FBE6A #9B5DE5 #F2C14E #6EC6FF</code></p>
+<hr />
+<h2 id="a-marketing">A. Marketing</h2>
+<h3 id="a1-key-art-ref-exists">A1 Key art (ref exists)</h3>
+<pre><code class="language-text">Tropical match-3 key art, dark gold-framed gem board over turquoise lagoon, faceted red blue green purple yellow crystals, yellow column clearing with golden light and shards, islands with waterfalls temple tiki statue sailboat thatched hut rainbow sky, lush palms purple flowers, bright casual mobile, no text
+</code></pre>
+<h3 id="a2-icon">A2 Icon</h3>
+<pre><code class="language-text">App icon single faceted yellow diamond gem with turquoise glow and tiny island silhouette, simple readable, no text
+</code></pre>
+<h3 id="a3-cover-169">A3 Cover 16:9</h3>
+<pre><code class="language-text">Wide tropical archipelago banner, gem board suggestion left, islands right, title-safe center empty, no text
+</code></pre>
+<hr />
+<h2 id="b-environments">B. Environments</h2>
+<h3 id="b1-bg_map">B1 <code>bg_map</code></h3>
+<pre><code class="language-text">9:16 hand-painted tropical archipelago world map soft stylized islands paths for level nodes, turquoise sea, sunny, empty node markers space, no text
+</code></pre>
+<h3 id="b2-island-bgs">B2 Island BGs</h3>
+<pre><code class="language-text">Three 9:16 level backgrounds: 1 lagoon beach hut sailboat, 2 cliff temple waterfall red roof, 3 jagged peaks twin waterfalls; soft blur center for board overlay, no text no UI
+</code></pre>
+<h3 id="b3-ui_board_frame">B3 <code>ui_board_frame</code></h3>
+<pre><code class="language-text">Dark rounded rectangle board frame thin gold border, subtle shield side protrusions matching key art, transparent center 8x8 area, mobile match3 frame asset
+</code></pre>
+<hr />
+<h2 id="c-gems-specials">C. Gems &amp; specials</h2>
+<h3 id="c1-base-gems">C1 Base gems</h3>
+<pre><code class="language-text">Transparent icons 512: red hexagon ruby, blue teardrop sapphire, green octagon emerald, purple hex amethyst, yellow diamond topaz; glossy faceted match3 style consistent light top-left
+</code></pre>
+<h3 id="c2-specials">C2 Specials</h3>
+<pre><code class="language-text">Transparent: horizontal rocket gem, vertical rocket, bomb gem orb, rainbow star gem; match3 specials matching crystal style
+</code></pre>
+<h3 id="c3-blockers">C3 Blockers</h3>
+<pre><code class="language-text">Stone block hp1 hp2, vine wrap hp1 hp2, crystal shell overlay; transparent match3 blockers tropical stone look
+</code></pre>
+<hr />
+<h2 id="d-boosters-ui-icons">D. Boosters / UI icons</h2>
+<pre><code class="language-text">Booster icons transparent: hammer, swirl fan shuffle, line beam, chroma brush; life heart, coin, gem currency, star; casual tropical gold teal
+</code></pre>
+<h3 id="map-nodes">Map nodes</h3>
+<pre><code class="language-text">Level node states: locked, available, cleared 1star 2star 3star, chest node; tropical wood gold, transparent
+</code></pre>
+<hr />
+<h2 id="e-vfx-stills">E. VFX stills</h2>
+<pre><code class="language-text">Match3 VFX on transparent: gem shatter shards per color, rocket streak, bomb ring, rainbow beam, star burst win
+</code></pre>
+<h2 id="delivery">Delivery</h2>
+<p>Names = asset IDs; <code>refs/art/MANIFEST.md</code></p></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Спрайты и анимация <span class="muted">SPRITE_ANIM_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="sprite_anim_prompts">SPRITE_ANIM_PROMPTS — Кристаллы Архипелага</h1>
+<blockquote>
+<p>Канон: DESIGN_LLM §7. Выход: <code>refs/sprites/</code> → <code>public/assets/atlases/</code>.</p>
+</blockquote>
+<h2 id="rules">Rules</h2>
+<p>Transparent, atlas ≤2048, 2px pad, cell sizes match 72/144/256.</p>
+<hr />
+<h2 id="1-atlas_gems-optional-micro-anim">1. <code>atlas_gems</code> (optional micro-anim)</h2>
+<pre><code class="language-text">Per-color gem land squash 4 frames 72x72 transparent; idle sparkle 6 frames subtle for yellow/red only if needed
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>Frames</th>
+<th>FPS</th>
+<th>Loop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gem_land</td>
+<td>4</td>
+<td>20</td>
+<td>no</td>
+</tr>
+<tr>
+<td>gem_sparkle</td>
+<td>6</td>
+<td>10</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-atlas_specials_vfx">2. <code>atlas_specials_vfx</code></h2>
+<h3 id="clear">Clear</h3>
+<pre><code class="language-text">6 frames 72x72 gem shatter to shards multicolor templates, transparent
+</code></pre>
+<h3 id="rocket">Rocket</h3>
+<pre><code class="language-text">8 frames 72x256 or strip, neon gold rocket trail horizontal; separate vertical set
+</code></pre>
+<h3 id="bomb">Bomb</h3>
+<pre><code class="language-text">10 frames 144x144 circular explosion gold-cyan shards
+</code></pre>
+<h3 id="rainbow">Rainbow</h3>
+<pre><code class="language-text">12 frames 256x256 rainbow beam spiral clear effect, bright cheerful
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>Frames</th>
+<th>FPS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gem_clear</td>
+<td>6</td>
+<td>20</td>
+</tr>
+<tr>
+<td>rocket_fly_h</td>
+<td>8</td>
+<td>24</td>
+</tr>
+<tr>
+<td>rocket_fly_v</td>
+<td>8</td>
+<td>24</td>
+</tr>
+<tr>
+<td>bomb_explode</td>
+<td>10</td>
+<td>20</td>
+</tr>
+<tr>
+<td>rainbow_beam</td>
+<td>12</td>
+<td>24</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-atlas_ui_fx">3. <code>atlas_ui_fx</code></h2>
+<pre><code class="language-text">Star gain 8 frames, life lose heart break 6 frames, goal check pop 5 frames, win confetti 12 frames tropical petals not generic glitter spam
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>Frames</th>
+<th>FPS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ui_star_gain</td>
+<td>8</td>
+<td>16</td>
+</tr>
+<tr>
+<td>ui_life_lose</td>
+<td>6</td>
+<td>16</td>
+</tr>
+<tr>
+<td>ui_goal_check</td>
+<td>5</td>
+<td>18</td>
+</tr>
+<tr>
+<td>ui_win_confetti</td>
+<td>12</td>
+<td>18</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="timing-contract">Timing contract</h2>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>ms</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>swap</td>
+<td>120</td>
+</tr>
+<tr>
+<td>match highlight</td>
+<td>80</td>
+</tr>
+<tr>
+<td>clear</td>
+<td>180</td>
+</tr>
+<tr>
+<td>gravity per row</td>
+<td>90</td>
+</tr>
+<tr>
+<td>special</td>
+<td>350–500</td>
+</tr>
+<tr>
+<td>win banner</td>
+<td>900</td>
+</tr>
+</tbody>
+</table>
+<h2 id="delivery">Delivery</h2>
+<p>Phaser atlas JSON + MANIFEST pivots (center default).</p></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Интерфейс <span class="muted">UI_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="ui_prompts">UI_PROMPTS — Кристаллы Архипелага</h1>
+<blockquote>
+<p>Канон: DESIGN_LLM §4–5. Выход: <code>refs/ui/</code>.</p>
+</blockquote>
+<h2 id="style-lock">Style lock</h2>
+<pre><code class="language-text">Casual tropical match-3 UI, turquoise and gold accents, dark board frame, sunny cheerful panels, large thumb targets, Russian labels on mockups, clean one-job screens, no dashboard clutter, no purple-on-white generic AI look
+</code></pre>
+<h2 id="screen-mocks">Screen mocks</h2>
+<h3 id="map">Map</h3>
+<pre><code class="language-text">9:16 mobile map UI tropical islands path nodes level 1-15, lives hearts coins gems top, daily button, pass button, soft parallax sea, Russian
+</code></pre>
+<h3 id="prelevel">PreLevel</h3>
+<pre><code class="language-text">Level start modal goals icons moves count prebooster slots PLAY button tropical gold, Russian Уровень Ходы Играть
+</code></pre>
+<h3 id="level-hud">Level HUD</h3>
+<pre><code class="language-text">Overlay UI transparent center for board: moves left, goal counters with gem icons, bottom four boosters, pause, tropical casual, large hit areas
+</code></pre>
+<h3 id="win">Win</h3>
+<pre><code class="language-text">Victory three stars animation space, soft rewards, NEXT and MAP buttons, Russian Победа
+</code></pre>
+<h3 id="fail">Fail</h3>
+<pre><code class="language-text">Out of moves modal, rewarded +5 moves primary, booster, restart, map; friendly not punitive, Russian
+</code></pre>
+<h3 id="shop-pass-lives">Shop / Pass / Lives</h3>
+<pre><code class="language-text">IAP shop lives booster packs remove ads pass; tropical cozy store clear prices no gambling
+</code></pre>
+<h2 id="ui-kit">UI kit</h2>
+<pre><code class="language-text">UI kit transparent: play button, panel parchment-tropical, progress bar, heart life, coin gem icons, booster slots, close pause settings, star icons empty/full, map node states
+</code></pre>
+<h2 id="asset-ids">Asset IDs</h2>
+<pre><code class="language-text">ui_btn_play_{up,down}
+ui_btn_secondary_*
+ui_panel_modal
+ui_icon_life / ui_icon_coin / ui_icon_gem
+ui_icon_pause / ui_icon_close
+ui_goal_slot
+ui_booster_slot
+ui_star_on / ui_star_off
+ui_map_node_{locked,open,done1,done2,done3}
+ui_board_frame
+</code></pre>
+<h2 id="motion">Motion</h2>
+<ul>
+<li>Star fly to HUD 500ms  </li>
+<li>Goal check pop 200ms  </li>
+<li>Fail modal 200ms fade  </li>
+</ul>
+<h2 id="rules">Rules</h2>
+<p>Never cover board with IS ad mid-level; min hit 64px; goal icons color+shape.</p>
+<h2 id="delivery">Delivery</h2>
+<p><code>refs/ui/screens/</code>, <code>refs/ui/kit/</code>, <code>NOTES.md</code></p></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Уровни <span class="muted">LEVEL_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="level_prompts">LEVEL_PROMPTS — Кристаллы Архипелага</h1>
+<blockquote>
+<p>50 уровней + индекс + daily. Канон: DESIGN_LLM §3.<br />
+Выход: <code>refs/levels/</code> → <code>public/assets/data/levels/</code>.</p>
+</blockquote>
+<h2 id="prompt-batch-50-levels">Prompt — batch 50 levels</h2>
+<pre><code class="language-text">Сгенерируй 50 match-3 level JSON для Crystal Archipelago (Phaser).
+Schema: id lvl_{island}_{nn}, island 1..3, board w/h/mask strings, spawnColors 5, moves, goals[], blockers[], difficulty 0..4, starMoves[3], tutorial flag.
+Кривая: 1-5 trivial no blockers; 6-15 stone1; 16-30 vine/stone2; 31-50 shells mix.
+First-try WR intent: early 70%+, mid 60%+, late 50%+.
+Levels 1-20 must be solvable without boosters.
+Цели: collect_color / break_blocker; разнообразие цветов.
+Маски: mostly full 8x8 early; shaped boards from lvl 12+.
+Русские notes опционально.
+Верни index.json список id + files.
+</code></pre>
+<h2 id="prompt-tutorial-levels-13">Prompt — tutorial levels 1–3</h2>
+<pre><code class="language-text">lvl_01_01 scripted: forced match swap cells highlighted.
+lvl_01_02 teach match-4 rocket.
+lvl_01_03 teach goal collect.
+Include hint cells coordinates.
+</code></pre>
+<h2 id="prompt-daily-template">Prompt — daily template</h2>
+<pre><code class="language-text">daily_template.json: modifiers fewer_moves, extra_stone, color_focus.
+Seed by YYYY-MM-DD. Rewards soft + pass xp.
+</code></pre>
+<h2 id="prompt-balance-audit">Prompt — balance audit</h2>
+<pre><code class="language-text">Проанализируй 50 levels: moves vs goals estimate, flag walls (need boosters before lvl20), suggest moves+/-.
+Output markdown table PASS/FAIL per 10-level band.
+</code></pre>
+<h2 id="example-level">Example level</h2>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;lvl_01_07&quot;,
+  &quot;island&quot;: 1,
+  &quot;index&quot;: 7,
+  &quot;board&quot;: {
+    &quot;w&quot;: 8,
+    &quot;h&quot;: 8,
+    &quot;mask&quot;: [
+      &quot;11111111&quot;,
+      &quot;11111111&quot;,
+      &quot;11111111&quot;,
+      &quot;11111111&quot;,
+      &quot;11111111&quot;,
+      &quot;11111111&quot;,
+      &quot;11111111&quot;,
+      &quot;11111111&quot;
+    ]
+  },
+  &quot;spawnColors&quot;: [&quot;red&quot;, &quot;blue&quot;, &quot;green&quot;, &quot;purple&quot;, &quot;yellow&quot;],
+  &quot;moves&quot;: 28,
+  &quot;goals&quot;: [{ &quot;type&quot;: &quot;collect_color&quot;, &quot;color&quot;: &quot;red&quot;, &quot;count&quot;: 20 }],
+  &quot;blockers&quot;: [{ &quot;x&quot;: 3, &quot;y&quot;: 3, &quot;type&quot;: &quot;block_stone&quot;, &quot;hp&quot;: 1 }],
+  &quot;difficulty&quot;: 1,
+  &quot;starMoves&quot;: [12, 6, 0]
+}
+</code></pre>
+<h2 id="island-split">Island split</h2>
+<table>
+<thead>
+<tr>
+<th>Island</th>
+<th>Levels</th>
+<th>Theme BG</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 Lagoon</td>
+<td>01–18</td>
+<td>bg_island_lagoon</td>
+</tr>
+<tr>
+<td>2 Temple</td>
+<td>19–36</td>
+<td>bg_island_temple</td>
+</tr>
+<tr>
+<td>3 Peaks</td>
+<td>37–50</td>
+<td>bg_island_peaks</td>
+</tr>
+</tbody>
+</table>
+<h2 id="acceptance">Acceptance</h2>
+<ul>
+<li>[ ] 50 JSON + index  </li>
+<li>[ ] Tutorial 1–3  </li>
+<li>[ ] Curve audit PASS early  </li>
+<li>[ ] No booster-required before 21  </li>
+<li>[ ] Chests every 5 in map meta file  </li>
+</ul>
+<h2 id="delivery">Delivery</h2>
+<pre><code class="language-text">refs/levels/index.json
+refs/levels/lvl_01_01.json ... lvl_03_14.json
+refs/levels/daily_template.json
+refs/levels/BALANCE_AUDIT.md
+</code></pre></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Код-агент <span class="muted">CODE_AGENT_PROMPT.md</span></summary>
+            <article class="doc"><h1 id="code_agent_prompt">CODE_AGENT_PROMPT — Кристаллы Архипелага</h1>
+<pre><code class="language-text">Ты — единственный разработчик match-3 «Кристаллы Архипелага» (slug: crystal-archipelago) для Яндекс Игр.
+
+ПРАВИЛА:
+1) Код только при design CONFIRMED. Иначе stop.
+2) Стек: Phaser 3 + TypeScript + Vite, portrait 720×1280.
+3) Канон: games/crystal-archipelago/docs/DESIGN_LLM.md (побеждает конфликты).
+4) Классический swap match-3: cascade, specials (rocket/bomb/rainbow), goals, moves, 50 levels, 4 boosters, lives, map 3 islands, hybrid monetization.
+5) Life spend: при старте уровня. RV +5 moves on fail. Interstitial не mid-cascade.
+6) Уровни 1–20 без обязательных бустеров. Early first-try WR ~60–75%.
+7) Ассеты по §9 DESIGN_LLM. Не трогать другие games/*.
+
+ПОРЯДОК:
+G0: Vite+Phaser skeleton STATUS.md
+G1: BoardModel + swap + match + gravity + refill
+G2: Specials + combos + goals + moves + win/fail
+G3: 50 level configs load + map meta + lives
+G4: Boosters + SDK RV/IS/IAP/cloud + pass light
+G5: Tutorial, daily, balance pass, STORE_CHECKLIST, dist, 60FPS polish
+
+AC / DoD:
+- 50 levels playable
+- Specials+combos per DESIGN_LLM tables
+- Cloud save progress/lives
+- Smoke: cold start, tutorial, 3 levels, fail RV path, shop mock, no red console
+- Performance: pool sprites, stable mid Android Chrome
+
+Срезай лишние blockers types, не срезай match engine + goals + lives + ads/IAP hooks.
+</code></pre>
+<h2 id="status-template">STATUS template</h2>
+<pre><code class="language-markdown"># STATUS — crystal-archipelago
+Design: DRAFT|CONFIRMED
+Gate: 0-5
+Done / Next / Blockers
+</code></pre></article>
+          </details>
+    </section>
+
+    <section class="tab-panel" id="tab-manage">
+      <div class="panel manage-panel" data-manage-slug="crystal-archipelago">
+        <h3>Статус дизайна</h3>
+        <div class="seg-btns" data-role="design-status">
+          <button data-v="DRAFT">Черновик</button>
+          <button data-v="REVIEW">На ревью</button>
+          <button data-v="CONFIRMED">Подтверждён</button>
+          <button data-v="BLOCKED">Заблокирован</button>
+        </div>
+
+        <h3>Готовность документов</h3>
+        <label class="check"><input type="checkbox" data-k="classic"/> Классический GDD прочитан</label>
+        <label class="check"><input type="checkbox" data-k="llm"/> LLM-спека прочитана</label>
+        <label class="check"><input type="checkbox" data-k="refs"/> Референсы проверены</label>
+
+        <h3>Гейт разработки</h3>
+        <p class="muted">Доступен только после статуса «Подтверждён».</p>
+        <select data-role="gate">
+          <option value="—">— не начато</option>
+          <option value="G0">G0 — Каркас</option>
+          <option value="G1">G1 — Вертикальный слайс</option>
+          <option value="G2">G2 — Контент MVP</option>
+          <option value="G3">G3 — Мета и удержание</option>
+          <option value="G4">G4 — SDK монетизация</option>
+          <option value="G5">G5 — Готово к стору</option>
+        </select>
+
+        <h3>Заметки</h3>
+        <textarea data-role="note" rows="5" placeholder="Комментарии к ревью..."></textarea>
+      </div>
+    </section>
+    
+  </main>
+</div>
+<script>
+window.PORTFOLIO_GAMES = [{"id": "01", "slug": "neon-bullet", "name": "Neon Bullet", "wave": 3, "prio": "P1"}, {"id": "02", "slug": "deadline-escape", "name": "Работник месяца", "wave": 1, "prio": "P0"}, {"id": "03", "slug": "tide-of-relics", "name": "Море Реликвий", "wave": 4, "prio": "P1"}, {"id": "04", "slug": "legends-of-the-pitch", "name": "Легенды Поля", "wave": 4, "prio": "P1"}, {"id": "05", "slug": "merge-bazaar", "name": "Базар Слияний", "wave": 1, "prio": "P0"}, {"id": "06", "slug": "crystal-archipelago", "name": "Кристаллы Архипелага", "wave": 2, "prio": "P0"}, {"id": "07", "slug": "idle-forge", "name": "Кузница Вечности", "wave": 2, "prio": "P0"}, {"id": "08", "slug": "cozy-plot", "name": "Уютный Участок", "wave": 3, "prio": "P1"}, {"id": "09", "slug": "auto-towers", "name": "Автобашни", "wave": 3, "prio": "P1"}, {"id": "10", "slug": "night-courier", "name": "Ночной Курьер", "wave": 1, "prio": "P0"}];
+window.CURRENT_SLUG = "crystal-archipelago";
+</script>
+<script src="../demos/demo-engine.js"></script>
+<script src="../demos/demos-01-02.js"></script>
+<script src="../demos/demos-03-06.js"></script>
+<script src="../demos/demos-07-10.js"></script>
+<script src="../assets/dashboard.js"></script>
+</body>
+</html>

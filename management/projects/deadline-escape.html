@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Работник месяца — Портфель Яндекс Игры</title>
+<link rel="stylesheet" href="../assets/dashboard.css"/>
+<link rel="stylesheet" href="../assets/wireframe-ui.css"/>
+<link rel="stylesheet" href="../assets/sprite-catalog.css"/>
+<link rel="stylesheet" href="../assets/sprite-demo.css"/>
+<link rel="stylesheet" href="../assets/sfx-catalog.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="../portfolio-dashboard.html">Портфель<br/><span>Яндекс Игры</span></a>
+    <div class="side-section">Навигация</div>
+    <a class="nav-link" href="../portfolio-dashboard.html">Все проекты</a>
+    <div class="side-section">Игры</div>
+    <div class="nav-games"><a class="nav-game " href="neon-bullet.html">01. Neon Bullet</a>
+<a class="nav-game active" href="deadline-escape.html">02. Работник месяца</a>
+<a class="nav-game " href="tide-of-relics.html">03. Море Реликвий</a>
+<a class="nav-game " href="legends-of-the-pitch.html">04. Легенды Поля</a>
+<a class="nav-game " href="merge-bazaar.html">05. Базар Слияний</a>
+<a class="nav-game " href="crystal-archipelago.html">06. Кристаллы Архипелага</a>
+<a class="nav-game " href="idle-forge.html">07. Кузница Вечности</a>
+<a class="nav-game " href="cozy-plot.html">08. Уютный Участок</a>
+<a class="nav-game " href="auto-towers.html">09. Автобашни</a>
+<a class="nav-game " href="night-courier.html">10. Ночной Курьер</a></div>
+    <div class="side-foot">Код запрещён до статуса<br/><strong>Подтверждён</strong></div>
+  </aside>
+  <main class="main">
+
+    <header class="page-head project-head">
+      <div class="crumb"><a href="../portfolio-dashboard.html">← Все проекты</a></div>
+      <div class="project-hero">
+        <div class="hero-art" style="background-image:url('../../games/deadline-escape/refs/art/key-art.png')"></div>
+        <div>
+          <div class="muted">02 · P0 · Волна 1 — кэшфлоу</div>
+          <h1>Работник месяца</h1>
+          <p class="lead">Офисный grid dodge · 09:00→18:00 · Вирусный юмор / 18–45</p>
+          <div class="inline-status">
+            Статус дизайна: <span class="status-pill" data-status-for="deadline-escape">На ревью</span>
+            · Гейт: <span data-gate-label-for="deadline-escape">—</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="overview">Обзор</button>
+      <button class="tab" data-tab="demo">Демка</button>
+      <button class="tab" data-tab="wireframe">Wireframe UI</button>
+      <button class="tab" data-tab="sprites">Спрайты</button>
+      <button class="tab" data-tab="sfx">SFX</button>
+      <button class="tab" data-tab="classic">Классический диздок</button>
+      <button class="tab" data-tab="llm">LLM-спека</button>
+      <button class="tab" data-tab="refs">Референсы</button>
+      <button class="tab" data-tab="prompts">Промпты</button>
+      <button class="tab" data-tab="manage">Управление</button>
+    </nav>
+
+    <section class="tab-panel active" id="tab-overview">
+      <div class="two-col">
+        <div class="panel">
+          <h3>Что смотреть</h3>
+          <ul class="checklist-static">
+            <li><strong>Демка</strong> — сначала пощупай feel простыми фигурами</li>
+            <li><strong>Wireframe UI</strong> — сверка экранов (блоки без арта)</li>
+            <li><strong>Спрайты</strong> — инвентарь кадров (каталог + vibe refs)</li>
+            <li><strong>SFX</strong> — процедурные звуки + office_loop</li>
+            <li>Классический GDD / LLM-спека — <strong>полный текст</strong> + оглавление (<code>REVIEW</code>)</li>
+            <li>Референсы — новый vibe-set (key art, mood, герой, боссы)</li>
+            <li>Промпты — атомарные задания под grid-canon</li>
+          </ul>
+          <h3>Правило</h3>
+          <p class="warn">Пока статус не <strong>Подтверждён</strong>, папку <code>src/</code> не создавать. CONFIRM только после playtest демки (F1→F2). См. <code>docs/METHODOLOGY.md</code>.</p>
+        </div>
+        <div class="panel">
+          <h3>Файлы проекта</h3>
+          <ul class="file-list">
+            <li><code>docs/STATUS.md</code> — статус <strong>REVIEW</strong></li>
+            <li><code>docs/DESIGN.md</code> / <code>DESIGN_LLM.md</code></li>
+            <li><code>docs/REFS.md</code> · <code>GAP_VS_CHAS_PIK.md</code></li>
+            <li><code>prompts/*.md</code> · <code>refs/**</code></li>
+            <li><code>archive/2026-07-17-pre-feel-sync/</code> — старый пакет</li>
+            <li><code>management/demos/</code> — feel SoT</li>
+          </ul>
+          <div class="progress big"><i data-progress-for="deadline-escape"></i></div>
+          <div class="muted" style="margin-top:8px">Прогресс готовности (дизайн + гейты)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-demo">
+      <div class="panel demo-wrap">
+        <h3>Feel / Beta — со спрайтами</h3>
+        <p class="lead">Та же сетка и feel, но с RGBA-спрайтами из <code>refs/sprites/</code>. Если арт не подгрузился — fallback на фигуры.</p>
+        <div class="lan-box">С телефона: запусти <code>serve-dashboard.bat</code> (корень репо), открой <code>/management/projects/deadline-escape.html</code>.</div>
+        <p class="muted" style="margin:0 0 8px">Офисная сетка 7×9, боссы с 4 краёв, день ≈60с. Статус арта: beta sheets.</p>
+        <p class="demo-hint" id="demo-hint">Загрузка демки…</p>
+        <canvas id="feel-demo" width="360" height="640" aria-label="Feel demo"></canvas>
+        <div class="demo-actions">
+          <button class="btn" type="button" id="demo-restart">Рестарт</button>
+          <span class="muted">Стик: левая половина экрана · WASD/стрелки · кнопки справа</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-wireframe">
+      <div class="panel">
+        <h3>Wireframe UI — сверка</h3>
+        <p class="lead">Режим <strong>Экраны</strong> — телефон с layout. Режим <strong>Компоненты UI</strong> — полный перечень кнопок/панелей/иконок без PNG.</p>
+        <div id="wf-app"></div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-sprites">
+      <div class="panel">
+        <h3>Спрайты — Pipeline v1</h3>
+        <p class="lead">Утверждение <strong>style-seed</strong> (кнопка APPROVED). Остальной арт в архиве. UI — Wireframe → Компоненты.</p>
+        <div id="sp-app" class="sp-app"></div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-sfx">
+      <div class="panel">
+        <h3>SFX — звуки</h3>
+        <p class="lead">Процедурный Web Audio (без wav). Превью здесь; в Демке — SFX + office_loop.</p>
+        <div id="sfx-app" class="sfx-app"></div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-classic">
+      <p class="md-source">Источник: <code>games/deadline-escape/docs/DESIGN.md</code> · оглавление слева → прыжок к разделу</p>
+      <div class="md-shell" data-md-src="docs/DESIGN.md" data-md-prefix="gdd">
+        <aside class="md-toc" aria-label="Оглавление GDD"></aside>
+        <article class="doc md-body">Загрузка…</article>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-llm">
+      <p class="md-source">Источник: <code>games/deadline-escape/docs/</code> · полный текст + оглавление</p>
+      <div class="md-toolbar">
+        <label class="muted" for="llm-doc-select">Документ:</label>
+        <select id="llm-doc-select" data-md-doc-select data-md-shell="llm-md-shell">
+          <option value="DESIGN_LLM.md" selected>DESIGN_LLM.md</option>
+          <option value="STATUS.md">STATUS.md</option>
+          <option value="SPRITE_PIPELINE.md">SPRITE_PIPELINE.md</option>
+          <option value="STYLE_LOCK.md">STYLE_LOCK.md</option>
+          <option value="GAP_VS_CHAS_PIK.md">GAP_VS_CHAS_PIK.md</option>
+          <option value="REFS.md">REFS.md</option>
+        </select>
+      </div>
+      <div class="md-shell" id="llm-md-shell" data-md-src="docs/DESIGN_LLM.md" data-md-prefix="llm">
+        <aside class="md-toc" aria-label="Оглавление LLM"></aside>
+        <article class="doc md-body">Загрузка…</article>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-refs">
+      <div class="panel">
+        <p class="lead">Pipeline v1: активен только style-seed. Остальное — <code>archive/2026-07-18-pipeline-v1-reset/</code>. Индекс: <code>docs/REFS.md</code>.</p>
+        <div class="ref-grid">
+          <figure class="ref-card">
+            <a href="../../games/deadline-escape/refs/art/style-seed-hero.png" target="_blank" rel="noopener">
+              <img src="../../games/deadline-escape/refs/art/style-seed-hero.png" alt="Style seed" loading="lazy" style="background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 50%/16px 16px"/>
+            </a>
+            <figcaption><strong>Style seed</strong><span>P1 gate · кнопка APPROVED во вкладке Спрайты</span><code>art/style-seed-hero.png</code></figcaption>
+          </figure>
+          <figure class="ref-card">
+            <a href="../../games/deadline-escape/refs/art/style-seed-hero-board.png" target="_blank" rel="noopener">
+              <img src="../../games/deadline-escape/refs/art/style-seed-hero-board.png" alt="Style seed board" loading="lazy"/>
+            </a>
+            <figcaption><strong>Seed board</strong><span>seed + idle sheet</span><code>art/style-seed-hero-board.png</code></figcaption>
+          </figure>
+          <figure class="ref-card">
+            <a href="../../games/deadline-escape/refs/sprites/char_hero_idle_sheet.png" target="_blank" rel="noopener">
+              <img src="../../games/deadline-escape/refs/sprites/char_hero_idle_sheet.png" alt="Hero idle" loading="lazy" style="background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 50%/16px 16px"/>
+            </a>
+            <figcaption><strong>Hero idle sheet</strong><span>носитель стиля</span><code>sprites/char_hero_idle_sheet.png</code></figcaption>
+          </figure>
+          <figure class="ref-card">
+            <a href="../../games/deadline-escape/refs/sprites/char_hero_walk_sheet.png" target="_blank" rel="noopener">
+              <img src="../../games/deadline-escape/refs/sprites/char_hero_walk_sheet.png" alt="Hero walk" loading="lazy" style="background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 50%/16px 16px"/>
+            </a>
+            <figcaption><strong>Hero walk sheet</strong><span>после APPROVED seed</span><code>sprites/char_hero_walk_sheet.png</code></figcaption>
+          </figure>
+          <figure class="ref-card">
+            <a href="../../games/deadline-escape/refs/ui/tone-ui.png" target="_blank" rel="noopener">
+              <img src="../../games/deadline-escape/refs/ui/tone-ui.png" alt="UI tone" loading="lazy"/>
+            </a>
+            <figcaption><strong>UI tone</strong><span>Панели + CTA</span><code>ui/tone-ui.png</code></figcaption>
+          </figure>
+          <figure class="ref-card">
+            <a href="../../games/deadline-escape/refs/levels/layout-feel.png" target="_blank" rel="noopener">
+              <img src="../../games/deadline-escape/refs/levels/layout-feel.png" alt="Layout feel" loading="lazy"/>
+            </a>
+            <figcaption><strong>Layout feel</strong><span>Сетка 7×9 mood</span><code>levels/layout-feel.png</code></figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-prompts" data-md-prompt-root>
+      <p class="md-source">Источник: <code>games/deadline-escape/prompts/</code> · старые в <code>archive/2026-07-17-pre-feel-sync/</code></p>
+      <div class="md-toolbar">
+        <label class="muted" for="prompt-doc-select">Промпт:</label>
+        <select id="prompt-doc-select" data-md-prompt-select>
+          <option value="ART_PROMPTS.md">ART_PROMPTS.md</option>
+          <option value="SPRITE_ANIM_PROMPTS.md">SPRITE_ANIM_PROMPTS.md</option>
+          <option value="UI_PROMPTS.md">UI_PROMPTS.md</option>
+          <option value="LEVEL_PROMPTS.md">LEVEL_PROMPTS.md</option>
+          <option value="CODE_AGENT_PROMPT.md">CODE_AGENT_PROMPT.md</option>
+        </select>
+      </div>
+      <div class="md-shell" data-md-src="prompts/ART_PROMPTS.md" data-md-prefix="prompt-art">
+        <aside class="md-toc" aria-label="Оглавление промпта"></aside>
+        <article class="doc md-body">Загрузка…</article>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-manage">
+      <div class="panel manage-panel" data-manage-slug="deadline-escape">
+        <h3>Статус дизайна</h3>
+        <div class="seg-btns" data-role="design-status">
+          <button data-v="DRAFT">Черновик</button>
+          <button data-v="REVIEW">На ревью</button>
+          <button data-v="CONFIRMED">Подтверждён</button>
+          <button data-v="BLOCKED">Заблокирован</button>
+        </div>
+
+        <h3>Готовность документов</h3>
+        <label class="check"><input type="checkbox" data-k="classic"/> Классический GDD прочитан</label>
+        <label class="check"><input type="checkbox" data-k="llm"/> LLM-спека прочитана</label>
+        <label class="check"><input type="checkbox" data-k="refs"/> Референсы проверены</label>
+
+        <h3>Гейт разработки</h3>
+        <p class="muted">Доступен только после статуса «Подтверждён».</p>
+        <select data-role="gate">
+          <option value="—">— не начато</option>
+          <option value="G0">G0 — Каркас</option>
+          <option value="G1">G1 — Вертикальный слайс</option>
+          <option value="G2">G2 — Контент MVP</option>
+          <option value="G3">G3 — Мета и удержание</option>
+          <option value="G4">G4 — SDK монетизация</option>
+          <option value="G5">G5 — Готово к стору</option>
+        </select>
+
+        <h3>Заметки</h3>
+        <textarea data-role="note" rows="5" placeholder="Комментарии к ревью..."></textarea>
+      </div>
+    </section>
+    
+  </main>
+</div>
+<script>
+window.PORTFOLIO_GAMES = [{"id": "01", "slug": "neon-bullet", "name": "Neon Bullet", "wave": 3, "prio": "P1"}, {"id": "02", "slug": "deadline-escape", "name": "Работник месяца", "wave": 1, "prio": "P0"}, {"id": "03", "slug": "tide-of-relics", "name": "Море Реликвий", "wave": 4, "prio": "P1"}, {"id": "04", "slug": "legends-of-the-pitch", "name": "Легенды Поля", "wave": 4, "prio": "P1"}, {"id": "05", "slug": "merge-bazaar", "name": "Базар Слияний", "wave": 1, "prio": "P0"}, {"id": "06", "slug": "crystal-archipelago", "name": "Кристаллы Архипелага", "wave": 2, "prio": "P0"}, {"id": "07", "slug": "idle-forge", "name": "Кузница Вечности", "wave": 2, "prio": "P0"}, {"id": "08", "slug": "cozy-plot", "name": "Уютный Участок", "wave": 3, "prio": "P1"}, {"id": "09", "slug": "auto-towers", "name": "Автобашни", "wave": 3, "prio": "P1"}, {"id": "10", "slug": "night-courier", "name": "Ночной Курьер", "wave": 1, "prio": "P0"}];
+window.CURRENT_SLUG = "deadline-escape";
+</script>
+<script src="../demos/deadline-sfx-lib.js"></script>
+<script src="../demos/demo-engine.js"></script>
+<script src="../demos/demos-01-02.js"></script>
+<script src="../demos/demos-03-06.js"></script>
+<script src="../demos/demos-07-10.js"></script>
+<script src="../demos/deadline-wireframes.js"></script>
+<script src="../demos/deadline-sprites.js"></script>
+<script src="../demos/deadline-sfx.js"></script>
+<script src="../assets/deadline-docs-bundle.js"></script>
+<script src="../assets/md-doc.js"></script>
+<script src="../assets/dashboard.js"></script>
+</body>
+</html>

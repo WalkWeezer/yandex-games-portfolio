@@ -1,0 +1,9 @@
+﻿pdf/_*.html
+pdf/*.pdf
+__pycache__/
+.DS_Store
+node_modules/
+games/*/node_modules/
+games/*/dist/
+.DS_Store
+Thumbs.db

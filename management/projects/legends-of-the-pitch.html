@@ -1,0 +1,2737 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Легенды Поля — Портфель Яндекс Игры</title>
+<link rel="stylesheet" href="../assets/dashboard.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="../portfolio-dashboard.html">Портфель<br/><span>Яндекс Игры</span></a>
+    <div class="side-section">Навигация</div>
+    <a class="nav-link" href="../portfolio-dashboard.html">Все проекты</a>
+    <div class="side-section">Игры</div>
+    <div class="nav-games"><a class="nav-game " href="neon-bullet.html">01. Neon Bullet</a>
+<a class="nav-game " href="deadline-escape.html">02. Работник месяца</a>
+<a class="nav-game " href="tide-of-relics.html">03. Море Реликвий</a>
+<a class="nav-game active" href="legends-of-the-pitch.html">04. Легенды Поля</a>
+<a class="nav-game " href="merge-bazaar.html">05. Базар Слияний</a>
+<a class="nav-game " href="crystal-archipelago.html">06. Кристаллы Архипелага</a>
+<a class="nav-game " href="idle-forge.html">07. Кузница Вечности</a>
+<a class="nav-game " href="cozy-plot.html">08. Уютный Участок</a>
+<a class="nav-game " href="auto-towers.html">09. Автобашни</a>
+<a class="nav-game " href="night-courier.html">10. Ночной Курьер</a></div>
+    <div class="side-foot">Код запрещён до статуса<br/><strong>Подтверждён</strong></div>
+  </aside>
+  <main class="main">
+
+    <header class="page-head project-head">
+      <div class="crumb"><a href="../portfolio-dashboard.html">← Все проекты</a></div>
+      <div class="project-hero">
+        <div class="hero-art" style="background-image:url('../../games/legends-of-the-pitch/refs/art/key-art.png')"></div>
+        <div>
+          <div class="muted">04 · P1 · Волна 4 — флагманы</div>
+          <h1>Легенды Поля</h1>
+          <p class="lead">Футбол CCG + autochess · Спорт / коллекционеры</p>
+          <div class="inline-status">
+            Статус дизайна: <span class="status-pill" data-status-for="legends-of-the-pitch">Черновик</span>
+            · Гейт: <span data-gate-label-for="legends-of-the-pitch">—</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="overview">Обзор</button>
+      <button class="tab" data-tab="demo">Демка</button>
+      <button class="tab" data-tab="classic">Классический диздок</button>
+      <button class="tab" data-tab="llm">LLM-спека</button>
+      <button class="tab" data-tab="refs">Референсы</button>
+      <button class="tab" data-tab="prompts">Промпты</button>
+      <button class="tab" data-tab="manage">Управление</button>
+    </nav>
+
+    <section class="tab-panel active" id="tab-overview">
+      <div class="two-col">
+        <div class="panel">
+          <h3>Что смотреть</h3>
+          <ul class="checklist-static">
+            <li><strong>Демка</strong> — сначала пощупай feel простыми фигурами</li>
+            <li>Классический GDD — видение, лупы, экономика</li>
+            <li>LLM-спека — контракты для агентов, UI, уровни, ассеты</li>
+            <li>Референсы — арт, вайрфреймы, уровни, спрайты</li>
+            <li>Промпты — готовые задания для арт/код агентов</li>
+          </ul>
+          <h3>Правило</h3>
+          <p class="warn">Пока статус не <strong>Подтверждён</strong>, папку <code>src/</code> не создавать. CONFIRM только после playtest демки (F1→F2). См. <code>docs/METHODOLOGY.md</code>.</p>
+        </div>
+        <div class="panel">
+          <h3>Файлы проекта</h3>
+          <ul class="file-list">
+            <li><code>games/legends-of-the-pitch/docs/DESIGN.md</code></li>
+            <li><code>games/legends-of-the-pitch/docs/DESIGN_LLM.md</code></li>
+            <li><code>games/legends-of-the-pitch/docs/REFS.md</code></li>
+            <li><code>games/legends-of-the-pitch/prompts/*.md</code></li>
+            <li><code>games/legends-of-the-pitch/refs/**</code></li>
+            <li><code>management/demos/</code> — feel demo</li>
+          </ul>
+          <div class="progress big"><i data-progress-for="legends-of-the-pitch"></i></div>
+          <div class="muted" style="margin-top:8px">Прогресс готовности (дизайн + гейты)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-demo">
+      <div class="panel demo-wrap">
+        <h3>Feel-демка (простые фигуры)</h3>
+        <p class="lead">Цель — проверить управление и «хочу ещё раз». На телефоне удобнее через LAN-сервер.</p>
+        <div class="lan-box">С телефона: запусти <code>serve-dashboard.bat</code> на ПК, открой URL из окна батника (одна Wi-Fi сеть).</div>
+        <p class="muted" style="margin:0 0 8px">«Работник месяца» = ядро chas-pik (сетка, 3 колонны, 09:00→18:00).</p>
+        <p class="demo-hint" id="demo-hint">Загрузка демки…</p>
+        <canvas id="feel-demo" width="360" height="640" aria-label="Feel demo"></canvas>
+        <div class="demo-actions">
+          <button class="btn" type="button" id="demo-restart">Рестарт</button>
+          <span class="muted">Стик: левая половина экрана · WASD/стрелки · кнопки справа</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-classic">
+      <article class="doc"><h1 id="design-document-gdd">Легенды Поля — Design Document (GDD)</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Slug</strong></td>
+<td><code>legends-of-the-pitch</code></td>
+</tr>
+<tr>
+<td><strong>Название RU</strong></td>
+<td>Легенды Поля</td>
+</tr>
+<tr>
+<td><strong>Название EN</strong></td>
+<td>Legends of the Pitch</td>
+</tr>
+<tr>
+<td><strong>Жанр</strong></td>
+<td>Football CCG × Autochess × Club Management Lite</td>
+</tr>
+<tr>
+<td><strong>Платформа</strong></td>
+<td>Яндекс Игры (HTML5)</td>
+</tr>
+<tr>
+<td><strong>Движок</strong></td>
+<td>Phaser 3 + TypeScript + Vite</td>
+</tr>
+<tr>
+<td><strong>Сегмент ЦА</strong></td>
+<td>D — спорт + коллекционеры, 16–45</td>
+</tr>
+<tr>
+<td><strong>Приоритет</strong></td>
+<td>P1 (флагман LTV)</td>
+</tr>
+<tr>
+<td><strong>Статус дизайна</strong></td>
+<td><code>DRAFT</code> (код запрещён до <code>CONFIRMED</code>)</td>
+</tr>
+<tr>
+<td><strong>Ключевой арт</strong></td>
+<td><code>refs/art/key-art.png</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-one-liner">1. One-liner</h2>
+<p>Собери колоду футбольных героев, расставь их на поле как в autochess, досмотри зрелищный автобой со скиллами — а между матчами управляй клубом и колодой.</p>
+<h2 id="2">2. Видение продукта</h2>
+<p>На CIS футбол — сильный эмоциональный хук без лицензии (вымышленная Arena League). CCG даёт коллекционирование и IAP, autochess — короткую зрелищную сессию 3–6 мин, менеджмент — причину возвращаться завтра.</p>
+<h3 id="_1">Жёсткие рамки скоупа</h3>
+<table>
+<thead>
+<tr>
+<th>Делать</th>
+<th>НЕ делать</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Абстрактный автобой по тикам на 5–8 слотах</td>
+<td>Физический футбол / траектории мяча</td>
+</tr>
+<tr>
+<td>Карты, синергии тегов, скиллы</td>
+<td>Полный Football Manager / Excel-симулятор</td>
+</tr>
+<tr>
+<td>2–3 экрана межматчевого менеджмента</td>
+<td>Календарь контрактов, зарплаты, скауты</td>
+</tr>
+<tr>
+<td>Косметика стадиона/формы</td>
+<td>Реальные клубы, имена звёзд, гербы</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-fantasy">3. Fantasy / сеттинг</h2>
+<ul>
+<li><strong>Мир:</strong> вымышленная лига <strong>Arena League</strong> — ночные стадионы, голографические карточки-игроки на газоне, неоновые линии синергий.</li>
+<li><strong>Тон:</strong> cyber-fantasy sports — кинематографичный матч + тактический планшет менеджера.</li>
+<li><strong>Герои:</strong> карточки с редкостью N / R / SR / UR, позициями GK / DEF / MID / FWD / FLEX и активными скиллами.</li>
+<li><strong>Косметика:</strong> формы клуба, эффекты входа на поле, скин стадиона, рамки карт.</li>
+</ul>
+<h2 id="4">4. Целевая аудитория и мотивации</h2>
+<table>
+<thead>
+<tr>
+<th>Мотивация</th>
+<th>Как закрываем</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Коллекционирование</td>
+<td>Паки, pity, витрина UR</td>
+</tr>
+<tr>
+<td>Соревнование</td>
+<td>MMR / сезон / лидерборд</td>
+</tr>
+<tr>
+<td>Зрелище</td>
+<td>Автобой со скиллами и VFX</td>
+</tr>
+<tr>
+<td>Прогресс «моего клуба»</td>
+<td>Форма, мораль, календарь сезона</td>
+</tr>
+<tr>
+<td>Короткие сессии</td>
+<td>Матч 3–6 мин + быстрый бот</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5">5. Двойной цикл</h2>
+<h3 id="a-36">A. Матч-луп (3–6 мин) — ядро удержания</h3>
+<ol>
+<li>Выбор режима (Быстрый матч / Рейтинг / Турнир).</li>
+<li>Предматч: состав из колоды → расстановка на 5–8 слотах поля.</li>
+<li>Добор/замена (ограниченные рероллы).</li>
+<li>Автобой по тикам: линии, синергии, каст скиллов, 1 ручное вмешательство за тайм.</li>
+<li>Итог → награды, MMR, прогресс сезона / pass.</li>
+</ol>
+<h3 id="b-24-daily-hook">B. Межматчевый менеджмент (2–4 мин) — daily hook</h3>
+<ol>
+<li>Колода: прокачка, распыление дубликатов в пыль.</li>
+<li>Клуб: форма + мораль (1–2 параметра, не симулятор).</li>
+<li>Трансферный рынок (soft + hard валюта).</li>
+<li>Календарь сезона: 5–10 матчей, награды за этап.</li>
+</ol>
+<pre><code class="language-mermaid">flowchart LR
+  Hub[Хаб клуба] --&gt; Deck[Колода]
+  Hub --&gt; Market[Рынок]
+  Hub --&gt; Season[Сезон]
+  Hub --&gt; Match[Матч]
+  Match --&gt; Place[Расстановка]
+  Place --&gt; Battle[Автобой]
+  Battle --&gt; Rewards[Награды]
+  Rewards --&gt; Hub
+</code></pre>
+<h2 id="6-mvp">6. Механики MVP</h2>
+<h3 id="61">6.1 Карты</h3>
+<ul>
+<li><strong>Пул MVP:</strong> 40 карт (по 8 на роль: GK, DEF, MID, FWD, FLEX).</li>
+<li><strong>Редкости:</strong> N 50% / R 30% / SR 15% / UR 5% (pity на UR).</li>
+<li><strong>Статы:</strong> ATK, DEF, SPD, SKL (скилл-сила), COST (очки состава).</li>
+<li><strong>Теги синергий:</strong> Pressing, Possession, Counter, Wall, Wings, Star.</li>
+</ul>
+<h3 id="62">6.2 Поле и слоты</h3>
+<ul>
+<li>Сетка слотов: типично <strong>2–3–2</strong> или <strong>3–3–1</strong> на 5–8 активных слотах.</li>
+<li>Слоты привязаны к зонам: DEF / MID / FWD (+ GK отдельный).</li>
+<li>Несовпадение роли и зоны → штраф синергии / статов.</li>
+</ul>
+<h3 id="63">6.3 Синергии</h3>
+<table>
+<thead>
+<tr>
+<th>Синергия</th>
+<th>2</th>
+<th>3</th>
+<th>4+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Прессинг</td>
+<td>+SPD линии</td>
+<td>+шанс перехвата</td>
+<td>глобальный темп</td>
+</tr>
+<tr>
+<td>Владение</td>
+<td>+энергия скиллов</td>
+<td>снижение кулдауна</td>
+<td>контроль темпа</td>
+</tr>
+<tr>
+<td>Контры</td>
+<td>+ATK после обороны</td>
+<td>крит контр</td>
+<td>доп. волна атаки</td>
+</tr>
+<tr>
+<td>Стена</td>
+<td>+DEF GK/DEF</td>
+<td>блок скилла</td>
+<td>иммунитет 1 тик</td>
+</tr>
+</tbody>
+</table>
+<h3 id="64">6.4 Автобой</h3>
+<ul>
+<li>Два тайма по N тиков (абстрактно, без физики).</li>
+<li>Счёт «голов» через успешные атаки линий.</li>
+<li>До 3 активных скиллов за матч на команду (энергия копится в бою).</li>
+<li><strong>1 ручное вмешательство за тайм:</strong> тайм-аут / замена / форс-скилл.</li>
+</ul>
+<h3 id="65">6.5 Режимы</h3>
+<table>
+<thead>
+<tr>
+<th>Режим</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Обучение</td>
+<td>1 матч vs слабого бота</td>
+</tr>
+<tr>
+<td>Быстрый</td>
+<td>vs AI, без MMR</td>
+</tr>
+<tr>
+<td>Рейтинг</td>
+<td>MMR, сезон</td>
+</tr>
+<tr>
+<td>Турнир (live)</td>
+<td>еженедельный, лидерборд</td>
+</tr>
+</tbody>
+</table>
+<h2 id="7-liveops">7. Прогрессия и LiveOps</h2>
+<ul>
+<li><strong>Сезон:</strong> 4–6 недель, ранги, сезонные награды.</li>
+<li><strong>Battle Pass light:</strong> бесплатная + премиум дорожка (карты, косметика, валюта).</li>
+<li><strong>Daily:</strong> 3 матча с бонусом / логин / контракт клуба.</li>
+<li><strong>Weekly:</strong> турнир на лидерборде Яндекса.</li>
+</ul>
+<h2 id="8-hybrid-iap-heavy">8. Экономика и монетизация (hybrid, IAP-heavy)</h2>
+<h3 id="_2">Валюты</h3>
+<table>
+<thead>
+<tr>
+<th>Валюта</th>
+<th>Источник</th>
+<th>Траты</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Soft (монеты)</td>
+<td>матчи, daily</td>
+<td>прокачка, рынок soft</td>
+</tr>
+<tr>
+<td>Hard (гемы)</td>
+<td>IAP, pass, редкие награды</td>
+<td>паки, удобство</td>
+</tr>
+<tr>
+<td>Пыль</td>
+<td>распыление дубликатов</td>
+<td>крафт/ап карт</td>
+</tr>
+<tr>
+<td>Энергия матча (опц.)</td>
+<td>реген / RV</td>
+<td>вход в рейтинг (если введём soft gate)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_3">Таблица монетизации</h3>
+<table>
+<thead>
+<tr>
+<th>Источник</th>
+<th>Триггер</th>
+<th>Ограничения</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rewarded</td>
+<td>бесплатный пак дня, реролл, +энергия</td>
+<td>не в середине автобоя</td>
+</tr>
+<tr>
+<td>Interstitial</td>
+<td>после матча / возврат в хаб</td>
+<td>лимиты платформы, cooldown</td>
+</tr>
+<tr>
+<td>IAP</td>
+<td>паки карт, pass, remove ads, косметика, слот колоды</td>
+<td>без «гарантии победы»</td>
+</tr>
+<tr>
+<td>Soft</td>
+<td>прокачка, рынок</td>
+<td>F2P темп 1-й недели проходим</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-">Анти-токсик / модерация Яндекс Игр</h3>
+<ul>
+<li>Pity на UR (гарантия после N паков).</li>
+<li>Дубликаты → пыль.</li>
+<li>P2W ограничен скоростью и косметикой, не «непробиваемым» статом.</li>
+<li>Формулировки паков без азартной лексики («шанс», «лотерея» → «набор карт», «гарантированная редкость по pity»).</li>
+</ul>
+<h3 id="iap-mvp">Стартовый IAP MVP</h3>
+<ol>
+<li>Стартовый пак (N/R фокус).</li>
+<li>Премиум пак (SR фокус + pity progress).</li>
+<li>Mega пак (UR pity progress).</li>
+<li>Battle Pass.</li>
+<li>Remove Ads.</li>
+<li>Косметика стадиона / формы (1–2 скина).</li>
+</ol>
+<h2 id="9-ux">9. UX / мобильный</h2>
+<ul>
+<li>Онбординг: 1 учебный матч, подсказки синергий иконками.</li>
+<li>Крупные hit-area под палец (≥44 CSS px).</li>
+<li>Автобой можно ускорить ×2 (не пропускать скиллы в MVP без кнопки skip late-game).</li>
+<li>Облачные сохранения обязательны.</li>
+<li>Портрет + ландшафт: приоритет <strong>портрет</strong>; ландшафт — опциональный polish.</li>
+</ul>
+<h2 id="10-mvp-store-ready">10. Скоуп MVP → Store Ready</h2>
+<table>
+<thead>
+<tr>
+<th>Входит</th>
+<th>Не входит в MVP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>40 карт, data-driven JSON</td>
+<td>100+ карт</td>
+</tr>
+<tr>
+<td>Бот + рейтинг + 1 лига</td>
+<td>Мультиплеер realtime</td>
+</tr>
+<tr>
+<td>Battle pass light</td>
+<td>Кланы / чат</td>
+</tr>
+<tr>
+<td>3 пака + remove ads + pass</td>
+<td>Полноценный трансферный AI</td>
+</tr>
+<tr>
+<td>Лидерборд сезона</td>
+<td>Физика мяча, 11v11</td>
+</tr>
+</tbody>
+</table>
+<h2 id="11">11. Технический контур (высокий уровень)</h2>
+<ul>
+<li>Phaser 3 scenes: Boot → Preload → Hub → Deck → Market → MatchPrep → Autobattle → Results.</li>
+<li>Данные карт/синергий/паков — JSON в <code>src/data/</code>.</li>
+<li>SDK: init, auth, cloud save, payments, ads (RV/IS), leaderboard.</li>
+<li>Save: колода, прогресс карт, сезон, pass, настройки, pity counters.</li>
+</ul>
+<h2 id="12">12. Риски</h2>
+<table>
+<thead>
+<tr>
+<th>Риск</th>
+<th>Митигация</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scope creep → FM</td>
+<td>Чеклист «не делать» в DESIGN_LLM + DoR</td>
+</tr>
+<tr>
+<td>Баланс карт</td>
+<td>Тиры + data-driven + playtest table</td>
+</tr>
+<tr>
+<td>Юридика IP</td>
+<td>Только вымышленные имена/клубы</td>
+</tr>
+<tr>
+<td>Модерация «азарта»</td>
+<td>Copy pack review</td>
+</tr>
+<tr>
+<td>Перегруз UI</td>
+<td>2–3 экрана менеджмента max</td>
+</tr>
+</tbody>
+</table>
+<h2 id="13-kpi">13. KPI и критерии стора</h2>
+<ul>
+<li>Tutorial completion ≥70%.</li>
+<li>50+ матчей vs бот без краша.</li>
+<li>Синергии понятны за 1 матч (иконки + 1 строка).</li>
+<li>F2P экономика 1-й недели проходима без hard wall.</li>
+<li>Pass и паки проходят модерацию формулировок.</li>
+<li>Cloud restore после kill tab.</li>
+<li>Рейтинг стора цель ≥4.2.</li>
+</ul>
+<h2 id="14-definition-of-ready">14. Definition of Ready (дизайн)</h2>
+<p>Дизайн считается готовым к Gate 0 разработки только при статусе <strong><code>CONFIRMED</code></strong> в портфельном дашборде и выполнении чеклиста в <code>docs/DESIGN_LLM.md</code> § Definition of Ready.</p>
+<p><strong>До <code>CONFIRMED</code> код <code>src/</code> не пишется.</strong></p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-llm">
+      <article class="doc"><h1 id="design_llm">Легенды Поля — DESIGN_LLM (исполняемая спецификация)</h1>
+<blockquote>
+<p><strong>Аудитория файла:</strong> LLM-агенты (арт, UI, уровни, код).<br />
+<strong>Язык:</strong> русский.<br />
+<strong>Правило:</strong> разработка кода (<code>src/</code>) <strong>запрещена</strong>, пока статус дизайна ≠ <code>CONFIRMED</code>.<br />
+<strong>Классический GDD:</strong> <code>docs/DESIGN.md</code>.<br />
+<strong>Атомарные промпты:</strong> <code>prompts/*.md</code> (вырезки; при конфликте побеждает этот файл).</p>
+</blockquote>
+<hr />
+<h2 id="0-">0. Мета-контракт</h2>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>slug</td>
+<td><code>legends-of-the-pitch</code></td>
+</tr>
+<tr>
+<td>title_ru</td>
+<td>Легенды Поля</td>
+</tr>
+<tr>
+<td>title_en</td>
+<td>Legends of the Pitch</td>
+</tr>
+<tr>
+<td>engine</td>
+<td>Phaser 3 + TypeScript + Vite</td>
+</tr>
+<tr>
+<td>platform</td>
+<td>Яндекс Игры</td>
+</tr>
+<tr>
+<td>orientation_primary</td>
+<td>portrait (720×1280 logical)</td>
+</tr>
+<tr>
+<td>design_status</td>
+<td><code>DRAFT</code></td>
+</tr>
+<tr>
+<td>coding_allowed</td>
+<td><code>false</code> until <code>CONFIRMED</code></td>
+</tr>
+<tr>
+<td>concept_ref</td>
+<td><code>docs/concepts/04-legends-of-the-pitch.md</code></td>
+</tr>
+<tr>
+<td>key_art</td>
+<td><code>games/legends-of-the-pitch/refs/art/key-art.png</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="01">0.1 Запреты скоупа (жёстко)</h3>
+<ol>
+<li>Нет физической симуляции мяча / 11v11 / камеры за мячом.  </li>
+<li>Нет полноценного Football Manager (зарплаты, скауты, травмы сезона, переговоры).  </li>
+<li>Нет realtime PvP в MVP.  </li>
+<li>Нет реальных клубов, имён игроков, гербов, лицензий.  </li>
+<li>Автобой = тиковая абстракция на <strong>5–8 слотах</strong>.</li>
+</ol>
+<hr />
+<h2 id="1-project-contract">1. Project contract — структура репозитория игры</h2>
+<pre><code class="language-text">games/legends-of-the-pitch/
+├── docs/
+│   ├── DESIGN.md
+│   └── DESIGN_LLM.md          ← этот файл
+├── prompts/
+│   ├── ART_PROMPTS.md
+│   ├── SPRITE_ANIM_PROMPTS.md
+│   ├── UI_PROMPTS.md
+│   ├── LEVEL_PROMPTS.md
+│   └── CODE_AGENT_PROMPT.md
+├── refs/
+│   ├── art/
+│   ├── ui/
+│   ├── levels/
+│   └── sprites/
+├── public/
+│   └── assets/                ← финальные ассеты для рантайма
+│       ├── images/
+│       ├── atlases/
+│       ├── audio/
+│       └── data/
+├── src/                       ← НЕ создавать до CONFIRMED
+│   ├── main.ts
+│   ├── scenes/
+│   ├── systems/
+│   ├── ui/
+│   ├── data/
+│   └── sdk/
+├── index.html
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+├── STATUS.md
+└── STORE_CHECKLIST.md
+</code></pre>
+<h3 id="11-naming-conventions">1.1 Naming conventions</h3>
+<table>
+<thead>
+<tr>
+<th>Сущность</th>
+<th>Правило</th>
+<th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Файлы TS</td>
+<td><code>PascalCase</code> классы, <code>camelCase</code> файлы сцен</td>
+<td><code>autobattleScene.ts</code></td>
+</tr>
+<tr>
+<td>JSON data</td>
+<td><code>kebab-case</code></td>
+<td><code>cards-roster.json</code></td>
+</tr>
+<tr>
+<td>Asset ID</td>
+<td><code>{domain}_{name}_{variant}</code></td>
+<td><code>card_fwd_blaze_n</code></td>
+</tr>
+<tr>
+<td>Texture key Phaser</td>
+<td>= Asset ID</td>
+<td><code>card_fwd_blaze_n</code></td>
+</tr>
+<tr>
+<td>Atlas</td>
+<td><code>atlas_{domain}_{pack}</code></td>
+<td><code>atlas_cards_n</code></td>
+</tr>
+<tr>
+<td>Scene key</td>
+<td><code>SC_{Name}</code></td>
+<td><code>SC_Hub</code></td>
+</tr>
+<tr>
+<td>Event bus</td>
+<td><code>EVT_{Domain}_{Action}</code></td>
+<td><code>EVT_Match_Goal</code></td>
+</tr>
+<tr>
+<td>Save keys</td>
+<td><code>lotp_{snake}</code></td>
+<td><code>lotp_deck_v1</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-asset-id-schema">1.2 Asset ID schema (канон)</h3>
+<pre><code class="language-text">{domain}_{subject}_{qualifier?} _{tier?}
+
+domains:
+  ui_     — UI chrome, кнопки, панели
+  bg_     — фоны экранов
+  pitch_  — поле, слоты, линии
+  card_   — портреты/рамки карт
+  syn_    — иконки синергий
+  vfx_    — эффекты боя
+  fx_ui_  — UI-частицы
+  ico_    — мелкие иконки валют/ролей
+  char_   — менеджер / NPC (если есть)
+  sfx_    — звуки
+  bgm_    — музыка
+</code></pre>
+<p>Примеры:
+- <code>card_gk_aegis_sr</code>
+- <code>pitch_slot_active</code>
+- <code>syn_pressing_3</code>
+- <code>vfx_skill_snooker_shot</code>
+- <code>ui_btn_primary_up</code>
+- <code>ico_currency_gems</code></p>
+<h3 id="13-logical-resolution">1.3 Logical resolution</h3>
+<ul>
+<li>Design canvas: <strong>720×1280</strong>.  </li>
+<li>Safe area insets: top 48 / bottom 64 / sides 24.  </li>
+<li>UI scale: все hit-targets ≥ 64×64 logical (палец).</li>
+</ul>
+<hr />
+<h2 id="2-gameplay-systems-acceptance-criteria">2. Gameplay systems (с Acceptance Criteria)</h2>
+<h3 id="21-card-system">2.1 Card System</h3>
+<p><strong>Описание:</strong> карта = юнит состава с ролью, редкостью, статами, тегами, скиллом.</p>
+<p><strong>Данные (<code>public/assets/data/cards-roster.json</code>):</strong></p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;card_fwd_blaze_sr&quot;,
+  &quot;name_ru&quot;: &quot;Блейз&quot;,
+  &quot;role&quot;: &quot;FWD&quot;,
+  &quot;rarity&quot;: &quot;SR&quot;,
+  &quot;cost&quot;: 3,
+  &quot;tags&quot;: [&quot;Counter&quot;, &quot;Star&quot;],
+  &quot;base&quot;: { &quot;atk&quot;: 12, &quot;def&quot;: 4, &quot;spd&quot;: 9, &quot;skl&quot;: 8 },
+  &quot;skillId&quot;: &quot;skill_snooker_shot&quot;,
+  &quot;portrait&quot;: &quot;card_fwd_blaze_sr&quot;,
+  &quot;frame&quot;: &quot;ui_card_frame_sr&quot;
+}
+</code></pre>
+<p><strong>AC:</strong>
+- [ ] AC-CARD-01: ровно 40 карт в MVP (8×5 ролей).<br />
+- [ ] AC-CARD-02: каждая карта валидируется схемой (role/rarity/tags/skillId).<br />
+- [ ] AC-CARD-03: дубликат карты увеличивает <code>copies</code>, не создаёт второй entity.<br />
+- [ ] AC-CARD-04: прокачка 1→10 меняет статы по таблице <code>card-level-curve.json</code>.<br />
+- [ ] AC-CARD-05: распыление даёт пыль по rarity table.</p>
+<h3 id="22-deck-squad-cost">2.2 Deck &amp; Squad Cost</h3>
+<p><strong>Описание:</strong> колода до 20 карт; на матч выбирается состав с лимитом COST (базовый 18).</p>
+<p><strong>AC:</strong>
+- [ ] AC-DECK-01: нельзя выйти на поле при сумме cost &gt; limit.<br />
+- [ ] AC-DECK-02: минимум 1 GK в составе (если слот GK активен).<br />
+- [ ] AC-DECK-03: сохранение колоды в cloud save в течение 1 с после изменения.<br />
+- [ ] AC-DECK-04: 2 пресета колод в MVP (3-й — IAP «слот колоды»).</p>
+<h3 id="23-pitch-placement-autochess-board">2.3 Pitch Placement (Autochess board)</h3>
+<p><strong>Описание:</strong> абстрактное поле со слотами 5–8.</p>
+<p><strong>Каноническая схема слотов MVP (7 слотов + GK):</strong></p>
+<pre><code class="language-text">        [FWD1]  [FWD2]
+   [MID1] [MID2] [MID3]
+        [DEF1]  [DEF2]
+            [GK]
+</code></pre>
+<p>Слоты имеют <code>zone</code>, <code>slotId</code>, <code>allowedRoles[]</code>.</p>
+<p><strong>AC:</strong>
+- [ ] AC-PLACE-01: drag-and-drop карты на слот с валидацией роли.<br />
+- [ ] AC-PLACE-02: невалидный дроп = snap-back + toast.<br />
+- [ ] AC-PLACE-03: реролл состава: 2 бесплатных / матч, далее RV или soft.<br />
+- [ ] AC-PLACE-04: таймер подготовки рейтинга 45 с (бот — без таймера).<br />
+- [ ] AC-PLACE-05: кнопка «Авторасстановка» заполняет по роли/cost жадно.</p>
+<h3 id="24-synergy-system">2.4 Synergy System</h3>
+<p><strong>Теги:</strong> <code>Pressing</code>, <code>Possession</code>, <code>Counter</code>, <code>Wall</code>, <code>Wings</code>, <code>Star</code>.</p>
+<p><strong>Пороги:</strong> 2 / 3 / 4+.</p>
+<p><strong>AC:</strong>
+- [ ] AC-SYN-01: панель синергий обновляется live при расстановке.<br />
+- [ ] AC-SYN-02: бонусы применяются только при старте боя (snapshot).<br />
+- [ ] AC-SYN-03: иконка синергии читаема без текста на расстоянии UI.<br />
+- [ ] AC-SYN-04: тултип 1 строка + числа бонуса.</p>
+<h3 id="25-autobattle-tick-engine">2.5 Autobattle Tick Engine</h3>
+<p><strong>Модель:</strong> не физика. Тики = дискретные раунды.</p>
+<p>Параметры MVP:
+- Тайм = 12 тиков.<br />
+- Матч = 2 тайма.<br />
+- Каждый тик: initiative sort by SPD → resolve actions → skills → score check.<br />
+- Гол: атака линии FWD vs DEF/GK по формуле:</p>
+<pre><code class="language-text">chance = clamp(0.05, 0.65,
+  0.25 + 0.03*(ATK_line - DEF_line) + synergyMods + skillMods)
+</code></pre>
+<p><strong>Ручное вмешательство (1 / тайм):</strong>
+- <code>Timeout</code> — пауза 5 с UI + небольшой бафф следующей атаки.<br />
+- <code>Sub</code> — замена 1 карты из скамейки (скамейка 2 карты).<br />
+- <code>ForceSkill</code> — мгновенно заряжает 30% энергии скилла.</p>
+<p><strong>AC:</strong>
+- [ ] AC-BAT-01: бой детерминирован при фиксированном seed (replay debug).<br />
+- [ ] AC-BAT-02: скилл кастуется только при energy ≥ cost.<br />
+- [ ] AC-BAT-03: вмешательство недоступно, если уже использовано в тайме.<br />
+- [ ] AC-BAT-04: скорость ×1 / ×2; UI не ломает hit-targets.<br />
+- [ ] AC-BAT-05: при голе — VFX + SFX + счётчик; бой не зависает.<br />
+- [ ] AC-BAT-06: полный матч ≤ 90 с wall-clock на ×2.<br />
+- [ ] AC-BAT-07: нет softlock при 0–0 после 2 таймов → penalty mini-resolve (3 удара абстрактно).</p>
+<h3 id="26-skills">2.6 Skills</h3>
+<p>Пул MVP: 12 скиллов (переиспользуются картами).</p>
+<table>
+<thead>
+<tr>
+<th>skillId</th>
+<th>Имя RU</th>
+<th>Эффект</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>skill_snooker_shot</td>
+<td>Снукер-удар</td>
+<td>+гол chance FWD 1 тик</td>
+</tr>
+<tr>
+<td>skill_wall</td>
+<td>Стена</td>
+<td>+DEF линии 2 тика</td>
+</tr>
+<tr>
+<td>skill_counter</td>
+<td>Контратака</td>
+<td>если пропустили атаку — ответный шанс</td>
+</tr>
+<tr>
+<td>skill_press</td>
+<td>Прессинг</td>
+<td>−SPD врага 2 тика</td>
+</tr>
+<tr>
+<td>skill_maestro</td>
+<td>Маэстро</td>
+<td>+энергия всем MID</td>
+</tr>
+<tr>
+<td>skill_aegis</td>
+<td>Эгида</td>
+<td>GK блок следующего гола (50%)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>AC:</strong>
+- [ ] AC-SKL-01: визуальный телеграф 0.3 с до каста.<br />
+- [ ] AC-SKL-02: текст скилла ≤ 90 символов.<br />
+- [ ] AC-SKL-03: скилл не может зациклить бой (hard cap 1 каст / карта / 3 тика).</p>
+<h3 id="27-ai-opponent">2.7 AI Opponent</h3>
+<ul>
+<li>Тiers: Easy / Normal / Hard.  </li>
+<li>Бот собирает состав из пула по budget и предпочитает 1 синергию.  </li>
+<li>Hard добавляет UR-weight и правильные зоны.</li>
+</ul>
+<p><strong>AC:</strong>
+- [ ] AC-AI-01: Easy winrate новичка ≥ 80% в туториале.<br />
+- [ ] AC-AI-02: Normal winrate F2P week1 ≈ 45–55%.<br />
+- [ ] AC-AI-03: бот всегда валидный состав (cost/GK).</p>
+<h3 id="28-club-management-lite">2.8 Club Management Lite</h3>
+<p>Параметры:
+- <code>form</code> 0–100 (влияет на ATK ±5%).<br />
+- <code>morale</code> 0–100 (влияет на SKL energy gain ±5%).<br />
+- Daily contract: сыграй N матчей → soft reward.</p>
+<p><strong>AC:</strong>
+- [ ] AC-CLUB-01: экраны менеджмента ≤ 3 (Club, Deck, Market).<br />
+- [ ] AC-CLUB-02: form/morale меняются предсказуемо (таблица, не скрытый RNG).<br />
+- [ ] AC-CLUB-03: нет экранов зарплат/травм/переговоров.</p>
+<h3 id="29-transfer-market">2.9 Transfer Market</h3>
+<ul>
+<li>Ежедневный оффер 3–5 карт за soft/hard.  </li>
+<li>Refresh: 1 free / day, далее RV.</li>
+</ul>
+<p><strong>AC:</strong>
+- [ ] AC-MKT-01: нельзя купить за soft карту UR (UR только hard/packs/pass).<br />
+- [ ] AC-MKT-02: покупка идемпотентна (двойной тап не списывает дважды).</p>
+<h3 id="210-season-mmr-pass">2.10 Season / MMR / Pass</h3>
+<ul>
+<li>MMR start 1000; K-factor 24.  </li>
+<li>Season length config 42 days.  </li>
+<li>Pass: 20 уровней light, free + premium tracks.</li>
+</ul>
+<p><strong>AC:</strong>
+- [ ] AC-SEA-01: лидерборд сезона через Yandex Leaderboard API.<br />
+- [ ] AC-SEA-02: pass XP за матч + daily.<br />
+- [ ] AC-SEA-03: premium pass — one-time IAP per season.</p>
+<h3 id="211-packs-pity-monetization-hooks">2.11 Packs / Pity / Monetization Hooks</h3>
+<p>Pity: UR гарантирован на 40-м премиум-паке (counter persistent).</p>
+<p><strong>AC:</strong>
+- [ ] AC-PAY-01: copy паков без слов « ass / лотерея / ставка».<br />
+- [ ] AC-PAY-02: RV daily pack 1/day.<br />
+- [ ] AC-PAY-03: interstitial только post-match / hub enter, с cooldown.<br />
+- [ ] AC-PAY-04: remove ads отключает interstitial, RV остаётся opt-in.<br />
+- [ ] AC-PAY-05: mock payments работают в dev без SDK.</p>
+<h3 id="212-save-cloud">2.12 Save / Cloud</h3>
+<p>Save payload v1:
+- deck, ownedCards, currencies, pity, season, pass, settings, tutorialFlags, clubStats.</p>
+<p><strong>AC:</strong>
+- [ ] AC-SAVE-01: kill tab mid-battle → результат не начисляется дважды; прогресс prep сохраняется.<br />
+- [ ] AC-SAVE-02: cloud sync на pause/visibilitychange/match end.<br />
+- [ ] AC-SAVE-03: миграция версии save (<code>v1</code> → future).</p>
+<hr />
+<h2 id="3-level-content-design-grammar">3. Level / content design grammar</h2>
+<blockquote>
+<p>«Уровни» = матчи/сиды/календарь сезона + туториальные сценарии.<br />
+Доска = pitch slots; контент описывается декларативно.</p>
+</blockquote>
+<h3 id="31-looks">3.1 Как матч LOOKS</h3>
+<ol>
+<li>Фон стадиона ночь (<code>bg_stadium_night_01</code>).  </li>
+<li>Газон с неоновыми линиями синергий.  </li>
+<li>Карточки стоят в слотах (вертикальные, glow по rarity).  </li>
+<li>HUD: счёт, тайм, энергия скиллов, кнопка вмешательства.  </li>
+<li>Мяч — <strong>декоративный VFX-токен</strong>, не физический объект геймплея.</li>
+</ol>
+<h3 id="32-plays">3.2 Как матч PLAYS</h3>
+<ol>
+<li>Prep → подтверждение.  </li>
+<li>Kickoff cinematic ≤ 1.5 с.  </li>
+<li>Тики считываются игроком через: движение glow линий, pop ATK/DEF, skill banners.  </li>
+<li>Гол = camera punch 0.15 с + crowd SFX.  </li>
+<li>Half-time sheet 2 с.  </li>
+<li>Full-time → Results.</li>
+</ol>
+<h3 id="33-match-recipes">3.3 Match recipes (грамматика)</h3>
+<pre><code class="language-yaml">match_recipe:
+  id: season_w1_m3
+  mode: ranked|quick|tutorial|tournament
+  seed: number
+  opponent_tier: easy|normal|hard
+  opponent_synergy_bias: [Pressing]
+  board_layout: layout_732_gk
+  modifiers: []          # future: rain = -SPD
+  rewards:
+    soft: [80, 120]
+    xp_pass: 20
+    card_chance: 0.1
+</code></pre>
+<h3 id="34-tutorial-script">3.4 Tutorial script (обязательный)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Экран</th>
+<th>Цель</th>
+<th>Fail condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1</td>
+<td>Hub</td>
+<td>Нажать «Матч»</td>
+<td>—</td>
+</tr>
+<tr>
+<td>T2</td>
+<td>Place</td>
+<td>Поставить FWD в FWD-слот</td>
+<td>timeout 60s → auto</td>
+</tr>
+<tr>
+<td>T3</td>
+<td>Place</td>
+<td>Увидеть синергию 2</td>
+<td>—</td>
+</tr>
+<tr>
+<td>T4</td>
+<td>Battle</td>
+<td>Использовать вмешательство</td>
+<td>skipable after 10s</td>
+</tr>
+<tr>
+<td>T5</td>
+<td>Results</td>
+<td>Забрать награду</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>AC:</strong> tutorial completable ≤ 4 мин; skip доступен после T3 для returning users.</p>
+<h3 id="35-difficulty-curve-14">3.5 Difficulty curve (недели 1–4)</h3>
+<table>
+<thead>
+<tr>
+<th>Неделя</th>
+<th>Opponent</th>
+<th>Цель winrate</th>
+<th>Unlock</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>W0 tutorial</td>
+<td>Easy fixed</td>
+<td>≥90%</td>
+<td>—</td>
+</tr>
+<tr>
+<td>W1</td>
+<td>Easy→Normal</td>
+<td>60–70%</td>
+<td>Market</td>
+</tr>
+<tr>
+<td>W2</td>
+<td>Normal</td>
+<td>50–60%</td>
+<td>Synergy Wall/Wings</td>
+</tr>
+<tr>
+<td>W3</td>
+<td>Normal+bias</td>
+<td>45–55%</td>
+<td>Ranked</td>
+</tr>
+<tr>
+<td>W4</td>
+<td>Hard spikes</td>
+<td>40–50%</td>
+<td>Tournament</td>
+</tr>
+</tbody>
+</table>
+<h3 id="36-season-calendar-grammar">3.6 Season calendar grammar</h3>
+<ul>
+<li>8 матчей сезона PvE ladder + ranked infinite.  </li>
+<li>Каждый 3-й матч = «derby» (бонус soft, harder bias).  </li>
+<li>Финал сезона = boss-bot с 2 синергиями 3+.</li>
+</ul>
+<h3 id="37-content-volume-mvp">3.7 Content volume MVP</h3>
+<table>
+<thead>
+<tr>
+<th>Контент</th>
+<th>Кол-во</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Карты</td>
+<td>40</td>
+</tr>
+<tr>
+<td>Скиллы</td>
+<td>12</td>
+</tr>
+<tr>
+<td>Синергии</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Layouts поля</td>
+<td>2 (<code>layout_732_gk</code>, <code>layout_532</code>)</td>
+</tr>
+<tr>
+<td>Стадионы BG</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Формы косметика</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Pack definitions</td>
+<td>3 + daily RV</td>
+</tr>
+<tr>
+<td>Pass levels</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Tutorial matches</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Season scripted</td>
+<td>8</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-ui-component-map-wireframes">4. UI component map + wireframes</h2>
+<h3 id="41-screen-inventory">4.1 Screen inventory</h3>
+<table>
+<thead>
+<tr>
+<th>Screen ID</th>
+<th>Имя</th>
+<th>Входы</th>
+<th>Выходы</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SC_Boot</td>
+<td>Boot</td>
+<td>start</td>
+<td>SC_Preload</td>
+</tr>
+<tr>
+<td>SC_Preload</td>
+<td>Preload</td>
+<td>Boot</td>
+<td>SC_Hub</td>
+</tr>
+<tr>
+<td>SC_Hub</td>
+<td>Хаб клуба</td>
+<td>many</td>
+<td>Match/Deck/Market/Pass/Shop</td>
+</tr>
+<tr>
+<td>SC_Deck</td>
+<td>Колода</td>
+<td>Hub</td>
+<td>Hub / CardDetail</td>
+</tr>
+<tr>
+<td>SC_CardDetail</td>
+<td>Карточка</td>
+<td>Deck</td>
+<td>Deck</td>
+</tr>
+<tr>
+<td>SC_Market</td>
+<td>Рынок</td>
+<td>Hub</td>
+<td>Hub</td>
+</tr>
+<tr>
+<td>SC_Pass</td>
+<td>Battle Pass</td>
+<td>Hub</td>
+<td>Hub</td>
+</tr>
+<tr>
+<td>SC_Shop</td>
+<td>Магазин</td>
+<td>Hub</td>
+<td>Hub</td>
+</tr>
+<tr>
+<td>SC_MatchSelect</td>
+<td>Выбор режима</td>
+<td>Hub</td>
+<td>SC_Place</td>
+</tr>
+<tr>
+<td>SC_Place</td>
+<td>Расстановка</td>
+<td>MatchSelect</td>
+<td>SC_Battle / Hub</td>
+</tr>
+<tr>
+<td>SC_Battle</td>
+<td>Автобой</td>
+<td>Place</td>
+<td>SC_Results</td>
+</tr>
+<tr>
+<td>SC_Results</td>
+<td>Итог</td>
+<td>Battle</td>
+<td>Hub / MatchSelect</td>
+</tr>
+<tr>
+<td>SC_Settings</td>
+<td>Настройки</td>
+<td>Hub</td>
+<td>Hub</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-wireframe-hub">4.2 Wireframe — Hub</h3>
+<pre><code class="language-text">┌────────────────────────────┐
+│ ☰  Легенды Поля    💰 💎  │
+│ ┌────────────────────────┐ │
+│ │   CLUB BANNER / FORM   │ │
+│ │   morale ●●●○○         │ │
+│ └────────────────────────┘ │
+│  [ Сезон ]  MMR 1240       │
+│  [ Pass  ]  Lv 7           │
+│                            │
+│     ┌──────────────┐       │
+│     │   ИГРАТЬ ▶   │       │
+│     └──────────────┘       │
+│ [Колода][Рынок][Магазин]   │
+└────────────────────────────┘
+</code></pre>
+<pre><code class="language-mermaid">flowchart TD
+  Hub --&gt; Play[Играть]
+  Hub --&gt; Deck
+  Hub --&gt; Market
+  Hub --&gt; Shop
+  Hub --&gt; Pass
+  Play --&gt; Mode[MatchSelect]
+  Mode --&gt; Place
+  Place --&gt; Battle
+  Battle --&gt; Results
+  Results --&gt; Hub
+</code></pre>
+<h3 id="43-wireframe-placement">4.3 Wireframe — Placement</h3>
+<pre><code class="language-text">┌────────────────────────────┐
+│ Назад   Состав 12/18  ⟳×2  │
+│ ┌────────────────────────┐ │
+│ │   FWD  FWD             │ │
+│ │ MID MID MID            │ │
+│ │   DEF  DEF             │ │
+│ │      GK                │ │
+│ └────────────────────────┘ │
+│ Синергии: [Press 2][★ 1]   │
+│ ┌────┬────┬────┬────┐      │
+│ │card│card│card│card│ hand │
+│ └────┴────┴────┴────┘      │
+│      [ В БОЙ ]             │
+└────────────────────────────┘
+</code></pre>
+<h3 id="44-wireframe-autobattle">4.4 Wireframe — Autobattle</h3>
+<pre><code class="language-text">┌────────────────────────────┐
+│ 2:1   Тайм 1  Тик 7/12     │
+│ ┌────────────────────────┐ │
+│ │   cards on pitch+VFX   │ │
+│ └────────────────────────┘ │
+│ SKL [====----] ⚡          │
+│ [Тайм-аут][Замена][Скилл]  │
+│              ×1 / ×2       │
+└────────────────────────────┘
+</code></pre>
+<h3 id="45-wireframe-results">4.5 Wireframe — Results</h3>
+<pre><code class="language-text">┌────────────────────────────┐
+│      ПОБЕДА  3:2           │
+│   MMR +18 → 1258           │
+│   +110💰  +20 Pass XP      │
+│   [Карта?] [OK]            │
+│   (ad slot interstitial)   │
+└────────────────────────────┘
+</code></pre>
+<h3 id="46-ui-components">4.6 UI components (атомы)</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Asset IDs</th>
+<th>Поведение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BtnPrimary</code></td>
+<td><code>ui_btn_primary_{up,down,dis}</code></td>
+<td>CTA</td>
+</tr>
+<tr>
+<td><code>BtnSecondary</code></td>
+<td><code>ui_btn_secondary_*</code></td>
+<td>secondary</td>
+</tr>
+<tr>
+<td><code>CurrencyBar</code></td>
+<td><code>ico_currency_{soft,hard,dust}</code></td>
+<td>tap → shop</td>
+</tr>
+<tr>
+<td><code>CardView</code></td>
+<td>frame+portrait+role badge</td>
+<td>tap detail / drag</td>
+</tr>
+<tr>
+<td><code>SlotView</code></td>
+<td><code>pitch_slot_{empty,valid,invalid}</code></td>
+<td>drop target</td>
+</tr>
+<tr>
+<td><code>SynergyChip</code></td>
+<td><code>syn_{tag}_{2,3,4}</code></td>
+<td>tooltip</td>
+</tr>
+<tr>
+<td><code>SkillBanner</code></td>
+<td><code>ui_skill_banner</code></td>
+<td>0.8s show</td>
+</tr>
+<tr>
+<td><code>ModalDialog</code></td>
+<td><code>ui_modal_panel</code></td>
+<td>confirm RV/IAP</td>
+</tr>
+<tr>
+<td><code>Toast</code></td>
+<td>—</td>
+<td>2s message</td>
+</tr>
+<tr>
+<td><code>PassTrack</code></td>
+<td><code>ui_pass_node_*</code></td>
+<td>scroll horizontal</td>
+</tr>
+<tr>
+<td><code>PackCard</code></td>
+<td><code>ui_pack_{daily,premium,mega}</code></td>
+<td>buy/open</td>
+</tr>
+</tbody>
+</table>
+<h3 id="47-navigation-rules">4.7 Navigation rules</h3>
+<ul>
+<li>Back всегда сохраняет state.  </li>
+<li>Во время Battle системная «назад» → confirm forfeit (ranked: поражение).  </li>
+<li>Магазин доступен из Hub и Results soft-prompt (не hard gate).</li>
+</ul>
+<hr />
+<h2 id="5-art-bible">5. Art bible</h2>
+<h3 id="51-style-locks">5.1 Style locks</h3>
+<ul>
+<li><strong>Жанр визуала:</strong> cyber-fantasy sports, cinematic night stadium.  </li>
+<li><strong>Камеры:</strong> low-angle hero для key art; in-game — top-ish isometric lite / orthographic pitch.  </li>
+<li><strong>Карты:</strong> вертикальные голографические, rarity glow.  </li>
+<li><strong>UI:</strong> holographic glass panels, тонкие neon edges, высокая контрастность текста.  </li>
+<li><strong>НЕ:</strong> cartoon chibi, пиксель-арт, реалистичный фотоколлаж реальных лиц, дневной «любительский» стадион.</li>
+</ul>
+<h3 id="52-palette-hex">5.2 Palette (hex)</h3>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Hex</th>
+<th>Использование</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>night_navy</code></td>
+<td><code>#0B1B33</code></td>
+<td>фон UI</td>
+</tr>
+<tr>
+<td><code>pitch_green</code></td>
+<td><code>#1F6B3A</code></td>
+<td>газон base</td>
+</tr>
+<tr>
+<td><code>pitch_neon</code></td>
+<td><code>#3DFF9A</code></td>
+<td>линии синергий</td>
+</tr>
+<tr>
+<td><code>crowd_silhouette</code></td>
+<td><code>#050A12</code></td>
+<td>толпа</td>
+</tr>
+<tr>
+<td><code>glow_cyan</code></td>
+<td><code>#3DE7FF</code></td>
+<td>мяч/энергия</td>
+</tr>
+<tr>
+<td><code>glow_gold</code></td>
+<td><code>#FFC84A</code></td>
+<td>UR / CTA</td>
+</tr>
+<tr>
+<td><code>glow_purple</code></td>
+<td><code>#A85CFF</code></td>
+<td>SR / magic</td>
+</tr>
+<tr>
+<td><code>glow_red</code></td>
+<td><code>#FF4B5C</code></td>
+<td>атака / Counter</td>
+</tr>
+<tr>
+<td><code>glow_blue</code></td>
+<td><code>#4B7BFF</code></td>
+<td>Possession</td>
+</tr>
+<tr>
+<td><code>text_primary</code></td>
+<td><code>#F2F7FF</code></td>
+<td>заголовки</td>
+</tr>
+<tr>
+<td><code>text_muted</code></td>
+<td><code>#9AA8C2</code></td>
+<td>secondary</td>
+</tr>
+<tr>
+<td><code>danger</code></td>
+<td><code>#FF5A5A</code></td>
+<td>ошибки</td>
+</tr>
+<tr>
+<td><code>success</code></td>
+<td><code>#3DFF9A</code></td>
+<td>победа</td>
+</tr>
+</tbody>
+</table>
+<h3 id="53-rarity-colors">5.3 Rarity colors</h3>
+<table>
+<thead>
+<tr>
+<th>Rarity</th>
+<th>Glow</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>N</td>
+<td><code>#8A9BB5</code></td>
+</tr>
+<tr>
+<td>R</td>
+<td><code>#4B7BFF</code></td>
+</tr>
+<tr>
+<td>SR</td>
+<td><code>#A85CFF</code></td>
+</tr>
+<tr>
+<td>UR</td>
+<td><code>#FFC84A</code> + particle</td>
+</tr>
+</tbody>
+</table>
+<h3 id="54-do-dont">5.4 Do / Don't</h3>
+<p><strong>Do:</strong>
+- Читаемые силуэты ролей на портретах.<br />
+- Neon accents на тёмном фоне.<br />
+- Единые рамки карт.<br />
+- VFX короткоживущие (≤1 с), не перекрывают HUD.</p>
+<p><strong>Don't:</strong>
+- Реальные бренды/логотипы.<br />
+- Красный текст на зелёном газоне без обводки.<br />
+- Перегруженные particle walls.<br />
+- Мелкий текст &lt; 22 px logical.</p>
+<h3 id="55-typography">5.5 Typography</h3>
+<ul>
+<li>Display: geometric sans с «спорт-кибер» характером (не Inter/Roboto как бренд-лок).  </li>
+<li>Рекомендация ассета шрифта: подключить <code>Font_ArenaDisplay</code> + <code>Font_ArenaBody</code> (лицензия свободная / собственная вырезка).  </li>
+<li>Числа счёта — tabular lining.</li>
+</ul>
+<hr />
+<h2 id="6-copy-paste-image-generation-prompts">6. Copy-paste image generation prompts (ключевые)</h2>
+<blockquote>
+<p>Полный набор — в <code>prompts/ART_PROMPTS.md</code>. Здесь канон.</p>
+</blockquote>
+<h3 id="61-key-art">6.1 Key art (уже есть референс)</h3>
+<pre><code class="language-text">Cinematic night football stadium, low angle, glowing holographic player cards standing on green pitch as tactical units, neon synergy lines connecting positions, cyber-fantasy sports, crowd silhouettes in foreground, manager holding holographic tablet mini-map, cyan energy football trail, volumetric stadium lights, highly detailed, mobile game key art, no real team logos, no readable trademarks
+</code></pre>
+<h3 id="62-environment-pitch-battle-bg">6.2 Environment — pitch battle BG</h3>
+<pre><code class="language-text">Top-down slight perspective football pitch at night for mobile game background, dark green grass, subtle neon tactical grid, stadium lights bloom, empty of players, space in center for card slots UI, cyber sports aesthetic, 9:16, no text, no logos
+</code></pre>
+<h3 id="63-character-card-portrait-template">6.3 Character card portrait template</h3>
+<pre><code class="language-text">Vertical football hero portrait for collectible card, {ROLE} pose, fictional athlete, {RARITY} aura {COLOR}, cyber-fantasy jersey, dramatic rim light, clean readable silhouette, centered composition, no real person likeness, no club crest, solid dark backdrop
+</code></pre>
+<h3 id="64-vfx-stills">6.4 VFX stills</h3>
+<pre><code class="language-text">Mobile game VFX sheet on transparent background: neon goal burst, synergy link pulse, skill cast runes around card, cyan ball streak, soft particles, for football card autobattle, no text
+</code></pre>
+<h3 id="65-ui-kit">6.5 UI kit</h3>
+<pre><code class="language-text">Mobile game holographic UI kit, dark navy glass panels, neon cyan and gold edges, primary CTA button, currency icons coins gems dust, card frames N R SR UR, synergy chips, football management aesthetic, transparent PNG style presentation, no text labels
+</code></pre>
+<hr />
+<h2 id="7-sprite-sheet-layout-animation-timing">7. Sprite sheet layout + animation timing</h2>
+<blockquote>
+<p>Детали и промпты: <code>prompts/SPRITE_ANIM_PROMPTS.md</code>.</p>
+</blockquote>
+<h3 id="71-card-idle-rarity-shimmer">7.1 Card idle / rarity shimmer</h3>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>Frames</th>
+<th>FPS</th>
+<th>Frame size</th>
+<th>Atlas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>card_idle_shimmer_sr</code></td>
+<td>8</td>
+<td>12</td>
+<td>256×384</td>
+<td><code>atlas_cards_fx</code></td>
+</tr>
+<tr>
+<td><code>card_idle_shimmer_ur</code></td>
+<td>12</td>
+<td>12</td>
+<td>256×384</td>
+<td><code>atlas_cards_fx</code></td>
+</tr>
+<tr>
+<td><code>card_place_drop</code></td>
+<td>6</td>
+<td>16</td>
+<td>256×384</td>
+<td><code>atlas_cards_fx</code></td>
+</tr>
+<tr>
+<td><code>card_damage_flash</code></td>
+<td>4</td>
+<td>20</td>
+<td>256×384</td>
+<td><code>atlas_cards_fx</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="72-pitch-ball-token">7.2 Pitch / ball token</h3>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>Frames</th>
+<th>FPS</th>
+<th>Size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vfx_ball_streak</code></td>
+<td>8</td>
+<td>24</td>
+<td>128×128</td>
+</tr>
+<tr>
+<td><code>vfx_goal_burst</code></td>
+<td>10</td>
+<td>20</td>
+<td>256×256</td>
+</tr>
+<tr>
+<td><code>pitch_syn_pulse</code></td>
+<td>8</td>
+<td>10</td>
+<td>512×128</td>
+</tr>
+</tbody>
+</table>
+<h3 id="73-ui-buttons">7.3 UI buttons</h3>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>Frames</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ui_btn_primary</code></td>
+<td>up/down/disabled</td>
+<td>static states, no loop</td>
+</tr>
+<tr>
+<td><code>ui_pack_open</code></td>
+<td>12 @ 16fps</td>
+<td>pack reveal</td>
+</tr>
+</tbody>
+</table>
+<h3 id="74-sheet-packing-rules">7.4 Sheet packing rules</h3>
+<ul>
+<li>Power-of-two atlas ≤ 2048×2048.  </li>
+<li>2 px padding, no rotation.  </li>
+<li>Pivot: cards center; VFX center; buttons center.</li>
+</ul>
+<h3 id="75-timing-table-battle-juice">7.5 Timing table — battle juice</h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Duration</th>
+<th>Ease</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Skill telegraph</td>
+<td>300 ms</td>
+<td>linear</td>
+</tr>
+<tr>
+<td>Skill banner</td>
+<td>800 ms</td>
+<td>outCubic</td>
+</tr>
+<tr>
+<td>Goal punch</td>
+<td>150 ms</td>
+<td>outBack</td>
+</tr>
+<tr>
+<td>Half-time sheet</td>
+<td>2000 ms</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Synergy activate pop</td>
+<td>400 ms</td>
+<td>outBack</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-standalone-prompt-packs">8. Standalone prompt packs (интеграция агентов)</h2>
+<p>Каждый файл самодостаточен, но <strong>обязан</strong> ссылаться на этот DESIGN_LLM:</p>
+<table>
+<thead>
+<tr>
+<th>Файл</th>
+<th>Агент</th>
+<th>Вход</th>
+<th>Выход</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>prompts/ART_PROMPTS.md</code></td>
+<td>Art LLM</td>
+<td>style locks + prompts</td>
+<td>PNG в <code>refs/art/</code> → <code>public/assets/images/</code></td>
+</tr>
+<tr>
+<td><code>prompts/SPRITE_ANIM_PROMPTS.md</code></td>
+<td>Anim LLM</td>
+<td>sheet specs</td>
+<td>atlases</td>
+</tr>
+<tr>
+<td><code>prompts/UI_PROMPTS.md</code></td>
+<td>UI LLM</td>
+<td>wireframes</td>
+<td>UI kit + layout notes</td>
+</tr>
+<tr>
+<td><code>prompts/LEVEL_PROMPTS.md</code></td>
+<td>Content LLM</td>
+<td>recipes</td>
+<td>JSON matches/season</td>
+</tr>
+<tr>
+<td><code>prompts/CODE_AGENT_PROMPT.md</code></td>
+<td>Code LLM</td>
+<td>systems AC</td>
+<td><code>src/</code> после CONFIRMED</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Контракт передачи:</strong>
+1. Агент читает §1 (paths) + свой prompt pack.<br />
+2. Кладёт артефакты в указанные пути.<br />
+3. Обновляет манифест <code>public/assets/data/asset-manifest.json</code>.<br />
+4. Не меняет скоуп систем без обновления DESIGN_LLM.</p>
+<hr />
+<h2 id="9-integration-contracts">9. Integration contracts (точные пути)</h2>
+<h3 id="91-runtime-asset-paths">9.1 Runtime asset paths</h3>
+<pre><code class="language-text">public/assets/images/bg/bg_stadium_night_01.png
+public/assets/images/bg/bg_hub_club_01.png
+public/assets/images/ui/ui_btn_primary_up.png
+public/assets/images/ui/ui_card_frame_{n,r,sr,ur}.png
+public/assets/images/ico/ico_currency_{soft,hard,dust}.png
+public/assets/images/syn/syn_{pressing,possession,counter,wall,wings,star}_{2,3,4}.png
+public/assets/images/cards/{cardId}.png
+public/assets/atlases/atlas_cards_fx.json
+public/assets/atlases/atlas_cards_fx.png
+public/assets/atlases/atlas_vfx_battle.json
+public/assets/atlases/atlas_vfx_battle.png
+public/assets/audio/bgm/bgm_hub.mp3
+public/assets/audio/bgm/bgm_battle.mp3
+public/assets/audio/sfx/sfx_goal.mp3
+public/assets/audio/sfx/sfx_ui_click.mp3
+public/assets/data/cards-roster.json
+public/assets/data/skills.json
+public/assets/data/synergies.json
+public/assets/data/packs.json
+public/assets/data/season-calendar.json
+public/assets/data/card-level-curve.json
+public/assets/data/asset-manifest.json
+public/assets/data/i18n/ru.json
+</code></pre>
+<h3 id="92-code-module-contracts-confirmed">9.2 Code module contracts (после CONFIRMED)</h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Path</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MatchFlow</code></td>
+<td><code>src/systems/matchFlow.ts</code></td>
+<td>state machine prep→battle→results</td>
+</tr>
+<tr>
+<td><code>TickEngine</code></td>
+<td><code>src/systems/tickEngine.ts</code></td>
+<td>autobattle</td>
+</tr>
+<tr>
+<td><code>SynergyService</code></td>
+<td><code>src/systems/synergyService.ts</code></td>
+<td>counts/bonuses</td>
+</tr>
+<tr>
+<td><code>DeckService</code></td>
+<td><code>src/systems/deckService.ts</code></td>
+<td>deck/cost</td>
+</tr>
+<tr>
+<td><code>EconomyService</code></td>
+<td><code>src/systems/economyService.ts</code></td>
+<td>currencies</td>
+</tr>
+<tr>
+<td><code>PityService</code></td>
+<td><code>src/systems/pityService.ts</code></td>
+<td>pack pity</td>
+</tr>
+<tr>
+<td><code>SaveService</code></td>
+<td><code>src/systems/saveService.ts</code></td>
+<td>local+cloud</td>
+</tr>
+<tr>
+<td><code>YgSdkFacade</code></td>
+<td><code>src/sdk/ygSdkFacade.ts</code></td>
+<td>ads/pay/lb</td>
+</tr>
+</tbody>
+</table>
+<h3 id="93-event-bus-contracts">9.3 Event bus contracts</h3>
+<pre><code class="language-text">EVT_Place_Changed
+EVT_Synergy_Updated
+EVT_Battle_Tick
+EVT_Battle_SkillCast
+EVT_Battle_Goal
+EVT_Battle_Finished
+EVT_Pack_Opened
+EVT_IAP_Success
+EVT_Cloud_Synced
+</code></pre>
+<h3 id="94-sdk-hooks">9.4 SDK hooks</h3>
+<table>
+<thead>
+<tr>
+<th>Hook</th>
+<th>Когда</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GameplayAPI.start/stop</code></td>
+<td>battle start/end</td>
+</tr>
+<tr>
+<td><code>Ads.showRewarded</code></td>
+<td>daily pack / reroll / energy</td>
+</tr>
+<tr>
+<td><code>Ads.showInterstitial</code></td>
+<td>results → hub</td>
+</tr>
+<tr>
+<td><code>Payments.purchase</code></td>
+<td>packs/pass/remove ads</td>
+</tr>
+<tr>
+<td><code>Leaderboard.setScore</code></td>
+<td>ranked match end</td>
+</tr>
+<tr>
+<td><code>Player.getData/setData</code></td>
+<td>cloud save</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10">10. Экономика — таблицы (исполняемые)</h2>
+<h3 id="101-soft-rewards">10.1 Soft rewards</h3>
+<table>
+<thead>
+<tr>
+<th>Результат</th>
+<th>Soft</th>
+<th>Pass XP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Win quick</td>
+<td>100</td>
+<td>15</td>
+</tr>
+<tr>
+<td>Lose quick</td>
+<td>40</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Win ranked</td>
+<td>120</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Lose ranked</td>
+<td>50</td>
+<td>10</td>
+</tr>
+<tr>
+<td>Daily first 3 matches bonus</td>
+<td>+30 each</td>
+<td>+5</td>
+</tr>
+</tbody>
+</table>
+<h3 id="102-upgrade-costs-card-level">10.2 Upgrade costs (card level)</h3>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Soft</th>
+<th>Dust</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1→2</td>
+<td>50</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2→3</td>
+<td>100</td>
+<td>0</td>
+</tr>
+<tr>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>9→10</td>
+<td>1200</td>
+<td>20</td>
+</tr>
+</tbody>
+</table>
+<p>(полная таблица в <code>card-level-curve.json</code> при контент-пасе)</p>
+<h3 id="103-pack-expected-value-design-intent">10.3 Pack expected value (design intent)</h3>
+<table>
+<thead>
+<tr>
+<th>Pack</th>
+<th>Price</th>
+<th>Pity progress</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Daily RV</td>
+<td>free 1/day</td>
+<td>+0</td>
+<td>N/R focus</td>
+</tr>
+<tr>
+<td>Starter</td>
+<td>soft/hard mix</td>
+<td>+1</td>
+<td></td>
+</tr>
+<tr>
+<td>Premium</td>
+<td>hard</td>
+<td>+3</td>
+<td>SR chance</td>
+</tr>
+<tr>
+<td>Mega</td>
+<td>hard</td>
+<td>+8</td>
+<td>UR chance</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="11-localization-copy-rules">11. Localization &amp; copy rules</h2>
+<ul>
+<li>UI язык MVP: RU.  </li>
+<li>Все строки в <code>i18n/ru.json</code>.  </li>
+<li>Имена карт — вымышленные, проверять на совпадение с реальными звёздами.  </li>
+<li>Магазин: «Набор карт», «Гарантия редкой карты по шкале удачи» (pity), не «гача/лутбокс/ ass».</li>
+</ul>
+<hr />
+<h2 id="12-audio-direction">12. Audio direction (кратко)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Роль</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bgm_hub</code></td>
+<td>уверенный mid-tempo electronic sports</td>
+</tr>
+<tr>
+<td><code>bgm_battle</code></td>
+<td>pulse, builds on goals</td>
+</tr>
+<tr>
+<td><code>sfx_goal</code></td>
+<td>crowd + neon hit</td>
+</tr>
+<tr>
+<td><code>sfx_skill</code></td>
+<td>whoosh + chime</td>
+</tr>
+<tr>
+<td><code>sfx_ui_click</code></td>
+<td>soft UI</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="13-definition-of-ready-confirmed">13. Definition of Ready (дизайн → CONFIRMED)</h2>
+<p>Чеклист для перевода <code>DRAFT</code> → <code>REVIEW</code> → <code>CONFIRMED</code>:</p>
+<h3 id="131">13.1 Документы</h3>
+<ul>
+<li>[ ] <code>DESIGN.md</code> согласован продюсером.  </li>
+<li>[ ] <code>DESIGN_LLM.md</code> полный (этот файл) без TBD-критичных дыр.  </li>
+<li>[ ] Все <code>prompts/*.md</code> созданы и согласованы с §8–9.  </li>
+<li>[ ] Скоуп «НЕ делать» подтверждён.</li>
+</ul>
+<h3 id="132-">13.2 Контент-спеки</h3>
+<ul>
+<li>[ ] Список 40 card IDs финализирован.  </li>
+<li>[ ] 12 skills + 6 synergies таблицы готовы.  </li>
+<li>[ ] Season calendar 8 матчей описан.  </li>
+<li>[ ] Pack + pity + IAP SKU список готов.  </li>
+<li>[ ] Tutorial script утверждён.</li>
+</ul>
+<h3 id="133-ui">13.3 Арт/UI готовность к производству</h3>
+<ul>
+<li>[ ] Palette + style locks утверждены по key-art.  </li>
+<li>[ ] UI wireframes всех major screens есть.  </li>
+<li>[ ] Asset ID schema понятна арт-агенту.  </li>
+<li>[ ] Sprite timing tables достаточно для аниматора.</li>
+</ul>
+<h3 id="134-">13.4 Тех-готовность (без кода игры)</h3>
+<ul>
+<li>[ ] Folder layout зафиксирован.  </li>
+<li>[ ] Integration paths финальны.  </li>
+<li>[ ] Save schema v1 описана.  </li>
+<li>[ ] SDK hook list описан.  </li>
+<li>[ ] AC по системам измеримы.</li>
+</ul>
+<h3 id="135">13.5 Монетизация / модерация</h3>
+<ul>
+<li>[ ] Copy паков проверен на правила Яндекс Игр.  </li>
+<li>[ ] RV/IS точки не ломают бой.  </li>
+<li>[ ] F2P week1 симулирован таблицей (winrate/soft).</li>
+</ul>
+<p><strong>Только после <code>CONFIRMED</code> разрешён Gate 0 (скелет Vite+Phaser).</strong></p>
+<hr />
+<h2 id="14-definition-of-done-store-ready">14. Definition of Done (Store Ready) — ориентир коду</h2>
+<ul>
+<li>50+ матчей vs bot без краша.  </li>
+<li>Tutorial ≥70% completable в playtest.  </li>
+<li>Cloud restore OK.  </li>
+<li>Payments mock + real path.  </li>
+<li>Leaderboard season.  </li>
+<li>STORE_CHECKLIST заполнен.  </li>
+<li>Нет softlock / no red console на smoke.</li>
+</ul>
+<hr />
+<h2 id="15-changelog">15. CHANGELOG дизайна</h2>
+<table>
+<thead>
+<tr>
+<th>Ver</th>
+<th>Date</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.1</td>
+<td>2026-07-17</td>
+<td>Первичный полный DESIGN_LLM</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>КОНЕЦ ИСПОЛНЯЕМОЙ СПЕЦИФИКАЦИИ.</strong><br />
+Любое расширение скоупа = новый REVIEW, не «тихо в коде».</p>
+<hr />
+<h2 id="visual-ground-truth">Visual Ground Truth (обязательные референсы)</h2>
+<p>См. также <code>docs/REFS.md</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Путь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key art</td>
+<td><code>refs/art/key-art.png</code></td>
+</tr>
+<tr>
+<td>UI wireframe</td>
+<td><code>refs/ui/wireframe-main.png</code></td>
+</tr>
+<tr>
+<td>Level layout</td>
+<td><code>refs/levels/layout-main.png</code></td>
+</tr>
+<tr>
+<td>Sprite sheet</td>
+<td><code>refs/sprites/sheet-main.png</code></td>
+</tr>
+</tbody>
+</table>
+<p>Любой арт-агент обязан сверяться с этими файлами перед генерацией финальных ассетов.</p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-refs">
+      <div class="refs-intro doc"><p>﻿# Легенды Поля — Visual References Index</p>
+<blockquote>
+<p>Эти файлы — обязательный вход для арт/UI/level LLM-агентов.<br />
+При генерации новых ассетов держать стиль как у референсов ниже.</p>
+</blockquote>
+<h2 id="art">Art</h2>
+<p><img alt="Key art" src="../../games/legends-of-the-pitch/refs/art/key-art.png" /></p>
+<p><code>refs/art/key-art.png</code> — tonal/mood lock, palette, composition.</p>
+<h2 id="ui-wireframes">UI Wireframes</h2>
+<p><img alt="UI wireframe" src="../../games/legends-of-the-pitch/refs/ui/wireframe-main.png" /></p>
+<p><code>refs/ui/wireframe-main.png</code> — экраны, иерархия, CTA rewarded/IAP зоны.</p>
+<h2 id="level-content-layout">Level / Content Layout</h2>
+<p><img alt="Level layout" src="../../games/legends-of-the-pitch/refs/levels/layout-main.png" /></p>
+<p><code>refs/levels/layout-main.png</code> — грамматика уровней/доски/маршрута.</p>
+<h2 id="sprites-animation-sheet">Sprites / Animation Sheet</h2>
+<p><img alt="Sprites" src="../../games/legends-of-the-pitch/refs/sprites/sheet-main.png" /></p>
+<p><code>refs/sprites/sheet-main.png</code> — пропорции, кадры, иконки.</p>
+<h2 id="_1">Как использовать агентам</h2>
+<ol>
+<li>Открыть <code>DESIGN_LLM.md</code> (контракт).</li>
+<li>Открыть этот <code>REFS.md</code> (визуальный ground truth).</li>
+<li>Взять атомарный промпт из <code>prompts/</code> и <strong>приложить</strong> соответствующий png.</li>
+<li>Сохранять результат в пути из Integration Contract <code>DESIGN_LLM.md</code>.</li>
+</ol>
+<h2 id="dor-visuals">DoR visuals</h2>
+<ul>
+<li>[x] key-art</li>
+<li>[x] wireframe-main</li>
+<li>[x] layout-main</li>
+<li>[x] sheet-main</li>
+</ul></div>
+      <h3 class="gallery-title">Галерея референсов</h3>
+      <div class="ref-grid">
+            <figure class="ref-card">
+              <a href="../../games/legends-of-the-pitch/refs/art/key-art.png" target="_blank" rel="noopener">
+                <img src="../../games/legends-of-the-pitch/refs/art/key-art.png" alt="Ключевой арт" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Ключевой арт</strong>
+                <span>Настроение, палитра, композиция</span>
+                <code>art/key-art.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/legends-of-the-pitch/refs/ui/wireframe-main.png" target="_blank" rel="noopener">
+                <img src="../../games/legends-of-the-pitch/refs/ui/wireframe-main.png" alt="Вайрфрейм UI" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Вайрфрейм UI</strong>
+                <span>Экраны, иерархия, CTA рекламы/покупок</span>
+                <code>ui/wireframe-main.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/legends-of-the-pitch/refs/levels/layout-main.png" target="_blank" rel="noopener">
+                <img src="../../games/legends-of-the-pitch/refs/levels/layout-main.png" alt="Раскладка уровней" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Раскладка уровней</strong>
+                <span>Грамматика уровней / доски / маршрута</span>
+                <code>levels/layout-main.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/legends-of-the-pitch/refs/sprites/sheet-main.png" target="_blank" rel="noopener">
+                <img src="../../games/legends-of-the-pitch/refs/sprites/sheet-main.png" alt="Спрайт-лист" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Спрайт-лист</strong>
+                <span>Пропорции, кадры, иконки</span>
+                <code>sprites/sheet-main.png</code>
+              </figcaption>
+            </figure></div>
+    </section>
+
+    <section class="tab-panel" id="tab-prompts">
+      <p class="lead">Атомарные промпты — копируй в отдельного агента вместе с нужным референсом из вкладки «Референсы».</p>
+      
+          <details class="prompt-acc" open>
+            <summary>Арт <span class="muted">ART_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="art_prompts">ART_PROMPTS — Легенды Поля</h1>
+<blockquote>
+<p>Для арт-агента. Канон: <code>docs/DESIGN_LLM.md</code> §5–6, §9.<br />
+Выход: <code>refs/art/</code> → после аппрува копировать в <code>public/assets/images/</code>.<br />
+Не писать код. Не менять скоуп геймплея.</p>
+</blockquote>
+<h2 id="style-lock">Style lock (вставлять в каждый промпт)</h2>
+<pre><code class="language-text">Style lock: cyber-fantasy football CCG, cinematic night stadium, holographic glowing player cards, neon tactical lines, volumetric floodlights, high contrast, mobile game art, fictional athletes only, no real club logos, no trademarks, no watermarks, no UI text unless asked
+</code></pre>
+<h2 id="palette-lock">Palette lock</h2>
+<p><code>#0B1B33 #1F6B3A #3DFF9A #3DE7FF #FFC84A #A85CFF #FF4B5C #4B7BFF #F2F7FF</code></p>
+<hr />
+<h2 id="a-key-art-marketing">A. Key art / marketing</h2>
+<h3 id="a1-key-art-master-refsartkey-artpng">A1. Key art master (референс уже есть: <code>refs/art/key-art.png</code>)</h3>
+<pre><code class="language-text">Cinematic night football stadium low angle, seven tall holographic player cards standing on green pitch as tactical units with purple blue gold green red auras, neon synergy lines on grass, cyan energy football trail, crowd silhouettes foreground, manager hands holding transparent holographic tablet with mini-map, cyber-fantasy sports, ultra detailed mobile key art, 16:9 and 9:16 crops friendly, no logos no text
+</code></pre>
+<h3 id="a2-store-icon-512">A2. Store icon 512</h3>
+<pre><code class="language-text">App icon, centered glowing football with neon cyan trail and tiny holographic card silhouette behind, dark navy background, simple readable at 48px, cyber sports, no text
+</code></pre>
+<h3 id="a3-yandex-games-cover-169">A3. Yandex Games cover 16:9</h3>
+<pre><code class="language-text">Wide banner night stadium holographic cards on pitch, neon green tactical grid, title-safe empty center third for logo overlay, cyber-fantasy football, no text
+</code></pre>
+<hr />
+<h2 id="b-environments">B. Environments</h2>
+<h3 id="b1-bg_stadium_night_01-battle">B1. <code>bg_stadium_night_01</code> (battle)</h3>
+<pre><code class="language-text">Mobile game background 9:16, slight top perspective football pitch at night, dark green grass, subtle neon cyan and green tactical grid, bright stadium lights bloom, empty no players, dark crowd bokeh, space reserved center for UI card slots, cyber sports, no text no logos
+</code></pre>
+<h3 id="b2-bg_hub_club_01">B2. <code>bg_hub_club_01</code></h3>
+<pre><code class="language-text">Mobile game hub background 9:16, luxury club lounge overlooking night stadium pitch through glass, holographic screens, navy and gold accents, cozy management mood, soft bokeh, no text no logos
+</code></pre>
+<h3 id="b3-bg_market_01">B3. <code>bg_market_01</code></h3>
+<pre><code class="language-text">Transfer market screen background, neon sports marketplace booths with holographic card displays, night indoor arena concourse, cyber fantasy, 9:16, no text
+</code></pre>
+<h3 id="b4-bg_results_win-bg_results_lose">B4. <code>bg_results_win</code> / <code>bg_results_lose</code></h3>
+<pre><code class="language-text">Abstract stadium confetti neon gold victory atmosphere 9:16 empty center for UI; AND muted blue rain of light defeat atmosphere version, no text
+</code></pre>
+<hr />
+<h2 id="c-characters-cards">C. Characters / cards (портреты)</h2>
+<p>Шаблон (подставить ROLE, NAME vibe, RARITY COLOR):</p>
+<pre><code class="language-text">Vertical collectible card portrait 2:3, fictional football {ROLE}, dynamic pose, cyber-fantasy jersey without crest, {RARITY} aura glow {COLOR}, dramatic rim light, clean silhouette, dark gradient backdrop, face readable, not a real celebrity, centered, mobile game asset
+</code></pre>
+<h3 id="c-mvp-batch-list-40-ids-design_llm">C-MVP batch list (создать 40 портретов по IDs из DESIGN_LLM)</h3>
+<p>Роли ×8: <code>gk_*</code>, <code>def_*</code>, <code>mid_*</code>, <code>fwd_*</code>, <code>flex_*</code><br />
+Редкости распределить: ~20 N, 12 R, 6 SR, 2 UR в портретных версиях (остальные rarity = frame swap).</p>
+<p>Примеры ID:
+- <code>card_gk_aegis_sr</code> — aura purple, defensive stance
+- <code>card_fwd_blaze_sr</code> — aura red/gold, striking pose
+- <code>card_mid_maestro_ur</code> — aura gold, conductor-like kick pose
+- <code>card_def_wall_r</code> — aura blue, arms wide block
+- <code>card_flex_spark_n</code> — aura gray-cyan, versatile ready pose</p>
+<h3 id="c2-manager-hand-prop-optional">C2. Manager hand prop (optional)</h3>
+<pre><code class="language-text">First-person hands holding transparent holographic tablet showing football pitch mini-map blue vs orange icons, cyber UI glow, isolated on transparent, mobile game asset
+</code></pre>
+<hr />
+<h2 id="d-items-frames-icons">D. Items / frames / icons</h2>
+<h3 id="d1-card-frames">D1. Card frames</h3>
+<pre><code class="language-text">Set of 4 vertical card frames on transparent: Normal steel-gray, Rare blue neon, Super Rare purple holographic ornate, Ultra Rare gold ornate with gem socket bottom center, cyber sports, identical safe-area for portrait, no text
+</code></pre>
+<h3 id="d2-role-badges">D2. Role badges</h3>
+<pre><code class="language-text">Five circular badges on transparent labeled visually without text: GK gloves, DEF shield, MID compass, FWD flame, FLEX star, neon cyber style
+</code></pre>
+<h3 id="d3-currency-icons">D3. Currency icons</h3>
+<pre><code class="language-text">Three mobile game currency icons on transparent: gold coins stack, cyan diamond gem, silver dust jar, cyber sports UI, crisp 256px
+</code></pre>
+<h3 id="d4-pack-art">D4. Pack art</h3>
+<pre><code class="language-text">Three card pack designs: daily simple steel, premium purple holographic, mega gold legendary, football CCG, closed packs, no text
+</code></pre>
+<hr />
+<h2 id="e-vfx-stills-sheets">E. VFX stills (для нарезки в sheets)</h2>
+<pre><code class="language-text">VFX elements on transparent black: neon goal explosion, cyan ball streak frames concept, purple skill sigil around card silhouette, green synergy chain links, gold UR sparkle burst, football cyber fantasy, separated objects
+</code></pre>
+<hr />
+<h2 id="f-delivery-checklist">F. Delivery checklist</h2>
+<ul>
+<li>[ ] PNG, sRGB, без водяных знаков  </li>
+<li>[ ] Имена файлов = Asset ID  </li>
+<li>[ ] Портреты 1024×1536 или 768×1152  </li>
+<li>[ ] BG 1080×1920  </li>
+<li>[ ] Иконки 256 / 512  </li>
+<li>[ ] Положить в <code>refs/art/</code> с подпапками <code>bg/</code>, <code>cards/</code>, <code>ui/</code>, <code>vfx/</code>  </li>
+<li>[ ] Обновить список в <code>refs/art/MANIFEST.md</code> (создать при сдаче)</li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Спрайты и анимация <span class="muted">SPRITE_ANIM_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="sprite_anim_prompts">SPRITE_ANIM_PROMPTS — Легенды Поля</h1>
+<blockquote>
+<p>Для анимации/атласов. Канон: <code>docs/DESIGN_LLM.md</code> §7, §9.<br />
+Выход: <code>refs/sprites/</code> → <code>public/assets/atlases/</code>.<br />
+Формат: PNG sheet + JSON hash (Phaser) или отдельные кадры + описание сборки.</p>
+</blockquote>
+<h2 id="global-rules">Global rules</h2>
+<ul>
+<li>Transparent background.  </li>
+<li>Power-of-two atlas ≤ 2048².  </li>
+<li>Padding 2px, no rotation.  </li>
+<li>Naming: <code>{animName}_{frameIndex0padded}</code> e.g. <code>vfx_goal_burst_00</code>.  </li>
+<li>Document pivot in MANIFEST.</li>
+</ul>
+<hr />
+<h2 id="1-card-fx-atlas-atlas_cards_fx">1. Card FX atlas — <code>atlas_cards_fx</code></h2>
+<h3 id="prompt-shimmer-sr">Prompt — shimmer SR</h3>
+<pre><code class="language-text">Sprite sheet animation 8 frames on transparent, vertical card-shaped holographic shimmer purple neon edge pulse, football CCG card glow, consistent 256x384 frame boxes in a row, no text, clean edges
+</code></pre>
+<h3 id="prompt-shimmer-ur">Prompt — shimmer UR</h3>
+<pre><code class="language-text">Sprite sheet 12 frames transparent, vertical card gold holographic shimmer with sparkle particles, 256x384 cells, football CCG ultra rare glow, no text
+</code></pre>
+<h3 id="prompt-place-drop">Prompt — place drop</h3>
+<pre><code class="language-text">6 frames transparent, card landing squash and neon dust, 256x384 cells, subtle, mobile game
+</code></pre>
+<h3 id="prompt-damage-flash">Prompt — damage flash</h3>
+<pre><code class="language-text">4 frames transparent, card white flash then red edge hit, 256x384, readable silhouette preserved
+</code></pre>
+<h3 id="timing">Timing</h3>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>Frames</th>
+<th>FPS</th>
+<th>Loop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>card_idle_shimmer_sr</td>
+<td>8</td>
+<td>12</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>card_idle_shimmer_ur</td>
+<td>12</td>
+<td>12</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>card_place_drop</td>
+<td>6</td>
+<td>16</td>
+<td>no</td>
+</tr>
+<tr>
+<td>card_damage_flash</td>
+<td>4</td>
+<td>20</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-battle-vfx-atlas-atlas_vfx_battle">2. Battle VFX atlas — <code>atlas_vfx_battle</code></h2>
+<h3 id="prompt-ball-streak">Prompt — ball streak</h3>
+<pre><code class="language-text">8 frames transparent 128x128 cells, cyan neon football energy streak moving right, motion blur, cyber sports VFX, no text
+</code></pre>
+<h3 id="prompt-goal-burst">Prompt — goal burst</h3>
+<pre><code class="language-text">10 frames transparent 256x256, neon goal explosion with cyan and gold particles, center pivot, stadium light feel, mobile VFX
+</code></pre>
+<h3 id="prompt-synergy-pulse">Prompt — synergy pulse</h3>
+<pre><code class="language-text">8 frames transparent 512x128, horizontal neon green energy link pulsing, tactical connection, soft glow
+</code></pre>
+<h3 id="prompt-skill-cast-ring">Prompt — skill cast ring</h3>
+<pre><code class="language-text">8 frames 256x256 transparent, circular runic neon ring expanding around center, purple-cyan, for skill cast
+</code></pre>
+<h3 id="prompt-intervention-flash">Prompt — intervention flash</h3>
+<pre><code class="language-text">6 frames 256x128, UI-friendly gold whistle flash / timeout burst, flat readable
+</code></pre>
+<h3 id="timing_1">Timing</h3>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>Frames</th>
+<th>FPS</th>
+<th>Loop</th>
+<th>Trigger</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vfx_ball_streak</td>
+<td>8</td>
+<td>24</td>
+<td>no</td>
+<td>pass/attack token</td>
+</tr>
+<tr>
+<td>vfx_goal_burst</td>
+<td>10</td>
+<td>20</td>
+<td>no</td>
+<td>goal</td>
+</tr>
+<tr>
+<td>pitch_syn_pulse</td>
+<td>8</td>
+<td>10</td>
+<td>yes</td>
+<td>active synergy ≥2</td>
+</tr>
+<tr>
+<td>vfx_skill_ring</td>
+<td>8</td>
+<td>16</td>
+<td>no</td>
+<td>skill cast</td>
+</tr>
+<tr>
+<td>vfx_timeout_flash</td>
+<td>6</td>
+<td>18</td>
+<td>no</td>
+<td>intervention</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-ui-micro-animations-atlas_ui_fx">3. UI micro-animations — <code>atlas_ui_fx</code></h2>
+<h3 id="prompt">Prompt</h3>
+<pre><code class="language-text">UI VFX sprite sheet transparent: currency coin collect 6 frames, gem sparkle 6 frames, button ripple 4 frames, pack glow pulse 8 frames, cyber navy-gold neon, 128x128 cells
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>Frames</th>
+<th>FPS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>fx_ui_coin_collect</td>
+<td>6</td>
+<td>16</td>
+</tr>
+<tr>
+<td>fx_ui_gem_sparkle</td>
+<td>6</td>
+<td>12</td>
+</tr>
+<tr>
+<td>fx_ui_btn_ripple</td>
+<td>4</td>
+<td>20</td>
+</tr>
+<tr>
+<td>fx_ui_pack_pulse</td>
+<td>8</td>
+<td>10</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-pack-open-atlas_pack_open">4. Pack open — <code>atlas_pack_open</code></h2>
+<pre><code class="language-text">12 frames transparent 512x512, holographic card pack bursting open with light and floating card silhouettes, gold-cyan, mobile gacha-like reveal but tasteful, no text no skulls
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>Frames</th>
+<th>FPS</th>
+<th>Loop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ui_pack_open</td>
+<td>12</td>
+<td>16</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-phaser-atlas-json-contract">5. Phaser atlas JSON contract</h2>
+<pre><code class="language-json">{
+  &quot;atlasKey&quot;: &quot;atlas_vfx_battle&quot;,
+  &quot;texture&quot;: &quot;assets/atlases/atlas_vfx_battle.png&quot;,
+  &quot;data&quot;: &quot;assets/atlases/atlas_vfx_battle.json&quot;,
+  &quot;anims&quot;: [
+    { &quot;key&quot;: &quot;vfx_goal_burst&quot;, &quot;prefix&quot;: &quot;vfx_goal_burst_&quot;, &quot;start&quot;: 0, &quot;end&quot;: 9, &quot;frameRate&quot;: 20, &quot;repeat&quot;: 0 }
+  ]
+}
+</code></pre>
+<hr />
+<h2 id="6-delivery-checklist">6. Delivery checklist</h2>
+<ul>
+<li>[ ] Sheets ≤ 2048  </li>
+<li>[ ] Frame sizes match DESIGN_LLM  </li>
+<li>[ ] MANIFEST with pivots + timings  </li>
+<li>[ ] Preview GIF/MP4 optional в <code>refs/sprites/preview/</code>  </li>
+<li>[ ] No baked text</li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Интерфейс <span class="muted">UI_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="ui_prompts">UI_PROMPTS — Легенды Поля</h1>
+<blockquote>
+<p>Для UI/UX агента. Канон: <code>docs/DESIGN_LLM.md</code> §4–5, §9.<br />
+Выход: макеты в <code>refs/ui/</code> + нарезанный UI kit → <code>public/assets/images/ui/</code>.<br />
+Платформа: мобильный портрет 720×1280, Яндекс Игры.</p>
+</blockquote>
+<h2 id="style-lock">Style lock</h2>
+<pre><code class="language-text">Holographic glass UI, dark navy panels #0B1B33, neon cyan #3DE7FF and gold #FFC84A edges, high contrast white text, cyber football manager aesthetic, large thumb-friendly buttons, no clutter, no real logos, Russian labels when mocking screens
+</code></pre>
+<h2 id="hit-target-rules">Hit target rules</h2>
+<ul>
+<li>Min 64×64 logical.  </li>
+<li>Primary CTA высота ≥ 88.  </li>
+<li>Отступ от краёв ≥ 24.  </li>
+<li>Safe bottom 64 для жестов браузера.</li>
+</ul>
+<hr />
+<h2 id="screen-prompts-">Screen prompts (генерация вайрфрейм-мокапов)</h2>
+<h3 id="hub">Hub</h3>
+<pre><code class="language-text">Mobile game UI mockup 9:16, football club hub, top currency bar coins and gems, club banner with form and morale meters, big PLAY button center, bottom nav Deck Market Shop, holographic navy glass, neon accents, Russian labels: Играть Колода Рынок Магазин, clean no clutter
+</code></pre>
+<h3 id="placement">Placement</h3>
+<pre><code class="language-text">Mobile UI 9:16 football autochess placement, pitch with 7 card slots formation 2-3-2 plus GK, hand of cards bottom, synergy chips row, cost 12/18, reroll button, CTA В БОЙ, neon tactical grid, dark stadium bg, thumb friendly
+</code></pre>
+<h3 id="autobattle-hud">Autobattle HUD</h3>
+<pre><code class="language-text">Mobile UI overlay only on transparent: score 2:1, half and tick counter, skill energy bar, three intervention buttons Тайм-аут Замена Скилл, speed x2 toggle, holographic cyber sports, large controls, no blocking center pitch
+</code></pre>
+<h3 id="results">Results</h3>
+<pre><code class="language-text">Mobile results screen victory, score, MMR change, soft currency reward, OK button, subtle space for interstitial ad banner bottom, navy gold holographic, Russian ПОБЕДА
+</code></pre>
+<h3 id="deck-card-detail">Deck / Card detail</h3>
+<pre><code class="language-text">Card collection grid UI and card detail panel with stats ATK DEF SPD SKL, upgrade button, dust convert, rarity frame gold/purple, cyber sports, Russian labels
+</code></pre>
+<h3 id="market">Market</h3>
+<pre><code class="language-text">Transfer market UI three offer cards with soft/hard prices, refresh button, daily timer, holographic shop stalls vibe, mobile 9:16
+</code></pre>
+<h3 id="shop-packs">Shop / Packs</h3>
+<pre><code class="language-text">IAP shop UI: daily pack, premium pack, mega pack, battle pass, remove ads, clear prices, compliance friendly wording Набор карт, no gambling imagery
+</code></pre>
+<h3 id="pass">Pass</h3>
+<pre><code class="language-text">Battle pass track horizontal nodes free vs premium, football cyber theme, claim buttons, level 7 highlighted
+</code></pre>
+<hr />
+<h2 id="ui-kit-generation-prompt">UI kit generation prompt</h2>
+<pre><code class="language-text">Complete mobile UI kit on transparent: primary button up/down/disabled, secondary button, close icon, modal panel, tooltip, toast bar, tab pills, toggle, progress bars, currency bar, scrollbar, neon cyan gold on navy glass, cyber football, no text baked into buttons except optional generic OK
+</code></pre>
+<h3 id="asset-ids-to-export">Asset IDs to export</h3>
+<pre><code class="language-text">ui_btn_primary_up / _down / _dis
+ui_btn_secondary_up / _down / _dis
+ui_modal_panel
+ui_toast_bg
+ui_tooltip_bg
+ui_bar_xp
+ui_bar_energy
+ui_tab_on / ui_tab_off
+ui_icon_close
+ui_icon_settings
+ui_icon_back
+ui_slot_card_empty
+ui_skill_banner
+ui_pass_node_free / ui_pass_node_prem / ui_pass_node_claimed
+ui_pack_daily / ui_pack_premium / ui_pack_mega
+ui_card_frame_n / _r / _sr / _ur
+</code></pre>
+<hr />
+<h2 id="component-states-matrix">Component states matrix</h2>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>States</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BtnPrimary</td>
+<td>up, down, disabled, loading</td>
+</tr>
+<tr>
+<td>CardView</td>
+<td>idle, selected, dragging, invalid</td>
+</tr>
+<tr>
+<td>SlotView</td>
+<td>empty, validHighlight, invalid, occupied</td>
+</tr>
+<tr>
+<td>SynergyChip</td>
+<td>inactive, active2, active3, active4</td>
+</tr>
+<tr>
+<td>InterventionBtn</td>
+<td>available, used, disabled</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ascii-layout-notes">ASCII → layout notes (канон)</h2>
+<p>См. wireframes в DESIGN_LLM §4.2–4.5. Не упрощать до «карточного дашборда»: Hub = один клубный баннер + один CTA.</p>
+<h2 id="motion-ui">Motion (UI)</h2>
+<table>
+<thead>
+<tr>
+<th>Interaction</th>
+<th>Motion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Open modal</td>
+<td>200ms fade+scale 0.96→1</td>
+</tr>
+<tr>
+<td>Currency gain</td>
+<td>fly to bar 400ms</td>
+</tr>
+<tr>
+<td>Synergy unlock</td>
+<td>chip pop 300ms</td>
+</tr>
+<tr>
+<td>Invalid drop</td>
+<td>shake 200ms</td>
+</tr>
+</tbody>
+</table>
+<h2 id="accessibility">Accessibility</h2>
+<ul>
+<li>Контраст текста ≥ 4.5:1.  </li>
+<li>Не передавать смысл только цветом (роль = иконка+цвет).  </li>
+<li>Reduce motion: отключает shimmer loops.</li>
+</ul>
+<h2 id="delivery">Delivery</h2>
+<ul>
+<li>[ ] <code>refs/ui/screens/*.png</code> мокапы  </li>
+<li>[ ] <code>refs/ui/kit/</code> нарезанные PNG  </li>
+<li>[ ] <code>refs/ui/NOTES.md</code> отступы/сетка 8px  </li>
+<li>[ ] Русские строки совпадают с <code>i18n</code> ключами из DESIGN_LLM</li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Уровни <span class="muted">LEVEL_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="level_prompts">LEVEL_PROMPTS — Легенды Поля</h1>
+<blockquote>
+<p>Для контент-агента (матчи, сезон, туториал, баланс).<br />
+Канон: <code>docs/DESIGN_LLM.md</code> §3, §10.<br />
+Выход: JSON в <code>public/assets/data/</code> (+ черновики в <code>refs/levels/</code>).<br />
+Код не писать. Физический футбол не придумывать.</p>
+</blockquote>
+<h2 id="grammar-reminder">Grammar reminder</h2>
+<p>Матч = <code>match_recipe</code> (seed, opponent_tier, synergy_bias, layout, rewards).<br />
+Поле = слоты 5–8, не клетки match-3.</p>
+<hr />
+<h2 id="prompt-season-calendar">Prompt — сгенерировать season calendar</h2>
+<pre><code class="language-text">Сгенерируй JSON season-calendar.json для football CCG autochess игры Легенды Поля.
+8 скриптовых матчей сезона + meta.
+Поля: id, week, mode, opponent_tier, opponent_synergy_bias[], board_layout, rewards.soft[min,max], rewards.xp_pass, notes.
+Кривая сложности: W1 easy→normal, W2 normal, W3 normal+bias, W4 hard derby/boss.
+Каждый 3-й матч derby с бонусом soft.
+Только вымышленные имена соперников-клубов.
+Без физики мяча.
+</code></pre>
+<h3 id="expected-shape">Expected shape</h3>
+<pre><code class="language-json">{
+  &quot;seasonId&quot;: &quot;arena_s1&quot;,
+  &quot;durationDays&quot;: 42,
+  &quot;matches&quot;: [
+    {
+      &quot;id&quot;: &quot;s1_m1&quot;,
+      &quot;week&quot;: 1,
+      &quot;mode&quot;: &quot;quick&quot;,
+      &quot;opponent_tier&quot;: &quot;easy&quot;,
+      &quot;opponent_synergy_bias&quot;: [&quot;Wall&quot;],
+      &quot;board_layout&quot;: &quot;layout_732_gk&quot;,
+      &quot;opponent_club_ru&quot;: &quot;Неон Юнайтед&quot;,
+      &quot;rewards&quot;: { &quot;soft&quot;: [80, 100], &quot;xp_pass&quot;: 15 }
+    }
+  ]
+}
+</code></pre>
+<hr />
+<h2 id="prompt-tutorial-match">Prompt — tutorial match</h2>
+<pre><code class="language-text">Опиши tutorial match JSON + step script для онбординга:
+T1 Hub→Play, T2 place FWD into FWD slot, T3 show synergy 2, T4 use intervention, T5 collect reward.
+Opponent easy fixed deck with 1 weak synergy.
+Max duration 4 minutes.
+Include tip strings in Russian ≤ 60 chars each.
+</code></pre>
+<hr />
+<h2 id="prompt-ai-decks-by-tier">Prompt — AI decks by tier</h2>
+<pre><code class="language-text">Сгенерируй 30 opponent decks (10 easy / 10 normal / 10 hard) referencing card ids pattern card_{role}_{name}_{rarity}.
+Constraints: cost ≤ 18 easy, ≤ 20 normal, ≤ 22 hard; always 1 GK; prefer one synergy cluster.
+Output JSON array.
+</code></pre>
+<hr />
+<h2 id="prompt-balance-table-week1-f2p">Prompt — balance table week1 F2P</h2>
+<pre><code class="language-text">Построй таблицу симуляции F2P первой недели:
+matches/day=5, winrate=0.55, soft income/spend on upgrades, pack progress.
+Verify no hard wall before ranked unlock week3.
+Return markdown table + verdict PASS/FAIL.
+</code></pre>
+<hr />
+<h2 id="prompt-pack-contents">Prompt — pack contents</h2>
+<pre><code class="language-text">Сгенерируй packs.json:
+daily_rv, starter, premium, mega.
+Fields: id, priceType, priceAmount, cardCount, rarityWeights, pityProgress, copy_ru (без азартных слов).
+UR pity guarantee at 40 premium-equivalent points.
+</code></pre>
+<hr />
+<h2 id="layout-definitions-to-author">Layout definitions to author</h2>
+<h3 id="layout_732_gk"><code>layout_732_gk</code></h3>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;layout_732_gk&quot;,
+  &quot;slots&quot;: [
+    { &quot;id&quot;: &quot;gk&quot;, &quot;zone&quot;: &quot;GK&quot;, &quot;allowedRoles&quot;: [&quot;GK&quot;], &quot;x&quot;: 0.5, &quot;y&quot;: 0.82 },
+    { &quot;id&quot;: &quot;def1&quot;, &quot;zone&quot;: &quot;DEF&quot;, &quot;allowedRoles&quot;: [&quot;DEF&quot;, &quot;FLEX&quot;], &quot;x&quot;: 0.35, &quot;y&quot;: 0.68 },
+    { &quot;id&quot;: &quot;def2&quot;, &quot;zone&quot;: &quot;DEF&quot;, &quot;allowedRoles&quot;: [&quot;DEF&quot;, &quot;FLEX&quot;], &quot;x&quot;: 0.65, &quot;y&quot;: 0.68 },
+    { &quot;id&quot;: &quot;mid1&quot;, &quot;zone&quot;: &quot;MID&quot;, &quot;allowedRoles&quot;: [&quot;MID&quot;, &quot;FLEX&quot;], &quot;x&quot;: 0.25, &quot;y&quot;: 0.48 },
+    { &quot;id&quot;: &quot;mid2&quot;, &quot;zone&quot;: &quot;MID&quot;, &quot;allowedRoles&quot;: [&quot;MID&quot;, &quot;FLEX&quot;], &quot;x&quot;: 0.5, &quot;y&quot;: 0.48 },
+    { &quot;id&quot;: &quot;mid3&quot;, &quot;zone&quot;: &quot;MID&quot;, &quot;allowedRoles&quot;: [&quot;MID&quot;, &quot;FLEX&quot;], &quot;x&quot;: 0.75, &quot;y&quot;: 0.48 },
+    { &quot;id&quot;: &quot;fwd1&quot;, &quot;zone&quot;: &quot;FWD&quot;, &quot;allowedRoles&quot;: [&quot;FWD&quot;, &quot;FLEX&quot;], &quot;x&quot;: 0.38, &quot;y&quot;: 0.28 },
+    { &quot;id&quot;: &quot;fwd2&quot;, &quot;zone&quot;: &quot;FWD&quot;, &quot;allowedRoles&quot;: [&quot;FWD&quot;, &quot;FLEX&quot;], &quot;x&quot;: 0.62, &quot;y&quot;: 0.28 }
+  ]
+}
+</code></pre>
+<h3 id="layout_532"><code>layout_532</code></h3>
+<p>5 слотов без лишних MID — для туториала/быстрых матчей (упрощение).</p>
+<hr />
+<h2 id="content-acceptance">Content acceptance</h2>
+<ul>
+<li>[ ] 8 season matches  </li>
+<li>[ ] 1 tutorial  </li>
+<li>[ ] 30 AI decks  </li>
+<li>[ ] packs.json + pity  </li>
+<li>[ ] 2 layouts  </li>
+<li>[ ] F2P week1 PASS  </li>
+<li>[ ] Все имена вымышленные  </li>
+</ul>
+<h2 id="delivery-paths">Delivery paths</h2>
+<pre><code class="language-text">refs/levels/season-calendar.draft.json
+refs/levels/tutorial.draft.json
+refs/levels/ai-decks.draft.json
+refs/levels/packs.draft.json
+refs/levels/layouts.draft.json
+→ после аппрува: public/assets/data/*.json
+</code></pre></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Код-агент <span class="muted">CODE_AGENT_PROMPT.md</span></summary>
+            <article class="doc"><h1 id="code_agent_prompt">CODE_AGENT_PROMPT — Легенды Поля</h1>
+<pre><code class="language-text">Ты — единственный разработчик игры «Легенды Поля» (slug: legends-of-the-pitch) для Яндекс Игр.
+
+## ЖЁСТКИЕ ПРАВИЛА
+1) Код писать ТОЛЬКО если статус дизайна CONFIRMED в management/portfolio-dashboard.html (или явное подтверждение продюсера). Если DRAFT/REVIEW — остановись и скажи, что ждёшь CONFIRMED.
+2) Стек: Phaser 3 + TypeScript + Vite. Портрет 720×1280 logical.
+3) НЕ делать: физический футбол, полный Football Manager, realtime PvP, реальные клубы/имена звёзд.
+4) ДЕЛАТЬ: CCG колода + расстановка на 5–8 слотах + тиковый автобой + менеджмент lite (≤3 экрана) + packs/pass/ads.
+5) Канон: games/legends-of-the-pitch/docs/DESIGN_LLM.md (при конфликте он побеждает). Концепт: docs/concepts/04-legends-of-the-pitch.md.
+6) Ассеты подключать строго по путям §9 DESIGN_LLM. Asset ID = texture key.
+7) Не коммить секреты. Не --no-verify. Не трогать другие games/*.
+
+## ПОРЯДОК РАБОТЫ (Gate-friendly)
+G0: package.json Vite+Phaser+TS, Boot→Preload→Hub пустые сцены, STATUS.md.
+G1: data-driven cards JSON + DeckService + Placement board.
+G2: TickEngine autobattle + synergies + skills + AI easy/normal.
+G3: Results, economy, club form/morale, market soft.
+G4: Yandex SDK facade: cloud save, rewarded daily pack, interstitial post-match, payments packs/pass/remove ads, leaderboard.
+G5: Tutorial, pass light, polish, STORE_CHECKLIST, dist.
+
+## ACCEPTANCE (из DESIGN_LLM — не ослаблять)
+- 40 карт, валидный cost/GK
+- Бой детерминирован seed
+- 1 вмешательство за тайм
+- Pity UR
+- Cloud restore после kill tab
+- 50 матчей vs bot без краша
+- Copy паков без азартных формулировок
+- Smoke: cold start, tutorial, loop×3, RV path, IS path, shop mock, no red console
+
+## СТРУКТУРА src/
+main.ts, scenes/*, systems/{matchFlow,tickEngine,synergyService,deckService,economyService,pityService,saveService}.ts, sdk/ygSdkFacade.ts, data/, ui/
+
+## DoD
+Store-ready midcore MVP по DESIGN.md скоупу. Срезай polish, не срезай: placement + autobattle synergies + packs/pity + cloud save.
+</code></pre>
+<h2 id="confirmed">Локальные команды (после CONFIRMED)</h2>
+<pre><code class="language-bash">cd games/legends-of-the-pitch
+npm install
+npm run dev
+npm run build
+</code></pre>
+<h2 id="statusmd-template">STATUS.md template</h2>
+<pre><code class="language-markdown"># STATUS — legends-of-the-pitch
+Design: CONFIRMED|DRAFT
+Gate: 0-5
+Last update: YYYY-MM-DD
+Done:
+- ...
+Next:
+- ...
+Blockers:
+- ...
+</code></pre></article>
+          </details>
+    </section>
+
+    <section class="tab-panel" id="tab-manage">
+      <div class="panel manage-panel" data-manage-slug="legends-of-the-pitch">
+        <h3>Статус дизайна</h3>
+        <div class="seg-btns" data-role="design-status">
+          <button data-v="DRAFT">Черновик</button>
+          <button data-v="REVIEW">На ревью</button>
+          <button data-v="CONFIRMED">Подтверждён</button>
+          <button data-v="BLOCKED">Заблокирован</button>
+        </div>
+
+        <h3>Готовность документов</h3>
+        <label class="check"><input type="checkbox" data-k="classic"/> Классический GDD прочитан</label>
+        <label class="check"><input type="checkbox" data-k="llm"/> LLM-спека прочитана</label>
+        <label class="check"><input type="checkbox" data-k="refs"/> Референсы проверены</label>
+
+        <h3>Гейт разработки</h3>
+        <p class="muted">Доступен только после статуса «Подтверждён».</p>
+        <select data-role="gate">
+          <option value="—">— не начато</option>
+          <option value="G0">G0 — Каркас</option>
+          <option value="G1">G1 — Вертикальный слайс</option>
+          <option value="G2">G2 — Контент MVP</option>
+          <option value="G3">G3 — Мета и удержание</option>
+          <option value="G4">G4 — SDK монетизация</option>
+          <option value="G5">G5 — Готово к стору</option>
+        </select>
+
+        <h3>Заметки</h3>
+        <textarea data-role="note" rows="5" placeholder="Комментарии к ревью..."></textarea>
+      </div>
+    </section>
+    
+  </main>
+</div>
+<script>
+window.PORTFOLIO_GAMES = [{"id": "01", "slug": "neon-bullet", "name": "Neon Bullet", "wave": 3, "prio": "P1"}, {"id": "02", "slug": "deadline-escape", "name": "Работник месяца", "wave": 1, "prio": "P0"}, {"id": "03", "slug": "tide-of-relics", "name": "Море Реликвий", "wave": 4, "prio": "P1"}, {"id": "04", "slug": "legends-of-the-pitch", "name": "Легенды Поля", "wave": 4, "prio": "P1"}, {"id": "05", "slug": "merge-bazaar", "name": "Базар Слияний", "wave": 1, "prio": "P0"}, {"id": "06", "slug": "crystal-archipelago", "name": "Кристаллы Архипелага", "wave": 2, "prio": "P0"}, {"id": "07", "slug": "idle-forge", "name": "Кузница Вечности", "wave": 2, "prio": "P0"}, {"id": "08", "slug": "cozy-plot", "name": "Уютный Участок", "wave": 3, "prio": "P1"}, {"id": "09", "slug": "auto-towers", "name": "Автобашни", "wave": 3, "prio": "P1"}, {"id": "10", "slug": "night-courier", "name": "Ночной Курьер", "wave": 1, "prio": "P0"}];
+window.CURRENT_SLUG = "legends-of-the-pitch";
+</script>
+<script src="../demos/demo-engine.js"></script>
+<script src="../demos/demos-01-02.js"></script>
+<script src="../demos/demos-03-06.js"></script>
+<script src="../demos/demos-07-10.js"></script>
+<script src="../assets/dashboard.js"></script>
+</body>
+</html>

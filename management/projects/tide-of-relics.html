@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Море Реликвий — Портфель Яндекс Игры</title>
+<link rel="stylesheet" href="../assets/dashboard.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="../portfolio-dashboard.html">Портфель<br/><span>Яндекс Игры</span></a>
+    <div class="side-section">Навигация</div>
+    <a class="nav-link" href="../portfolio-dashboard.html">Все проекты</a>
+    <div class="side-section">Игры</div>
+    <div class="nav-games"><a class="nav-game " href="neon-bullet.html">01. Neon Bullet</a>
+<a class="nav-game " href="deadline-escape.html">02. Работник месяца</a>
+<a class="nav-game active" href="tide-of-relics.html">03. Море Реликвий</a>
+<a class="nav-game " href="legends-of-the-pitch.html">04. Легенды Поля</a>
+<a class="nav-game " href="merge-bazaar.html">05. Базар Слияний</a>
+<a class="nav-game " href="crystal-archipelago.html">06. Кристаллы Архипелага</a>
+<a class="nav-game " href="idle-forge.html">07. Кузница Вечности</a>
+<a class="nav-game " href="cozy-plot.html">08. Уютный Участок</a>
+<a class="nav-game " href="auto-towers.html">09. Автобашни</a>
+<a class="nav-game " href="night-courier.html">10. Ночной Курьер</a></div>
+    <div class="side-foot">Код запрещён до статуса<br/><strong>Подтверждён</strong></div>
+  </aside>
+  <main class="main">
+
+    <header class="page-head project-head">
+      <div class="crumb"><a href="../portfolio-dashboard.html">← Все проекты</a></div>
+      <div class="project-hero">
+        <div class="hero-art" style="background-image:url('../../games/tide-of-relics/refs/art/key-art.png')"></div>
+        <div>
+          <div class="muted">03 · P1 · Волна 4 — флагманы</div>
+          <h1>Море Реликвий</h1>
+          <p class="lead">Naval FTL-like · Стратегия midcore / 20–40</p>
+          <div class="inline-status">
+            Статус дизайна: <span class="status-pill" data-status-for="tide-of-relics">Черновик</span>
+            · Гейт: <span data-gate-label-for="tide-of-relics">—</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="overview">Обзор</button>
+      <button class="tab" data-tab="demo">Демка</button>
+      <button class="tab" data-tab="classic">Классический диздок</button>
+      <button class="tab" data-tab="llm">LLM-спека</button>
+      <button class="tab" data-tab="refs">Референсы</button>
+      <button class="tab" data-tab="prompts">Промпты</button>
+      <button class="tab" data-tab="manage">Управление</button>
+    </nav>
+
+    <section class="tab-panel active" id="tab-overview">
+      <div class="two-col">
+        <div class="panel">
+          <h3>Что смотреть</h3>
+          <ul class="checklist-static">
+            <li><strong>Демка</strong> — сначала пощупай feel простыми фигурами</li>
+            <li>Классический GDD — видение, лупы, экономика</li>
+            <li>LLM-спека — контракты для агентов, UI, уровни, ассеты</li>
+            <li>Референсы — арт, вайрфреймы, уровни, спрайты</li>
+            <li>Промпты — готовые задания для арт/код агентов</li>
+          </ul>
+          <h3>Правило</h3>
+          <p class="warn">Пока статус не <strong>Подтверждён</strong>, папку <code>src/</code> не создавать. CONFIRM только после playtest демки (F1→F2). См. <code>docs/METHODOLOGY.md</code>.</p>
+        </div>
+        <div class="panel">
+          <h3>Файлы проекта</h3>
+          <ul class="file-list">
+            <li><code>games/tide-of-relics/docs/DESIGN.md</code></li>
+            <li><code>games/tide-of-relics/docs/DESIGN_LLM.md</code></li>
+            <li><code>games/tide-of-relics/docs/REFS.md</code></li>
+            <li><code>games/tide-of-relics/prompts/*.md</code></li>
+            <li><code>games/tide-of-relics/refs/**</code></li>
+            <li><code>management/demos/</code> — feel demo</li>
+          </ul>
+          <div class="progress big"><i data-progress-for="tide-of-relics"></i></div>
+          <div class="muted" style="margin-top:8px">Прогресс готовности (дизайн + гейты)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-demo">
+      <div class="panel demo-wrap">
+        <h3>Feel-демка (простые фигуры)</h3>
+        <p class="lead">Цель — проверить управление и «хочу ещё раз». На телефоне удобнее через LAN-сервер.</p>
+        <div class="lan-box">С телефона: запусти <code>serve-dashboard.bat</code> на ПК, открой URL из окна батника (одна Wi-Fi сеть).</div>
+        <p class="muted" style="margin:0 0 8px">«Работник месяца» = ядро chas-pik (сетка, 3 колонны, 09:00→18:00).</p>
+        <p class="demo-hint" id="demo-hint">Загрузка демки…</p>
+        <canvas id="feel-demo" width="360" height="640" aria-label="Feel demo"></canvas>
+        <div class="demo-actions">
+          <button class="btn" type="button" id="demo-restart">Рестарт</button>
+          <span class="muted">Стик: левая половина экрана · WASD/стрелки · кнопки справа</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-classic">
+      <article class="doc"><h1 id="tide-of-relics-game-design-document">Море Реликвий (Tide of Relics) — Game Design Document</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Slug</strong></td>
+<td><code>tide-of-relics</code></td>
+</tr>
+<tr>
+<td><strong>Рабочее название</strong></td>
+<td>Море Реликвий</td>
+</tr>
+<tr>
+<td><strong>EN</strong></td>
+<td>Tide of Relics</td>
+</tr>
+<tr>
+<td><strong>Жанр</strong></td>
+<td>Roguelike-стратегия (FTL-like), naval fantasy</td>
+</tr>
+<tr>
+<td><strong>Платформа</strong></td>
+<td>Яндекс Игры (HTML5)</td>
+</tr>
+<tr>
+<td><strong>Стек</strong></td>
+<td>Phaser 3 + TypeScript + Vite</td>
+</tr>
+<tr>
+<td><strong>Сегмент ЦА</strong></td>
+<td>C — стратегия / midcore 20–40</td>
+</tr>
+<tr>
+<td><strong>Приоритет</strong></td>
+<td>P1</td>
+</tr>
+<tr>
+<td><strong>Статус дизайна</strong></td>
+<td><code>DRAFT</code> — <strong>не кодировать до <code>CONFIRMED</code></strong></td>
+</tr>
+<tr>
+<td><strong>Версия</strong></td>
+<td>1.0</td>
+</tr>
+<tr>
+<td><strong>Дата</strong></td>
+<td>2026-07-17</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-vision">1. Vision</h2>
+<p><strong>One-liner:</strong> Проведи эскадру через опасный архипелаг: управляй системами корабля, выбирай маршруты и активируй фэнтезийные скиллы — как FTL, но на море.</p>
+<p><strong>Fantasy:</strong> Мир островов и проклятых течений. Корабли: бриг, галеон, драккар, арканоносец. Враги: пираты, морская нечисть, имперский флот. Реликвии — активные скиллы (шторм, щупальца, огненные ядра).</p>
+<p><strong>Эмоциональный хук:</strong> «Ещё один узел — и босс акта», напряжённый бой с паузой и распределением энергии, последствия выборов в событиях.</p>
+<p><strong>Роль в портфеле:</strong> midcore IAP-heavy LTV-двигатель сегмента C.</p>
+<hr />
+<h2 id="2-design-pillars">2. Design Pillars</h2>
+<ol>
+<li><strong>Systems under fire</strong> — бой = распределение энергии по подсистемам под давлением.</li>
+<li><strong>Meaningful routes</strong> — карта узлов с tradeoff risk/reward.</li>
+<li><strong>Relics as identity</strong> — билды через реликвии, не через сырой DPS paywall.</li>
+<li><strong>Pause-friendly mobile</strong> — pause-any-time; крупные hit targets систем.</li>
+<li><strong>Fair premium</strong> — платные корабли = другой стиль, не строго сильнее.</li>
+</ol>
+<hr />
+<h2 id="3-audience">3. Audience</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Primary</strong></td>
+<td>22–38, любят FTL/Slay the Spire/roguelike strategy</td>
+</tr>
+<tr>
+<td><strong>Secondary</strong></td>
+<td>казуалы на Easy + сильный туториал</td>
+</tr>
+<tr>
+<td><strong>Дифференциатор</strong></td>
+<td>naval fantasy + relic skills + Yandex weekly seeded run</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-core-loop-815-mvp">4. Core Loop (8–15 мин ран MVP)</h2>
+<pre><code>Меню → выбор корабля/капитана → карта акта
+  → узел: бой / событие / магазин / элита / босс
+  → бой (realtime + pause): энергия → щиты/пушки/паруса/аркана
+  → лут, ремонт, найм
+Смерть рана → мета-анлоки → новый ран
+</code></pre>
+<hr />
+<h2 id="5-systems-overview">5. Systems Overview</h2>
+<h3 id="51-ship-systems">5.1 Ship systems</h3>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Функция</th>
+<th>Энергия</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hull</td>
+<td>HP корабля</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Sails</td>
+<td>скорость / побег</td>
+<td>1–3</td>
+</tr>
+<tr>
+<td>Guns</td>
+<td>урон</td>
+<td>1–4</td>
+</tr>
+<tr>
+<td>Shield</td>
+<td>поглощение</td>
+<td>1–3</td>
+</tr>
+<tr>
+<td>Arcana</td>
+<td>заряд реликвий / магия</td>
+<td>1–3</td>
+</tr>
+</tbody>
+</table>
+<p>Игрок кликает систему, чтобы ± энергию из общего пула <code>reactorPower</code>.</p>
+<h3 id="52-combat">5.2 Combat</h3>
+<ul>
+<li>Realtime с паузой (кнопка / hold).</li>
+<li>Вражеские корабли стреляют по системам / корпусу.</li>
+<li>Победа: враг hull≤0. Поражение: player hull≤0.</li>
+<li>Побег: если sails powered и progress bar escape заполнен.</li>
+</ul>
+<h3 id="53-map">5.3 Map</h3>
+<p>Узлы: <code>combat</code>, <code>elite</code>, <code>event</code>, <code>shop</code>, <code>treasure</code>, <code>boss</code>.<br />
+MVP: 1 акт, 12–16 узлов + босс. Live цель: 3 акта.</p>
+<h3 id="54-events">5.4 Events</h3>
+<p>Текст + 2–3 выбора с рисками (урон / реликвия / монеты / проклятие).</p>
+<h3 id="55-relics">5.5 Relics</h3>
+<p>Активные скиллы на CD + пассивы. Примеры: Storm Call, Tentacles, Fire Cores, Fog Veil, Tide Mend.</p>
+<h3 id="56-ships-mvp">5.6 Ships (MVP)</h3>
+<table>
+<thead>
+<tr>
+<th>Ship</th>
+<th>Style</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Brig (start)</td>
+<td>сбалансированный</td>
+</tr>
+<tr>
+<td>Longship</td>
+<td>скорость/побег</td>
+</tr>
+<tr>
+<td>Galleon</td>
+<td>танки/пушки</td>
+</tr>
+<tr>
+<td>Arcanist (unlock/IAP alt)</td>
+<td>магия</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-meta">6. Meta</h2>
+<ul>
+<li>Анлок кораблей и стартовых реликвий.  </li>
+<li>Древо капитана (minor perks).  </li>
+<li>Achievements.  </li>
+<li>Weekly seeded run + leaderboard.  </li>
+<li>Cloud save обязателен.</li>
+</ul>
+<hr />
+<h2 id="7-monetization-iap-heavy-hybrid">7. Monetization (IAP-heavy hybrid)</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Interstitial</td>
+<td>между ранами / после поражения (редко)</td>
+</tr>
+<tr>
+<td>Rewarded</td>
+<td>+1 heal, shop reroll, second chance event</td>
+</tr>
+<tr>
+<td>IAP</td>
+<td>premium ship (alt style), battle pass, meta currency, sail cosmetics</td>
+</tr>
+<tr>
+<td>Soft</td>
+<td>дублоны / обломки за раны</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Fair rule:</strong> платный корабль winrate ≈ стартовому ±5% на skilled play.</p>
+<hr />
+<h2 id="8-content-mvp-store">8. Content MVP → Store</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>MVP</th>
+<th>Store</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Акты</td>
+<td>1</td>
+<td>2–3</td>
+</tr>
+<tr>
+<td>Узлы/акт</td>
+<td>12–16</td>
+<td>16–20</td>
+</tr>
+<tr>
+<td>Корабли</td>
+<td>1 полный + 2 урезанных</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Враги</td>
+<td>6</td>
+<td>10+</td>
+</tr>
+<tr>
+<td>Босс</td>
+<td>1</td>
+<td>1/акт</td>
+</tr>
+<tr>
+<td>События</td>
+<td>15</td>
+<td>30</td>
+</tr>
+<tr>
+<td>Реликвии</td>
+<td>8</td>
+<td>20</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-risks">9. Risks</h2>
+<table>
+<thead>
+<tr>
+<th>Риск</th>
+<th>Митигация</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FTL слишком сложен</td>
+<td>Easy mode, pause default hint, туториал 3 боя</td>
+</tr>
+<tr>
+<td>UI боя перегружен</td>
+<td>max 5 systems, large buttons, color code</td>
+</tr>
+<tr>
+<td>Scope creep</td>
+<td>жёсткий 1 акт MVP</td>
+</tr>
+<tr>
+<td>Softlock events</td>
+<td>все ветки закрываемы</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-kpis">10. KPIs</h2>
+<table>
+<thead>
+<tr>
+<th>Метрика</th>
+<th>Цель</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>First run completion (death or boss)</td>
+<td>≥40%</td>
+</tr>
+<tr>
+<td>Boss reach rate D1</td>
+<td>≥15%</td>
+</tr>
+<tr>
+<td>D1 / D7</td>
+<td>≥30% / ≥12%</td>
+</tr>
+<tr>
+<td>IAP conversion</td>
+<td>≥3%</td>
+</tr>
+<tr>
+<td>Avg run length</td>
+<td>10–18 мин</td>
+</tr>
+<tr>
+<td>Cloud save success</td>
+<td>≥99%</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="11-gate">11. Gate</h2>
+<p><strong>Код не начинается до <code>CONFIRMED</code>.</strong> Детали: <code>DESIGN_LLM.md</code>.</p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-llm">
+      <article class="doc"><h1 id="design_llm">Море Реликвий — DESIGN_LLM (исполняемая спецификация)</h1>
+<blockquote>
+<p><strong>СТАТУС:</strong> <code>DRAFT</code><br />
+<strong>⛔ НЕ НАЧИНАТЬ КОДИРОВАНИЕ <code>src/</code>, пока дизайн не CONFIRMED</strong><br />
+Единственный machine-contract source of truth после CONFIRM.</p>
+</blockquote>
+<hr />
+<h2 id="0-project-contract">0. Project Contract</h2>
+<h3 id="01-identity">0.1 Identity</h3>
+<table>
+<thead>
+<tr>
+<th>Ключ</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>slug</code></td>
+<td><code>tide-of-relics</code></td>
+</tr>
+<tr>
+<td><code>displayName.ru</code></td>
+<td>Море Реликвий</td>
+</tr>
+<tr>
+<td><code>displayName.en</code></td>
+<td>Tide of Relics</td>
+</tr>
+<tr>
+<td><code>engine</code></td>
+<td>Phaser 3.80+</td>
+</tr>
+<tr>
+<td><code>language</code></td>
+<td>TypeScript 5.x strict</td>
+</tr>
+<tr>
+<td><code>bundler</code></td>
+<td>Vite 5.x</td>
+</tr>
+<tr>
+<td><code>platform</code></td>
+<td>Yandex Games HTML5</td>
+</tr>
+<tr>
+<td><code>orientation</code></td>
+<td>landscape preferred (combat UI); portrait map OK with reflow</td>
+</tr>
+<tr>
+<td><code>targetFPS</code></td>
+<td>60</td>
+</tr>
+<tr>
+<td><code>baseResolution</code></td>
+<td>1280×720</td>
+</tr>
+<tr>
+<td><code>runLengthMVP</code></td>
+<td>8–15 min</td>
+</tr>
+<tr>
+<td><code>difficultyModes</code></td>
+<td><code>easy</code>, <code>normal</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="02-folder-layout">0.2 Folder layout</h3>
+<pre><code>games/tide-of-relics/
+  docs/DESIGN.md
+  docs/DESIGN_LLM.md
+  prompts/{ART,SPRITE_ANIM,UI,LEVEL,CODE_AGENT}_PROMPTS.md  (см. имена файлов)
+  refs/art|ui|levels|sprites/
+  public/assets/
+    textures/{ships,enemies,relics,vfx,tiles,ui,keyart,portraits}/
+    audio/{sfx,music}/
+    data/   # optional static json serving
+  src/
+    main.ts
+    game/
+      scenes/
+      systems/{combat,map,events,meta}/
+      entities/
+      ui/
+      data/
+      sdk/
+  STATUS.md
+  STORE_CHECKLIST.md
+  README.md
+  package.json
+  index.html
+</code></pre>
+<p>Имена prompt-файлов строго:
+<code>ART_PROMPTS.md</code>, <code>SPRITE_ANIM_PROMPTS.md</code>, <code>UI_PROMPTS.md</code>, <code>LEVEL_PROMPTS.md</code>, <code>CODE_AGENT_PROMPT.md</code></p>
+<h3 id="03-naming-conventions">0.3 Naming conventions</h3>
+<table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Правило</th>
+<th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ship IDs</td>
+<td><code>ship_&lt;class&gt;</code></td>
+<td><code>ship_brig</code></td>
+</tr>
+<tr>
+<td>System IDs</td>
+<td><code>sys_&lt;name&gt;</code></td>
+<td><code>sys_shield</code></td>
+</tr>
+<tr>
+<td>Enemy IDs</td>
+<td><code>foe_&lt;name&gt;</code></td>
+<td><code>foe_pirate_sloop</code></td>
+</tr>
+<tr>
+<td>Relic IDs</td>
+<td><code>rel_&lt;name&gt;</code></td>
+<td><code>rel_storm_call</code></td>
+</tr>
+<tr>
+<td>Event IDs</td>
+<td><code>evt_&lt;name&gt;</code></td>
+<td><code>evt_siren_bargain</code></td>
+</tr>
+<tr>
+<td>Node IDs</td>
+<td><code>node_&lt;act&gt;_&lt;nn&gt;</code></td>
+<td><code>node_1_07</code></td>
+</tr>
+<tr>
+<td>Asset keys</td>
+<td>snake with domain</td>
+<td><code>ship_brig_hull</code>, <code>ui_sys_btn_guns</code></td>
+</tr>
+<tr>
+<td>TS</td>
+<td>PascalCase classes</td>
+<td><code>CombatScene.ts</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="04-asset-id-schema">0.4 Asset ID schema</h3>
+<p><code>{domain}_{subject}_{variant}_{state}</code><br />
+Domains: <code>ship</code>, <code>foe</code>, <code>rel</code>, <code>evt</code>, <code>ui</code>, <code>vfx</code>, <code>tile</code>, <code>bg</code>, <code>sfx</code>, <code>mus</code>, <code>port</code> (portrait)</p>
+<p>Path example: <code>public/assets/textures/ships/ship_brig_sheet.png</code></p>
+<h3 id="05-coding-gate">0.5 Coding gate</h3>
+<pre><code>IF designStatus != CONFIRMED:
+  FORBIDDEN: games/tide-of-relics/src/**
+ALLOWED: docs, prompts, refs, data drafts outside src if needed for design only
+</code></pre>
+<hr />
+<h2 id="1-scenes-flow">1. Scenes &amp; Flow</h2>
+<pre><code class="language-mermaid">stateDiagram-v2
+  [*] --&gt; BootScene
+  BootScene --&gt; MainMenuScene
+  MainMenuScene --&gt; ShipSelectScene
+  MainMenuScene --&gt; MetaScene
+  MainMenuScene --&gt; ShopScene
+  ShipSelectScene --&gt; MapScene: start run
+  MapScene --&gt; CombatScene: combat/elite/boss
+  MapScene --&gt; EventScene: event
+  MapScene --&gt; ShopNodeScene: shop
+  MapScene --&gt; TreasureScene: treasure
+  CombatScene --&gt; MapScene: win
+  CombatScene --&gt; DefeatScene: hull0
+  EventScene --&gt; MapScene
+  ShopNodeScene --&gt; MapScene
+  DefeatScene --&gt; MainMenuScene
+  DefeatScene --&gt; RewardedCTA: heal offer between runs only
+  MapScene --&gt; VictoryScene: boss clear
+  VictoryScene --&gt; MetaScene
+</code></pre>
+<p><strong>AC scenes:</strong> cloud autosave on node complete; pause combat anytime; back from event always defined.</p>
+<hr />
+<h2 id="2-input-contract">2. Input Contract</h2>
+<h3 id="combat">Combat</h3>
+<ul>
+<li>Tap system button → allocate +1 energy if free power &gt;0  </li>
+<li>Tap powered system → -1 (optional)  </li>
+<li>Relic buttons bottom  </li>
+<li>Pause toggle large  </li>
+<li>Desktop: <code>1-5</code> systems, <code>Space</code> pause, <code>Q-E</code> relics  </li>
+</ul>
+<h3 id="map">Map</h3>
+<ul>
+<li>Tap node (only adjacent unlocked)  </li>
+<li>Pinch/scroll map if large  </li>
+</ul>
+<p><strong>AC:</strong> targets ≥48px; no accidental energy toggles from relic tap.</p>
+<hr />
+<h2 id="3-gameplay-systems-acceptance-criteria">3. Gameplay Systems + Acceptance Criteria</h2>
+<h3 id="31-shipmodel">3.1 ShipModel</h3>
+<pre><code>ShipState {
+  hull, hullMax,
+  systems: Record&lt;SystemId, {hp, hpMax, power, powerMax, manned?: boolean}&gt;,
+  reactorPower, reactorMax,
+  relics: RelicInstance[],
+  scrap: number,   // soft in-run
+  crew: number     // MVP: abstract crew points 0–3 affecting repair speed
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>SystemId</th>
+<th>powerMax</th>
+<th>role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sys_sails</code></td>
+<td>3</td>
+<td>escape charge rate, evasion minor</td>
+</tr>
+<tr>
+<td><code>sys_guns</code></td>
+<td>4</td>
+<td>DPS volleys every <code>fireInterval</code></td>
+</tr>
+<tr>
+<td><code>sys_shield</code></td>
+<td>3</td>
+<td>shieldPoints regen / capacity</td>
+</tr>
+<tr>
+<td><code>sys_arcana</code></td>
+<td>3</td>
+<td>relic CD rate + arcane shots</td>
+</tr>
+<tr>
+<td><code>sys_hull</code></td>
+<td>—</td>
+<td>not powered; damaged by shots</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Damage routing:</strong> enemy attack rolls target: 50% hull / 50% random powered-or-present system. System at 0 HP → offline until repaired.</p>
+<p><strong>AC:</strong>
+- [ ] Sum(system.power) ≤ reactorPower always<br />
+- [ ] Damaged system power auto-ejected if hp==0<br />
+- [ ] Easy: +20% hullMax, enemy DPS −15%</p>
+<h3 id="32-combatsystem">3.2 CombatSystem</h3>
+<p>Tick 60fps:
+1. Player volley timer based on <code>sys_guns.power</code> → damage to foe<br />
+2. Foe AI pattern → telegraph 0.6s → damage<br />
+3. Shield absorbs before hull/system<br />
+4. Escape: if sails.power≥1 and not boss → escapeMeter += k<em>sails.power</em>dt; at 100% leave combat as flee (no loot / reduced)</p>
+<p>Volley formula:
+<code>dmg = (2 + guns.power) * relicMult</code> every <code>max(0.35, 1.1 - 0.12*guns.power)</code> s</p>
+<p><strong>AC:</strong>
+- [ ] Pause freezes timers, allows power reallocation<br />
+- [ ] Boss: escape disabled<br />
+- [ ] Victory grants scrap + chance relic/weapon upgrade<br />
+- [ ] Defeat → DefeatScene, run seed stored for resume? <strong>No</strong> — run ends (cloud saves meta only + optional mid-run save checkpoint on map)</p>
+<p><strong>Mid-run cloud:</strong> save MapRunState after each node (required).</p>
+<h3 id="33-enemyai-recipes">3.3 EnemyAI recipes</h3>
+<table>
+<thead>
+<tr>
+<th>foeId</th>
+<th>hull</th>
+<th>pattern</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>foe_pirate_sloop</code></td>
+<td>12</td>
+<td>guns every 1.4s light</td>
+</tr>
+<tr>
+<td><code>foe_pirate_brig</code></td>
+<td>20</td>
+<td>volley + occasional sails jam</td>
+</tr>
+<tr>
+<td><code>foe_wraith_skiff</code></td>
+<td>14</td>
+<td>phase (untargetable 1.5s)</td>
+</tr>
+<tr>
+<td><code>foe_kraken_spawn</code></td>
+<td>18</td>
+<td>tentacle system smash</td>
+</tr>
+<tr>
+<td><code>foe_imperial_frigate</code></td>
+<td>28</td>
+<td>shield + heavy</td>
+</tr>
+<tr>
+<td><code>foe_deep_cult</code></td>
+<td>16</td>
+<td>arcana curse DoT</td>
+</tr>
+<tr>
+<td><code>foe_boss_leviathan</code></td>
+<td>80</td>
+<td>phases 100/60/30%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>AC:</strong> telegraph readable color; no one-shots on Easy from full HP.</p>
+<h3 id="34-mapsystem">3.4 MapSystem</h3>
+<pre><code>ActGraph {
+  act: 1,
+  nodes: NodeDef[], // 12–16 + boss
+  edges: [from,to][]
+}
+NodeDef { id, type, difficulty, rewardTable, position }
+</code></pre>
+<p>Types: <code>combat|elite|event|shop|treasure|boss</code><br />
+Player path: only forward edges; visited marked.</p>
+<p><strong>AC:</strong> ≥2 routes; shop before boss reachable; elite optional branch.</p>
+<h3 id="35-eventsystem">3.5 EventSystem</h3>
+<pre><code>EventDef {
+  id, title, body,
+  choices: { id, label, effects: Effect[], requirements? }[]
+}
+Effect = { type: 'damage'|'scrap'|'relic'|'heal'|'curse'|'crew', value, relicId? }
+</code></pre>
+<p><strong>AC:</strong> каждый event ≥1 безопасный-ish выход; нет softlock; RV «second chance» перекидывает один failed roll (once/run).</p>
+<h3 id="36-shopnode">3.6 ShopNode</h3>
+<p>Buy: repair hull, repair system, relic (rare), reactor+1 (once), heal crew.<br />
+Reroll: RV or scrap cost.</p>
+<h3 id="37-relicsystem">3.7 RelicSystem</h3>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>type</th>
+<th>effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rel_storm_call</code></td>
+<td>active CD 18s</td>
+<td>AoE dmg 8</td>
+</tr>
+<tr>
+<td><code>rel_tentacles</code></td>
+<td>active 20s</td>
+<td>stun foe 2.5s</td>
+</tr>
+<tr>
+<td><code>rel_fire_cores</code></td>
+<td>active 12s</td>
+<td>+50% guns 5s</td>
+</tr>
+<tr>
+<td><code>rel_fog_veil</code></td>
+<td>active 22s</td>
+<td>evasion + escape +30% 4s</td>
+</tr>
+<tr>
+<td><code>rel_tide_mend</code></td>
+<td>active 25s</td>
+<td>heal hull 6</td>
+</tr>
+<tr>
+<td><code>rel_iron_keel</code></td>
+<td>passive</td>
+<td>hullMax +8</td>
+</tr>
+<tr>
+<td><code>rel_powder_monkey</code></td>
+<td>passive</td>
+<td>guns fireRate +10%</td>
+</tr>
+<tr>
+<td><code>rel_siren_compass</code></td>
+<td>passive</td>
+<td>see elite rewards preview</td>
+</tr>
+</tbody>
+</table>
+<p>Max relics held: 4 active slots + passives unlimited-but-find-rate limited (cap 6 total MVP).</p>
+<p><strong>AC:</strong> CD respects pause; arcana.power reduces CD up to −30%.</p>
+<h3 id="38-metaprogress">3.8 MetaProgress</h3>
+<pre><code>Meta {
+  unlockedShips: string[]
+  unlockedStartRelics: string[]
+  captainTree: Record&lt;string, number&gt;
+  dubloons: number      // soft meta
+  pearls: number        // hard
+  achievements: string[]
+  weeklyBest: number
+  removeAds: boolean
+}
+</code></pre>
+<p>Captain perks: start scrap +5, start shield +1, event foresight, etc. Small.</p>
+<hr />
+<h2 id="4-level-content-grammar">4. Level / Content Grammar</h2>
+<h3 id="41-how-content-looks">4.1 How content LOOKS</h3>
+<ul>
+<li><strong>Map:</strong> parchment-teal sea chart, island nodes glowing, cursed purple currents (controlled, not generic AI purple spam — use deep sea <code>#0B3C5D</code> + gold <code>#D4A017</code> + foam <code>#7EC8E3</code>).</li>
+<li><strong>Combat:</strong> side-view-lite or top-down ship vs ship with system panel bottom; fantasy sails, relic glyphs.</li>
+<li><strong>Events:</strong> illustrated portrait + text panel.</li>
+</ul>
+<h3 id="42-how-content-plays">4.2 How content PLAYS</h3>
+<ul>
+<li>Early nodes teach guns vs shield.  </li>
+<li>Mid: introduce system damage &amp; repair.  </li>
+<li>Late: elite + resource poverty before boss.  </li>
+<li>Always offer heal path via shop/event.</li>
+</ul>
+<h3 id="43-encounter-recipes">4.3 Encounter recipes</h3>
+<table>
+<thead>
+<tr>
+<th>Recipe</th>
+<th>Nodes</th>
+<th>Foes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>intro_patrol</code></td>
+<td>1–2</td>
+<td>sloop</td>
+</tr>
+<tr>
+<td><code>pirate_pack</code></td>
+<td>combat</td>
+<td>sloop+brig</td>
+</tr>
+<tr>
+<td><code>haunt</code></td>
+<td>combat</td>
+<td>wraith</td>
+</tr>
+<tr>
+<td><code>cult_ambush</code></td>
+<td>elite</td>
+<td>deep_cult + sloop</td>
+</tr>
+<tr>
+<td><code>imperial_tax</code></td>
+<td>elite</td>
+<td>frigate</td>
+</tr>
+<tr>
+<td><code>boss_leviathan</code></td>
+<td>boss</td>
+<td>leviathan phases</td>
+</tr>
+</tbody>
+</table>
+<p>Difficulty param <code>d</code>: foe hull × (1+0.08<em>d), dmg × (1+0.05</em>d)</p>
+<h3 id="44-act-1-curve-mvp">4.4 Act 1 curve (MVP)</h3>
+<pre><code>N1 combat intro
+N2 event teach
+N3 combat
+N4 shop
+N5 combat / branch elite
+N6 event
+N7 combat
+N8 treasure
+N9 combat
+N10 shop
+N11 elite OR event
+N12 combat
+N13 event
+BOSS leviathan
+</code></pre>
+<p><strong>AC:</strong> Easy players reach boss ≥25% on run 3+; Normal ≥15%.</p>
+<h3 id="45-tile-rules-map-combat-bg">4.5 “Tile” rules (map &amp; combat bg)</h3>
+<p>Map не тайл-уровень в классике, но:
+- Node icons 64×64 atlas<br />
+- Sea bg tileset optional parallax 128×128<br />
+- Combat bg layered: water loop, ships sprites  </p>
+<p>Forbidden: unreadable overlapping nodes (&lt;80px gap).</p>
+<hr />
+<h2 id="5-ui-component-map-wireframes">5. UI Component Map &amp; Wireframes</h2>
+<h3 id="components">Components</h3>
+<p><code>ui_btn_primary</code>, <code>ui_btn_rel</code>, <code>ui_sys_btn</code> (5), <code>ui_power_pips</code>, <code>ui_hull_bar</code>, <code>ui_foe_bar</code>, <code>ui_pause</code>, <code>ui_map_node</code>, <code>ui_event_choice</code>, <code>ui_shop_row</code>, <code>ui_rv_chip</code>, <code>ui_relic_icon</code></p>
+<h3 id="boot">Boot</h3>
+<pre><code>┌──────────────────────────────┐
+│      МОРЕ РЕЛИКВИЙ           │
+│         loading              │
+└──────────────────────────────┘
+</code></pre>
+<h3 id="main-menu">Main Menu</h3>
+<pre><code>┌──────────────────────────────┐
+│ МОРЕ РЕЛИКВИЙ                │
+│ [full-bleed key art sea]     │
+│   [ НОВЫЙ РАН ]              │
+│   [ МЕТА ] [ МАГАЗИН ]       │
+│   [ НЕДЕЛЯ ] [ ⚙ ]           │
+└──────────────────────────────┘
+</code></pre>
+<h3 id="ship-select">Ship Select</h3>
+<pre><code>┌──────────┬───────────────────┐
+│ Brig ✓   │ Preview stats     │
+│ Longship │ Hull/Guns/...     │
+│ Galleon🔒│ Start relic       │
+│ Arcanist◆│ [ В ПЛАВАНИЕ ]    │
+└──────────┴───────────────────┘
+</code></pre>
+<h3 id="map_1">Map</h3>
+<pre><code>┌──────────────────────────────┐
+│ Act I          scrap 40      │
+│  (c)-(e)-(c)                 │
+│     \  \                     │
+│      (s)-(c)-(boss)          │
+└──────────────────────────────┘
+</code></pre>
+<h3 id="combat-hud">Combat HUD</h3>
+<pre><code>┌──────────────────────────────┐
+│ PAUSE   HULL ████░░  FOE ███ │
+│     [water + ships stage]    │
+│ RELICS [R1][R2][R3]          │
+│ SYS: Sails Guns Shield Arcana│
+│      [■■] [■■■] [■] [■]     │
+│ Power free: 2 / Reactor 8    │
+└──────────────────────────────┘
+</code></pre>
+<h3 id="pause">Pause</h3>
+<pre><code>Продолжить / Настройки / Сдать ран (confirm)
+</code></pre>
+<h3 id="event">Event</h3>
+<pre><code>┌──────┬───────────────────────┐
+│ art  │ Title + body          │
+│      │ [Choice A]            │
+│      │ [Choice B]            │
+│      │ [▶ Second chance RV]  │
+└──────┴───────────────────────┘
+</code></pre>
+<h3 id="shop-node-meta-shop-result-defeat-victory-rewarded-cta">Shop node / Meta shop / Result defeat-victory / Rewarded CTA</h3>
+<pre><code>Defeat: РАН ПРЕРВАН | [В меню] | [▶ +heal next start — RV]
+Victory: АКТ ПРОЙДЕН | rewards | [Мета]
+Shop: repair / relics / [▶ reroll]
+</code></pre>
+<pre><code class="language-mermaid">flowchart TB
+  Menu --&gt; Select --&gt; Map
+  Map --&gt; Combat --&gt; Map
+  Map --&gt; Event --&gt; Map
+  Map --&gt; ShopN --&gt; Map
+  Map --&gt; Boss --&gt; Victory
+  Combat --&gt; Defeat
+  Event --&gt;|RV second chance| Event
+  ShopN --&gt;|RV reroll| ShopN
+</code></pre>
+<hr />
+<h2 id="6-art-bible">6. Art Bible</h2>
+<h3 id="style-locks">Style locks</h3>
+<p>Painterly-fantasy naval illustration for key art; <strong>gameplay UI crisp vector/pixel-hybrid icons</strong>; ships readable silhouettes; relics glowing gold-seafoam not generic purple void.</p>
+<h3 id="palette-hex">Palette HEX</h3>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Hex</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Deep sea</td>
+<td><code>#071B2A</code></td>
+</tr>
+<tr>
+<td>Sea</td>
+<td><code>#0B3C5D</code></td>
+</tr>
+<tr>
+<td>Foam</td>
+<td><code>#7EC8E3</code></td>
+</tr>
+<tr>
+<td>Gold relic</td>
+<td><code>#D4A017</code></td>
+</tr>
+<tr>
+<td>Wood</td>
+<td><code>#6B3F24</code></td>
+</tr>
+<tr>
+<td>Sail</td>
+<td><code>#E8DCC8</code></td>
+</tr>
+<tr>
+<td>Danger</td>
+<td><code>#C44536</code></td>
+</tr>
+<tr>
+<td>Heal</td>
+<td><code>#3A9B7A</code></td>
+</tr>
+<tr>
+<td>Text</td>
+<td><code>#F3F6FA</code></td>
+</tr>
+<tr>
+<td>Map parchment</td>
+<td><code>#D9C7A1</code></td>
+</tr>
+<tr>
+<td>Curse accent</td>
+<td><code>#5C4D8A</code> (sparingly)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="do-dont">Do / Don't</h3>
+<p><strong>Do:</strong> distinct ship classes; clear system icons; epic but readable boss.<br />
+<strong>Don't:</strong> photoreal ships; cluttered FTL clone UI; purple-pink neon cyber look; tiny text.</p>
+<hr />
+<h2 id="7-image-generation-prompts">7. Image Generation Prompts</h2>
+<h3 id="key-art">Key art</h3>
+<pre><code>Cinematic key art fantasy naval game Tide of Relics: enchanted galleon on cursed teal sea, glowing gold relics, distant leviathan silhouette, storm light, painterly, 1920x1080, no text no logo no UI
+</code></pre>
+<h3 id="environment">Environment</h3>
+<pre><code>Fantasy sea chart map background parchment teal currents islands, game UI friendly, high resolution, no text; plus combat water background looping paintable layers
+</code></pre>
+<h3 id="characters-ships">Characters / ships</h3>
+<pre><code>Side-view game ship sprites: brig, longship, galleon, arcanist vessel, fantasy sails, readable silhouettes, transparent, game asset sheet
+</code></pre>
+<h3 id="enemies">Enemies</h3>
+<pre><code>Enemy fantasy ships and sea monsters for FTL-like game: pirate sloop, frigate, wraith skiff, kraken spawn, leviathan boss stages, transparent game sprites
+</code></pre>
+<h3 id="weapons-systems-icons">Weapons / systems icons</h3>
+<pre><code>Game icons 64x64: sails, cannons, shield, arcana crystal, hull, scrap, shop, pause, energy pip, gold seafoam style
+</code></pre>
+<h3 id="relics-vfx">Relics / VFX</h3>
+<pre><code>Relic icons gold foam: storm, tentacles, fire cores, fog, tide mend; VFX sheets lightning, ink tentacles, cannon flash, heal ripple, transparent
+</code></pre>
+<h3 id="tileset-map-nodes">Tileset / map nodes</h3>
+<pre><code>64x64 map node icons: combat crossed swords, elite skull, event question, shop coin, treasure chest, boss crown, sea chart style
+</code></pre>
+<h3 id="ui-kit">UI kit</h3>
+<pre><code>Naval fantasy game UI kit deep sea #071B2A gold #D4A017 foam #7EC8E3: panels, system buttons, relic slots, map frame, event choices, rewarded button, 9-slice, no device mockup, no cyber neon
+</code></pre>
+<hr />
+<h2 id="8-sprite-sheet-specs-timings">8. Sprite Sheet Specs &amp; Timings</h2>
+<h3 id="ships-ship_id_sheetpng">Ships <code>ship_&lt;id&gt;_sheet.png</code></h3>
+<p>Frame <strong>96×64</strong> (side view), 6 cols × 3 rows:</p>
+<table>
+<thead>
+<tr>
+<th>anim</th>
+<th>frames</th>
+<th>fps</th>
+<th>loop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>idle bob</td>
+<td>0–3</td>
+<td>6</td>
+<td>y</td>
+</tr>
+<tr>
+<td>fire</td>
+<td>4–7</td>
+<td>12</td>
+<td>n</td>
+</tr>
+<tr>
+<td>hit</td>
+<td>8–10</td>
+<td>10</td>
+<td>n</td>
+</tr>
+<tr>
+<td>sink</td>
+<td>11–17</td>
+<td>8</td>
+<td>n</td>
+</tr>
+</tbody>
+</table>
+<h3 id="foes-same-layout-boss-leviathan-19296-phases-separate-rows">Foes — same layout; boss leviathan <strong>192×96</strong>, phases separate rows.</h3>
+<h3 id="relic-vfx-vfx_rel_id_sheetpng-128128-68-frames-1216fps-oneshot">Relic VFX <code>vfx_rel_&lt;id&gt;_sheet.png</code> — 128×128, 6–8 frames @ 12–16fps oneshot</h3>
+<h3 id="ui-icons-static-6464-atlas-ui_icons_atlaspng">UI icons — static 64×64 atlas <code>ui_icons_atlas.png</code></h3>
+<h3 id="system-damage-sparks-3232-4f-14fps">System damage sparks — 32×32, 4f @ 14fps</h3>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>fps</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ship idle</td>
+<td>6</td>
+</tr>
+<tr>
+<td>ship fire</td>
+<td>12</td>
+</tr>
+<tr>
+<td>sink</td>
+<td>8</td>
+</tr>
+<tr>
+<td>cannon VFX</td>
+<td>16</td>
+</tr>
+<tr>
+<td>heal ripple</td>
+<td>12</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-integration-paths">9. Integration paths</h2>
+<pre><code>public/assets/textures/keyart/keyart_tide_of_relics.png
+public/assets/textures/ships/ship_brig_sheet.png
+public/assets/textures/ships/ship_longship_sheet.png
+public/assets/textures/ships/ship_galleon_sheet.png
+public/assets/textures/ships/ship_arcanist_sheet.png
+public/assets/textures/enemies/foe_pirate_sloop_sheet.png
+public/assets/textures/enemies/foe_boss_leviathan_sheet.png
+public/assets/textures/relics/rel_icons_atlas.png
+public/assets/textures/ui/ui_kit.png
+public/assets/textures/ui/ui_icons_atlas.png
+public/assets/textures/ui/ui_map_nodes_atlas.png
+public/assets/textures/vfx/vfx_rel_storm_sheet.png
+public/assets/data/act1_graph.json
+public/assets/data/events.json
+public/assets/data/relics.json
+public/assets/data/ships.json
+public/assets/data/foes.json
+src/data/* (runtime imports — may mirror public)
+</code></pre>
+<hr />
+<h2 id="10-sdk-contract">10. SDK contract</h2>
+<pre><code>showInterstitial('defeat' | 'between_runs')  // NEVER mid-combat
+showRewarded('heal_boon' | 'shop_reroll' | 'event_second_chance')
+purchase('remove_ads' | 'ship_arcanist' | 'pearls_m' | 'pass_s1' | 'sail_skin')
+leaderboardSet('lb_weekly_seed', score)
+cloudLoad/Save(Meta &amp; MapRunState)
+</code></pre>
+<p>Weekly: shared seed string from date ISO week.</p>
+<hr />
+<h2 id="11-prompt-pack-index">11. Prompt pack index</h2>
+<p>Standalone messages: <code>prompts/ART_PROMPTS.md</code>, <code>SPRITE_ANIM_PROMPTS.md</code>, <code>UI_PROMPTS.md</code>, <code>LEVEL_PROMPTS.md</code>, <code>CODE_AGENT_PROMPT.md</code></p>
+<hr />
+<h2 id="12-definition-of-ready">12. Definition of Ready</h2>
+<ul>
+<li>[x] Project contract complete  </li>
+<li>[x] Systems with AC  </li>
+<li>[x] Content/map grammar + act curve  </li>
+<li>[x] UI map + wireframes all major screens  </li>
+<li>[x] Art bible + palette + prompts  </li>
+<li>[x] Sprite specs + timings  </li>
+<li>[x] Integration paths  </li>
+<li>[x] SDK + fair IAP rules  </li>
+<li>[x] Explicit no-code-until-CONFIRMED  </li>
+<li>[ ] Human REVIEW → dashboard CONFIRMED  </li>
+</ul>
+<hr />
+<h2 id="13-explicit-ban">13. Explicit ban</h2>
+<pre><code>⛔ DO NOT START CODING until design status is CONFIRMED.
+⛔ DO NOT expand to 3 acts before Store Ready of Act 1.
+</code></pre>
+<h2 id="changelog">Changelog</h2>
+<p>| 1.0 | 2026-07-17 | Initial LLM bible |</p>
+<hr />
+<h2 id="visual-ground-truth">Visual Ground Truth (обязательные референсы)</h2>
+<p>См. также <code>docs/REFS.md</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Путь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key art</td>
+<td><code>refs/art/key-art.png</code></td>
+</tr>
+<tr>
+<td>UI wireframe</td>
+<td><code>refs/ui/wireframe-main.png</code></td>
+</tr>
+<tr>
+<td>Level layout</td>
+<td><code>refs/levels/layout-main.png</code></td>
+</tr>
+<tr>
+<td>Sprite sheet</td>
+<td><code>refs/sprites/sheet-main.png</code></td>
+</tr>
+</tbody>
+</table>
+<p>Любой арт-агент обязан сверяться с этими файлами перед генерацией финальных ассетов.</p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-refs">
+      <div class="refs-intro doc"><p>﻿# Море Реликвий — Visual References Index</p>
+<blockquote>
+<p>Эти файлы — обязательный вход для арт/UI/level LLM-агентов.<br />
+При генерации новых ассетов держать стиль как у референсов ниже.</p>
+</blockquote>
+<h2 id="art">Art</h2>
+<p><img alt="Key art" src="../../games/tide-of-relics/refs/art/key-art.png" /></p>
+<p><code>refs/art/key-art.png</code> — tonal/mood lock, palette, composition.</p>
+<h2 id="ui-wireframes">UI Wireframes</h2>
+<p><img alt="UI wireframe" src="../../games/tide-of-relics/refs/ui/wireframe-main.png" /></p>
+<p><code>refs/ui/wireframe-main.png</code> — экраны, иерархия, CTA rewarded/IAP зоны.</p>
+<h2 id="level-content-layout">Level / Content Layout</h2>
+<p><img alt="Level layout" src="../../games/tide-of-relics/refs/levels/layout-main.png" /></p>
+<p><code>refs/levels/layout-main.png</code> — грамматика уровней/доски/маршрута.</p>
+<h2 id="sprites-animation-sheet">Sprites / Animation Sheet</h2>
+<p><img alt="Sprites" src="../../games/tide-of-relics/refs/sprites/sheet-main.png" /></p>
+<p><code>refs/sprites/sheet-main.png</code> — пропорции, кадры, иконки.</p>
+<h2 id="_1">Как использовать агентам</h2>
+<ol>
+<li>Открыть <code>DESIGN_LLM.md</code> (контракт).</li>
+<li>Открыть этот <code>REFS.md</code> (визуальный ground truth).</li>
+<li>Взять атомарный промпт из <code>prompts/</code> и <strong>приложить</strong> соответствующий png.</li>
+<li>Сохранять результат в пути из Integration Contract <code>DESIGN_LLM.md</code>.</li>
+</ol>
+<h2 id="dor-visuals">DoR visuals</h2>
+<ul>
+<li>[x] key-art</li>
+<li>[x] wireframe-main</li>
+<li>[x] layout-main</li>
+<li>[x] sheet-main</li>
+</ul></div>
+      <h3 class="gallery-title">Галерея референсов</h3>
+      <div class="ref-grid">
+            <figure class="ref-card">
+              <a href="../../games/tide-of-relics/refs/art/key-art.png" target="_blank" rel="noopener">
+                <img src="../../games/tide-of-relics/refs/art/key-art.png" alt="Ключевой арт" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Ключевой арт</strong>
+                <span>Настроение, палитра, композиция</span>
+                <code>art/key-art.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/tide-of-relics/refs/ui/wireframe-main.png" target="_blank" rel="noopener">
+                <img src="../../games/tide-of-relics/refs/ui/wireframe-main.png" alt="Вайрфрейм UI" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Вайрфрейм UI</strong>
+                <span>Экраны, иерархия, CTA рекламы/покупок</span>
+                <code>ui/wireframe-main.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/tide-of-relics/refs/levels/layout-main.png" target="_blank" rel="noopener">
+                <img src="../../games/tide-of-relics/refs/levels/layout-main.png" alt="Раскладка уровней" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Раскладка уровней</strong>
+                <span>Грамматика уровней / доски / маршрута</span>
+                <code>levels/layout-main.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/tide-of-relics/refs/sprites/sheet-main.png" target="_blank" rel="noopener">
+                <img src="../../games/tide-of-relics/refs/sprites/sheet-main.png" alt="Спрайт-лист" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Спрайт-лист</strong>
+                <span>Пропорции, кадры, иконки</span>
+                <code>sprites/sheet-main.png</code>
+              </figcaption>
+            </figure></div>
+    </section>
+
+    <section class="tab-panel" id="tab-prompts">
+      <p class="lead">Атомарные промпты — копируй в отдельного агента вместе с нужным референсом из вкладки «Референсы».</p>
+      
+          <details class="prompt-acc" open>
+            <summary>Арт <span class="muted">ART_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="art_prompts">Море Реликвий — ART_PROMPTS</h1>
+<p><strong>Канон:</strong> <code>docs/DESIGN_LLM.md</code> §6–7. Не писать <code>src/</code>.</p>
+<h2 id="_1">Контекст</h2>
+<pre><code>Art agent Tide of Relics (slug: tide-of-relics).
+Naval fantasy FTL-like. Palette: deep #071B2A, sea #0B3C5D, foam #7EC8E3,
+gold #D4A017, wood #6B3F24, sail #E8DCC8, danger #C44536, heal #3A9B7A,
+parchment #D9C7A1, curse #5C4D8A sparingly.
+Key art painterly; gameplay icons crisp. NO cyber neon purple spam, NO photoreal.
+</code></pre>
+<h2 id="job-a-key-art">JOB A — Key art</h2>
+<pre><code>Cinematic key art Tide of Relics: enchanted galleon on cursed teal sea, gold relics glowing, distant leviathan silhouette, storm light, painterly fantasy, 1920x1080, no text no logo no UI
+</code></pre>
+<p>→ <code>public/assets/textures/keyart/keyart_tide_of_relics.png</code></p>
+<h2 id="job-b-environments">JOB B — Environments</h2>
+<ul>
+<li>Sea chart map BG → <code>refs/art/map_bg.png</code> + production <code>public/assets/textures/tiles/bg_map.png</code></li>
+<li>Combat water layers → <code>public/assets/textures/tiles/bg_combat_water.png</code></li>
+</ul>
+<h2 id="job-c-ships-roster">JOB C — Ships roster</h2>
+<p>Design sheet 4 classes → <code>refs/art/ships_roster.png</code><br />
+Production sheets via SPRITE_ANIM.</p>
+<h2 id="job-d-enemies-boss">JOB D — Enemies &amp; boss</h2>
+<p>Pirate sloop/brig, wraith, kraken spawn, imperial frigate, deep cult, leviathan stages → <code>refs/art/foes_roster.png</code></p>
+<h2 id="job-e-relics-system-icons-vfx-stills">JOB E — Relics, system icons, VFX stills</h2>
+<p>Atlas-ready 64×64 icons; VFX motif sheets.</p>
+<h2 id="job-f-ui-kit-map-nodes">JOB F — UI kit + map nodes</h2>
+<pre><code>Naval fantasy UI kit deep sea gold foam: panels, system buttons, relic slots, event panel, shop rows, rewarded CTA, map node icons combat elite event shop treasure boss, 9-slice, no device mockup
+</code></pre>
+<p>→ <code>public/assets/textures/ui/ui_kit.png</code>, <code>ui_map_nodes_atlas.png</code>, <code>ui_icons_atlas.png</code></p>
+<h2 id="dod">DoD</h2>
+<p>Palette lock; readable ships at combat scale; paths correct.</p>
+<h2 id="_2">Запреты</h2>
+<p>Hotline neon; purple-on-white SaaS look; text baked into key art.</p></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Спрайты и анимация <span class="muted">SPRITE_ANIM_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="sprite_anim_prompts">Море Реликвий — SPRITE_ANIM_PROMPTS</h1>
+<p><strong>Канон:</strong> <code>DESIGN_LLM.md</code> §8.</p>
+<h2 id="_1">Контекст</h2>
+<pre><code>Phaser sheets. Ships side-view 96x64. Boss 192x96. VFX 128x128.
+Pivot: ship mid-hull. Transparent BG.
+</code></pre>
+<h2 id="playerenemy-ships">Player/enemy ships</h2>
+<p>Files: <code>public/assets/textures/ships/ship_&lt;brig|longship|galleon|arcanist&gt;_sheet.png</code><br />
+Layout: 6×3 frames 96×64</p>
+<table>
+<thead>
+<tr>
+<th>anim</th>
+<th>frames</th>
+<th>fps</th>
+<th>loop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>idle</td>
+<td>0–3</td>
+<td>6</td>
+<td>y</td>
+</tr>
+<tr>
+<td>fire</td>
+<td>4–7</td>
+<td>12</td>
+<td>n</td>
+</tr>
+<tr>
+<td>hit</td>
+<td>8–10</td>
+<td>10</td>
+<td>n</td>
+</tr>
+<tr>
+<td>sink</td>
+<td>11–17</td>
+<td>8</td>
+<td>n</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Промпт:</strong></p>
+<pre><code>Spritesheet 6x3 frames of 96x64 side-view fantasy SHIP_CLASS, idle bob 4, fire 4, hit 3, sink 7, transparent, consistent silhouette, painted game sprite
+</code></pre>
+<h2 id="foes">Foes</h2>
+<p>Same layout under <code>public/assets/textures/enemies/foe_&lt;id&gt;_sheet.png</code><br />
+IDs: <code>pirate_sloop</code>, <code>pirate_brig</code>, <code>wraith_skiff</code>, <code>kraken_spawn</code>, <code>imperial_frigate</code>, <code>deep_cult</code></p>
+<h2 id="boss">Boss</h2>
+<p><code>foe_boss_leviathan_sheet.png</code> — 192×96, rows = phases:
+- phase1 idle/attack<br />
+- phase2 rage<br />
+- phase3 final  </p>
+<p>fps attack 10, idle 5, death 8</p>
+<h2 id="relic-vfx">Relic VFX</h2>
+<table>
+<thead>
+<tr>
+<th>file</th>
+<th>frames</th>
+<th>fps</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vfx_rel_storm_sheet.png</code></td>
+<td>8</td>
+<td>14</td>
+</tr>
+<tr>
+<td><code>vfx_rel_tentacles_sheet.png</code></td>
+<td>8</td>
+<td>12</td>
+</tr>
+<tr>
+<td><code>vfx_rel_fire_sheet.png</code></td>
+<td>6</td>
+<td>16</td>
+</tr>
+<tr>
+<td><code>vfx_rel_fog_sheet.png</code></td>
+<td>6</td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>vfx_rel_mend_sheet.png</code></td>
+<td>6</td>
+<td>12</td>
+</tr>
+<tr>
+<td><code>vfx_cannon_sheet.png</code></td>
+<td>4</td>
+<td>16</td>
+</tr>
+</tbody>
+</table>
+<h2 id="icons-static-atlas">Icons (static atlas)</h2>
+<p><code>rel_icons_atlas.png</code>, <code>ui_icons_atlas.png</code>, <code>ui_map_nodes_atlas.png</code> — 64×64 cells</p>
+<h2 id="dod">DoD</h2>
+<p>All paths; sink readable; idle loop seamless bob.</p>
+<h2 id="_2">Запреты</h2>
+<p>Top-down ships if combat is side-view (keep consistent with DESIGN_LLM side-view); random frame sizes.</p></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Интерфейс <span class="muted">UI_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="ui_prompts">Море Реликвий — UI_PROMPTS</h1>
+<p><strong>Канон:</strong> <code>DESIGN_LLM.md</code> §5.</p>
+<h2 id="_1">Контекст</h2>
+<pre><code>UI Море Реликвий: Phaser, RU, landscape combat, large system buttons ≥48px.
+Colors: panel #071B2A, gold #D4A017, foam #7EC8E3, text #F3F6FA.
+Screens: Boot, Menu, ShipSelect, Meta, Map, Combat, Pause, Event, ShopNode,
+Treasure, Defeat, Victory, ShopIAP, Weekly, RewardedCTA, Settings.
+</code></pre>
+<h2 id="ui-kit-prompt">UI kit prompt</h2>
+<pre><code>Naval fantasy game UI kit deep sea and gold: primary buttons, system power buttons with pip slots, hull bars, relic hotbar, pause, map node frames, event choice buttons, shop rows, rewarded play button, defeat/victory banners, 9-slice panels, no cyber neon, no device mockup
+</code></pre>
+<p>→ <code>public/assets/textures/ui/ui_kit.png</code></p>
+<h2 id="copy-ru">Copy RU</h2>
+<table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>Copy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Menu</td>
+<td>НОВЫЙ РАН / МЕТА / МАГАЗИН / НЕДЕЛЬНЫЙ ЗАПЛЫВ / НАСТРОЙКИ</td>
+</tr>
+<tr>
+<td>ShipSelect</td>
+<td>Бриг / Драккар / Галеон / Арканоносец / В ПЛАВАНИЕ</td>
+</tr>
+<tr>
+<td>Map</td>
+<td>Акт I / Обломки {n}</td>
+</tr>
+<tr>
+<td>Combat</td>
+<td>ПАУЗА / системы Паруса Пушки Щит Аркана</td>
+</tr>
+<tr>
+<td>Pause</td>
+<td>Продолжить / Сдать ран</td>
+</tr>
+<tr>
+<td>Event</td>
+<td>choices from events.json</td>
+</tr>
+<tr>
+<td>Shop</td>
+<td>Ремонт корпуса / Ремонт системы / Реликвия / Реактор+ / ▶ Реролл</td>
+</tr>
+<tr>
+<td>Defeat</td>
+<td>РАН ПРЕРВАН / В меню / ▶ Благословение лечения</td>
+</tr>
+<tr>
+<td>Victory</td>
+<td>АКТ ПРОЙДЕН / Награды / В мету</td>
+</tr>
+<tr>
+<td>Difficulty</td>
+<td>Лёгкий / Обычный</td>
+</tr>
+</tbody>
+</table>
+<h2 id="wireflow">Wireflow</h2>
+<pre><code class="language-mermaid">flowchart TB
+  Menu --&gt; ShipSelect --&gt; Map
+  Map --&gt; Combat
+  Map --&gt; Event
+  Map --&gt; ShopNode
+  Map --&gt; Boss
+  Boss --&gt; Victory
+  Combat --&gt; Defeat
+  Event --&gt;|RV| Event
+  ShopNode --&gt;|RV| ShopNode
+</code></pre>
+<h2 id="component-map-sizes">Component map sizes</h2>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>min size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ui_sys_btn</code></td>
+<td>72×72</td>
+</tr>
+<tr>
+<td><code>ui_btn_rel</code></td>
+<td>64×64</td>
+</tr>
+<tr>
+<td><code>ui_map_node</code></td>
+<td>64×64</td>
+</tr>
+<tr>
+<td><code>ui_event_choice</code></td>
+<td>280×56</td>
+</tr>
+<tr>
+<td><code>ui_btn_rv</code></td>
+<td>240×56</td>
+</tr>
+</tbody>
+</table>
+<h2 id="dod">DoD</h2>
+<p>Combat usable on mobile landscape; pause obvious; RV labeled reward; no mid-combat interstitial UI.</p>
+<h2 id="_2">Запреты</h2>
+<p>More than 5 systems; English-only; fake close ads.</p></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Уровни <span class="muted">LEVEL_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="level_prompts">Море Реликвий — LEVEL_PROMPTS</h1>
+<p><strong>Канон:</strong> <code>DESIGN_LLM.md</code> §4.<br />
+Здесь «уровни» = граф акта + таблицы врагов/событий/наград (не tilemap офиса).</p>
+<h2 id="_1">Контекст</h2>
+<pre><code>Tide of Relics Act 1 content designer.
+Deliver JSON graphs and tables matching schemas in DESIGN_LLM.
+Output paths:
+public/assets/data/act1_graph.json
+public/assets/data/events.json
+public/assets/data/foes.json
+public/assets/data/relics.json
+public/assets/data/ships.json
+public/assets/data/shops.json
+refs/levels/act1_map_preview.png
+</code></pre>
+<h2 id="job-a-act-1-graph">JOB A — Act 1 graph</h2>
+<p>Требования:
+- 12–16 узлов + boss
+- ≥2 ветки
+- shop до босса гарантирован на каждом полном path
+- node types mix per curve §4.4
+- positions без overlap (&lt;80px)</p>
+<p><strong>LLM prompt:</strong></p>
+<pre><code>Спроектируй act1_graph для Море Реликвий на 14 узлов + boss.
+Верни JSON: nodes[{id,type,difficulty,x,y,rewardTableId}], edges[[from,to]].
+Типы: combat,elite,event,shop,treasure,boss.
+Кривая: intro→teach event→ramp→shop→optional elite→preboss shop→leviathan.
+Проверь: из старта есть 2 пути; каждый путь имеет ≥1 shop до boss.
+</code></pre>
+<h2 id="job-b-events-15-mvp">JOB B — Events (15 MVP)</h2>
+<p>Каждый: title, body RU, 2–3 choices, effects typed, no softlock.</p>
+<p>Обязательные id примеры:
+<code>evt_siren_bargain</code>, <code>evt_marooned_crew</code>, <code>evt_imperial_tax</code>, <code>evt_cursed_idol</code>,
+<code>evt_merchant_drift</code>, <code>evt_storm_shelter</code>, <code>evt_ghost_lighthouse</code>, <code>evt_kraken_egg</code>,
+<code>evt_mutiny_whispers</code>, <code>evt_reef_map</code>, <code>evt_priest_of_tide</code>, <code>evt_smuggler_hold</code>,
+<code>evt_mirror_lagoon</code>, <code>evt_abandoned_brig</code>, <code>evt_oracle_gull</code></p>
+<h2 id="job-c-encounter-tables">JOB C — Encounter tables</h2>
+<p>Свяжи <code>rewardTableId</code> / <code>foeTableId</code> с recipes: intro_patrol, pirate_pack, haunt, cult_ambush, imperial_tax, boss_leviathan.</p>
+<h2 id="job-d-balance-notes">JOB D — Balance notes</h2>
+<p>Для каждого combat node: expected scrap 8–15; elite 18–28; damage threat vs brig hull 30.</p>
+<h2 id="validation-checklist">Validation checklist</h2>
+<ul>
+<li>[ ] JSON валиден  </li>
+<li>[ ] Все event choices закрывают узел  </li>
+<li>[ ] Boss escape disabled flag  </li>
+<li>[ ] Easy/Normal multipliers documented in foes.json  </li>
+<li>[ ] Preview image in refs/levels  </li>
+</ul>
+<h2 id="_2">Запреты</h2>
+<p>3 акта в MVP; события без безопасного выхода; mid-combat ads hooks в данных.</p></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Код-агент <span class="muted">CODE_AGENT_PROMPT.md</span></summary>
+            <article class="doc"><h1 id="code_agent_prompt">Море Реликвий — CODE_AGENT_PROMPT</h1>
+<h2 id="gate">⛔ Gate</h2>
+<p><strong>Не начинай кодировать <code>games/tide-of-relics/src/**</code>, пока дизайн = CONFIRMED.</strong></p>
+<h2 id="copy-paste">Copy-paste агенту</h2>
+<pre><code>Ты — code-агент «Море Реликвий» (tide-of-relics) для Яндекс Игр.
+
+SOURCE OF TRUTH:
+1) games/tide-of-relics/docs/DESIGN_LLM.md
+2) games/tide-of-relics/docs/DESIGN.md
+3) docs/concepts/03-tide-of-relics.md
+4) docs/00-market-analysis-and-portfolio.md
+5) games/tide-of-relics/prompts/* (ассеты/JSON по контрактам путей)
+
+STACK: Phaser 3 + TypeScript + Vite. Работай только в games/tide-of-relics/.
+
+Если дизайн не CONFIRMED — остановись и сообщи.
+
+Когда CONFIRMED:
+1) STATUS.md + скелет сцен Boot→Menu→ShipSelect→Map→Combat/Event/Shop→Defeat/Victory
+2) ShipModel + energy allocation AC
+3) CombatSystem realtime+pause, enemy patterns, escape (non-boss)
+4) Map graph из act1_graph.json
+5) Events + Shop + Relics
+6) Meta unlocks + captain tree light
+7) Cloud save MapRunState + Meta
+8) Yandex SDK: interstitial defeat/between_runs only; rewarded heal_boon|shop_reroll|event_second_chance;
+   payments remove_ads|ship_arcanist|pearls|pass|cosmetics; weekly leaderboard
+9) Easy/Normal; tutorial 3 guided fights
+10) STORE_CHECKLIST + build + README
+
+ЖЁСТКО:
+- Нет interstitial mid-combat
+- Платный корабль = alt style, не P2W
+- Не расширять до 3 актов до Store Ready акта 1
+- RU UI, пути ассетов строго из DESIGN_LLM §9
+
+DoD: полный ран 10–20 мин до босса акта 1; mobile pause OK; cloud works; build green.
+</code></pre>
+<h2 id="module-map">Module map</h2>
+<pre><code>src/game/systems/combat/ShipModel.ts
+src/game/systems/combat/CombatSystem.ts
+src/game/systems/combat/EnemyAI.ts
+src/game/systems/map/MapSystem.ts
+src/game/systems/events/EventSystem.ts
+src/game/systems/meta/MetaProgress.ts
+src/game/sdk/yandex.ts
+</code></pre>
+<h2 id="smoke">Smoke</h2>
+<p>Allocate energy; win sloop fight; event choice; shop repair; cloud reload mid-run; boss phase change.</p></article>
+          </details>
+    </section>
+
+    <section class="tab-panel" id="tab-manage">
+      <div class="panel manage-panel" data-manage-slug="tide-of-relics">
+        <h3>Статус дизайна</h3>
+        <div class="seg-btns" data-role="design-status">
+          <button data-v="DRAFT">Черновик</button>
+          <button data-v="REVIEW">На ревью</button>
+          <button data-v="CONFIRMED">Подтверждён</button>
+          <button data-v="BLOCKED">Заблокирован</button>
+        </div>
+
+        <h3>Готовность документов</h3>
+        <label class="check"><input type="checkbox" data-k="classic"/> Классический GDD прочитан</label>
+        <label class="check"><input type="checkbox" data-k="llm"/> LLM-спека прочитана</label>
+        <label class="check"><input type="checkbox" data-k="refs"/> Референсы проверены</label>
+
+        <h3>Гейт разработки</h3>
+        <p class="muted">Доступен только после статуса «Подтверждён».</p>
+        <select data-role="gate">
+          <option value="—">— не начато</option>
+          <option value="G0">G0 — Каркас</option>
+          <option value="G1">G1 — Вертикальный слайс</option>
+          <option value="G2">G2 — Контент MVP</option>
+          <option value="G3">G3 — Мета и удержание</option>
+          <option value="G4">G4 — SDK монетизация</option>
+          <option value="G5">G5 — Готово к стору</option>
+        </select>
+
+        <h3>Заметки</h3>
+        <textarea data-role="note" rows="5" placeholder="Комментарии к ревью..."></textarea>
+      </div>
+    </section>
+    
+  </main>
+</div>
+<script>
+window.PORTFOLIO_GAMES = [{"id": "01", "slug": "neon-bullet", "name": "Neon Bullet", "wave": 3, "prio": "P1"}, {"id": "02", "slug": "deadline-escape", "name": "Работник месяца", "wave": 1, "prio": "P0"}, {"id": "03", "slug": "tide-of-relics", "name": "Море Реликвий", "wave": 4, "prio": "P1"}, {"id": "04", "slug": "legends-of-the-pitch", "name": "Легенды Поля", "wave": 4, "prio": "P1"}, {"id": "05", "slug": "merge-bazaar", "name": "Базар Слияний", "wave": 1, "prio": "P0"}, {"id": "06", "slug": "crystal-archipelago", "name": "Кристаллы Архипелага", "wave": 2, "prio": "P0"}, {"id": "07", "slug": "idle-forge", "name": "Кузница Вечности", "wave": 2, "prio": "P0"}, {"id": "08", "slug": "cozy-plot", "name": "Уютный Участок", "wave": 3, "prio": "P1"}, {"id": "09", "slug": "auto-towers", "name": "Автобашни", "wave": 3, "prio": "P1"}, {"id": "10", "slug": "night-courier", "name": "Ночной Курьер", "wave": 1, "prio": "P0"}];
+window.CURRENT_SLUG = "tide-of-relics";
+</script>
+<script src="../demos/demo-engine.js"></script>
+<script src="../demos/demos-01-02.js"></script>
+<script src="../demos/demos-03-06.js"></script>
+<script src="../demos/demos-07-10.js"></script>
+<script src="../assets/dashboard.js"></script>
+</body>
+</html>

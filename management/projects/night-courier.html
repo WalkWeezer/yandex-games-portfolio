@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Ночной Курьер — Портфель Яндекс Игры</title>
+<link rel="stylesheet" href="../assets/dashboard.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="../portfolio-dashboard.html">Портфель<br/><span>Яндекс Игры</span></a>
+    <div class="side-section">Навигация</div>
+    <a class="nav-link" href="../portfolio-dashboard.html">Все проекты</a>
+    <div class="side-section">Игры</div>
+    <div class="nav-games"><a class="nav-game " href="neon-bullet.html">01. Neon Bullet</a>
+<a class="nav-game " href="deadline-escape.html">02. Работник месяца</a>
+<a class="nav-game " href="tide-of-relics.html">03. Море Реликвий</a>
+<a class="nav-game " href="legends-of-the-pitch.html">04. Легенды Поля</a>
+<a class="nav-game " href="merge-bazaar.html">05. Базар Слияний</a>
+<a class="nav-game " href="crystal-archipelago.html">06. Кристаллы Архипелага</a>
+<a class="nav-game " href="idle-forge.html">07. Кузница Вечности</a>
+<a class="nav-game " href="cozy-plot.html">08. Уютный Участок</a>
+<a class="nav-game " href="auto-towers.html">09. Автобашни</a>
+<a class="nav-game active" href="night-courier.html">10. Ночной Курьер</a></div>
+    <div class="side-foot">Код запрещён до статуса<br/><strong>Подтверждён</strong></div>
+  </aside>
+  <main class="main">
+
+    <header class="page-head project-head">
+      <div class="crumb"><a href="../portfolio-dashboard.html">← Все проекты</a></div>
+      <div class="project-hero">
+        <div class="hero-art" style="background-image:url('../../games/night-courier/refs/art/key-art.png')"></div>
+        <div>
+          <div class="muted">10 · P0 · Волна 1 — кэшфлоу</div>
+          <h1>Ночной Курьер</h1>
+          <p class="lead">Endless runner · Сессионный runner</p>
+          <div class="inline-status">
+            Статус дизайна: <span class="status-pill" data-status-for="night-courier">Черновик</span>
+            · Гейт: <span data-gate-label-for="night-courier">—</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="overview">Обзор</button>
+      <button class="tab" data-tab="demo">Демка</button>
+      <button class="tab" data-tab="classic">Классический диздок</button>
+      <button class="tab" data-tab="llm">LLM-спека</button>
+      <button class="tab" data-tab="refs">Референсы</button>
+      <button class="tab" data-tab="prompts">Промпты</button>
+      <button class="tab" data-tab="manage">Управление</button>
+    </nav>
+
+    <section class="tab-panel active" id="tab-overview">
+      <div class="two-col">
+        <div class="panel">
+          <h3>Что смотреть</h3>
+          <ul class="checklist-static">
+            <li><strong>Демка</strong> — сначала пощупай feel простыми фигурами</li>
+            <li>Классический GDD — видение, лупы, экономика</li>
+            <li>LLM-спека — контракты для агентов, UI, уровни, ассеты</li>
+            <li>Референсы — арт, вайрфреймы, уровни, спрайты</li>
+            <li>Промпты — готовые задания для арт/код агентов</li>
+          </ul>
+          <h3>Правило</h3>
+          <p class="warn">Пока статус не <strong>Подтверждён</strong>, папку <code>src/</code> не создавать. CONFIRM только после playtest демки (F1→F2). См. <code>docs/METHODOLOGY.md</code>.</p>
+        </div>
+        <div class="panel">
+          <h3>Файлы проекта</h3>
+          <ul class="file-list">
+            <li><code>games/night-courier/docs/DESIGN.md</code></li>
+            <li><code>games/night-courier/docs/DESIGN_LLM.md</code></li>
+            <li><code>games/night-courier/docs/REFS.md</code></li>
+            <li><code>games/night-courier/prompts/*.md</code></li>
+            <li><code>games/night-courier/refs/**</code></li>
+            <li><code>management/demos/</code> — feel demo</li>
+          </ul>
+          <div class="progress big"><i data-progress-for="night-courier"></i></div>
+          <div class="muted" style="margin-top:8px">Прогресс готовности (дизайн + гейты)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-demo">
+      <div class="panel demo-wrap">
+        <h3>Feel-демка (простые фигуры)</h3>
+        <p class="lead">Цель — проверить управление и «хочу ещё раз». На телефоне удобнее через LAN-сервер.</p>
+        <div class="lan-box">С телефона: запусти <code>serve-dashboard.bat</code> на ПК, открой URL из окна батника (одна Wi-Fi сеть).</div>
+        <p class="muted" style="margin:0 0 8px">«Работник месяца» = ядро chas-pik (сетка, 3 колонны, 09:00→18:00).</p>
+        <p class="demo-hint" id="demo-hint">Загрузка демки…</p>
+        <canvas id="feel-demo" width="360" height="640" aria-label="Feel demo"></canvas>
+        <div class="demo-actions">
+          <button class="btn" type="button" id="demo-restart">Рестарт</button>
+          <span class="muted">Стик: левая половина экрана · WASD/стрелки · кнопки справа</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-classic">
+      <article class="doc"><h1 id="game-design-document">Ночной Курьер — Game Design Document</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Slug</strong></td>
+<td><code>night-courier</code></td>
+</tr>
+<tr>
+<td><strong>Название</strong></td>
+<td>Ночной Курьер</td>
+</tr>
+<tr>
+<td><strong>Жанр</strong></td>
+<td>Endless runner / delivery (3-lane)</td>
+</tr>
+<tr>
+<td><strong>Сегмент</strong></td>
+<td>J — сессионный runner, 14–35</td>
+</tr>
+<tr>
+<td><strong>Приоритет</strong></td>
+<td>P0</td>
+</tr>
+<tr>
+<td><strong>Стек</strong></td>
+<td>Phaser 3 + TypeScript + Vite</td>
+</tr>
+<tr>
+<td><strong>Статус дизайна</strong></td>
+<td><code>DRAFT</code> — код до <code>CONFIRMED</code> запрещён</td>
+</tr>
+<tr>
+<td><strong>Концепт</strong></td>
+<td><code>docs/concepts/10-night-courier.md</code></td>
+</tr>
+<tr>
+<td><strong>Арт</strong></td>
+<td><code>assets/concepts/10-night-courier.png</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-vision">1. Vision</h2>
+<p>Ночной неоновый мегаполис. Игрок — курьер на байке: три полосы, свайпы, посылки, трафик, комбо доставок. Короткий ран 40–90 сек → мета (байки/скины/районы) → daily orders. Differentiator: <strong>delivery combo + districts</strong>, не «ещё один subway surfer clone» без темы.</p>
+<h2 id="2-pillars">2. Pillars</h2>
+<ol>
+<li><strong>Input lag = death</strong> — свайп ≤1 кадр реакции логики.  </li>
+<li><strong>Fair continue</strong> — RV continue не спавнит unavoidable crash.  </li>
+<li><strong>Комбо доставки</strong> — риск/награда держит tension.  </li>
+<li><strong>Ads-first честно</strong> — interstitial после рана; sticky в хабе.  </li>
+<li><strong>Daily reason to return</strong> — заказы района дня.</li>
+</ol>
+<h2 id="3-core-loop">3. Core Loop</h2>
+<pre><code class="language-mermaid">flowchart LR
+  H[Хаб] --&gt; R[Run 3-lane]
+  R --&gt; P[Pick parcel]
+  P --&gt; D[Deliver / combo++]
+  D --&gt; R
+  R --&gt; C{Crash}
+  C --&gt;|RV continue| R
+  C --&gt;|end| S[Result + ads]
+  S --&gt; H
+</code></pre>
+<h2 id="4-systems">4. Systems</h2>
+<h3 id="41-movement">4.1 Movement</h3>
+<ul>
+<li>Lanes: 0/1/2. Swipe L/R или tap side; jump/slide optional MVP?<strong>LOCKED MVP:</strong> lane change only + short hop over low barriers.  </li>
+<li>Speed ramps with distance; softcap.</li>
+</ul>
+<h3 id="42-obstacles-4">4.2 Obstacles (4)</h3>
+<p>Car, barrier, pothole, drone (air — needs hop).</p>
+<h3 id="43-parcels-deliveries-3-order-types">4.3 Parcels &amp; Deliveries (3 order types)</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Behavior</th>
+<th>Score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Standard</td>
+<td>pick → deliver zone</td>
+<td>100 × combo</td>
+</tr>
+<tr>
+<td>Rush</td>
+<td>timer 8s</td>
+<td>200 × combo</td>
+</tr>
+<tr>
+<td>Fragile</td>
+<td>no bump (near-miss ok)</td>
+<td>250 × combo</td>
+</tr>
+</tbody>
+</table>
+<p>Combo increments on successful delivery; resets on crash or missed rush.</p>
+<h3 id="44-near-miss">4.4 Near-miss</h3>
+<p>Проезд ≤28px от препятствия → +score + juice + small combo shield 1s.</p>
+<h3 id="45-meta">4.5 Meta</h3>
+<ul>
+<li>5 bike skins (1 free, 4 unlock/IAP)  </li>
+<li>3 couriers (cosmetic + minor trail VFX)  </li>
+<li>Upgrades: start shield, coin magnet, combo grace  </li>
+<li>Districts cosmetic themes (Downtown, Harbor, Campus)</li>
+</ul>
+<h3 id="46-daily-orders">4.6 Daily Orders</h3>
+<p>3 goals: distance, deliveries, near-misses → coins + district token.</p>
+<h2 id="5-monetization-ads-first">5. Monetization (ads-first)</h2>
+<table>
+<thead>
+<tr>
+<th>Канал</th>
+<th>Как</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rewarded</td>
+<td>Continue; ×2 coins; start shield</td>
+</tr>
+<tr>
+<td>Interstitial</td>
+<td>After run result dismiss</td>
+</tr>
+<tr>
+<td>Sticky</td>
+<td>Hub only</td>
+</tr>
+<tr>
+<td>IAP</td>
+<td>Remove ads, skin packs, starter pack</td>
+</tr>
+</tbody>
+</table>
+<p>Continue fair rules: max 2 RV continues / run; after continue 1.5s invuln + clear imminent obstacles in front 400px.</p>
+<h2 id="6-content-mvp">6. Content MVP</h2>
+<p>Endless + 4 obstacles + 3 order types + 5 bikes + 3 couriers + daily + leaderboard distance + cloud.</p>
+<h2 id="7-ux-screens">7. UX Screens</h2>
+<p>Boot, Hub, Run, Pause, Crash/Continue, Result, Garage, Daily, Shop, Settings.</p>
+<h2 id="8-kpis">8. KPIs</h2>
+<p>Tutorial swipe success ≥90%. Continue accept ≥25%. D1 ≥25%. Input lag complaint = P0 bug.</p>
+<h2 id="9-risks">9. Risks</h2>
+<p>Genre saturation → brand courier fantasy hard; pay-to-continue toxicity → hard cap + fair spawn.</p>
+<h2 id="10-audio-juice">10. Audio / Juice</h2>
+<p>Whoosh на смене полосы, blip посылки, аккорд доставки, hitstop 2–3 кадра на crash, near-miss cyan streak, combo float text. BGM neon pulse loop; duck на ads.</p>
+<h2 id="11-onboarding">11. Onboarding</h2>
+<p>≤60 сек: свайп вправо/влево → подбор → ворота доставки → near-miss tip → свободный ран. Без стены текста.</p>
+<h2 id="12-liveops-light">12. LiveOps light</h2>
+<p>District of the day (косметика дороги), weekly distance challenge на лидерборде Яндекса.</p>
+<h2 id="13-out-of-scope">13. Out of Scope</h2>
+<p>Multiplayer races, open world, real maps, voice chat, 5+ lanes, photo-mode.</p>
+<h2 id="14">14. Связанные документы</h2>
+<ul>
+<li><code>DESIGN_LLM.md</code> — исполняемая спека  </li>
+<li><code>prompts/*</code> — атомарные промпты агентам  </li>
+<li>Статус дизайна: <code>DRAFT</code> → REVIEW → CONFIRMED  </li>
+</ul>
+<p><strong>Код не начинать, пока статус ≠ <code>CONFIRMED</code>.</strong></p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-llm">
+      <article class="doc"><h1 id="design_llm-night-courier">DESIGN_LLM — night-courier (Ночной Курьер)</h1>
+<blockquote>
+<p>Исполняемая спека. Статус: <code>DRAFT</code>. <strong>⛔ Не писать <code>src/</code> до <code>CONFIRMED</code>.</strong></p>
+</blockquote>
+<hr />
+<h2 id="0-project-contract">0. Project Contract</h2>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>slug</code></td>
+<td><code>night-courier</code></td>
+</tr>
+<tr>
+<td><code>title_ru</code></td>
+<td>Ночной Курьер</td>
+</tr>
+<tr>
+<td><code>title_en</code></td>
+<td>Night Courier</td>
+</tr>
+<tr>
+<td><code>engine</code></td>
+<td>Phaser 3 + TypeScript + Vite</td>
+</tr>
+<tr>
+<td><code>platform</code></td>
+<td>Yandex Games HTML5</td>
+</tr>
+<tr>
+<td><code>resolution</code></td>
+<td>720×1280 portrait</td>
+</tr>
+<tr>
+<td><code>perspective</code></td>
+<td><strong>pseudo-3D / forward scroll</strong> OR top-down chase — <strong>LOCKED: forward-scroll 3-lane (Subway-like camera)</strong></td>
+</tr>
+<tr>
+<td><code>tick</code></td>
+<td>input polled every frame; spawn on fixed distance meter</td>
+</tr>
+<tr>
+<td><code>design_status</code></td>
+<td><code>DRAFT</code></td>
+</tr>
+<tr>
+<td><code>coding_allowed</code></td>
+<td><strong><code>false</code> until <code>CONFIRMED</code></strong></td>
+</tr>
+<tr>
+<td><code>key_art_ref</code></td>
+<td><code>refs/art/key-art.png</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code>⛔ coding_allowed = false
+IF design_status != CONFIRMED: FORBIDDEN games/night-courier/src/**
+✅ Allowed: docs/, prompts/, refs/, STATUS.md updates only
+</code></pre>
+<h3 id="folders">Folders</h3>
+<pre><code>games/night-courier/
+  docs/ prompts/ refs/
+  public/assets/{art,sprites,ui,env,audio,data}/
+  src/{scenes,run,meta,ui,systems,util}/
+  STATUS.md STORE_CHECKLIST.md README.md DEV_MOCK.md
+</code></pre>
+<h3 id="asset-id-schema">Asset ID schema</h3>
+<p><code>{domain}_{subject}_{variant}</code><br />
+domains: <code>art|char|bike|obs|parcel|env|ui|vfx|audio|data</code></p>
+<h3 id="integration-paths">Integration paths</h3>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key art</td>
+<td><code>public/assets/art/art_key_courier.png</code></td>
+</tr>
+<tr>
+<td>Road atlas</td>
+<td><code>public/assets/env/env_road_scroll.png</code></td>
+</tr>
+<tr>
+<td>District skins</td>
+<td><code>public/assets/env/env_district_{id}.png</code></td>
+</tr>
+<tr>
+<td>Courier sheets</td>
+<td><code>public/assets/sprites/char_courier_{id}_sheet.png</code></td>
+</tr>
+<tr>
+<td>Bike sheets</td>
+<td><code>public/assets/sprites/bike_{id}_sheet.png</code></td>
+</tr>
+<tr>
+<td>Obstacles</td>
+<td><code>public/assets/sprites/obs_{id}_sheet.png</code></td>
+</tr>
+<tr>
+<td>Parcels</td>
+<td><code>public/assets/sprites/parcel_{type}.png</code></td>
+</tr>
+<tr>
+<td>Delivery gate</td>
+<td><code>public/assets/sprites/fx_delivery_gate_sheet.png</code></td>
+</tr>
+<tr>
+<td>UI atlas</td>
+<td><code>public/assets/ui/ui_kit_atlas.png</code></td>
+</tr>
+<tr>
+<td>Data</td>
+<td><code>public/assets/data/{obstacles,orders,upgrades,skins,daily}.json</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-systems-acceptance-criteria">1. Systems + Acceptance Criteria</h2>
+<h3 id="11-lanerunner">1.1 LaneRunner</h3>
+<pre><code class="language-ts">lane: 0|1|2
+x = laneWidth * (lane - 1) // center lane 0 offset
+speedZ: number // world scroll
+distance: number
+</code></pre>
+<p>Swipe threshold 40px horizontal; vertical swipe → hop.</p>
+<p><strong>AC:</strong>
+- [ ] AC-INP-01: lane change completes in ≤120ms tween; invuln during? <strong>no</strong> — only after continue.
+- [ ] AC-INP-02: input buffer 50ms during tween accepts next swipe.
+- [ ] AC-INP-03: on mid Android Chrome average swipe-to-move &lt; 50ms logic.
+- [ ] AC-INP-04: pause stops scroll &amp; spawns.</p>
+<h3 id="12-spawndirector">1.2 SpawnDirector</h3>
+<p>Segments every <code>N</code> meters from weighted tables scaling with distance.</p>
+<p><strong>AC:</strong>
+- [ ] AC-SPN-01: never 3 obstacles sealing all lanes same Z (unfair).
+- [ ] AC-SPN-02: after RV continue call <code>clearFront(400)</code>.
+- [ ] AC-SPN-03: parcel spawn rate readable (≥1 / 3s early).</p>
+<h3 id="13-deliverysystem">1.3 DeliverySystem</h3>
+<p>Carry max 1 parcel MVP. Delivery gates on lanes with type color.</p>
+<p><strong>AC:</strong>
+- [ ] AC-DEL-01: pick on overlap; HUD icon shows carried type.
+- [ ] AC-DEL-02: wrong — no; gates accept matching only.
+- [ ] AC-DEL-03: combo 1..999; multiplier <code>1 + (combo-1)*0.1</code> capped ×5.
+- [ ] AC-DEL-04: rush expire → combo reset + toast.</p>
+<h3 id="14-crash-continue">1.4 Crash &amp; Continue</h3>
+<p>Collision AABB bike vs obs (hop ignores low).</p>
+<p><strong>AC:</strong>
+- [ ] AC-CRASH-01: crash → slowmo 300ms → Continue modal.
+- [ ] AC-CRASH-02: max 2 RV continues per run.
+- [ ] AC-CRASH-03: decline → Result; interstitial on Result close.
+- [ ] AC-CRASH-04: continue grants 1.5s i-frames + clearFront.</p>
+<h3 id="15-scoring">1.5 Scoring</h3>
+<p><code>score = distance*0.5 + deliveryScore + nearMiss*25</code></p>
+<h3 id="16-metagarage">1.6 Meta/Garage</h3>
+<p>Unlock bikes with coins; IAP skins flagged <code>premium</code>.</p>
+<h3 id="17-daily-leaderboard">1.7 Daily &amp; Leaderboard</h3>
+<p>YG leaderboard <code>distance_best</code>. Daily reset UTC+3.</p>
+<h3 id="18-sdk">1.8 SDK</h3>
+<p>RV: continue / x2 result / hub shield. Sticky hub. IAP remove ads + packs. Cloud: best distance, coins, unlocks.</p>
+<hr />
+<h2 id="2-content-grammar">2. Content Grammar</h2>
+<h3 id="21-looks">2.1 LOOKS</h3>
+<p>Neon night cyan <code>#00F5D4</code> + magenta <code>#FF2E97</code> + night <code>#0B1026</code>. Rain optional particles light. Readability &gt; realism: obstacles chunky.</p>
+<h3 id="22-plays-recipes-authoring-grammar">2.2 PLAYS recipes (authoring grammar)</h3>
+<p><strong>Grammar:</strong> <code>SEGMENT := { id, zLen, lane[3], parcel?, gate?, unlockDist }</code><br />
+<code>lane cell := empty | car | barrier | pothole | drone | parcel | gate_{std|rush|fragile}</code><br />
+<strong>Validator:</strong> <code>count(blocked without hop) ≤ 2</code> AND never <code>block_all</code>.</p>
+<h4 id="concrete-recipes-5">Concrete recipes (≥5)</h4>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Recipe ID</th>
+<th>Composition</th>
+<th>Teach / tension</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td><code>teach_gap_parcel</code></td>
+<td><code>gap_mid</code> → <code>parcel_weave</code> → <code>gap_left</code></td>
+<td>swipe + pick parcel</td>
+</tr>
+<tr>
+<td>R2</td>
+<td><code>teach_delivery</code></td>
+<td>carry parcel → <code>rush_gate</code> mid lane</td>
+<td>deliver matching color</td>
+</tr>
+<tr>
+<td>R3</td>
+<td><code>hop_intro</code></td>
+<td><code>hop_mid</code> ×2 with empty flanks</td>
+<td>vertical swipe hop</td>
+</tr>
+<tr>
+<td>R4</td>
+<td><code>weave_mid</code></td>
+<td><code>weave_a</code> → <code>gap_right</code> → <code>drone_left</code></td>
+<td>lane dance mid-run</td>
+</tr>
+<tr>
+<td>R5</td>
+<td><code>fragile_pressure</code></td>
+<td><code>fragile_set</code> + sparse cars</td>
+<td>protect magenta parcel</td>
+</tr>
+<tr>
+<td>R6</td>
+<td><code>late_dense</code></td>
+<td><code>dense_gap_mid</code> → <code>twin_hop</code> → <code>gap_mid</code></td>
+<td>late speed, still fair</td>
+</tr>
+<tr>
+<td>R7</td>
+<td><code>post_continue</code></td>
+<td>forced <code>gap_mid</code> ×2 after RV</td>
+<td>fairness clearFront</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Early (0–200m):</strong> R1–R3 only, frequent parcels.<br />
+<strong>Mid (200–800m):</strong> R4–R5, rush orders.<br />
+<strong>Late (800m+):</strong> R6 drones + fragile; always 1 safe lane pattern.</p>
+<h3 id="23-segment-patterns-examples">2.3 Segment patterns (examples)</h3>
+<table>
+<thead>
+<tr>
+<th>Pattern ID</th>
+<th>Lanes obs</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gap_left</code></td>
+<td>1,2</td>
+<td>safe 0</td>
+</tr>
+<tr>
+<td><code>gap_mid</code></td>
+<td>0,2</td>
+<td>safe 1</td>
+</tr>
+<tr>
+<td><code>gap_right</code></td>
+<td>0,1</td>
+<td>safe 2</td>
+</tr>
+<tr>
+<td><code>hop_mid</code></td>
+<td>low mid</td>
+<td>hop</td>
+</tr>
+<tr>
+<td><code>parcel_weave</code></td>
+<td>sparse + parcel</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Forbidden:</strong> <code>block_all</code>, <code>rng_three_same_z</code>.</p>
+<h3 id="24-difficulty-curve">2.4 Difficulty curve</h3>
+<p><code>speed = min(12, 6 + distance/400)</code><br />
+spawn density <code>lerp(0.6, 1.4, clamp(distance/1500))</code></p>
+<h3 id="25-ascii-pattern-micro-grammar">2.5 ASCII pattern micro-grammar</h3>
+<pre><code>Lane legend: . empty  C car  B barrier  P pothole  D drone  @ parcel  G gate
+gap_mid     : C . C
+hop_mid     : . P .
+weave_a     : C . @
+drone_left  : D . C
+</code></pre>
+<hr />
+<h2 id="3-ui-map-wireframes">3. UI Map + Wireframes</h2>
+<p>Screens: <code>boot</code>, <code>hub</code>, <code>garage</code>, <code>daily</code>, <code>run</code>, <code>pause</code>, <code>continue</code>, <code>result</code>, <code>shop</code>, <code>settings</code>.</p>
+<pre><code class="language-mermaid">flowchart TB
+  Boot --&gt; Hub
+  Hub --&gt; Run
+  Hub --&gt; Garage
+  Hub --&gt; Daily
+  Hub --&gt; Shop
+  Hub --&gt; Settings
+  Run --&gt; Pause
+  Pause --&gt; Run
+  Pause --&gt; Hub
+  Run --&gt; Continue
+  Continue --&gt; Run
+  Continue --&gt; Result
+  Run --&gt; Result
+  Result --&gt; Hub
+  Result --&gt; Shop
+</code></pre>
+<h3 id="31-full-ui-component-inventory">3.1 Full UI component inventory</h3>
+<table>
+<thead>
+<tr>
+<th>Component ID</th>
+<th>Screen</th>
+<th>Behavior</th>
+<th>Min touch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ui_btn_play</code></td>
+<td>hub</td>
+<td>start run</td>
+<td>64×64</td>
+</tr>
+<tr>
+<td><code>ui_btn_garage</code></td>
+<td>hub</td>
+<td>open bike/courier</td>
+<td>48×48</td>
+</tr>
+<tr>
+<td><code>ui_btn_daily</code></td>
+<td>hub</td>
+<td>open daily orders</td>
+<td>48×48</td>
+</tr>
+<tr>
+<td><code>ui_btn_shop</code></td>
+<td>hub/result</td>
+<td>open IAP shop</td>
+<td>48×48</td>
+</tr>
+<tr>
+<td><code>ui_btn_settings</code></td>
+<td>hub</td>
+<td>audio/cloud</td>
+<td>44×44</td>
+</tr>
+<tr>
+<td><code>ui_score_hud</code></td>
+<td>run</td>
+<td>live score + distance</td>
+<td>display</td>
+</tr>
+<tr>
+<td><code>ui_combo_meter</code></td>
+<td>run</td>
+<td>combo ×N pulse</td>
+<td>display</td>
+</tr>
+<tr>
+<td><code>ui_parcel_icon</code></td>
+<td>run</td>
+<td>carried type color</td>
+<td>40×40</td>
+</tr>
+<tr>
+<td><code>ui_rush_chip</code></td>
+<td>run</td>
+<td>rush timer toast</td>
+<td>display</td>
+</tr>
+<tr>
+<td><code>ui_pause_btn</code></td>
+<td>run</td>
+<td>open pause</td>
+<td>44×44</td>
+</tr>
+<tr>
+<td><code>ui_swipe_zone</code></td>
+<td>run</td>
+<td>L/R/hop input</td>
+<td>full W × 70% H</td>
+</tr>
+<tr>
+<td><code>ui_continue_rv</code></td>
+<td>continue</td>
+<td>rewarded continue 1/2</td>
+<td>56×56</td>
+</tr>
+<tr>
+<td><code>ui_btn_finish</code></td>
+<td>continue</td>
+<td>decline → result</td>
+<td>48×48</td>
+</tr>
+<tr>
+<td><code>ui_result_stats</code></td>
+<td>result</td>
+<td>metrics breakdown</td>
+<td>display</td>
+</tr>
+<tr>
+<td><code>ui_btn_x2</code></td>
+<td>result</td>
+<td>RV ×2 coins</td>
+<td>56×56</td>
+</tr>
+<tr>
+<td><code>ui_bike_carousel</code></td>
+<td>garage</td>
+<td>swipe select bike</td>
+<td>72×72 cards</td>
+</tr>
+<tr>
+<td><code>ui_daily_card</code></td>
+<td>daily</td>
+<td>goal progress CTA</td>
+<td>48×48</td>
+</tr>
+<tr>
+<td><code>ui_shop_row</code></td>
+<td>shop</td>
+<td>buy SKU</td>
+<td>48×48</td>
+</tr>
+<tr>
+<td><code>ui_sticky_slot</code></td>
+<td>hub</td>
+<td>reserved ad inset</td>
+<td>layout only</td>
+</tr>
+<tr>
+<td><code>ui_tutorial_hint</code></td>
+<td>run</td>
+<td>swipe arrows</td>
+<td>non-block 44</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-wireframe-boot">3.2 Wireframe — Boot</h3>
+<pre><code>+----------------------------------+
+|         НОЧНОЙ КУРЬЕР            |
+|            ░ LOAD ░              |
+|         ████████░░░░ 58%         |
++----------------------------------+
+</code></pre>
+<h3 id="33-wireframe-hub">3.3 Wireframe — Hub</h3>
+<pre><code>+-- Ночной Курьер -------------+
+| Best 2.4km   Coins 890  [⚙]  |
+|     [key-art / neon loop]    |
+|         [  Гнать  ]          |
+| [Гараж] [Доставки] [SHOP]    |
+| sticky ad reserved (inset)   |
++------------------------------+
+</code></pre>
+<h3 id="34-wireframe-garage">3.4 Wireframe — Garage</h3>
+<pre><code>+-- Гараж ----------------------+
+| &lt; bike_cyan &gt;  trail preview  |
+| Stats: SPD / STYLE            |
+| Couriers: [Alex][Mira][Rex]   |
+| [Купить / Экип]     [Назад]   |
++-------------------------------+
+</code></pre>
+<h3 id="35-wireframe-daily">3.5 Wireframe — Daily</h3>
+<pre><code>+-- Доставки дня ---------------+
+| Dist 500m     ████░░ 340/500  |
+| Deliveries 10 ███░░░ 6/10     |
+| Near-miss 5   ██░░░░ 2/5      |
+| Rewards: coins + skin chip    |
+| [Забрать]            [Назад]  |
++-------------------------------+
+</code></pre>
+<h3 id="36-wireframe-run-hud">3.6 Wireframe — Run HUD</h3>
+<pre><code>+----------------------------------+
+| SCORE 12540   COMBO x3   🛍 Rush |
+| Dist 342m                   [❚❚]|
++----------------------------------+
+|                                  |
+|   lane0   lane1   lane2          |
+|             BIKE                 |
+|                                  |
++----------------------------------+
+|         (swipe zones)            |
++----------------------------------+
+</code></pre>
+<h3 id="37-wireframe-pause">3.7 Wireframe — Pause</h3>
+<pre><code>+------------------------------+
+|           ПАУЗА              |
+| [Продолжить]                 |
+| [Настройки]                  |
+| [В хаб]                      |
++------------------------------+
+</code></pre>
+<h3 id="38-wireframe-continue">3.8 Wireframe — Continue</h3>
+<pre><code>+------------------------------+
+| Столкновение!                |
+| [Продолжить RV 1/2]          |
+| [Завершить]                  |
++------------------------------+
+</code></pre>
+<h3 id="39-wireframe-result">3.9 Wireframe — Result</h3>
+<pre><code>+-- Итог рана ------------------+
+| Dist 1.2km  Score 18400       |
+| Deliveries 14  Combo 9        |
+| Near-miss 6   Coins +220      |
+| [▶ ×2 монеты]  [В хаб]        |
+| (interstitial on close)       |
++-------------------------------+
+</code></pre>
+<h3 id="310-wireframe-shop-settings">3.10 Wireframe — Shop / Settings</h3>
+<pre><code>SHOP: [nc_remove_ads] [nc_starter] [nc_skin_pack_neon] [nc_bike_sakura]
+SETTINGS: music / sfx / cloud sync / credits
+</code></pre>
+<hr />
+<h2 id="4-art-bible">4. Art Bible</h2>
+<p>Style: cyber-casual neon runner; clean shapes; <strong>not</strong> realistic GTA; <strong>not</strong> horror.</p>
+<p>Palette:
+| Role | Hex |
+|------|-----|
+| Night BG | <code>#0B1026</code> |
+| Cyan | <code>#00F5D4</code> |
+| Magenta | <code>#FF2E97</code> |
+| Amber | <code>#FFB703</code> |
+| Road | <code>#1C2541</code> |
+| Lane mark | <code>#5BC0BE</code> |
+| UI panel | <code>#141B2D</code> |
+| Text | <code>#E8F1F2</code> |
+| Danger | <code>#FF4D6D</code> |</p>
+<p>Do: emissive edges on bike; chunky obs. Don't: seizure strobe; small unreadable drones; mid-run ad banners.</p>
+<hr />
+<h2 id="5-image-prompts-copy-paste-8">5. Image Prompts (copy-paste, ≥8)</h2>
+<blockquote>
+<p>Перед генерацией сверяйся с: <code>refs/art/key-art.png</code>, <code>refs/ui/wireframe-main.png</code>, <code>refs/levels/layout-main.png</code>, <code>refs/sprites/sheet-main.png</code>.<br />
+Выход черновиков → <code>refs/</code>; финал → <code>public/assets/...</code> (§0 Integration).</p>
+</blockquote>
+<h3 id="p1-key-art-match-refsartkey-artpng">P1 — Key art → match <code>refs/art/key-art.png</code></h3>
+<pre><code>Endless runner game key art matching refs/art/key-art.png mood, neon night motorcycle courier delivering glowing packages through rainy cyber city, cyan #00F5D4 and magenta #FF2E97 lights, stylish cyber-casual illustration, motion feel, 16:9, no text, no UI, no watermark
+</code></pre>
+<h3 id="p2-ui-wireframe-mock-refsuiwireframe-mainpng">P2 — UI wireframe mock → <code>refs/ui/wireframe-main.png</code></h3>
+<pre><code>Mobile portrait 720x1280 neon night runner UI wireframe matching refs/ui/wireframe-main.png, hub with large Play CTA, garage daily shop row, sticky ad inset bottom, dark panels #141B2D cyan outlines, no real text glyphs fake labels as blocks only
+</code></pre>
+<h3 id="p3-level-layout-diagram-refslevelslayout-mainpng">P3 — Level layout diagram → <code>refs/levels/layout-main.png</code></h3>
+<pre><code>Top-down three-lane endless runner segment diagram matching refs/levels/layout-main.png, obstacles as chunky blocks, one safe lane highlighted cyan, neon night asphalt, pattern gap_mid readable, no text
+</code></pre>
+<h3 id="p4-sprite-sheet-master-refsspritessheet-mainpng">P4 — Sprite sheet master → <code>refs/sprites/sheet-main.png</code></h3>
+<pre><code>Game sprite sheet overview matching refs/sprites/sheet-main.png, neon courier bike side view cells, hop and crash frames, chunky car drone barrier, transparent background, even grid, cyber-casual, no text
+</code></pre>
+<h3 id="p5-road-scroll-env">P5 — Road scroll env</h3>
+<pre><code>Portrait endless runner road segment texture, three lanes night asphalt, neon reflections, seamless vertical scroll friendly, cyber casual, match refs/art/key-art.png palette, no text
+</code></pre>
+<h3 id="p6-district-parallax">P6 — District parallax</h3>
+<pre><code>District backdrop downtown neon towers parallax layer, night courier game, cyan magenta glow, match refs/art/key-art.png, no text
+</code></pre>
+<h3 id="p7-courier-bike">P7 — Courier + bike</h3>
+<pre><code>Game character courier helmet jacket full body three-quarter neon accents transparent bg; companion motorcycle side view readable silhouette; style locked to refs/sprites/sheet-main.png
+</code></pre>
+<h3 id="p8-obstacles-parcels">P8 — Obstacles + parcels</h3>
+<pre><code>Obstacle set chunky casual: night car, road barrier, pothole, delivery drone; glowing parcel icons standard cyan / rush amber / fragile magenta; transparent; match refs/sprites/sheet-main.png scale
+</code></pre>
+<h3 id="p9-vfx">P9 — VFX</h3>
+<pre><code>VFX near-miss blue streak and delivery success burst sprite sheets, continue shield flash, neon, transparent/black, consistent with refs/sprites/sheet-main.png
+</code></pre>
+<h3 id="p10-ui-kit-atlas">P10 — UI kit atlas</h3>
+<pre><code>Mobile neon night UI kit matching refs/ui/wireframe-main.png, dark panels #141B2D, cyan #00F5D4 CTA outlines, magenta accents, large thumb buttons, combo meter, continue modal frame, no text labels
+</code></pre>
+<hr />
+<h2 id="6-sprite-sheets-timing">6. Sprite Sheets + Timing</h2>
+<h3 id="61-sheet-registry">6.1 Sheet registry</h3>
+<table>
+<thead>
+<tr>
+<th>Sheet</th>
+<th>Cell</th>
+<th>Anims</th>
+<th>Frames</th>
+<th>FPS</th>
+<th>Loop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bike_{id}_sheet</code></td>
+<td>128×96</td>
+<td>run</td>
+<td>4</td>
+<td>12</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>bike_{id}_sheet</code></td>
+<td>128×96</td>
+<td>hop</td>
+<td>4</td>
+<td>14</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>bike_{id}_sheet</code></td>
+<td>128×96</td>
+<td>crash</td>
+<td>3</td>
+<td>10</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>char_courier_*</code></td>
+<td>64×64</td>
+<td>lean L/R</td>
+<td>2+2</td>
+<td>8</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>obs_car_sheet</code></td>
+<td>96×96</td>
+<td>wheels</td>
+<td>2</td>
+<td>8</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>obs_drone_sheet</code></td>
+<td>64×64</td>
+<td>hover</td>
+<td>4</td>
+<td>8</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>fx_delivery_gate_sheet</code></td>
+<td>96×128</td>
+<td>pulse</td>
+<td>4</td>
+<td>6</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>vfx_near_miss</code></td>
+<td>64×64</td>
+<td>streak</td>
+<td>6</td>
+<td>20</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>vfx_continue_shield</code></td>
+<td>128×128</td>
+<td>flash</td>
+<td>8</td>
+<td>16</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>vfx_combo_up</code></td>
+<td>64×64</td>
+<td>pop</td>
+<td>5</td>
+<td>16</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-runtime-juice-ms">6.2 Runtime juice (ms)</h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>ms</th>
+<th>Ease / notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lane tween</td>
+<td>100–120</td>
+<td>sine.out; buffer next swipe 50ms</td>
+</tr>
+<tr>
+<td>Hop</td>
+<td>280</td>
+<td>apex @ frame 2 / ~140ms</td>
+</tr>
+<tr>
+<td>Crash slowmo</td>
+<td>300</td>
+<td>timeScale 0.35</td>
+</tr>
+<tr>
+<td>Continue i-frames</td>
+<td>1500</td>
+<td>visual shield</td>
+</tr>
+<tr>
+<td>Combo toast</td>
+<td>500</td>
+<td>fade</td>
+</tr>
+<tr>
+<td>Delivery success</td>
+<td>400</td>
+<td>gate burst</td>
+</tr>
+<tr>
+<td>Parcel pick</td>
+<td>180</td>
+<td>scale pop</td>
+</tr>
+<tr>
+<td>Result count-up</td>
+<td>800</td>
+<td>score tween</td>
+</tr>
+<tr>
+<td>Hub CTA pulse</td>
+<td>1200 period</td>
+<td>idle loop</td>
+</tr>
+<tr>
+<td>Tutorial arrow</td>
+<td>600 blink</td>
+<td>until first swipe</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-prompt-packs">7. Prompt packs</h2>
+<p><code>games/night-courier/prompts/*</code></p>
+<hr />
+<h2 id="8-data">8. Data</h2>
+<p><code>obstacles.json</code>: id, hbox, needsHop, speedMod<br />
+<code>orders.json</code>: type weights by distance<br />
+<code>upgrades.json</code>: costs meta<br />
+<code>skins.json</code>: bike/courier<br />
+<code>daily.json</code>: templates</p>
+<hr />
+<h2 id="9-skus">9. SKUs</h2>
+<p><code>nc_remove_ads</code>, <code>nc_starter</code>, <code>nc_skin_pack_neon</code>, <code>nc_bike_sakura</code></p>
+<hr />
+<h2 id="10-tutorial-60s">10. Tutorial ≤60s</h2>
+<p>Forced slow speed: swipe right → swipe left → pick parcel → deliver gate → near-miss tip → free run.</p>
+<hr />
+<h2 id="11-definition-of-ready">11. Definition of Ready</h2>
+<ul>
+<li>[ ] Fair spawn rules approved</li>
+<li>[ ] Continue fairness approved (clearFront + i-frames + cap 2)</li>
+<li>[ ] Palette/style locked</li>
+<li>[ ] Pattern table documented</li>
+<li>[ ] Leaderboard metric = best distance</li>
+<li>[ ] Prompt packs complete</li>
+<li>[ ] <strong>No coding until CONFIRMED</strong></li>
+</ul>
+<h2 id="12-gate">12. Gate</h2>
+<p>⛔ No gameplay code until design CONFIRMED.</p>
+<hr />
+<h2 id="13-pattern-catalog-normative-minimum">13. Pattern catalog (normative minimum)</h2>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>z-length</th>
+<th>lane0</th>
+<th>lane1</th>
+<th>lane2</th>
+<th>parcel</th>
+<th>unlockDist</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gap_left</td>
+<td>40</td>
+<td>—</td>
+<td>car</td>
+<td>barrier</td>
+<td>maybe</td>
+<td>0</td>
+</tr>
+<tr>
+<td>gap_mid</td>
+<td>40</td>
+<td>car</td>
+<td>—</td>
+<td>car</td>
+<td>maybe</td>
+<td>0</td>
+</tr>
+<tr>
+<td>gap_right</td>
+<td>40</td>
+<td>barrier</td>
+<td>pothole</td>
+<td>—</td>
+<td>maybe</td>
+<td>0</td>
+</tr>
+<tr>
+<td>hop_mid</td>
+<td>35</td>
+<td>—</td>
+<td>pothole</td>
+<td>—</td>
+<td>no</td>
+<td>80</td>
+</tr>
+<tr>
+<td>weave_a</td>
+<td>60</td>
+<td>car</td>
+<td>—</td>
+<td>parcel_lane</td>
+<td>yes</td>
+<td>100</td>
+</tr>
+<tr>
+<td>rush_gate</td>
+<td>50</td>
+<td>—</td>
+<td>gate_rush</td>
+<td>—</td>
+<td>carry</td>
+<td>150</td>
+</tr>
+<tr>
+<td>drone_left</td>
+<td>45</td>
+<td>drone</td>
+<td>—</td>
+<td>car</td>
+<td>maybe</td>
+<td>300</td>
+</tr>
+<tr>
+<td>fragile_set</td>
+<td>55</td>
+<td>—</td>
+<td>gate_fragile</td>
+<td>barrier</td>
+<td>fragile</td>
+<td>400</td>
+</tr>
+<tr>
+<td>dense_gap_mid</td>
+<td>40</td>
+<td>car</td>
+<td>—</td>
+<td>car</td>
+<td>no</td>
+<td>800</td>
+</tr>
+<tr>
+<td>twin_hop</td>
+<td>50</td>
+<td>pothole</td>
+<td>—</td>
+<td>pothole</td>
+<td>no</td>
+<td>900</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Validator rule:</strong> for any pattern row, count(blocked lanes without hop option) ≤ 2.</p>
+<h2 id="14-bike-courier-catalog">14. Bike &amp; courier catalog</h2>
+<table>
+<thead>
+<tr>
+<th>bike_id</th>
+<th>unlock</th>
+<th>note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bike_starter</td>
+<td>free</td>
+<td>default</td>
+</tr>
+<tr>
+<td>bike_cyan</td>
+<td>500 coins</td>
+<td>trail cyan</td>
+</tr>
+<tr>
+<td>bike_magenta</td>
+<td>800 coins</td>
+<td>trail magenta</td>
+</tr>
+<tr>
+<td>bike_taxi</td>
+<td>IAP pack</td>
+<td>checker</td>
+</tr>
+<tr>
+<td>bike_sakura</td>
+<td>IAP</td>
+<td>pink petals VFX</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>courier_id</th>
+<th>unlock</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>courier_alex</td>
+<td>free</td>
+</tr>
+<tr>
+<td>courier_mira</td>
+<td>600 coins</td>
+</tr>
+<tr>
+<td>courier_rex</td>
+<td>daily week / 1000 coins</td>
+</tr>
+</tbody>
+</table>
+<h2 id="15-meta-upgrades">15. Meta upgrades</h2>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>maxLv</th>
+<th>cost curve</th>
+<th>effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>upg_shield</td>
+<td>3</td>
+<td>100*1.5^n</td>
+<td>start shield charges</td>
+</tr>
+<tr>
+<td>upg_magnet</td>
+<td>3</td>
+<td>120*1.5^n</td>
+<td>coin magnet radius</td>
+</tr>
+<tr>
+<td>upg_combo_grace</td>
+<td>2</td>
+<td>200*1.6^n</td>
+<td>+0.5s combo grace after near-miss</td>
+</tr>
+<tr>
+<td>upg_coin_gain</td>
+<td>5</td>
+<td>80*1.4^n</td>
+<td>+5%/lv coins</td>
+</tr>
+</tbody>
+</table>
+<h2 id="16-continue-fairness-algorithm">16. Continue fairness algorithm</h2>
+<pre><code>onRewardedContinue():
+  continuesUsed++
+  if continuesUsed &gt; 2: deny
+  player.iFrames = 1.5s
+  SpawnDirector.despawnInFront(400)
+  SpawnDirector.forceNextPatterns([&quot;gap_mid&quot;,&quot;gap_mid&quot;])
+  resume speed = min(current, midTierSpeed)
+</code></pre>
+<h2 id="17-result-screen-metrics">17. Result screen metrics</h2>
+<p>distance, deliveries, bestCombo, nearMiss, coinsEarned, score → optional YG leaderboard submit distance.</p>
+<h2 id="18-save-schema">18. Save schema</h2>
+<pre><code class="language-json">{
+  &quot;v&quot;: 1,
+  &quot;coins&quot;: 0,
+  &quot;bestDistance&quot;: 0,
+  &quot;bestScore&quot;: 0,
+  &quot;bikesOwned&quot;: [&quot;bike_starter&quot;],
+  &quot;couriersOwned&quot;: [&quot;courier_alex&quot;],
+  &quot;equippedBike&quot;: &quot;bike_starter&quot;,
+  &quot;equippedCourier&quot;: &quot;courier_alex&quot;,
+  &quot;upgrades&quot;: {},
+  &quot;daily&quot;: {&quot;date&quot;: &quot;&quot;, &quot;progress&quot;: {}},
+  &quot;removeAds&quot;: false,
+  &quot;lastSeenAt&quot;: 0
+}
+</code></pre>
+<h2 id="19-audio">19. Audio</h2>
+<p>Engine loop low; whoosh lane; parcel pick blip; delivery success chord; crash hit; neon hub ambience; sticky-safe (mute duck on ads).</p>
+<h2 id="20-performance-budget">20. Performance budget</h2>
+<p>≤40 active obstacle sprites; object pool mandatory; particle cap 60; target 60fps / min 30fps on mid Android.</p>
+<h2 id="21-agent-handoff-protocol">21. Agent handoff protocol</h2>
+<p><strong>Locks:</strong> slug <code>night-courier</code>; 3-lane forward scroll; fair patterns; ads after run only; <strong><code>coding_allowed: false</code> until CONFIRMED</strong>.</p>
+<h3 id="211-exact-message-templates-copy-paste">21.1 Exact message templates (copy-paste)</h3>
+<h4 id="art-agent">→ Art agent</h4>
+<pre><code class="language-text">ROLE: Art agent for night-courier.
+READ: games/night-courier/docs/DESIGN_LLM.md §0,§4,§5 + prompts/ART_PROMPTS.md
+GROUND TRUTH: refs/art/key-art.png, refs/ui/wireframe-main.png, refs/levels/layout-main.png, refs/sprites/sheet-main.png
+DO: generate key art, districts, bikes, obstacles, parcels into refs/art/ then propose public/assets paths from §0.
+FORBIDDEN: src/** ; other games; changing palette without DESIGN_LLM update.
+coding_allowed=false until CONFIRMED.
+</code></pre>
+<h4 id="anim-agent">→ Anim agent</h4>
+<pre><code class="language-text">ROLE: Sprite/anim agent for night-courier.
+READ: DESIGN_LLM.md §6 + prompts/SPRITE_ANIM_PROMPTS.md
+GROUND TRUTH: refs/sprites/sheet-main.png
+DO: bike hop/crash sheets, drone hover, near-miss VFX; frame counts &amp; FPS from §6.1; output refs/sprites/ then public/assets/sprites/.
+FORBIDDEN: src/** ; unfair hitbox-shifting pivots.
+coding_allowed=false until CONFIRMED.
+</code></pre>
+<h4 id="ui-agent">→ UI agent</h4>
+<pre><code class="language-text">ROLE: UI agent for night-courier.
+READ: DESIGN_LLM.md §3 + prompts/UI_PROMPTS.md
+GROUND TRUTH: refs/ui/wireframe-main.png
+DO: atlas parts + mocks for ALL screens in §3; touch mins from §3.1; sticky hub-only.
+FORBIDDEN: mid-run banners; src/**.
+coding_allowed=false until CONFIRMED.
+</code></pre>
+<h4 id="level-agent">→ Level agent</h4>
+<pre><code class="language-text">ROLE: Level/spawn agent for night-courier.
+READ: DESIGN_LLM.md §2,§13,§16 + prompts/LEVEL_PROMPTS.md
+GROUND TRUTH: refs/levels/layout-main.png
+DO: pattern catalog + daily templates; validate never block_all; post-continue gap_mid×2; output refs/levels/.
+FORBIDDEN: unfair 3-lane seals; src/**.
+coding_allowed=false until CONFIRMED.
+</code></pre>
+<h4 id="code-agent">→ Code agent</h4>
+<pre><code class="language-text">ROLE: Code agent for night-courier.
+READ: DESIGN_LLM.md + prompts/CODE_AGENT_PROMPT.md + DESIGN.md
+IF design_status != CONFIRMED: STOP. Do not write src/**. Update STATUS.md only if asked.
+AFTER CONFIRMED: implement systems §1 with AC checkboxes; asset paths §0; continue fairness §16.
+SCOPE: games/night-courier/ only.
+</code></pre>
+<h3 id="212-handoff-checklist">21.2 Handoff checklist</h3>
+<ul>
+<li>[ ] Agent named + pack file linked  </li>
+<li>[ ] Ground-truth refs cited  </li>
+<li>[ ] Output folder named  </li>
+<li>[ ] <code>coding_allowed=false</code> restated  </li>
+</ul>
+<hr />
+<h2 id="22-asset-id-registry-sample">22. Asset ID registry (sample)</h2>
+<table>
+<thead>
+<tr>
+<th>asset_id</th>
+<th>domain</th>
+<th>path (final)</th>
+<th>notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>art_key_courier</code></td>
+<td>art</td>
+<td><code>public/assets/art/art_key_courier.png</code></td>
+<td>from refs/art/key-art.png</td>
+</tr>
+<tr>
+<td><code>env_road_scroll</code></td>
+<td>env</td>
+<td><code>public/assets/env/env_road_scroll.png</code></td>
+<td>seamless V</td>
+</tr>
+<tr>
+<td><code>env_district_downtown</code></td>
+<td>env</td>
+<td><code>public/assets/env/env_district_downtown.png</code></td>
+<td>parallax</td>
+</tr>
+<tr>
+<td><code>bike_starter_sheet</code></td>
+<td>bike</td>
+<td><code>public/assets/sprites/bike_starter_sheet.png</code></td>
+<td>§6</td>
+</tr>
+<tr>
+<td><code>char_courier_alex_sheet</code></td>
+<td>char</td>
+<td><code>public/assets/sprites/char_courier_alex_sheet.png</code></td>
+<td>lean</td>
+</tr>
+<tr>
+<td><code>obs_car_sheet</code></td>
+<td>obs</td>
+<td><code>public/assets/sprites/obs_car_sheet.png</code></td>
+<td>wheels</td>
+</tr>
+<tr>
+<td><code>obs_drone_sheet</code></td>
+<td>obs</td>
+<td><code>public/assets/sprites/obs_drone_sheet.png</code></td>
+<td>hover</td>
+</tr>
+<tr>
+<td><code>parcel_rush</code></td>
+<td>parcel</td>
+<td><code>public/assets/sprites/parcel_rush.png</code></td>
+<td>amber</td>
+</tr>
+<tr>
+<td><code>fx_delivery_gate_sheet</code></td>
+<td>vfx</td>
+<td><code>public/assets/sprites/fx_delivery_gate_sheet.png</code></td>
+<td>pulse</td>
+</tr>
+<tr>
+<td><code>ui_kit_atlas</code></td>
+<td>ui</td>
+<td><code>public/assets/ui/ui_kit_atlas.png</code></td>
+<td>+json</td>
+</tr>
+<tr>
+<td><code>data_obstacles</code></td>
+<td>data</td>
+<td><code>public/assets/data/obstacles.json</code></td>
+<td>hbox</td>
+</tr>
+<tr>
+<td><code>data_orders</code></td>
+<td>data</td>
+<td><code>public/assets/data/orders.json</code></td>
+<td>weights</td>
+</tr>
+<tr>
+<td><code>audio_engine_loop</code></td>
+<td>audio</td>
+<td><code>public/assets/audio/engine_loop.mp3</code></td>
+<td>duck on ads</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="23-integration-acceptance-tests">23. Integration acceptance tests</h2>
+<h3 id="231-design-production-gate">23.1 Design → production gate</h3>
+<ul>
+<li>[ ] <code>coding_allowed</code> remains false until dashboard <code>CONFIRMED</code></li>
+<li>[ ] All major screens have wireframes (§3.2–3.10)</li>
+<li>[ ] UI inventory touch mins ≥44px interactive</li>
+<li>[ ] ≥5 content recipes documented (§2.2)</li>
+<li>[ ] ≥8 image prompts reference refs paths (§5)</li>
+<li>[ ] Anim timing tables complete (§6)</li>
+<li>[ ] Pattern catalog validates safe-lane rule (§13)</li>
+<li>[ ] Continue fairness algorithm signed (§16)</li>
+<li>[ ] Prompt packs non-stub (<code>prompts/*</code>)</li>
+<li>[ ] Asset IDs unique vs registry (§22)</li>
+</ul>
+<h3 id="232-post-confirmed-runtime-smoke-code-later">23.2 Post-CONFIRMED runtime smoke (code later)</h3>
+<ul>
+<li>[ ] Swipe lane ≤120ms; hop 280ms</li>
+<li>[ ] Never 3-lane seal same Z</li>
+<li>[ ] RV continue ≤2; clearFront(400); i-frames 1.5s</li>
+<li>[ ] Sticky ad hub only; interstitial on Result close</li>
+<li>[ ] Leaderboard submits <code>distance_best</code></li>
+<li>[ ] Cloud restore bikes/coins/unlocks</li>
+<li>[ ] 60fps target / ≥30 mid Android; pool obstacles ≤40</li>
+</ul>
+<h3 id="233-explicit-coding-ban">23.3 Explicit coding ban</h3>
+<pre><code>⛔ DO NOT START CODING until design status is CONFIRMED.
+⛔ coding_allowed: false
+✅ DO update docs/prompts/refs/STATUS only.
+</code></pre>
+<hr />
+<h2 id="visual-ground-truth">Visual Ground Truth (обязательные референсы)</h2>
+<p>См. также <code>docs/REFS.md</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Путь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key art</td>
+<td><code>refs/art/key-art.png</code></td>
+</tr>
+<tr>
+<td>UI wireframe</td>
+<td><code>refs/ui/wireframe-main.png</code></td>
+</tr>
+<tr>
+<td>Level layout</td>
+<td><code>refs/levels/layout-main.png</code></td>
+</tr>
+<tr>
+<td>Sprite sheet</td>
+<td><code>refs/sprites/sheet-main.png</code></td>
+</tr>
+</tbody>
+</table>
+<p>Любой арт-агент обязан сверяться с этими файлами перед генерацией финальных ассетов.</p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-refs">
+      <div class="refs-intro doc"><p>﻿# Ночной Курьер — Visual References Index</p>
+<blockquote>
+<p>Эти файлы — обязательный вход для арт/UI/level LLM-агентов.<br />
+При генерации новых ассетов держать стиль как у референсов ниже.</p>
+</blockquote>
+<h2 id="art">Art</h2>
+<p><img alt="Key art" src="../../games/night-courier/refs/art/key-art.png" /></p>
+<p><code>refs/art/key-art.png</code> — tonal/mood lock, palette, composition.</p>
+<h2 id="ui-wireframes">UI Wireframes</h2>
+<p><img alt="UI wireframe" src="../../games/night-courier/refs/ui/wireframe-main.png" /></p>
+<p><code>refs/ui/wireframe-main.png</code> — экраны, иерархия, CTA rewarded/IAP зоны.</p>
+<h2 id="level-content-layout">Level / Content Layout</h2>
+<p><img alt="Level layout" src="../../games/night-courier/refs/levels/layout-main.png" /></p>
+<p><code>refs/levels/layout-main.png</code> — грамматика уровней/доски/маршрута.</p>
+<h2 id="sprites-animation-sheet">Sprites / Animation Sheet</h2>
+<p><img alt="Sprites" src="../../games/night-courier/refs/sprites/sheet-main.png" /></p>
+<p><code>refs/sprites/sheet-main.png</code> — пропорции, кадры, иконки.</p>
+<h2 id="_1">Как использовать агентам</h2>
+<ol>
+<li>Открыть <code>DESIGN_LLM.md</code> (контракт).</li>
+<li>Открыть этот <code>REFS.md</code> (визуальный ground truth).</li>
+<li>Взять атомарный промпт из <code>prompts/</code> и <strong>приложить</strong> соответствующий png.</li>
+<li>Сохранять результат в пути из Integration Contract <code>DESIGN_LLM.md</code>.</li>
+</ol>
+<h2 id="dor-visuals">DoR visuals</h2>
+<ul>
+<li>[x] key-art</li>
+<li>[x] wireframe-main</li>
+<li>[x] layout-main</li>
+<li>[x] sheet-main</li>
+</ul></div>
+      <h3 class="gallery-title">Галерея референсов</h3>
+      <div class="ref-grid">
+            <figure class="ref-card">
+              <a href="../../games/night-courier/refs/art/key-art.png" target="_blank" rel="noopener">
+                <img src="../../games/night-courier/refs/art/key-art.png" alt="Ключевой арт" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Ключевой арт</strong>
+                <span>Настроение, палитра, композиция</span>
+                <code>art/key-art.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/night-courier/refs/ui/wireframe-main.png" target="_blank" rel="noopener">
+                <img src="../../games/night-courier/refs/ui/wireframe-main.png" alt="Вайрфрейм UI" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Вайрфрейм UI</strong>
+                <span>Экраны, иерархия, CTA рекламы/покупок</span>
+                <code>ui/wireframe-main.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/night-courier/refs/levels/layout-main.png" target="_blank" rel="noopener">
+                <img src="../../games/night-courier/refs/levels/layout-main.png" alt="Раскладка уровней" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Раскладка уровней</strong>
+                <span>Грамматика уровней / доски / маршрута</span>
+                <code>levels/layout-main.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/night-courier/refs/sprites/sheet-main.png" target="_blank" rel="noopener">
+                <img src="../../games/night-courier/refs/sprites/sheet-main.png" alt="Спрайт-лист" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Спрайт-лист</strong>
+                <span>Пропорции, кадры, иконки</span>
+                <code>sprites/sheet-main.png</code>
+              </figcaption>
+            </figure></div>
+    </section>
+
+    <section class="tab-panel" id="tab-prompts">
+      <p class="lead">Атомарные промпты — копируй в отдельного агента вместе с нужным референсом из вкладки «Референсы».</p>
+      
+          <details class="prompt-acc" open>
+            <summary>Арт <span class="muted">ART_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="art_prompts-night-courier">ART_PROMPTS — night-courier</h1>
+<p><strong>Роль:</strong> арт-агент.<br />
+<strong>Читать:</strong> <code>docs/DESIGN_LLM.md</code> §0, §4, §5.<br />
+<strong>Статус:</strong> <code>coding_allowed: false</code> until CONFIRMED — только <code>refs/</code> + предложения путей.</p>
+<h2 id="ground-truth">Ground truth (обязательно)</h2>
+<table>
+<thead>
+<tr>
+<th>Ref</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key art</td>
+<td><code>refs/art/key-art.png</code></td>
+</tr>
+<tr>
+<td>UI wireframe</td>
+<td><code>refs/ui/wireframe-main.png</code></td>
+</tr>
+<tr>
+<td>Level layout</td>
+<td><code>refs/levels/layout-main.png</code></td>
+</tr>
+<tr>
+<td>Sprite sheet</td>
+<td><code>refs/sprites/sheet-main.png</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="master-lock">Master lock</h2>
+<pre><code>Cyber-casual neon night endless runner art, cyan #00F5D4, magenta #FF2E97, night #0B1026, amber #FFB703, chunky readable shapes, rainy road reflections optional, no photoreal GTA, no gore, no seizure strobe, no text, no UI, no watermark
+</code></pre>
+<h2 id="a1-key-refsartkey-artpng-publicassetsartart_key_courierpng">A1 Key → <code>refs/art/key-art.png</code> → <code>public/assets/art/art_key_courier.png</code></h2>
+<pre><code>{lock} match refs/art/key-art.png mood, 16:9 motorcycle courier neon city glowing packages motion blur stylish casual
+</code></pre>
+<h2 id="a2-environments">A2 Environments</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Focus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>env_road_scroll.png</code></td>
+<td>3-lane asphalt seamless vertical scroll; match <code>refs/levels/layout-main.png</code> lane spacing</td>
+</tr>
+<tr>
+<td><code>env_district_downtown.png</code></td>
+<td>neon towers parallax</td>
+</tr>
+<tr>
+<td><code>env_district_harbor.png</code></td>
+<td>docks neon water</td>
+</tr>
+<tr>
+<td><code>env_district_campus.png</code></td>
+<td>campus night lights</td>
+</tr>
+<tr>
+<td><code>env_hub_garage.png</code></td>
+<td>hub backdrop</td>
+</tr>
+</tbody>
+</table>
+<h2 id="a3-couriers-bikes">A3 Couriers &amp; bikes</h2>
+<p>3 couriers full body; 5 bikes side view consistent scale with <code>refs/sprites/sheet-main.png</code>.</p>
+<h2 id="a4-obstacles-parcels">A4 Obstacles &amp; parcels</h2>
+<p>obs: car, barrier, pothole, drone — chunky.<br />
+parcels: standard cyan, rush amber, fragile magenta — 128 icons.</p>
+<h2 id="a5-delivery-gate-art">A5 Delivery gate art</h2>
+<p>Glowing arch/gate per type color.</p>
+<h2 id="a6-skin-iap-banners-empty-text-band">A6 Skin IAP banners empty text band</h2>
+<h2 id="copy-paste-prompts">Copy-paste prompts</h2>
+<p>Используй DESIGN_LLM §5 P1–P10 (все ссылаются на refs paths).</p>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>[ ] Contrast vs road OK</li>
+<li>[ ] IDs match DESIGN_LLM §22 registry</li>
+<li>[ ] refs ground truth checked before final</li>
+<li>[ ] No <code>src/**</code> edits</li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Спрайты и анимация <span class="muted">SPRITE_ANIM_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="sprite_anim_prompts-night-courier">SPRITE_ANIM_PROMPTS — night-courier</h1>
+<p><strong>Роль:</strong> спрайт/аним агент.<br />
+<strong>Читать:</strong> DESIGN_LLM §6.<br />
+<strong>Ground truth:</strong> <code>refs/sprites/sheet-main.png</code>.<br />
+<strong>coding_allowed:</strong> false until CONFIRMED.</p>
+<h2 id="lock">Lock</h2>
+<pre><code>Neon cyber-casual game sprites, thick outline, transparent bg, high contrast for night road, no text
+</code></pre>
+<h2 id="specs-timing-normative">Specs &amp; timing (normative)</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Cell</th>
+<th>Anims</th>
+<th>FPS</th>
+<th>Loop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bike_{id}_sheet.png</code></td>
+<td>128×96</td>
+<td>run4, hop4, crash3</td>
+<td>12/14/10</td>
+<td>run yes</td>
+</tr>
+<tr>
+<td><code>char_courier_{id}_sheet.png</code></td>
+<td>64×64</td>
+<td>leanL2, leanR2, cheer3</td>
+<td>8</td>
+<td>lean yes</td>
+</tr>
+<tr>
+<td><code>obs_car_sheet.png</code></td>
+<td>96×96</td>
+<td>wheel2</td>
+<td>8</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>obs_drone_sheet.png</code></td>
+<td>64×64</td>
+<td>hover4</td>
+<td>8</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>obs_barrier.png</code></td>
+<td>96×64</td>
+<td>static</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>obs_pothole.png</code></td>
+<td>96×32</td>
+<td>static</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>fx_delivery_gate_sheet.png</code></td>
+<td>96×128</td>
+<td>pulse4</td>
+<td>6</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>vfx_near_miss_sheet.png</code></td>
+<td>64×64</td>
+<td>6</td>
+<td>20</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>vfx_shield_sheet.png</code></td>
+<td>128×128</td>
+<td>8</td>
+<td>16</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>vfx_combo_up_sheet.png</code></td>
+<td>64×64</td>
+<td>5</td>
+<td>16</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<p>Hop apex = frame 2 centered. Lean L/R mirrors.</p>
+<h2 id="prompt">Prompt</h2>
+<pre><code>{lock}
+Sprite sheet [SPEC] matching refs/sprites/sheet-main.png scale and outline, even grid, no bleed, courier/bike readable silhouette
+</code></pre>
+<h2 id="juice-timing-runtime">Juice timing (runtime)</h2>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>ms</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lane tween</td>
+<td>100–120</td>
+</tr>
+<tr>
+<td>Hop</td>
+<td>280</td>
+</tr>
+<tr>
+<td>Crash slowmo</td>
+<td>300</td>
+</tr>
+<tr>
+<td>Continue i-frames</td>
+<td>1500</td>
+</tr>
+<tr>
+<td>Parcel pick</td>
+<td>180</td>
+</tr>
+<tr>
+<td>Delivery success</td>
+<td>400</td>
+</tr>
+</tbody>
+</table>
+<h2 id="acceptance">Acceptance</h2>
+<ul>
+<li>[ ] Frame counts match DESIGN_LLM §6.1</li>
+<li>[ ] No hitbox pivot jumps on crash</li>
+<li>[ ] Output <code>refs/sprites/</code> then <code>public/assets/sprites/</code></li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Интерфейс <span class="muted">UI_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="ui_prompts-night-courier">UI_PROMPTS — night-courier</h1>
+<p><strong>Роль:</strong> UI агент.<br />
+<strong>Читать:</strong> <code>docs/DESIGN_LLM.md</code> §3 (inventory + all wireframes).<br />
+<strong>Ground truth:</strong> <code>refs/ui/wireframe-main.png</code> (+ key-art palette from <code>refs/art/key-art.png</code>).<br />
+<strong>coding_allowed:</strong> false until CONFIRMED.</p>
+<h2 id="lock">Lock</h2>
+<pre><code>Mobile neon runner UI kit, dark panels #141B2D, cyan CTA #00F5D4, magenta accents #FF2E97, amber warning #FFB703, huge thumb buttons, combo meter, no text labels, no fake numbers, no clutter stickers on HUD
+</code></pre>
+<h2 id="atlas-parts">Atlas parts</h2>
+<p>panel_dark, btn_cyan, btn_magenta, btn_ghost, combo_meter, score_font_sheet optional, parcel_hud_icon_frames, continue_modal, result_panel, bike_carousel_frame, daily_card, shop_row, sticky_safe_inset_marker, pause_icon.</p>
+<h2 id="mocks-refsui-all-major-screens">Mocks → <code>refs/ui/</code> (ALL major screens)</h2>
+<ol>
+<li>Boot loading  </li>
+<li>Hub (+ sticky reserve bottom) — align <code>refs/ui/wireframe-main.png</code>  </li>
+<li>Garage carousel  </li>
+<li>Daily orders  </li>
+<li>Run HUD  </li>
+<li>Pause  </li>
+<li>Continue RV (1/2)  </li>
+<li>Result + ×2  </li>
+<li>Shop remove-ads  </li>
+<li>Settings  </li>
+<li>Tutorial swipe hints  </li>
+</ol>
+<h2 id="touch-contract-from-design_llm-31">Touch contract (from DESIGN_LLM §3.1)</h2>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Min</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Play CTA</td>
+<td>64×64</td>
+</tr>
+<tr>
+<td>Pause / settings</td>
+<td>44×44</td>
+</tr>
+<tr>
+<td>Continue RV / ×2</td>
+<td>56×56</td>
+</tr>
+<tr>
+<td>Garage cards</td>
+<td>72×72</td>
+</tr>
+<tr>
+<td>Swipe zone</td>
+<td>full width × lower 70%</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ru-copy">RU copy</h2>
+<p>«Гнать», «Продолжить», «Завершить», «×2 монеты», «Щит на старт», «Комбо», «Доставки дня», «Рекорд дистанции».</p>
+<h2 id="rules">Rules</h2>
+<p>Continue CTA clearly separated from interstitial; sticky <strong>hub only</strong>; no mid-run ad banners.</p>
+<h2 id="acceptance">Acceptance</h2>
+<ul>
+<li>[ ] Every screen in DESIGN_LLM §3 mocked</li>
+<li>[ ] Touch mins met</li>
+<li>[ ] Matches <code>refs/ui/wireframe-main.png</code></li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Уровни <span class="muted">LEVEL_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="level_prompts-night-courier">LEVEL_PROMPTS — night-courier</h1>
+<p><strong>Роль:</strong> spawn patterns / districts / daily.<br />
+<strong>Читать:</strong> DESIGN_LLM §2 (recipes R1–R7), §13, §16.<br />
+<strong>Ground truth:</strong> <code>refs/levels/layout-main.png</code>.<br />
+<strong>coding_allowed:</strong> false until CONFIRMED.</p>
+<h2 id="pattern-bible-refslevelspatternsmd">Pattern bible → <code>refs/levels/patterns.md</code></h2>
+<p>Скопируй таблицу DESIGN_LLM §13. Для каждого pattern:
+- ASCII 3-lane diagram (legend §2.5)
+- length meters / unlockDist
+- parcel yes/no
+- validation: safe lane OR hop option</p>
+<h2 id="concrete-recipe-pack-must-author-all">Concrete recipe pack (must author all)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>teach_gap_parcel</code></td>
+<td>R1 early</td>
+</tr>
+<tr>
+<td><code>teach_delivery</code></td>
+<td>R2 gate</td>
+</tr>
+<tr>
+<td><code>hop_intro</code></td>
+<td>R3</td>
+</tr>
+<tr>
+<td><code>weave_mid</code></td>
+<td>R4</td>
+</tr>
+<tr>
+<td><code>fragile_pressure</code></td>
+<td>R5</td>
+</tr>
+<tr>
+<td><code>late_dense</code></td>
+<td>R6</td>
+</tr>
+<tr>
+<td><code>post_continue</code></td>
+<td>R7 forced after RV</td>
+</tr>
+</tbody>
+</table>
+<h2 id="director">Director</h2>
+<pre><code>brackets:
+  0-200: easy gaps + parcels teach
+  200-800: weave + rush + drone intro
+  800+: dense but never block_all
+after_continue: gap_mid ×2 forced + clearFront(400)
+</code></pre>
+<h2 id="districts">Districts</h2>
+<p>Downtown / Harbor / Campus — visual only; same pattern pool.</p>
+<h2 id="daily-templates-refslevelsdaily_templatesjson">Daily templates → <code>refs/levels/daily_templates.json</code></h2>
+<p>distance_500, deliveries_10, near_miss_5, rush_3, combo_8, fragile_2.</p>
+<h2 id="viz-prompt">Viz prompt</h2>
+<pre><code>Diagram-like top view three lanes endless runner segment matching refs/levels/layout-main.png, obstacles as simple blocks, one safe lane highlighted, neon night colors, no text
+</code></pre>
+<h2 id="fairness-llm">Fairness LLM</h2>
+<pre><code>Проверь patterns night-courier: always ≥1 safe lane или hop. Найди unfair комбинации dense_gap + drone same z. Предложи blacklist.
+</code></pre>
+<h2 id="acceptance">Acceptance</h2>
+<ul>
+<li>[ ] No block_all</li>
+<li>[ ] Continue fairness documented</li>
+<li>[ ] Daily goals ≥3</li>
+<li>[ ] Speed/density curve written</li>
+<li>[ ] ≥5 concrete recipes exported</li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Код-агент <span class="muted">CODE_AGENT_PROMPT.md</span></summary>
+            <article class="doc"><h1 id="code_agent_prompt-night-courier">CODE_AGENT_PROMPT — night-courier</h1>
+<pre><code class="language-text">Ты — код-агент «Ночной Курьер» (night-courier) для Яндекс Игр.
+
+⛔ coding_allowed: false until design_status == CONFIRMED.
+⛔ Нет src/ пока дизайн ≠ CONFIRMED (сейчас DRAFT).
+✅ Можно: docs/, prompts/, refs/, STATUS.md (если попросили).
+
+Прочитай:
+- games/night-courier/docs/DESIGN.md
+- games/night-courier/docs/DESIGN_LLM.md (особенно §1 AC, §3 UI, §16 continue, §21 handoff, §22–23)
+- games/night-courier/prompts/*
+- docs/concepts/10-night-courier.md
+- docs/agents/control-methodology.md
+
+Стек: Phaser 3 + TS + Vite. Только games/night-courier/.
+
+После CONFIRMED:
+1) STATUS + run scene 3-lane swipe + hop
+2) SpawnDirector fair patterns + 4 obstacles
+3) Parcels/deliveries/combo/near-miss scoring
+4) Crash → RV continue fair (cap2, i-frames, clearFront)
+5) Meta garage skins/upgrades + daily orders
+6) SDK: RV continue/x2/shield; interstitial after run; sticky hub; IAP; leaderboard distance; cloud
+7) Tutorial ≤60s, STORE_CHECKLIST, dist, README
+
+DoD: минимальный input lag; continue не обман; daily goal; build green.
+Asset paths строго из DESIGN_LLM §0 / §22.
+</code></pre></article>
+          </details>
+    </section>
+
+    <section class="tab-panel" id="tab-manage">
+      <div class="panel manage-panel" data-manage-slug="night-courier">
+        <h3>Статус дизайна</h3>
+        <div class="seg-btns" data-role="design-status">
+          <button data-v="DRAFT">Черновик</button>
+          <button data-v="REVIEW">На ревью</button>
+          <button data-v="CONFIRMED">Подтверждён</button>
+          <button data-v="BLOCKED">Заблокирован</button>
+        </div>
+
+        <h3>Готовность документов</h3>
+        <label class="check"><input type="checkbox" data-k="classic"/> Классический GDD прочитан</label>
+        <label class="check"><input type="checkbox" data-k="llm"/> LLM-спека прочитана</label>
+        <label class="check"><input type="checkbox" data-k="refs"/> Референсы проверены</label>
+
+        <h3>Гейт разработки</h3>
+        <p class="muted">Доступен только после статуса «Подтверждён».</p>
+        <select data-role="gate">
+          <option value="—">— не начато</option>
+          <option value="G0">G0 — Каркас</option>
+          <option value="G1">G1 — Вертикальный слайс</option>
+          <option value="G2">G2 — Контент MVP</option>
+          <option value="G3">G3 — Мета и удержание</option>
+          <option value="G4">G4 — SDK монетизация</option>
+          <option value="G5">G5 — Готово к стору</option>
+        </select>
+
+        <h3>Заметки</h3>
+        <textarea data-role="note" rows="5" placeholder="Комментарии к ревью..."></textarea>
+      </div>
+    </section>
+    
+  </main>
+</div>
+<script>
+window.PORTFOLIO_GAMES = [{"id": "01", "slug": "neon-bullet", "name": "Neon Bullet", "wave": 3, "prio": "P1"}, {"id": "02", "slug": "deadline-escape", "name": "Работник месяца", "wave": 1, "prio": "P0"}, {"id": "03", "slug": "tide-of-relics", "name": "Море Реликвий", "wave": 4, "prio": "P1"}, {"id": "04", "slug": "legends-of-the-pitch", "name": "Легенды Поля", "wave": 4, "prio": "P1"}, {"id": "05", "slug": "merge-bazaar", "name": "Базар Слияний", "wave": 1, "prio": "P0"}, {"id": "06", "slug": "crystal-archipelago", "name": "Кристаллы Архипелага", "wave": 2, "prio": "P0"}, {"id": "07", "slug": "idle-forge", "name": "Кузница Вечности", "wave": 2, "prio": "P0"}, {"id": "08", "slug": "cozy-plot", "name": "Уютный Участок", "wave": 3, "prio": "P1"}, {"id": "09", "slug": "auto-towers", "name": "Автобашни", "wave": 3, "prio": "P1"}, {"id": "10", "slug": "night-courier", "name": "Ночной Курьер", "wave": 1, "prio": "P0"}];
+window.CURRENT_SLUG = "night-courier";
+</script>
+<script src="../demos/demo-engine.js"></script>
+<script src="../demos/demos-01-02.js"></script>
+<script src="../demos/demos-03-06.js"></script>
+<script src="../demos/demos-07-10.js"></script>
+<script src="../assets/dashboard.js"></script>
+</body>
+</html>

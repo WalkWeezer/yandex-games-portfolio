@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Кузница Вечности — Портфель Яндекс Игры</title>
+<link rel="stylesheet" href="../assets/dashboard.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="../portfolio-dashboard.html">Портфель<br/><span>Яндекс Игры</span></a>
+    <div class="side-section">Навигация</div>
+    <a class="nav-link" href="../portfolio-dashboard.html">Все проекты</a>
+    <div class="side-section">Игры</div>
+    <div class="nav-games"><a class="nav-game " href="neon-bullet.html">01. Neon Bullet</a>
+<a class="nav-game " href="deadline-escape.html">02. Работник месяца</a>
+<a class="nav-game " href="tide-of-relics.html">03. Море Реликвий</a>
+<a class="nav-game " href="legends-of-the-pitch.html">04. Легенды Поля</a>
+<a class="nav-game " href="merge-bazaar.html">05. Базар Слияний</a>
+<a class="nav-game " href="crystal-archipelago.html">06. Кристаллы Архипелага</a>
+<a class="nav-game active" href="idle-forge.html">07. Кузница Вечности</a>
+<a class="nav-game " href="cozy-plot.html">08. Уютный Участок</a>
+<a class="nav-game " href="auto-towers.html">09. Автобашни</a>
+<a class="nav-game " href="night-courier.html">10. Ночной Курьер</a></div>
+    <div class="side-foot">Код запрещён до статуса<br/><strong>Подтверждён</strong></div>
+  </aside>
+  <main class="main">
+
+    <header class="page-head project-head">
+      <div class="crumb"><a href="../portfolio-dashboard.html">← Все проекты</a></div>
+      <div class="project-hero">
+        <div class="hero-art" style="background-image:url('../../games/idle-forge/refs/art/key-art.png')"></div>
+        <div>
+          <div class="muted">07 · P0 · Волна 2 — гибрид</div>
+          <h1>Кузница Вечности</h1>
+          <p class="lead">Idle / incremental · AFK / idle</p>
+          <div class="inline-status">
+            Статус дизайна: <span class="status-pill" data-status-for="idle-forge">Черновик</span>
+            · Гейт: <span data-gate-label-for="idle-forge">—</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="overview">Обзор</button>
+      <button class="tab" data-tab="demo">Демка</button>
+      <button class="tab" data-tab="classic">Классический диздок</button>
+      <button class="tab" data-tab="llm">LLM-спека</button>
+      <button class="tab" data-tab="refs">Референсы</button>
+      <button class="tab" data-tab="prompts">Промпты</button>
+      <button class="tab" data-tab="manage">Управление</button>
+    </nav>
+
+    <section class="tab-panel active" id="tab-overview">
+      <div class="two-col">
+        <div class="panel">
+          <h3>Что смотреть</h3>
+          <ul class="checklist-static">
+            <li><strong>Демка</strong> — сначала пощупай feel простыми фигурами</li>
+            <li>Классический GDD — видение, лупы, экономика</li>
+            <li>LLM-спека — контракты для агентов, UI, уровни, ассеты</li>
+            <li>Референсы — арт, вайрфреймы, уровни, спрайты</li>
+            <li>Промпты — готовые задания для арт/код агентов</li>
+          </ul>
+          <h3>Правило</h3>
+          <p class="warn">Пока статус не <strong>Подтверждён</strong>, папку <code>src/</code> не создавать. CONFIRM только после playtest демки (F1→F2). См. <code>docs/METHODOLOGY.md</code>.</p>
+        </div>
+        <div class="panel">
+          <h3>Файлы проекта</h3>
+          <ul class="file-list">
+            <li><code>games/idle-forge/docs/DESIGN.md</code></li>
+            <li><code>games/idle-forge/docs/DESIGN_LLM.md</code></li>
+            <li><code>games/idle-forge/docs/REFS.md</code></li>
+            <li><code>games/idle-forge/prompts/*.md</code></li>
+            <li><code>games/idle-forge/refs/**</code></li>
+            <li><code>management/demos/</code> — feel demo</li>
+          </ul>
+          <div class="progress big"><i data-progress-for="idle-forge"></i></div>
+          <div class="muted" style="margin-top:8px">Прогресс готовности (дизайн + гейты)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-demo">
+      <div class="panel demo-wrap">
+        <h3>Feel-демка (простые фигуры)</h3>
+        <p class="lead">Цель — проверить управление и «хочу ещё раз». На телефоне удобнее через LAN-сервер.</p>
+        <div class="lan-box">С телефона: запусти <code>serve-dashboard.bat</code> на ПК, открой URL из окна батника (одна Wi-Fi сеть).</div>
+        <p class="muted" style="margin:0 0 8px">«Работник месяца» = ядро chas-pik (сетка, 3 колонны, 09:00→18:00).</p>
+        <p class="demo-hint" id="demo-hint">Загрузка демки…</p>
+        <canvas id="feel-demo" width="360" height="640" aria-label="Feel demo"></canvas>
+        <div class="demo-actions">
+          <button class="btn" type="button" id="demo-restart">Рестарт</button>
+          <span class="muted">Стик: левая половина экрана · WASD/стрелки · кнопки справа</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-classic">
+      <article class="doc"><h1 id="game-design-document">Кузница Вечности — Game Design Document</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Slug</strong></td>
+<td><code>idle-forge</code></td>
+</tr>
+<tr>
+<td><strong>Рабочее название</strong></td>
+<td>Кузница Вечности</td>
+</tr>
+<tr>
+<td><strong>Жанр</strong></td>
+<td>Idle / incremental</td>
+</tr>
+<tr>
+<td><strong>Сегмент ЦА</strong></td>
+<td>G — AFK / idle, 18–50</td>
+</tr>
+<tr>
+<td><strong>Приоритет</strong></td>
+<td>P0</td>
+</tr>
+<tr>
+<td><strong>Платформа</strong></td>
+<td>Яндекс Игры (HTML5)</td>
+</tr>
+<tr>
+<td><strong>Движок</strong></td>
+<td>Phaser 3 + TypeScript + Vite</td>
+</tr>
+<tr>
+<td><strong>Статус дизайна</strong></td>
+<td><code>DRAFT</code> — код не начинать до <code>CONFIRMED</code></td>
+</tr>
+<tr>
+<td><strong>Концепт</strong></td>
+<td><code>docs/concepts/07-idle-forge.md</code></td>
+</tr>
+<tr>
+<td><strong>Ключевой арт</strong></td>
+<td><code>assets/concepts/07-idle-forge.png</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-vision">1. Vision</h2>
+<p>Игрок — мастер подземной кузницы под горой. Рабочие добывают руду, конвейеры тащат металл к наковальням, артефакты копятся в реликварии. Сессия = «зашёл → забрал оффлайн → апгрейднул → поставил цели → ушёл». Возврат мотивируется прозрачным оффлайн-доходом, milestones и prestige «Переплав эпохи».</p>
+<p><strong>Эмоциональный тон:</strong> тёплый тёмно-фэнтезийный уют (не хоррор): оранжевый жар горна, золото слитков, зелёные руны гномов.</p>
+<h2 id="2-design-pillars">2. Design Pillars</h2>
+<ol>
+<li><strong>Честный AFK</strong> — оффлайн-формула видна игроку; никаких скрытых nerf.</li>
+<li><strong>Всегда есть следующая кнопка</strong> — апгрейд / этаж / артефакт / квест в ≤10 сек выбора.</li>
+<li><strong>Prestige = праздник, не наказание</strong> — «Переплав» даёт ощутимый постоянный буст и новый слой контента.</li>
+<li><strong>Гибрид без paywall</strong> — F2P проходит 7-дневную дугу; RV ускоряет, IAP удобствует.</li>
+<li><strong>Читаемые big numbers</strong> — K/M/B/T + научная нотация после порога.</li>
+</ol>
+<h2 id="3-target-audience-session">3. Target Audience &amp; Session</h2>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Возраст</td>
+<td>18–50</td>
+</tr>
+<tr>
+<td>Сессия</td>
+<td>2–8 мин, 4–12 раз/день</td>
+</tr>
+<tr>
+<td>Первый «вау»</td>
+<td>≤30 сек (тап → руда → апгрейд)</td>
+</tr>
+<tr>
+<td>Цель удержания</td>
+<td>D1 ≥30%, D7 ≥12% (idle-норма)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-core-loop">4. Core Loop</h2>
+<pre><code class="language-mermaid">flowchart LR
+  A[Тап / автодобыча] --&gt; B[Ресурсы]
+  B --&gt; C[Апгрейды / рабочие]
+  C --&gt; D[Открытие этажей]
+  D --&gt; E[Артефакты + квесты]
+  E --&gt; F{Порог prestige?}
+  F --&gt;|нет| A
+  F --&gt;|да| G[Переплав эпохи]
+  G --&gt; A
+</code></pre>
+<ol>
+<li>Добыча (тап + idle workers).  </li>
+<li>Покупка апгрейдов скорости/выхода/крита.  </li>
+<li>Разблокировка этажей шахты (визуальный прогресс).  </li>
+<li>Крафт/дроп артефактов → пассивные множители.  </li>
+<li>Оффлайн-сбор (cap 6 ч базово, до 8 ч мета/IAP).  </li>
+<li>Prestige → постоянный множитель + сброс run-апгрейдов.</li>
+</ol>
+<h2 id="5-systems-overview">5. Systems Overview</h2>
+<h3 id="51">5.1 Ресурсы</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Имя</th>
+<th>Роль</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ore</code></td>
+<td>Руда</td>
+<td>Базовый soft</td>
+</tr>
+<tr>
+<td><code>ingot</code></td>
+<td>Слитки</td>
+<td>Крафт / mid soft</td>
+</tr>
+<tr>
+<td><code>ember</code></td>
+<td>Угли духа</td>
+<td>Prestige currency</td>
+</tr>
+<tr>
+<td><code>gem</code></td>
+<td>Самоцветы</td>
+<td>Soft premium (RV/IAP/квесты)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-mvp-8">5.2 Апгрейды (MVP = 8 линий)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Линия</th>
+<th>Эффект</th>
+<th>Формула стоимости</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Кирка</td>
+<td>+tap power</td>
+<td><code>base * 1.15^n</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Горн</td>
+<td>+ore/sec</td>
+<td><code>base * 1.18^n</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Конвейер</td>
+<td>+speed workers</td>
+<td><code>base * 1.16^n</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>Наковальня</td>
+<td>ore→ingot rate</td>
+<td><code>base * 1.2^n</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>Бригада</td>
+<td>+workers</td>
+<td>ступенчато</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Руны</td>
+<td>crit chance</td>
+<td>softcap 50%</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Шахтный лифт</td>
+<td>этаж unlock discount</td>
+<td>линейно</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Реликварий</td>
+<td>+artifact drop</td>
+<td>softcap</td>
+</tr>
+</tbody>
+</table>
+<h3 id="53">5.3 Рабочие</h3>
+<ul>
+<li>Старт: 0 auto, 1 тап.  </li>
+<li>Max workers MVP: 12.  </li>
+<li>Каждый worker: <code>ore/sec = base * (1 + forgeLevel) * artifactMult * prestigeMult * rvMult</code>.  </li>
+<li>Визуал: маленькие гномы на этаже с loop walk/mine.</li>
+</ul>
+<h3 id="54">5.4 Этажи</h3>
+<table>
+<thead>
+<tr>
+<th>Этаж</th>
+<th>Название</th>
+<th>Условие</th>
+<th>Бонус</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Угольный зал</td>
+<td>старт</td>
+<td>—</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Железная жила</td>
+<td>ore lifetime 5e4</td>
+<td>+10% ore</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Обсидиановые штреки</td>
+<td>ingot 2e3</td>
+<td>+15% forge</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Рунный колодец</td>
+<td>prestige ≥1</td>
+<td>+ember drop</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Сердце горы</td>
+<td>prestige ≥3 + artifacts 8</td>
+<td>+25% all</td>
+</tr>
+</tbody>
+</table>
+<h3 id="55-15-mvp">5.5 Артефакты (15 MVP)</h3>
+<p>Редкости: Common / Rare / Epic / Legendary.<br />
+Слоты: 6 экипируемых. Дубликаты → <code>ember</code> dust.<br />
+Примеры: «Молот Предков» (+tap), «Кольцо Искры» (+crit), «Сердце Горна» (+offline %).</p>
+<h3 id="56-prestige">5.6 Prestige — «Переплав эпохи»</h3>
+<ul>
+<li>Требование: этаж ≥3 И lifetime ore ≥ порога (растёт).  </li>
+<li>Сброс: ore, ingot, run-апгрейды, этажи (кроме meta).  </li>
+<li>Сохраняется: ember, артефакты, pass, IAP, meta-древо.  </li>
+<li>Награда: <code>ember = f(lifetime)</code> + permanent <code>+2%</code> all income за эпоху (stack).</li>
+</ul>
+<h3 id="57-offline">5.7 Offline</h3>
+<pre><code>offlineGain = rate * min(elapsed, capHours*3600) * offlineEfficiency
+</code></pre>
+<ul>
+<li><code>capHours</code> = 6 (base) / 8 (meta) / 10 (IAP Offline Vault).  </li>
+<li>UI показывает breakdown: время, rate, efficiency, итог.  </li>
+<li>RV: «Забрать ×2» или «Мгновенно заполнить cap».</li>
+</ul>
+<h3 id="58-milestones-7-">5.8 Квесты / Milestones (7-дневная дуга)</h3>
+<p>Daily: 3 квеста (добыть X, купить N апгрейдов, скрафтить артефакт).<br />
+Milestones: M1…M20 (lifetime thresholds) → gems + cosmetic forge FX.<br />
+Week goal: «Достигни эпохи 3» / «Собери 10 артефактов».</p>
+<h2 id="6-economy-monetization-yandex-hybrid">6. Economy &amp; Monetization (Yandex hybrid)</h2>
+<table>
+<thead>
+<tr>
+<th>Канал</th>
+<th>Триггер</th>
+<th>Награда / продукт</th>
+<th>Правила</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rewarded</td>
+<td>Кнопка</td>
+<td>×2 income 5 мин; instant offline; skip 30 мин; daily chest ×2</td>
+<td>Только opt-in, текст награды</td>
+</tr>
+<tr>
+<td>Interstitial</td>
+<td>Вход в сессию (cooldown 3 мин) ИЛИ после prestige</td>
+<td>—</td>
+<td>Не mid-click; пауза звука</td>
+</tr>
+<tr>
+<td>Sticky</td>
+<td>Опционально в хабе кузницы</td>
+<td>—</td>
+<td>Не перекрывает CTA</td>
+</tr>
+<tr>
+<td>IAP</td>
+<td>Shop</td>
+<td>Permanent ×2; Remove Ads; Starter Pack; Forge Pass; Offline Vault</td>
+<td>Fair, без P2W wall</td>
+</tr>
+<tr>
+<td>Soft</td>
+<td>Геймплей</td>
+<td>ore/ingot/ember/gem</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Starter Pack:</strong> ×2 на 48ч + 200 gems + 1 Rare artifact.<br />
+<strong>Forge Pass (30 уровней):</strong> cosmetic anvil skins, gems, 1 Legendary pity на 30.</p>
+<p><strong>Запрещено:</strong> mid-action ads; скрытый nerf offline для non-payers; paywall на первый prestige.</p>
+<h2 id="7-content-list-store-ready">7. Content List (Store Ready)</h2>
+<ul>
+<li>[x] 3 ресурса + gems  </li>
+<li>[x] 8 upgrade lines  </li>
+<li>[x] 5 этажей визуала  </li>
+<li>[x] 15 артефактов  </li>
+<li>[x] Prestige + meta tree (8 узлов)  </li>
+<li>[x] Daily quests + 20 milestones  </li>
+<li>[x] Offline claim UI  </li>
+<li>[x] Ads + 4 IAP SKU + pass light  </li>
+<li>[x] Cloud save  </li>
+<li>[x] Tutorial ≤90 сек  </li>
+</ul>
+<h2 id="8-ux-screens">8. UX / Screens</h2>
+<p>Boot → Main Forge (idle stage) → Upgrades sheet → Artifacts → Floors map → Prestige confirm → Shop → Offline Claim modal → Daily Chest → Settings.</p>
+<p>Mobile-first: крупные кнопки апгрейдов, число ресурсов всегда видно, тап-зона наковальни ≥120×120 CSS px.</p>
+<h2 id="9-audio-juice">9. Audio / Juice</h2>
+<ul>
+<li>Loop: low forge ambience + soft anvil hits on tap.  </li>
+<li>Prestige: cinematic rumble + metal choir sting.  </li>
+<li>Number pop + ore particles on tap.  </li>
+<li>Milestone toast with sparkle.</li>
+</ul>
+<h2 id="10-kpis-risks">10. KPIs &amp; Risks</h2>
+<table>
+<thead>
+<tr>
+<th>KPI</th>
+<th>Цель</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tutorial complete</td>
+<td>≥85%</td>
+</tr>
+<tr>
+<td>Offline claim D1</td>
+<td>≥60% вернувшихся</td>
+</tr>
+<tr>
+<td>Prestige reach D7</td>
+<td>≥25%</td>
+</tr>
+<tr>
+<td>RV opt-in</td>
+<td>≥30% сессий</td>
+</tr>
+<tr>
+<td>IAP conv</td>
+<td>≥2%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Риски:</strong> скука без целей → quests; инфляция чисел → prestige pacing; токсичный energy-wall → <strong>нет энергии</strong>, только time-gates soft.</p>
+<h2 id="11-out-of-scope-v1">11. Out of Scope (v1)</h2>
+<p>Мультиплеер, PvP кузниц, 3D, сложный крафт-дерево &gt;2 шагов, чат, сезонные ивенты beyond pass.</p>
+<h2 id="12-definition-of-done">12. Definition of Done (продукт)</h2>
+<p>См. <code>docs/agents/control-methodology.md</code> Gate 5 + concept checklist: честный offline, 7-дневные цели, prestige, store checklist.</p>
+<h2 id="13">13. Связанные документы</h2>
+<ul>
+<li>LLM-спека: <code>games/idle-forge/docs/DESIGN_LLM.md</code>  </li>
+<li>Промпты: <code>games/idle-forge/prompts/*</code>  </li>
+<li>Статус: <code>DRAFT</code> → подтверждение в portfolio dashboard  </li>
+</ul>
+<p><strong>КОД НЕ ПИСАТЬ, пока статус дизайна ≠ <code>CONFIRMED</code>.</strong></p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-llm">
+      <article class="doc"><h1 id="design_llm-idle-forge">DESIGN_LLM — idle-forge (Кузница Вечности)</h1>
+<blockquote>
+<p><strong>Исполняемая спецификация для LLM-агентов.</strong><br />
+Статус дизайна: <code>DRAFT</code>. <strong>Запрещено писать <code>src/</code> до статуса <code>CONFIRMED</code>.</strong><br />
+Язык документов и UI-копирайта: русский (можно EN ключи в коде).</p>
+</blockquote>
+<hr />
+<h2 id="0-project-contract">0. Project Contract</h2>
+<table>
+<thead>
+<tr>
+<th>Ключ</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>slug</code></td>
+<td><code>idle-forge</code></td>
+</tr>
+<tr>
+<td><code>title_ru</code></td>
+<td>Кузница Вечности</td>
+</tr>
+<tr>
+<td><code>title_en</code></td>
+<td>Eternal Forge</td>
+</tr>
+<tr>
+<td><code>engine</code></td>
+<td>Phaser 3.80+ / TypeScript 5.x / Vite 5.x</td>
+</tr>
+<tr>
+<td><code>platform</code></td>
+<td>Yandex Games HTML5, static <code>dist/</code></td>
+</tr>
+<tr>
+<td><code>orientation</code></td>
+<td>portrait-primary, landscape supported</td>
+</tr>
+<tr>
+<td><code>base_resolution</code></td>
+<td>720×1280 logical (scale FIT)</td>
+</tr>
+<tr>
+<td><code>target_fps</code></td>
+<td>60 desktop / 30–60 mid Android</td>
+</tr>
+<tr>
+<td><code>locale_default</code></td>
+<td><code>ru</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="01-folder-layout-confirmed">0.1 Folder layout (после CONFIRMED)</h3>
+<pre><code>games/idle-forge/
+  docs/DESIGN.md
+  docs/DESIGN_LLM.md
+  prompts/
+  refs/art|ui|levels|sprites/
+  public/assets/
+    art/
+    sprites/
+    ui/
+    audio/
+    data/
+  src/
+    main.ts
+    game/Game.ts
+    scenes/{Boot,Preload,Menu,Forge,Shop,Prestige}Scene.ts
+    systems/{IdleEngine,UpgradeSystem,ArtifactSystem,PrestigeSystem,OfflineSystem,QuestSystem,SaveSystem,SdkFacade}.ts
+    ui/
+    data/
+    util/{BigFormat,Time}.ts
+  STATUS.md
+  STORE_CHECKLIST.md
+  README.md
+  DEV_MOCK.md
+</code></pre>
+<h3 id="02-naming-conventions">0.2 Naming conventions</h3>
+<table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Правило</th>
+<th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Файлы TS</td>
+<td>PascalCase classes, camelCase files ok</td>
+<td><code>idleEngine.ts</code></td>
+</tr>
+<tr>
+<td>Asset files</td>
+<td><code>snake_case</code></td>
+<td><code>worker_mine_sheet.png</code></td>
+</tr>
+<tr>
+<td>Texture keys</td>
+<td><code>domain_name_variant</code></td>
+<td><code>char_worker_a</code></td>
+</tr>
+<tr>
+<td>Data IDs</td>
+<td><code>snake_case</code></td>
+<td><code>upgrade_pickaxe</code></td>
+</tr>
+<tr>
+<td>Scenes</td>
+<td><code>*Scene</code></td>
+<td><code>ForgeScene</code></td>
+</tr>
+<tr>
+<td>Events</td>
+<td><code>DOMAIN:action</code></td>
+<td><code>IDLE:tick</code>, <code>SDK:rewarded</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="03-asset-id-schema">0.3 Asset ID schema</h3>
+<pre><code>{domain}_{subject}_{variant}_{size?}
+
+domains: art|char|env|item|ui|vfx|fx|audio|data|tile
+</code></pre>
+<p>Примеры:
+- <code>art_key_forge_16x9</code>
+- <code>char_worker_pick_64</code>
+- <code>env_floor_01_bg</code>
+- <code>item_artifact_hammer_ancestors</code>
+- <code>ui_btn_primary_9slice</code>
+- <code>vfx_ore_spark_sheet</code>
+- <code>data_upgrades_json</code></p>
+<h3 id="04-integration-contract-exact-paths">0.4 Integration contract — exact paths</h3>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key art</td>
+<td><code>public/assets/art/art_key_forge.png</code></td>
+</tr>
+<tr>
+<td>Forge BG floor1</td>
+<td><code>public/assets/env/env_floor_01_bg.png</code></td>
+</tr>
+<tr>
+<td>Worker sheet</td>
+<td><code>public/assets/sprites/char_worker_sheet.png</code></td>
+</tr>
+<tr>
+<td>Anvil sheet</td>
+<td><code>public/assets/sprites/prop_anvil_sheet.png</code></td>
+</tr>
+<tr>
+<td>Ore icon</td>
+<td><code>public/assets/ui/icon_ore.png</code></td>
+</tr>
+<tr>
+<td>Ingot icon</td>
+<td><code>public/assets/ui/icon_ingot.png</code></td>
+</tr>
+<tr>
+<td>Ember icon</td>
+<td><code>public/assets/ui/icon_ember.png</code></td>
+</tr>
+<tr>
+<td>Gem icon</td>
+<td><code>public/assets/ui/icon_gem.png</code></td>
+</tr>
+<tr>
+<td>Artifact icons</td>
+<td><code>public/assets/ui/artifacts/icon_art_{id}.png</code></td>
+</tr>
+<tr>
+<td>UI atlas</td>
+<td><code>public/assets/ui/ui_kit_atlas.png</code> + <code>.json</code></td>
+</tr>
+<tr>
+<td>Upgrades data</td>
+<td><code>public/assets/data/upgrades.json</code></td>
+</tr>
+<tr>
+<td>Artifacts data</td>
+<td><code>public/assets/data/artifacts.json</code></td>
+</tr>
+<tr>
+<td>Quests data</td>
+<td><code>public/assets/data/quests.json</code></td>
+</tr>
+<tr>
+<td>Meta tree</td>
+<td><code>public/assets/data/meta_tree.json</code></td>
+</tr>
+<tr>
+<td>Audio SFX</td>
+<td><code>public/assets/audio/sfx_*.mp3</code></td>
+</tr>
+<tr>
+<td>Music</td>
+<td><code>public/assets/audio/music_forge_loop.mp3</code></td>
+</tr>
+<tr>
+<td>Refs (design)</td>
+<td><code>refs/**</code> — не бандлятся в dist</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-gameplay-systems-acceptance-criteria">1. Gameplay Systems + Acceptance Criteria</h2>
+<h3 id="11-idleengine">1.1 IdleEngine</h3>
+<p><strong>Ответственность:</strong> тик дохода, tap, big-number state.</p>
+<p><strong>State (минимум):</strong></p>
+<pre><code class="language-ts">interface IdleState {
+  ore: string;           // decimal string
+  ingot: string;
+  ember: string;
+  gems: number;
+  tapPower: string;
+  orePerSec: string;
+  workers: number;
+  floor: number;         // 1..5
+  epoch: number;         // prestige count
+  prestigeMult: number;  // 1.0+
+  rvMultUntil: number;   // unix ms
+  upgrades: Record&lt;string, number&gt;;
+  artifactsOwned: string[];
+  artifactsEquipped: (string|null)[]; // len 6
+  lifetimeOre: string;
+  lastSeenAt: number;
+  tutorialStep: number;
+  milestonesClaimed: string[];
+}
+</code></pre>
+<p><strong>Tick (каждые 100ms UI, логика 1s accumulate):</strong></p>
+<pre><code>dOre = orePerSec * dt * globalMult
+globalMult = prestigeMult * artifactMult * rvMult * floorMult * metaMult * iapPermanentX2
+</code></pre>
+<p><strong>AC:</strong>
+- [ ] AC-IDLE-01: при 0 workers tap даёт <code>tapPower</code> ore за клик ≤16ms feedback.
+- [ ] AC-IDLE-02: <code>orePerSec</code> пересчитывается при любом апгрейде &lt;1 frame delay.
+- [ ] AC-IDLE-03: числа &gt;999 отображаются <code>1.2K</code>, <code>3.4M</code>, <code>1.0B</code>, <code>2.5T</code>, затем <code>1.2e15</code>.
+- [ ] AC-IDLE-04: 60 мин AFK вкладки с throttle не ломает save (используй <code>lastSeenAt</code> + wall clock).</p>
+<h3 id="12-upgradesystem">1.2 UpgradeSystem</h3>
+<p>Данные <code>upgrades.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;upgrade_pickaxe&quot;,
+  &quot;name_ru&quot;: &quot;Кирка&quot;,
+  &quot;currency&quot;: &quot;ore&quot;,
+  &quot;baseCost&quot;: &quot;15&quot;,
+  &quot;costPow&quot;: 1.15,
+  &quot;effect&quot;: { &quot;type&quot;: &quot;add_tap&quot;, &quot;value&quot;: &quot;1&quot; },
+  &quot;maxLevel&quot;: 0
+}
+</code></pre>
+<p><strong>AC:</strong>
+- [ ] AC-UPG-01: 8 линий из DESIGN доступны к концу Gate 2.
+- [ ] AC-UPG-02: кнопка Buy disabled + grey если <code>currency &lt; cost</code>.
+- [ ] AC-UPG-03: Hold-to-buy (mobile) покупает пока хватает, max 20/sec.
+- [ ] AC-UPG-04: стоимость = <code>baseCost * costPow^level</code> с big-decimal.</p>
+<h3 id="13-workersystem">1.3 WorkerSystem</h3>
+<p><strong>AC:</strong>
+- [ ] AC-WRK-01: визуал worker count = min(owned, 12) на сцене.
+- [ ] AC-WRK-02: workers не кликабельны (декор+juice), доход только через IdleEngine.
+- [ ] AC-WRK-03: разблокировка 1st worker ≤3 мин F2P fresh save.</p>
+<h3 id="14-floorsystem">1.4 FloorSystem</h3>
+<p><strong>AC:</strong>
+- [ ] AC-FLR-01: смена этажа меняет BG + ambient tint ≤300ms tween.
+- [ ] AC-FLR-02: бонусы этажа применяются в <code>globalMult</code>.
+- [ ] AC-FLR-03: этаж 5 недоступен до epoch≥3 и 8 артефактов.</p>
+<h3 id="15-artifactsystem">1.5 ArtifactSystem</h3>
+<p><strong>AC:</strong>
+- [ ] AC-ART-01: 15 артефактов в data; drop/craft через milestone или forge mini-roll.
+- [ ] AC-ART-02: 6 слотов; unequip мгновенный.
+- [ ] AC-ART-03: duplicate → ember (таблица rarity→ember).
+- [ ] AC-ART-04: эффекты только мультипликативные whitelist (нет flat P2W damage — игры нет combat).</p>
+<h3 id="16-prestigesystem">1.6 PrestigeSystem</h3>
+<p><strong>AC:</strong>
+- [ ] AC-PRS-01: кнопка активна только при выполнении порога; иначе tooltip «нужно ещё X».
+- [ ] AC-PRS-02: confirm modal показывает loss/gain список.
+- [ ] AC-PRS-03: после prestige <code>epoch++</code>, <code>prestigeMult *= 1.02</code> (или +0.02 absolute — зафиксировать: <strong>additive +0.02 per epoch</strong>).
+- [ ] AC-PRS-04: interstitial может показаться <strong>после</strong> закрытия prestige fanfare, не до.</p>
+<h3 id="17-offlinesystem">1.7 OfflineSystem</h3>
+<p><strong>AC:</strong>
+- [ ] AC-OFF-01: при boot если <code>now-lastSeenAt &gt; 60s</code> → OfflineClaimModal.
+- [ ] AC-OFF-02: UI: «Вас не было: Hh Mm», «Доход/с», «Кап», «Итого».
+- [ ] AC-OFF-03: RV ×2 удваивает итог один раз за claim.
+- [ ] AC-OFF-04: cap не скрыт; текст «Макс. оффлайн: 6ч».</p>
+<h3 id="18-questsystem">1.8 QuestSystem</h3>
+<p><strong>AC:</strong>
+- [ ] AC-QST-01: 3 daily quests реролл в 00:00 локали игрока (или UTC+3 фикс — <strong>UTC+3</strong>).
+- [ ] AC-QST-02: claim даёт gems/ore; toast.
+- [ ] AC-QST-03: week milestone track виден в Quests sheet.</p>
+<h3 id="19-savesystem-cloud">1.9 SaveSystem + Cloud</h3>
+<p><strong>AC:</strong>
+- [ ] AC-SAV-01: autosave каждые 15s + onHide.
+- [ ] AC-SAV-02: localStorage key <code>yg.idle-forge.v1</code>.
+- [ ] AC-SAV-03: cloud merge = max(lifetimeOre), union artifacts, max epoch (документировать в DEV_MOCK).
+- [ ] AC-SAV-04: kill tab → reopen восстанавливает ресурсы с offline calc.</p>
+<h3 id="110-sdkfacade-yandex">1.10 SdkFacade (Yandex)</h3>
+<p>Методы: <code>showFullscreen()</code>, <code>showRewarded(): Promise&lt;'rewarded'|'closed'|'error'&gt;</code>, <code>payments.purchase(id)</code>, <code>cloud.save/load</code>, <code>leaderboard.setScore('embers')</code> optional.</p>
+<p><strong>AC:</strong>
+- [ ] AC-SDK-01: DEV_MOCK вне Яндекса, тот же API.
+- [ ] AC-SDK-02: нет interstitial во время hold-buy.
+- [ ] AC-SDK-03: RV кнопки всегда с подписью награды.</p>
+<hr />
+<h2 id="2-content-design-grammar">2. Content Design Grammar</h2>
+<h3 id="21-looks">2.1 Как контент LOOKS</h3>
+<ul>
+<li><strong>Камера:</strong> side-view diorama кузницы, parallax 3 слоя (rock / machines / foreground lamps).</li>
+<li><strong>Этажи:</strong> каждый этаж = смена mid-layer + цвет Tint:</li>
+<li>F1 <code>#3A2A22</code> warm brown</li>
+<li>F2 <code>#2E3038</code> iron grey</li>
+<li>F3 <code>#1C1A28</code> obsidian purple-black</li>
+<li>F4 <code>#14241C</code> rune green</li>
+<li>F5 <code>#401810</code> magma heart</li>
+<li><strong>Читаемость:</strong> ресурсы — огромный top bar; апгрейды — bottom sheet 40% высоты.</li>
+<li><strong>Не делать:</strong> UI поверх лица гнома; particle spam &gt;40 simultaneous.</li>
+</ul>
+<h3 id="22-plays-recipes">2.2 Как контент PLAYS (recipes)</h3>
+<p><strong>Recipe R1 — Early dopamine (0–10 мин):</strong></p>
+<pre><code>tap ×20 → buy pickaxe → tap → buy forge L1 → unlock worker → AFK 30s → claim feel
+</code></pre>
+<p><strong>Recipe R2 — Mid session (10–40 мин):</strong></p>
+<pre><code>upgrade loop → floor2 unlock → first artifact → daily quest complete
+</code></pre>
+<p><strong>Recipe R3 — Prestige teach (первая эпоха ~45–90 мин F2P):</strong></p>
+<pre><code>milestone toast → prestige button glow → confirm → fanfare → stronger start
+</code></pre>
+<p><strong>Recipe R4 — Daily return:</strong></p>
+<pre><code>offline modal → RV optional → daily chest → 3 quests → short upgrade burst → leave
+</code></pre>
+<h3 id="23-progression-curve">2.3 Progression curve</h3>
+<table>
+<thead>
+<tr>
+<th>Время F2P</th>
+<th>Цель</th>
+<th>ore/sec order</th>
+<th>Эмоция</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–5м</td>
+<td>Tutorial + first upgrades</td>
+<td>1–20</td>
+<td>ясность</td>
+</tr>
+<tr>
+<td>5–30м</td>
+<td>Floor 2, worker 3+</td>
+<td>1e2–1e4</td>
+<td>рост</td>
+</tr>
+<tr>
+<td>30–90м</td>
+<td>Floor 3, 1st prestige ready</td>
+<td>1e5–1e7</td>
+<td>предвкушение</td>
+</tr>
+<tr>
+<td>D2–D3</td>
+<td>Epoch 2–3, artifacts 5</td>
+<td>1e8+</td>
+<td>мастерство</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>Epoch 5+, floor 5 path</td>
+<td>1e12+</td>
+<td>коллекция</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Softcap rule:</strong> если игрок упирается &gt;15 мин без buy → снизить costPow на 0.02 или добавить quest ore grant (баланс-флаг <code>CATCHUP=true</code> в data).</p>
+<h3 id="24-artifact-drop-table-craft-roll">2.4 Artifact drop table (craft roll)</h3>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Cost</th>
+<th>Weights C/R/E/L</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Forge Roll</td>
+<td>500 ingot</td>
+<td>70/22/7/1</td>
+</tr>
+<tr>
+<td>Daily Chest</td>
+<td>free/RV</td>
+<td>50/35/12/3</td>
+</tr>
+<tr>
+<td>Milestone</td>
+<td>—</td>
+<td>fixed ID</td>
+</tr>
+<tr>
+<td>Pass Lv30</td>
+<td>—</td>
+<td>Legendary pity</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-ui-component-map-wireframes">3. UI Component Map + Wireframes</h2>
+<h3 id="31-screen-inventory">3.1 Screen inventory</h3>
+<table>
+<thead>
+<tr>
+<th>Screen ID</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>boot</code></td>
+<td>логотип + loading bar</td>
+</tr>
+<tr>
+<td><code>menu</code></td>
+<td>Play / Shop / Settings (можно слить с Forge)</td>
+</tr>
+<tr>
+<td><code>forge</code></td>
+<td>главный idle</td>
+</tr>
+<tr>
+<td><code>upgrades</code></td>
+<td>sheet</td>
+</tr>
+<tr>
+<td><code>artifacts</code></td>
+<td>grid + slots</td>
+</tr>
+<tr>
+<td><code>floors</code></td>
+<td>vertical map</td>
+</tr>
+<tr>
+<td><code>prestige</code></td>
+<td>confirm</td>
+</tr>
+<tr>
+<td><code>offline</code></td>
+<td>modal</td>
+</tr>
+<tr>
+<td><code>quests</code></td>
+<td>daily/week</td>
+</tr>
+<tr>
+<td><code>shop</code></td>
+<td>RV + IAP</td>
+</tr>
+<tr>
+<td><code>settings</code></td>
+<td>audio, credits, cloud</td>
+</tr>
+<tr>
+<td><code>rewarded_cta</code></td>
+<td>унифицированная кнопка</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-component-map">3.2 Component map</h3>
+<pre><code class="language-mermaid">flowchart TB
+  subgraph HUD
+    TopBar[ResourceBar ore/ingot/ember/gem]
+    DPS[OrePerSecLabel]
+    Epoch[EpochBadge]
+  end
+  subgraph Stage
+    BG[FloorBackground]
+    Anvil[AnvilTapTarget]
+    Workers[WorkerLayer]
+    FX[VfxLayer]
+  end
+  subgraph Chrome
+    BtnUpg[BtnUpgrades]
+    BtnArt[BtnArtifacts]
+    BtnFloor[BtnFloors]
+    BtnQuest[BtnQuests]
+    BtnShop[BtnShop]
+    BtnPrestige[BtnPrestige]
+  end
+  TopBar --&gt; Stage
+  Stage --&gt; Chrome
+</code></pre>
+<h3 id="33-wireframe-forge-portrait">3.3 Wireframe — Forge (portrait)</h3>
+<pre><code>+----------------------------------+
+| [ore 12.4K] [ingot 320] [gem 5]  |
+|   доход: 48.2/с     Эпоха 1      |
++----------------------------------+
+|                                  |
+|         (parallax forge)         |
+|            [ANVIL]               |
+|         workers x3               |
+|                                  |
++----------------------------------+
+| [Апгрейды] [Артефакты] [Этажи]   |
+| [Квесты]   [Магазин]   [Переплав]|
++----------------------------------+
+</code></pre>
+<h3 id="34-wireframe-offline-modal">3.4 Wireframe — Offline modal</h3>
+<pre><code>+------------------------------+
+|     С возвращением, кузнец!  |
+|  Вас не было: 3ч 12м         |
+|  Доход: 120/с × 3.2ч         |
+|  Кап: 6ч  | Эфф: 100%        |
+|  Итого: 1.38M руды           |
+|                              |
+| [Забрать]  [Забрать x2 RV]   |
++------------------------------+
+</code></pre>
+<h3 id="35-wireframe-shop">3.5 Wireframe — Shop</h3>
+<pre><code>+------------------------------+
+| Магазин кузницы              |
+| --- Ускорения (RV) ---       |
+| [x2 доход 5м] [Оффлайн сейф] |
+| --- Инапы ---                |
+| [Навсегда x2] [Без рекламы]  |
+| [Стартовый] [Кузнечный Pass] |
++------------------------------+
+</code></pre>
+<h3 id="36-flow">3.6 Flow</h3>
+<pre><code class="language-mermaid">stateDiagram-v2
+  [*] --&gt; Boot
+  Boot --&gt; Forge
+  Forge --&gt; Upgrades
+  Forge --&gt; Artifacts
+  Forge --&gt; Floors
+  Forge --&gt; Quests
+  Forge --&gt; Shop
+  Forge --&gt; Prestige
+  Boot --&gt; Offline: gap&gt;60s
+  Offline --&gt; Forge
+  Prestige --&gt; Forge: confirmed
+</code></pre>
+<hr />
+<h2 id="4-art-bible">4. Art Bible</h2>
+<h3 id="41-style-locks">4.1 Style locks</h3>
+<ul>
+<li><strong>Стиль:</strong> stylized fantasy illustration, soft cel-shade, readable silhouettes; <strong>не</strong> ultra-realistic; <strong>не</strong> horror gore.</li>
+<li><strong>Камера кузницы:</strong> 2.5D diorama / side view.</li>
+<li><strong>Персонажи:</strong> chibi-proportion dwarves ~1.5 head ratio для workers; мастер-кузнец может быть на key art.</li>
+<li><strong>UI:</strong> stone+bronze frames, rune inlays, rounded 12–16px corners, <strong>не</strong> glassmorphism iOS.</li>
+</ul>
+<h3 id="42-palette-hex">4.2 Palette (hex)</h3>
+<table>
+<thead>
+<tr>
+<th>Роль</th>
+<th>Hex</th>
+<th>Использование</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Magma Primary</td>
+<td><code>#E85D04</code></td>
+<td>горн, CTA</td>
+</tr>
+<tr>
+<td>Ember Deep</td>
+<td><code>#9B2226</code></td>
+<td>accents</td>
+</tr>
+<tr>
+<td>Bronze</td>
+<td><code>#BC6C25</code></td>
+<td>frames</td>
+</tr>
+<tr>
+<td>Gold Soft</td>
+<td><code>#EE9B00</code></td>
+<td>currency</td>
+</tr>
+<tr>
+<td>Rock Dark</td>
+<td><code>#1A1423</code></td>
+<td>BG</td>
+</tr>
+<tr>
+<td>Rock Mid</td>
+<td><code>#3D2C2E</code></td>
+<td>panels</td>
+</tr>
+<tr>
+<td>Rune Green</td>
+<td><code>#52B788</code></td>
+<td>prestige/magic</td>
+</tr>
+<tr>
+<td>Iron</td>
+<td><code>#8D99AE</code></td>
+<td>machines</td>
+</tr>
+<tr>
+<td>Text</td>
+<td><code>#F8F0E3</code></td>
+<td>UI text</td>
+</tr>
+<tr>
+<td>Text Dim</td>
+<td><code>#C9B8A8</code></td>
+<td>secondary</td>
+</tr>
+</tbody>
+</table>
+<h3 id="43-do-dont">4.3 Do / Don't</h3>
+<p><strong>Do:</strong> тёплый свет от горна; читаемые иконки 128px source; толстый outline 2–3px на спрайтах.<br />
+<strong>Don't:</strong> кровь/расчленёнка; неон-киберпанк; фиолетовый «AI default» gradient UI; текст на ключевом арте; watermark.</p>
+<h3 id="44-typography-runtime">4.4 Typography (runtime)</h3>
+<ul>
+<li>Display: <code>Rubik</code> или <code>Manrope</code> (подключить Google Fonts / self-host).  </li>
+<li>Numbers: tabular lining, bold.</li>
+</ul>
+<hr />
+<h2 id="5-image-generation-prompts-copy-paste">5. Image Generation Prompts (copy-paste)</h2>
+<h3 id="51-key-art">5.1 Key art</h3>
+<pre><code>Game key art, underground dwarven forge empire idle game, vast cavern smithy with glowing orange magma forge, conveyor belts, cute stylized dwarf workers mining and crafting, piles of gold ingots and glowing artifacts, warm dark fantasy cozy atmosphere, cinematic 16:9, polished casual game illustration, no text, no UI, no watermark, no logo
+</code></pre>
+<h3 id="52-environment-floors">5.2 Environment floors</h3>
+<pre><code>Side-view game background diorama, dwarven mine floor level 1 coal hall, wooden scaffolds, warm forge light, parallax-friendly layers, 720x1280 portrait safe center, stylized fantasy casual game art, no text, no UI
+</code></pre>
+<pre><code>Side-view game background, dwarven iron vein mine floor 2, grey iron ore veins, carts, cooler metal lighting, same camera and style as cozy dark fantasy forge game, no text
+</code></pre>
+<pre><code>Side-view game background, obsidian tunnels floor 3, purple-black crystal walls, lava cracks, readable silhouette space in center for characters, no text
+</code></pre>
+<pre><code>Side-view game background, rune well floor 4, green glowing runes carved in stone, mystical underground shrine forge hybrid, no text
+</code></pre>
+<pre><code>Side-view game background, heart of the mountain floor 5, massive magma core, epic but cute idle game style, orange red glow, no text
+</code></pre>
+<h3 id="53-characters-items">5.3 Characters / items</h3>
+<pre><code>Game character sprite sheet source, cute dwarf blacksmith worker, chibi proportions, pickaxe, idle-friendly design, flat lighting, transparent background, full body, centered, no text
+</code></pre>
+<pre><code>Game item icon set, fantasy forge resources: raw ore chunk, gold ingot, spirit ember coal, green gem, consistent 128x128 style, thick outline, dark fantasy cozy, transparent background, no text
+</code></pre>
+<pre><code>Game artifact icon, ancestral hammer relic, ornate dwarven metal, legendary glow, 128x128 icon, transparent background, no text
+</code></pre>
+<h3 id="54-vfx">5.4 VFX</h3>
+<pre><code>Game VFX sprite sheet, orange sparks and ember particles for forge hits, additive-friendly on black background, 8 frames strip, casual fantasy game, no text
+</code></pre>
+<h3 id="55-ui-kit">5.5 UI kit</h3>
+<pre><code>Mobile game UI kit, dark fantasy forge theme, stone panels with bronze borders and green rune accents, buttons primary orange secondary bronze, resource bars, 9-slice friendly, portrait HUD elements, no text labels, no fake numbers
+</code></pre>
+<hr />
+<h2 id="6-sprite-sheet-layout-animation-timing">6. Sprite Sheet Layout + Animation Timing</h2>
+<h3 id="61-char_worker_sheetpng">6.1 <code>char_worker_sheet.png</code></h3>
+<ul>
+<li>Frame size: <strong>64×64</strong> px  </li>
+<li>Columns: 8, rows: 3  </li>
+<li>Padding: 0, margin: 0  </li>
+<li>Anchor: bottom-center</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Animation</th>
+<th>Frames</th>
+<th>Row</th>
+<th>FPS</th>
+<th>Loop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>idle</td>
+<td>0–3</td>
+<td>0</td>
+<td>6</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>walk</td>
+<td>0–5</td>
+<td>1</td>
+<td>10</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>mine</td>
+<td>0–5</td>
+<td>2</td>
+<td>12</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-prop_anvil_sheetpng">6.2 <code>prop_anvil_sheet.png</code></h3>
+<ul>
+<li>Frame: <strong>96×96</strong><br />
+| Anim | Frames | FPS | Loop |
+|------|--------|-----|------|
+| idle | 0–1 | 2 | yes |
+| hit | 0–3 | 16 | no |</li>
+</ul>
+<h3 id="63-vfx_ore_spark_sheetpng">6.3 <code>vfx_ore_spark_sheet.png</code></h3>
+<ul>
+<li>Frame: <strong>32×32</strong>, 8 frames, 20 fps, no loop (pool).</li>
+</ul>
+<h3 id="64-timing-juice-table">6.4 Timing juice table</h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Duration</th>
+<th>Ease</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tap squash anvil</td>
+<td>80ms</td>
+<td>back.out</td>
+<td>scale 1→0.92→1</td>
+</tr>
+<tr>
+<td>Ore text float</td>
+<td>600ms</td>
+<td>sine.out</td>
+<td>+fade</td>
+</tr>
+<tr>
+<td>Upgrade buy flash</td>
+<td>150ms</td>
+<td>—</td>
+<td>button</td>
+</tr>
+<tr>
+<td>Floor transition</td>
+<td>300ms</td>
+<td>cubic</td>
+<td>crossfade BG</td>
+</tr>
+<tr>
+<td>Prestige fanfare</td>
+<td>2200ms</td>
+<td>—</td>
+<td>block input</td>
+</tr>
+<tr>
+<td>Offline modal in</td>
+<td>200ms</td>
+<td>quad</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Milestone toast</td>
+<td>2200ms</td>
+<td>—</td>
+<td>queue max 3</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-standalone-prompt-packs-for-other-agents">7. Standalone Prompt Packs (for other agents)</h2>
+<blockquote>
+<p>Эти же тексты продублированы/расширены в <code>games/idle-forge/prompts/</code>.</p>
+</blockquote>
+<h3 id="71-art-agent-stub">7.1 Art agent stub</h3>
+<p>См. <code>prompts/ART_PROMPTS.md</code> — генерировать в <code>refs/art/</code> затем финал в <code>public/assets/...</code> по контракту путей.</p>
+<h3 id="72-sprite-agent-stub">7.2 Sprite agent stub</h3>
+<p>См. <code>prompts/SPRITE_ANIM_PROMPTS.md</code>.</p>
+<h3 id="73-ui-agent-stub">7.3 UI agent stub</h3>
+<p>См. <code>prompts/UI_PROMPTS.md</code>.</p>
+<h3 id="74-contentlevel-agent-stub">7.4 Content/level agent stub</h3>
+<p>См. <code>prompts/LEVEL_PROMPTS.md</code> (этажи, milestones, quest tables).</p>
+<h3 id="75-code-agent-stub">7.5 Code agent stub</h3>
+<p>См. <code>prompts/CODE_AGENT_PROMPT.md</code> — <strong>только после CONFIRMED</strong>.</p>
+<hr />
+<h2 id="8-data-schemas-normative">8. Data Schemas (normative)</h2>
+<h3 id="upgradesjson-entry">upgrades.json entry</h3>
+<p><code>id, name_ru, desc_ru, currency, baseCost, costPow, effect{type,value}, maxLevel, icon</code></p>
+<h3 id="artifactsjson-entry">artifacts.json entry</h3>
+<p><code>id, name_ru, rarity, slot, effect{type,value}, icon, dropWeight</code></p>
+<h3 id="questsjson-entry">quests.json entry</h3>
+<p><code>id, type, target, reward{currency,amount}, daily:true</code></p>
+<h3 id="meta_treejson-entry">meta_tree.json entry</h3>
+<p><code>id, cost_ember, effect, requires[]</code></p>
+<hr />
+<h2 id="9-monetization-sku-ids">9. Monetization SKU IDs</h2>
+<table>
+<thead>
+<tr>
+<th>SKU</th>
+<th>yg product id</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Permanent ×2</td>
+<td><code>idle_forge_x2_perm</code></td>
+<td><code>iapPermanentX2=2</code></td>
+</tr>
+<tr>
+<td>Remove Ads</td>
+<td><code>idle_forge_no_ads</code></td>
+<td>flag</td>
+</tr>
+<tr>
+<td>Starter</td>
+<td><code>idle_forge_starter</code></td>
+<td>bundle</td>
+</tr>
+<tr>
+<td>Offline Vault</td>
+<td><code>idle_forge_offline_10h</code></td>
+<td>cap=10h</td>
+</tr>
+<tr>
+<td>Pass</td>
+<td><code>idle_forge_pass_s1</code></td>
+<td>battle pass</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-tutorial-script-90s">10. Tutorial Script (≤90s)</h2>
+<ol>
+<li>Spotlight anvil: «Нажми, чтобы добыть руду».  </li>
+<li>After 10 ore: open upgrades, force buy pickaxe.  </li>
+<li>Show ore/sec label.  </li>
+<li>Unlock worker via cheap upgrade.  </li>
+<li>Point to quests.  </li>
+<li>End — free input. Soft tip offline on first hide.</li>
+</ol>
+<hr />
+<h2 id="11-definition-of-ready">11. Definition of Ready (дизайн)</h2>
+<p>Чеклист перед <code>CONFIRMED</code>:</p>
+<ul>
+<li>[ ] DESIGN.md и DESIGN_LLM.md согласованы, без противоречий</li>
+<li>[ ] Палитра и style locks утверждены человеком</li>
+<li>[ ] Список 15 артефактов с эффектами финален</li>
+<li>[ ] 8 апгрейдов + формулы стоимости финальны</li>
+<li>[ ] Offline cap и prestige math утверждены</li>
+<li>[ ] SKU список и ad placements утверждены</li>
+<li>[ ] UI wireframes покрывают все экраны</li>
+<li>[ ] Промпт-паки в <code>prompts/</code> полные и path-совместимы</li>
+<li>[ ] Asset ID schema не конфликтует с другими играми портфеля</li>
+<li>[ ] Явно зафиксировано: <strong>no coding until CONFIRMED</strong></li>
+<li>[ ] Статус в <code>management/portfolio-dashboard.html</code> = REVIEW→CONFIRMED</li>
+</ul>
+<hr />
+<h2 id="12-explicit-gate">12. Explicit Gate</h2>
+<pre><code>⛔ DO NOT CREATE src/, package.json gameplay, or production assets pipeline
+   UNTIL design status == CONFIRMED.
+✅ Allowed now: refs placeholders, prompt iteration, design review notes.
+</code></pre>
+<hr />
+<h2 id="13-open-questions-confirmed">13. Open Questions (закрыть до CONFIRMED)</h2>
+<ol>
+<li>Leaderboard metric: epoch vs lifetime ember? <strong>Proposal: lifetime ember.</strong>  </li>
+<li>Pass — отдельный сезон или вечный? <strong>Proposal: Season 1 eternal for MVP.</strong>  </li>
+<li>Artifact craft vs pure drop? <strong>Proposal: both (roll + milestones).</strong></li>
+</ol>
+<hr />
+<h2 id="visual-ground-truth">Visual Ground Truth (обязательные референсы)</h2>
+<p>См. также <code>docs/REFS.md</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Путь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key art</td>
+<td><code>refs/art/key-art.png</code></td>
+</tr>
+<tr>
+<td>UI wireframe</td>
+<td><code>refs/ui/wireframe-main.png</code></td>
+</tr>
+<tr>
+<td>Level layout</td>
+<td><code>refs/levels/layout-main.png</code></td>
+</tr>
+<tr>
+<td>Sprite sheet</td>
+<td><code>refs/sprites/sheet-main.png</code></td>
+</tr>
+</tbody>
+</table>
+<p>Любой арт-агент обязан сверяться с этими файлами перед генерацией финальных ассетов.</p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-refs">
+      <div class="refs-intro doc"><p>﻿# Кузница Вечности — Visual References Index</p>
+<blockquote>
+<p>Эти файлы — обязательный вход для арт/UI/level LLM-агентов.<br />
+При генерации новых ассетов держать стиль как у референсов ниже.</p>
+</blockquote>
+<h2 id="art">Art</h2>
+<p><img alt="Key art" src="../../games/idle-forge/refs/art/key-art.png" /></p>
+<p><code>refs/art/key-art.png</code> — tonal/mood lock, palette, composition.</p>
+<h2 id="ui-wireframes">UI Wireframes</h2>
+<p><img alt="UI wireframe" src="../../games/idle-forge/refs/ui/wireframe-main.png" /></p>
+<p><code>refs/ui/wireframe-main.png</code> — экраны, иерархия, CTA rewarded/IAP зоны.</p>
+<h2 id="level-content-layout">Level / Content Layout</h2>
+<p><img alt="Level layout" src="../../games/idle-forge/refs/levels/layout-main.png" /></p>
+<p><code>refs/levels/layout-main.png</code> — грамматика уровней/доски/маршрута.</p>
+<h2 id="sprites-animation-sheet">Sprites / Animation Sheet</h2>
+<p><img alt="Sprites" src="../../games/idle-forge/refs/sprites/sheet-main.png" /></p>
+<p><code>refs/sprites/sheet-main.png</code> — пропорции, кадры, иконки.</p>
+<h2 id="_1">Как использовать агентам</h2>
+<ol>
+<li>Открыть <code>DESIGN_LLM.md</code> (контракт).</li>
+<li>Открыть этот <code>REFS.md</code> (визуальный ground truth).</li>
+<li>Взять атомарный промпт из <code>prompts/</code> и <strong>приложить</strong> соответствующий png.</li>
+<li>Сохранять результат в пути из Integration Contract <code>DESIGN_LLM.md</code>.</li>
+</ol>
+<h2 id="dor-visuals">DoR visuals</h2>
+<ul>
+<li>[x] key-art</li>
+<li>[x] wireframe-main</li>
+<li>[x] layout-main</li>
+<li>[x] sheet-main</li>
+</ul></div>
+      <h3 class="gallery-title">Галерея референсов</h3>
+      <div class="ref-grid">
+            <figure class="ref-card">
+              <a href="../../games/idle-forge/refs/art/key-art.png" target="_blank" rel="noopener">
+                <img src="../../games/idle-forge/refs/art/key-art.png" alt="Ключевой арт" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Ключевой арт</strong>
+                <span>Настроение, палитра, композиция</span>
+                <code>art/key-art.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/idle-forge/refs/ui/wireframe-main.png" target="_blank" rel="noopener">
+                <img src="../../games/idle-forge/refs/ui/wireframe-main.png" alt="Вайрфрейм UI" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Вайрфрейм UI</strong>
+                <span>Экраны, иерархия, CTA рекламы/покупок</span>
+                <code>ui/wireframe-main.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/idle-forge/refs/levels/layout-main.png" target="_blank" rel="noopener">
+                <img src="../../games/idle-forge/refs/levels/layout-main.png" alt="Раскладка уровней" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Раскладка уровней</strong>
+                <span>Грамматика уровней / доски / маршрута</span>
+                <code>levels/layout-main.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/idle-forge/refs/sprites/sheet-main.png" target="_blank" rel="noopener">
+                <img src="../../games/idle-forge/refs/sprites/sheet-main.png" alt="Спрайт-лист" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Спрайт-лист</strong>
+                <span>Пропорции, кадры, иконки</span>
+                <code>sprites/sheet-main.png</code>
+              </figcaption>
+            </figure></div>
+    </section>
+
+    <section class="tab-panel" id="tab-prompts">
+      <p class="lead">Атомарные промпты — копируй в отдельного агента вместе с нужным референсом из вкладки «Референсы».</p>
+      
+          <details class="prompt-acc" open>
+            <summary>Арт <span class="muted">ART_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="art_prompts-idle-forge">ART_PROMPTS — idle-forge</h1>
+<p><strong>Роль:</strong> агент-художник. Читай <code>docs/DESIGN_LLM.md</code> §4–5.<br />
+<strong>Выход:</strong> файлы в <code>refs/art/</code> (превью) → финал в путях Integration Contract.<br />
+<strong>Стиль:</strong> cozy dark fantasy forge, palette §4.2. No text/UI/watermark.</p>
+<h2 id="master-style-lock-prepend-to-every-prompt">Master style lock (prepend to every prompt)</h2>
+<pre><code>Style lock: stylized cozy dark fantasy casual game art, warm magma orange #E85D04 and bronze #BC6C25, soft cel-shade, thick readable outlines, no horror, no cyberpunk neon, no photorealism, no text, no UI, no watermark, no logo
+</code></pre>
+<h2 id="a1-key-art-refsartart_key_forgepng-publicassetsartart_key_forgepng">A1 — Key art → <code>refs/art/art_key_forge.png</code> → <code>public/assets/art/art_key_forge.png</code></h2>
+<pre><code>{style lock}
+Game key art 16:9, underground dwarven forge empire, glowing anvils, cute dwarf workers on conveyors, artifact pedestals, gold ingot piles, cinematic composition, idle game marketing illustration
+</code></pre>
+<h2 id="a2-floor-backgrounds-portrait-7201280-safe">A2 — Floor backgrounds (portrait 720×1280 safe)</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Prompt focus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>env_floor_01_bg.png</code></td>
+<td>coal hall, warm wood scaffolds</td>
+</tr>
+<tr>
+<td><code>env_floor_02_bg.png</code></td>
+<td>iron veins, carts, cooler grey</td>
+</tr>
+<tr>
+<td><code>env_floor_03_bg.png</code></td>
+<td>obsidian purple-black tunnels</td>
+</tr>
+<tr>
+<td><code>env_floor_04_bg.png</code></td>
+<td>green rune well shrine</td>
+</tr>
+<tr>
+<td><code>env_floor_05_bg.png</code></td>
+<td>magma heart core epic-cute</td>
+</tr>
+</tbody>
+</table>
+<p>Template:</p>
+<pre><code>{style lock}
+Side-view parallax-friendly game background diorama, [FOCUS], empty center staging for characters, portrait 3:4, consistent camera across floors
+</code></pre>
+<h2 id="a3-resource-icons-128128-publicassetsuiicon_png">A3 — Resource icons 128×128 → <code>public/assets/ui/icon_*.png</code></h2>
+<pre><code>{style lock}
+Single game icon transparent background, [ore chunk | gold ingot | spirit ember | green gem], centered, 128x128 padding, thick outline
+</code></pre>
+<h2 id="a4-artifact-icons-15">A4 — Artifact icons (15)</h2>
+<p>IDs from <code>artifacts.json</code>. Template:</p>
+<pre><code>{style lock}
+Fantasy forge artifact icon, [NAME], rarity glow [common soft|rare blue|epic purple|legendary gold], 128x128 transparent, centered
+</code></pre>
+<h2 id="a5-store-banners">A5 — Store banners</h2>
+<pre><code>{style lock}
+Rectangular IAP banner 1024x500, dwarven forge treasure chest aesthetic, leave empty center band for text overlay later, no letters
+</code></pre>
+<h2 id="delivery-checklist">Delivery checklist</h2>
+<ul>
+<li>[ ] Palette matched</li>
+<li>[ ] Filenames = asset IDs</li>
+<li>[ ] Transparent where required</li>
+<li>[ ] Logged in STATUS note for art pass</li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Спрайты и анимация <span class="muted">SPRITE_ANIM_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="sprite_anim_prompts-idle-forge">SPRITE_ANIM_PROMPTS — idle-forge</h1>
+<p><strong>Роль:</strong> спрайт/анимационный агент. Спеки: <code>DESIGN_LLM.md</code> §6.<br />
+<strong>Выход:</strong> <code>refs/sprites/</code> → <code>public/assets/sprites/</code>.</p>
+<h2 id="master-lock">Master lock</h2>
+<pre><code>Pixel-clean stylized 2D game sprites, cozy dark fantasy, thick outline, consistent 45-degree key light from forge (left-warm), transparent background, no text
+</code></pre>
+<h2 id="s1-worker-sheet-char_worker_sheetpng">S1 — Worker sheet <code>char_worker_sheet.png</code></h2>
+<pre><code>{lock}
+Sprite sheet 64x64 cells, 8 columns, 3 rows: row0 idle 4fr, row1 walk 6fr, row2 mine 6fr, cute dwarf worker with pickaxe, chibi, aligned feet bottom-center, even spacing, no bleed between frames
+</code></pre>
+<p><strong>Import Phaser:</strong></p>
+<pre><code class="language-ts">{ frameWidth: 64, frameHeight: 64 }
+anims: idle 6fps loop, walk 10fps loop, mine 12fps loop
+</code></pre>
+<h2 id="s2-anvil-prop_anvil_sheetpng">S2 — Anvil <code>prop_anvil_sheet.png</code></h2>
+<pre><code>{lock}
+Sprite sheet 96x96, dwarven anvil with glowing heat, frames: idle subtle pulse 2, hit sparks 4, transparent bg
+</code></pre>
+<h2 id="s3-master-smith-optional-hub">S3 — Master smith (optional hub)</h2>
+<pre><code>{lock}
+Single idle character 128x128, dwarf forge master arms crossed, for menu mascot, transparent
+</code></pre>
+<h2 id="s4-vfx-sheets">S4 — VFX sheets</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Spec</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vfx_ore_spark_sheet.png</code></td>
+<td>32×32 ×8, orange sparks on black (additive)</td>
+</tr>
+<tr>
+<td><code>vfx_prestige_burst_sheet.png</code></td>
+<td>128×128 ×10, green-gold rune burst</td>
+</tr>
+<tr>
+<td><code>vfx_coin_pop_sheet.png</code></td>
+<td>32×32 ×6, gold glints</td>
+</tr>
+</tbody>
+</table>
+<h2 id="timing-table-implement-exactly">Timing table (implement exactly)</h2>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>FPS</th>
+<th>Loop</th>
+<th>On complete</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>worker.idle</td>
+<td>6</td>
+<td>yes</td>
+<td>—</td>
+</tr>
+<tr>
+<td>worker.walk</td>
+<td>10</td>
+<td>yes</td>
+<td>—</td>
+</tr>
+<tr>
+<td>worker.mine</td>
+<td>12</td>
+<td>yes</td>
+<td>—</td>
+</tr>
+<tr>
+<td>anvil.hit</td>
+<td>16</td>
+<td>no</td>
+<td>→ idle</td>
+</tr>
+<tr>
+<td>spark</td>
+<td>20</td>
+<td>no</td>
+<td>destroy</td>
+</tr>
+<tr>
+<td>prestige_burst</td>
+<td>18</td>
+<td>no</td>
+<td>hide</td>
+</tr>
+</tbody>
+</table>
+<h2 id="acceptance">Acceptance</h2>
+<ul>
+<li>[ ] No frame size mismatch</li>
+<li>[ ] Feet aligned across walk cycle</li>
+<li>[ ] Additive VFX authored on black where noted</li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Интерфейс <span class="muted">UI_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="ui_prompts-idle-forge">UI_PROMPTS — idle-forge</h1>
+<p><strong>Роль:</strong> UI/UX агент (арт + разметка логики).<br />
+<strong>Спеки:</strong> <code>DESIGN_LLM.md</code> §3–4.<br />
+<strong>Выход:</strong> <code>refs/ui/</code> + финал <code>public/assets/ui/ui_kit_atlas.png</code>.</p>
+<h2 id="master-lock">Master lock</h2>
+<pre><code>Mobile casual game UI kit, dark fantasy forge, stone panels, bronze borders #BC6C25, magma CTA #E85D04, rune green #52B788 accents, 9-slice friendly, rounded 16px, readable at 720px width, no text labels, no fake numbers, no iOS glass
+</code></pre>
+<h2 id="u1-atlas-parts">U1 — Atlas parts</h2>
+<p>Generate separately then pack:
+- <code>panel_stone_9slice.png</code> (64×64 corners marked)
+- <code>btn_primary_9slice.png</code> (orange)
+- <code>btn_secondary_9slice.png</code> (bronze)
+- <code>btn_prestige_9slice.png</code> (green glow)
+- <code>bar_resource.png</code>
+- <code>icon_tab_upgrades.png</code> / artifacts / floors / quests / shop
+- <code>modal_frame.png</code>
+- <code>toast_bg.png</code>
+- <code>progress_bar_fill.png</code></p>
+<h2 id="u2-screen-mock-prompts-for-refsui">U2 — Screen mock prompts (for refs/ui)</h2>
+<pre><code>{lock}
+Portrait mobile wireframe-looking polished mock of idle forge HUD, top resource bar, large anvil stage empty center, bottom 6 nav buttons, cozy dark fantasy, no readable text (use bars/shapes only)
+</code></pre>
+<pre><code>{lock}
+Portrait modal offline rewards claim, chest icon, two CTA buttons bottom (normal + rewarded video icon shape), stone frame, no letters
+</code></pre>
+<pre><code>{lock}
+Portrait shop screen layout, list of purchase cards with coin/gem icon placeholders, remove-ads card highlighted, no text
+</code></pre>
+<h2 id="u3-component-contract-code-must-implement">U3 — Component contract (code must implement)</h2>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Min touch</th>
+<th>States</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ResourceBar</code></td>
+<td>—</td>
+<td>update 10Hz</td>
+</tr>
+<tr>
+<td><code>BtnUpgradeRow</code></td>
+<td>48×48</td>
+<td>default/disabled/pressed</td>
+</tr>
+<tr>
+<td><code>AnvilTapTarget</code></td>
+<td>120×120</td>
+<td>idle/hit</td>
+</tr>
+<tr>
+<td><code>RewardedCta</code></td>
+<td>48×48</td>
+<td>idle/loading/cooldown</td>
+</tr>
+<tr>
+<td><code>ModalOffline</code></td>
+<td>full</td>
+<td>open/close</td>
+</tr>
+<tr>
+<td><code>PassTrack</code></td>
+<td>horizontal scroll</td>
+<td>locked/claimable/claimed</td>
+</tr>
+</tbody>
+</table>
+<h2 id="u4-copy-ru-strings-for-localization-table">U4 — Copy (RU) — strings for localization table</h2>
+<ul>
+<li>«Нажми наковальню»</li>
+<li>«Доход/с»</li>
+<li>«Забрать»</li>
+<li>«Забрать ×2»</li>
+<li>«Переплав эпохи»</li>
+<li>«Вас не было: {time}»</li>
+<li>«Макс. оффлайн: {hours}ч»</li>
+</ul>
+<h2 id="acceptance">Acceptance</h2>
+<ul>
+<li>[ ] CTA contrast ≥ 4.5:1 on panels</li>
+<li>[ ] Sticky ad reserved bottom 50–100px optional inset</li>
+<li>[ ] Rewarded always labeled with reward verb</li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Уровни <span class="muted">LEVEL_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="level_prompts-idle-forge">LEVEL_PROMPTS — idle-forge</h1>
+<p><strong>Роль:</strong> контент/баланс/«уровни» (этажи, milestones, quests).<br />
+Idle не имеет классических уровней — контент = floors + milestone curve + quest recipes.<br />
+Пиши JSON в <code>public/assets/data/</code> <strong>только после CONFIRMED</strong>; сейчас — таблицы в <code>refs/levels/</code>.</p>
+<h2 id="l1-floor-content-cards">L1 — Floor content cards</h2>
+<p>Для каждого этажа 1–5 создай карточку:</p>
+<pre><code>floor_id, name_ru, unlock_rule, mult_effects[], ambient_color, bg_asset, music_stem, worker_tint
+</code></pre>
+<h2 id="l2-milestone-table-m1m20">L2 — Milestone table M1–M20</h2>
+<p>Правило кривой lifetime ore:</p>
+<pre><code>M(n) = 50 * 10^((n-1)/2)   # tune in sheet
+rewards rotate: gems 5–50, artifact_fixed, cosmetic_fx
+</code></pre>
+<p>Выгрузи <code>refs/levels/milestones.csv</code>.</p>
+<h2 id="l3-daily-quest-recipes">L3 — Daily quest recipes</h2>
+<p>Пулл из 12 шаблонов, ежедневно 3:
+1. Добудь {X} руды<br />
+2. Купи {N} апгрейдов<br />
+3. Найми рабочего<br />
+4. Скрафти слитки {X}<br />
+5. Открой сундук<br />
+6. Забери оффлайн<br />
+7. Экипируй артефакт<br />
+8. Достигни этажа {F}<br />
+9. Сделай {N} тапов<br />
+10. Потрать {X} руды<br />
+11. Получи crit ×{N}<br />
+12. Зайди N дней подряд (login)</p>
+<h2 id="l4-prestige-thresholds">L4 — Prestige thresholds</h2>
+<table>
+<thead>
+<tr>
+<th>Epoch →</th>
+<th>Lifetime ore need</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0→1</td>
+<td>5e6</td>
+</tr>
+<tr>
+<td>1→2</td>
+<td>5e8</td>
+</tr>
+<tr>
+<td>2→3</td>
+<td>5e10</td>
+</tr>
+<tr>
+<td>n→n+1</td>
+<td>prev * 50</td>
+</tr>
+</tbody>
+</table>
+<h2 id="l5-economy-validation-prompt-for-balance-llm">L5 — Economy validation prompt (for balance LLM)</h2>
+<pre><code>Ты баланс-дизайнер idle-forge. Проверь, что F2P достигает первого prestige за 45–90 минут активной игры без RV.
+Используй upgrades.json формулы. Верни: таблицу ore/sec по минутам 0/10/30/60/90 и список правок costPow (±0.02 max).
+Не предлагай energy system.
+</code></pre>
+<h2 id="l6-art-direction-for-floor-thumbnails">L6 — Art direction for floor thumbnails</h2>
+<pre><code>Square map thumbnail 256x256, dwarven floor [N] iconographic, [theme], cozy dark fantasy, no text
+</code></pre>
+<p>→ <code>refs/levels/thumb_floor_0N.png</code></p>
+<h2 id="acceptance">Acceptance</h2>
+<ul>
+<li>[ ] 5 floors documented</li>
+<li>[ ] 20 milestones numeric</li>
+<li>[ ] 12 quest templates</li>
+<li>[ ] prestige curve written</li>
+<li>[ ] no paywall before floor 2</li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Код-агент <span class="muted">CODE_AGENT_PROMPT.md</span></summary>
+            <article class="doc"><h1 id="code_agent_prompt-idle-forge">CODE_AGENT_PROMPT — idle-forge</h1>
+<pre><code class="language-text">Ты — единственный код-агент игры «Кузница Вечности» (slug: idle-forge) для Яндекс Игр.
+
+⛔ СТОП-УСЛОВИЕ:
+Если в management/portfolio-dashboard.html (или STATUS) дизайн ≠ CONFIRMED — НЕ пиши gameplay-код.
+Только уточнения дизайна. Текущий ожидаемый статус на момент создания промпта: DRAFT.
+
+КОНТЕКСТ (прочитай полностью):
+- games/idle-forge/docs/DESIGN.md
+- games/idle-forge/docs/DESIGN_LLM.md
+- games/idle-forge/prompts/* (контракты ассетов)
+- docs/concepts/07-idle-forge.md
+- docs/agents/control-methodology.md
+- assets/concepts/07-idle-forge.png
+
+СТЕК: Phaser 3 + TypeScript + Vite. Папка только games/idle-forge/.
+
+ПОРЯДОК ПОСЛЕ CONFIRMED:
+1) STATUS.md + скелет Vite/Phaser, Boot→Preload→Forge.
+2) IdleEngine + BigFormat + tap/auto income.
+3) 8 upgrades из data JSON, workers, floors 1–5 visuals.
+4) OfflineSystem + modal + cap.
+5) Artifacts 15 + 6 slots + prestige epoch.
+6) Quests/milestones 7-day arc.
+7) SdkFacade: RV x2/skip/offline, interstitial session/prestige, IAP SKUs из DESIGN_LLM §9, cloud save.
+8) Tutorial ≤90s, juice, STORE_CHECKLIST, dist/, README.
+
+ЖЁСТКИЕ ПРАВИЛА:
+- Нет energy wall.
+- Нет mid-action interstitial.
+- Offline формула прозрачна в UI.
+- Asset keys/paths строго по DESIGN_LLM Integration Contract.
+- DEV_MOCK SDK вне Яндекса.
+- Не трогать другие games/*.
+
+DoD:
+- npm run build OK
+- prestige работает, offline честный
+- цели на 7 дней видны
+- ads/IAP/cloud пути работают (mock или SDK)
+- STATUS=DONE, чеклист зелёный
+</code></pre></article>
+          </details>
+    </section>
+
+    <section class="tab-panel" id="tab-manage">
+      <div class="panel manage-panel" data-manage-slug="idle-forge">
+        <h3>Статус дизайна</h3>
+        <div class="seg-btns" data-role="design-status">
+          <button data-v="DRAFT">Черновик</button>
+          <button data-v="REVIEW">На ревью</button>
+          <button data-v="CONFIRMED">Подтверждён</button>
+          <button data-v="BLOCKED">Заблокирован</button>
+        </div>
+
+        <h3>Готовность документов</h3>
+        <label class="check"><input type="checkbox" data-k="classic"/> Классический GDD прочитан</label>
+        <label class="check"><input type="checkbox" data-k="llm"/> LLM-спека прочитана</label>
+        <label class="check"><input type="checkbox" data-k="refs"/> Референсы проверены</label>
+
+        <h3>Гейт разработки</h3>
+        <p class="muted">Доступен только после статуса «Подтверждён».</p>
+        <select data-role="gate">
+          <option value="—">— не начато</option>
+          <option value="G0">G0 — Каркас</option>
+          <option value="G1">G1 — Вертикальный слайс</option>
+          <option value="G2">G2 — Контент MVP</option>
+          <option value="G3">G3 — Мета и удержание</option>
+          <option value="G4">G4 — SDK монетизация</option>
+          <option value="G5">G5 — Готово к стору</option>
+        </select>
+
+        <h3>Заметки</h3>
+        <textarea data-role="note" rows="5" placeholder="Комментарии к ревью..."></textarea>
+      </div>
+    </section>
+    
+  </main>
+</div>
+<script>
+window.PORTFOLIO_GAMES = [{"id": "01", "slug": "neon-bullet", "name": "Neon Bullet", "wave": 3, "prio": "P1"}, {"id": "02", "slug": "deadline-escape", "name": "Работник месяца", "wave": 1, "prio": "P0"}, {"id": "03", "slug": "tide-of-relics", "name": "Море Реликвий", "wave": 4, "prio": "P1"}, {"id": "04", "slug": "legends-of-the-pitch", "name": "Легенды Поля", "wave": 4, "prio": "P1"}, {"id": "05", "slug": "merge-bazaar", "name": "Базар Слияний", "wave": 1, "prio": "P0"}, {"id": "06", "slug": "crystal-archipelago", "name": "Кристаллы Архипелага", "wave": 2, "prio": "P0"}, {"id": "07", "slug": "idle-forge", "name": "Кузница Вечности", "wave": 2, "prio": "P0"}, {"id": "08", "slug": "cozy-plot", "name": "Уютный Участок", "wave": 3, "prio": "P1"}, {"id": "09", "slug": "auto-towers", "name": "Автобашни", "wave": 3, "prio": "P1"}, {"id": "10", "slug": "night-courier", "name": "Ночной Курьер", "wave": 1, "prio": "P0"}];
+window.CURRENT_SLUG = "idle-forge";
+</script>
+<script src="../demos/demo-engine.js"></script>
+<script src="../demos/demos-01-02.js"></script>
+<script src="../demos/demos-03-06.js"></script>
+<script src="../demos/demos-07-10.js"></script>
+<script src="../assets/dashboard.js"></script>
+</body>
+</html>

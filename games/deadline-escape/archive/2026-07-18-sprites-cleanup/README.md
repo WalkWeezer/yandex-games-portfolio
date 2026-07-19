@@ -1,0 +1,1 @@
+# 2026-07-18 sprites cleanup\n\n- Frankenstein HR walk chromas (contacts/downs/pass) — superseded by coherent walk rows.\n- Redundant *_sheet_all.gif and concept board GIFs (tab shows PNG concepts now).\n- Pre-replace HR sheet copies.\n

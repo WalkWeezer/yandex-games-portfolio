@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Базар Слияний — Портфель Яндекс Игры</title>
+<link rel="stylesheet" href="../assets/dashboard.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="../portfolio-dashboard.html">Портфель<br/><span>Яндекс Игры</span></a>
+    <div class="side-section">Навигация</div>
+    <a class="nav-link" href="../portfolio-dashboard.html">Все проекты</a>
+    <div class="side-section">Игры</div>
+    <div class="nav-games"><a class="nav-game " href="neon-bullet.html">01. Neon Bullet</a>
+<a class="nav-game " href="deadline-escape.html">02. Работник месяца</a>
+<a class="nav-game " href="tide-of-relics.html">03. Море Реликвий</a>
+<a class="nav-game " href="legends-of-the-pitch.html">04. Легенды Поля</a>
+<a class="nav-game active" href="merge-bazaar.html">05. Базар Слияний</a>
+<a class="nav-game " href="crystal-archipelago.html">06. Кристаллы Архипелага</a>
+<a class="nav-game " href="idle-forge.html">07. Кузница Вечности</a>
+<a class="nav-game " href="cozy-plot.html">08. Уютный Участок</a>
+<a class="nav-game " href="auto-towers.html">09. Автобашни</a>
+<a class="nav-game " href="night-courier.html">10. Ночной Курьер</a></div>
+    <div class="side-foot">Код запрещён до статуса<br/><strong>Подтверждён</strong></div>
+  </aside>
+  <main class="main">
+
+    <header class="page-head project-head">
+      <div class="crumb"><a href="../portfolio-dashboard.html">← Все проекты</a></div>
+      <div class="project-hero">
+        <div class="hero-art" style="background-image:url('../../games/merge-bazaar/refs/art/key-art.png')"></div>
+        <div>
+          <div class="muted">05 · P0 · Волна 1 — кэшфлоу</div>
+          <h1>Базар Слияний</h1>
+          <p class="lead">Merge-tycoon · Уютный казуал / 25–55</p>
+          <div class="inline-status">
+            Статус дизайна: <span class="status-pill" data-status-for="merge-bazaar">Черновик</span>
+            · Гейт: <span data-gate-label-for="merge-bazaar">—</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="overview">Обзор</button>
+      <button class="tab" data-tab="demo">Демка</button>
+      <button class="tab" data-tab="classic">Классический диздок</button>
+      <button class="tab" data-tab="llm">LLM-спека</button>
+      <button class="tab" data-tab="refs">Референсы</button>
+      <button class="tab" data-tab="prompts">Промпты</button>
+      <button class="tab" data-tab="manage">Управление</button>
+    </nav>
+
+    <section class="tab-panel active" id="tab-overview">
+      <div class="two-col">
+        <div class="panel">
+          <h3>Что смотреть</h3>
+          <ul class="checklist-static">
+            <li><strong>Демка</strong> — сначала пощупай feel простыми фигурами</li>
+            <li>Классический GDD — видение, лупы, экономика</li>
+            <li>LLM-спека — контракты для агентов, UI, уровни, ассеты</li>
+            <li>Референсы — арт, вайрфреймы, уровни, спрайты</li>
+            <li>Промпты — готовые задания для арт/код агентов</li>
+          </ul>
+          <h3>Правило</h3>
+          <p class="warn">Пока статус не <strong>Подтверждён</strong>, папку <code>src/</code> не создавать. CONFIRM только после playtest демки (F1→F2). См. <code>docs/METHODOLOGY.md</code>.</p>
+        </div>
+        <div class="panel">
+          <h3>Файлы проекта</h3>
+          <ul class="file-list">
+            <li><code>games/merge-bazaar/docs/DESIGN.md</code></li>
+            <li><code>games/merge-bazaar/docs/DESIGN_LLM.md</code></li>
+            <li><code>games/merge-bazaar/docs/REFS.md</code></li>
+            <li><code>games/merge-bazaar/prompts/*.md</code></li>
+            <li><code>games/merge-bazaar/refs/**</code></li>
+            <li><code>management/demos/</code> — feel demo</li>
+          </ul>
+          <div class="progress big"><i data-progress-for="merge-bazaar"></i></div>
+          <div class="muted" style="margin-top:8px">Прогресс готовности (дизайн + гейты)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-demo">
+      <div class="panel demo-wrap">
+        <h3>Feel-демка (простые фигуры)</h3>
+        <p class="lead">Цель — проверить управление и «хочу ещё раз». На телефоне удобнее через LAN-сервер.</p>
+        <div class="lan-box">С телефона: запусти <code>serve-dashboard.bat</code> на ПК, открой URL из окна батника (одна Wi-Fi сеть).</div>
+        <p class="muted" style="margin:0 0 8px">«Работник месяца» = ядро chas-pik (сетка, 3 колонны, 09:00→18:00).</p>
+        <p class="demo-hint" id="demo-hint">Загрузка демки…</p>
+        <canvas id="feel-demo" width="360" height="640" aria-label="Feel demo"></canvas>
+        <div class="demo-actions">
+          <button class="btn" type="button" id="demo-restart">Рестарт</button>
+          <span class="muted">Стик: левая половина экрана · WASD/стрелки · кнопки справа</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-classic">
+      <article class="doc"><h1 id="design-document-gdd">Базар Слияний — Design Document (GDD)</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Slug</strong></td>
+<td><code>merge-bazaar</code></td>
+</tr>
+<tr>
+<td><strong>Название RU</strong></td>
+<td>Базар Слияний</td>
+</tr>
+<tr>
+<td><strong>Название EN</strong></td>
+<td>Merge Bazaar</td>
+</tr>
+<tr>
+<td><strong>Жанр</strong></td>
+<td>Merge-tycoon / merge puzzle</td>
+</tr>
+<tr>
+<td><strong>Платформа</strong></td>
+<td>Яндекс Игры (HTML5)</td>
+</tr>
+<tr>
+<td><strong>Движок</strong></td>
+<td>Phaser 3 + TypeScript + Vite</td>
+</tr>
+<tr>
+<td><strong>Сегмент ЦА</strong></td>
+<td>E — уютный казуал, 25–55</td>
+</tr>
+<tr>
+<td><strong>Приоритет</strong></td>
+<td>P0</td>
+</tr>
+<tr>
+<td><strong>Статус дизайна</strong></td>
+<td><code>DRAFT</code> (код запрещён до <code>CONFIRMED</code>)</td>
+</tr>
+<tr>
+<td><strong>Ключевой арт</strong></td>
+<td><code>refs/art/key-art.png</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-one-liner">1. One-liner</h2>
+<p>Сливай товары на торговом прилавке, открывай новые цепочки предметов и развивай свой сказочный базар.</p>
+<h2 id="2">2. Видение продукта</h2>
+<p>Уютный merge-tycoon с сильным daily hook: энергия, заказы NPC, расширение доски, декор лавки. Женская + широкая казуальная ЦА; hybrid monetization (RV энергия + IAP удобство/pass).</p>
+<h3 id="_1">Рамки скоупа</h3>
+<table>
+<thead>
+<tr>
+<th>Делать</th>
+<th>НЕ делать</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Доска merge 6×5→7×6</td>
+<td>Боевая RPG / данжи</td>
+</tr>
+<tr>
+<td>3–4 цепочки 8–10 тиров</td>
+<td>20+ цепочек в MVP</td>
+</tr>
+<tr>
+<td>Генераторы + заказы + энергия</td>
+<td>PvP, трейд между игроками</td>
+</tr>
+<tr>
+<td>Декор лавки как мета</td>
+<td>Полный city-builder</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-fantasy">3. Fantasy / сеттинг</h2>
+<ul>
+<li><strong>Место:</strong> восточный/сказочный базар — фрукты, амулеты, сладости, растения, зелья.</li>
+<li><strong>Героиня:</strong> молодая торговка + рыжий кот (маскот).</li>
+<li><strong>Тон:</strong> cozy fantasy, тёплый свет, пурпурно-золотая витрина.</li>
+<li><strong>Прогресс фантазии:</strong> от лотка → полноценная лавка с декором и NPC-заказчиками.</li>
+</ul>
+<h2 id="4-core-loop">4. Core loop</h2>
+<ol>
+<li>Тратишь энергию → активируешь генераторы / получаешь предметы.  </li>
+<li>Мёрджишь 1+1 одинаковых → следующий тир.  </li>
+<li>Сдаёшь заказы → монеты / XP / ключи декора.  </li>
+<li>Расширяешь доску, открываешь генераторы и цепочки.  </li>
+<li>Ставишь декор, коллекционируешь max-tier витрину.</li>
+</ol>
+<pre><code class="language-mermaid">flowchart LR
+  Energy[Энергия] --&gt; Gen[Генераторы]
+  Gen --&gt; Board[Доска]
+  Board --&gt; Merge[Merge 1+1]
+  Merge --&gt; Orders[Заказы NPC]
+  Orders --&gt; Soft[Монеты/XP]
+  Soft --&gt; Expand[Апгрейд лавки]
+  Expand --&gt; Energy
+</code></pre>
+<h2 id="5-mvp">5. Механики MVP</h2>
+<h3 id="51">5.1 Доска</h3>
+<ul>
+<li>Старт <strong>6×5</strong> (30 клеток).  </li>
+<li>Апгрейд до <strong>7×6</strong> (42) за soft / IAP-ускорение.  </li>
+<li>Drag item на item того же <code>chainId+tier</code> → merge.  </li>
+<li>Занятость 100% без ходов = «тупик» → инструменты: sell, bubble RV, stash (1 слот).</li>
+</ul>
+<h3 id="52-mvp">5.2 Цепочки (MVP)</h3>
+<ol>
+<li><strong>Фрукты</strong> (яблоко → корзина → золотая чаша) — 8–10 тиров.  </li>
+<li><strong>Зелья</strong> (флакон → лунный кувшин) — 8–10 тиров.  </li>
+<li><strong>Растения</strong> (росток → spirit bonsai) — 8–10 тиров.  </li>
+<li>(Опционально wave1.5) <strong>Сладости</strong> или <strong>Амулеты</strong>.</li>
+</ol>
+<h3 id="53">5.3 Генераторы</h3>
+<ul>
+<li>2–3 генератора с кулдауном и лимитом зарядов.  </li>
+<li>Спавн предметов низких тиров своей цепочки.  </li>
+<li>Ускорение: RV / hard.</li>
+</ul>
+<h3 id="54">5.4 Энергия</h3>
+<ul>
+<li>Трата на tap генератора / некоторые действия.  </li>
+<li>Реген: 1 энергия / N минут, cap комфортный для F2P.  </li>
+<li>RV: +энергия пакет.</li>
+</ul>
+<h3 id="55">5.5 Заказы</h3>
+<ul>
+<li>Очередь 2–3 заказа.  </li>
+<li>Требуют предметы конкретных тиров.  </li>
+<li>Мягкий таймер (бонус за скорость, не жёсткий fail).  </li>
+<li>Награды: soft, XP игрока лавки, иногда декор-токен.</li>
+</ul>
+<h3 id="56">5.6 Декор и коллекции</h3>
+<ul>
+<li>10 предметов декора MVP.  </li>
+<li>Max-merge тир открывает «витринный» экспонат.  </li>
+<li>Декор даёт малые пассивные бонусы (опц. +1% soft) или чисто косметику (предпочтительно косметика в MVP).</li>
+</ul>
+<h2 id="6">6. Прогрессия</h2>
+<table>
+<thead>
+<tr>
+<th>Слой</th>
+<th>Содержание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>XP лавки</td>
+<td>уровни → слоты/генераторы/цепочки</td>
+</tr>
+<tr>
+<td>Цепочки</td>
+<td>анлок тиров и новых generators</td>
+</tr>
+<tr>
+<td>Заказы</td>
+<td>20+ в MVP</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td>логин, daily order, RV энергия</td>
+</tr>
+<tr>
+<td>Pass</td>
+<td>light track: энергия, декор, soft</td>
+</tr>
+</tbody>
+</table>
+<h2 id="7-hybrid">7. Монетизация (hybrid)</h2>
+<table>
+<thead>
+<tr>
+<th>Источник</th>
+<th>Как</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rewarded</td>
+<td>+энергия, ускорение генератора, убрать мусор-предмет, доп. слот заказа</td>
+</tr>
+<tr>
+<td>Interstitial</td>
+<td>возврат в хаб / после крупного заказа</td>
+</tr>
+<tr>
+<td>IAP</td>
+<td>энергия паки, pass, слоты доски, косметика лавки, remove ads</td>
+</tr>
+<tr>
+<td>Soft</td>
+<td>монеты, материалы декора</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Анти-токсик:</strong> F2P энергия не должна бить «стену боли» в первые 30–40 минут; тупик доски решаем инструментами, не только paywall.</p>
+<h3 id="iap-mvp">IAP MVP</h3>
+<ol>
+<li>Energy Small / Medium.  </li>
+<li>Battle Pass light.  </li>
+<li>Board slot unlock.  </li>
+<li>Remove Ads.  </li>
+<li>Awning / décor pack (косметика).</li>
+</ol>
+<h2 id="8-ux">8. UX</h2>
+<ul>
+<li>Туториал merge за ≤60 с (два яблока → корзина).  </li>
+<li>Крупный drag под палец, магнит к соседней клетке.  </li>
+<li>Подсветка валидных merge-целей при drag.  </li>
+<li>Облачный сейв доски обязателен.  </li>
+<li>Портрет primary.</li>
+</ul>
+<h2 id="9-mvp-store-ready">9. Скоуп MVP → Store Ready</h2>
+<table>
+<thead>
+<tr>
+<th>Входит</th>
+<th>Не входит</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2–3 полные цепочки</td>
+<td>10 цепочек</td>
+</tr>
+<tr>
+<td>20 заказов</td>
+<td>сезонные ивенты full</td>
+</tr>
+<tr>
+<td>Энергия + 2 генератора</td>
+<td>авто-merge бот</td>
+</tr>
+<tr>
+<td>Декор 10</td>
+<td>мультиплеер</td>
+</tr>
+<tr>
+<td>Daily + 3–5 IAP</td>
+<td>гильдии</td>
+</tr>
+</tbody>
+</table>
+<h2 id="10">10. Риски</h2>
+<table>
+<thead>
+<tr>
+<th>Риск</th>
+<th>Митигация</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Жёсткий energy paywall</td>
+<td>кривая регена + RV щедрый early</td>
+</tr>
+<tr>
+<td>Тупик доски</td>
+<td>sell, bubble, stash, board upgrade</td>
+</tr>
+<tr>
+<td>Скучный midgame</td>
+<td>заказы с разнообразием + декор goals</td>
+</tr>
+</tbody>
+</table>
+<h2 id="11-kpi-store">11. KPI / Store</h2>
+<ul>
+<li>30+ минут слияния без жёсткого тупика.  </li>
+<li>Туториал merge ≤1 мин.  </li>
+<li>Энергия предсказуема (UI таймер регена).  </li>
+<li>Cloud save доски.  </li>
+<li>D1 цель ≥25%.</li>
+</ul>
+<h2 id="12">12. Статус кода</h2>
+<p><strong>До <code>CONFIRMED</code> — <code>src/</code> не создаём.</strong> Детали для агентов: <code>docs/DESIGN_LLM.md</code>.</p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-llm">
+      <article class="doc"><h1 id="design_llm">Базар Слияний — DESIGN_LLM (исполняемая спецификация)</h1>
+<blockquote>
+<p><strong>Аудитория:</strong> LLM-агенты (арт, UI, контент, код).<br />
+<strong>Правило:</strong> <code>src/</code> <strong>не писать</strong>, пока дизайн ≠ <code>CONFIRMED</code>.<br />
+<strong>GDD:</strong> <code>docs/DESIGN.md</code>. <strong>Промпты:</strong> <code>prompts/*.md</code>.</p>
+</blockquote>
+<hr />
+<h2 id="0-">0. Мета-контракт</h2>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>slug</td>
+<td><code>merge-bazaar</code></td>
+</tr>
+<tr>
+<td>title_ru</td>
+<td>Базар Слияний</td>
+</tr>
+<tr>
+<td>title_en</td>
+<td>Merge Bazaar</td>
+</tr>
+<tr>
+<td>engine</td>
+<td>Phaser 3 + TypeScript + Vite</td>
+</tr>
+<tr>
+<td>platform</td>
+<td>Яндекс Игры</td>
+</tr>
+<tr>
+<td>orientation_primary</td>
+<td>portrait 720×1280</td>
+</tr>
+<tr>
+<td>design_status</td>
+<td><code>DRAFT</code></td>
+</tr>
+<tr>
+<td>coding_allowed</td>
+<td><code>false</code> until <code>CONFIRMED</code></td>
+</tr>
+<tr>
+<td>concept_ref</td>
+<td><code>docs/concepts/05-merge-bazaar.md</code></td>
+</tr>
+<tr>
+<td>key_art</td>
+<td><code>games/merge-bazaar/refs/art/key-art.png</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="_1">Запреты</h3>
+<ol>
+<li>Нет боёвки/данжей.  </li>
+<li>Нет PvP/трейда.  </li>
+<li>Нет city-builder карты города (только лавка + доска).  </li>
+<li>Не делать paywall энергии «в ноль без RV» в первые 30 мин.</li>
+</ol>
+<hr />
+<h2 id="1-project-contract">1. Project contract</h2>
+<pre><code class="language-text">games/merge-bazaar/
+├── docs/DESIGN.md
+├── docs/DESIGN_LLM.md
+├── prompts/{ART,SPRITE_ANIM,UI,LEVEL,CODE_AGENT}_PROMPTS.md  (CODE = CODE_AGENT_PROMPT.md)
+├── refs/{art,ui,levels,sprites}/
+├── public/assets/{images,atlases,audio,data}/
+├── src/   # after CONFIRMED
+├── STATUS.md
+└── STORE_CHECKLIST.md
+</code></pre>
+<h3 id="naming">Naming</h3>
+<table>
+<thead>
+<tr>
+<th>Сущность</th>
+<th>Правило</th>
+<th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Item ID</td>
+<td><code>item_{chain}_{tier}</code></td>
+<td><code>item_fruit_03</code></td>
+</tr>
+<tr>
+<td>Generator</td>
+<td><code>gen_{chain}</code></td>
+<td><code>gen_fruit</code></td>
+</tr>
+<tr>
+<td>Order</td>
+<td><code>ord_{nnn}</code></td>
+<td><code>ord_012</code></td>
+</tr>
+<tr>
+<td>Decor</td>
+<td><code>decor_{name}</code></td>
+<td><code>decor_purple_awning</code></td>
+</tr>
+<tr>
+<td>UI</td>
+<td><code>ui_{elem}_{state}</code></td>
+<td><code>ui_btn_energy_rv</code></td>
+</tr>
+<tr>
+<td>Scene</td>
+<td><code>SC_{Name}</code></td>
+<td><code>SC_Board</code></td>
+</tr>
+<tr>
+<td>Save</td>
+<td><code>mbz_{key}_v1</code></td>
+<td><code>mbz_board_v1</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="asset-id-schema">Asset ID schema</h3>
+<pre><code class="language-text">bg_shop_{variant}
+item_{chain}_{tier}
+item_{chain}_{tier}_max   # optional glow variant
+gen_{chain}_{state}       # idle/empty/ready
+npc_{name}
+decor_{id}
+ui_*
+vfx_merge_{tierband}
+ico_energy / ico_coin / ico_gem / ico_key
+sfx_* / bgm_*
+</code></pre>
+<p>Chains MVP: <code>fruit</code>, <code>potion</code>, <code>plant</code> (+ optional <code>sweet</code>).</p>
+<hr />
+<h2 id="2-gameplay-systems-acceptance-criteria">2. Gameplay systems + Acceptance Criteria</h2>
+<h3 id="21-board-system">2.1 Board System</h3>
+<ul>
+<li>Grid <code>cols×rows</code>, cell size 96 logical.  </li>
+<li>Start 6×5; max 7×6.  </li>
+<li>Each cell: <code>null | ItemRef | GeneratorRef | Bubble | Blocked</code>.</li>
+</ul>
+<p><strong>AC:</strong>
+- [ ] AC-BRD-01: merge только одинаковых <code>chain+tier</code>, результат <code>tier+1</code> на целевой клетке, источник очищается.<br />
+- [ ] AC-BRD-02: max tier не мёрджится дальше; вместо этого sparkle + toast «Коллекция».<br />
+- [ ] AC-BRD-03: drag показывает ghost + highlight валидных целей.<br />
+- [ ] AC-BRD-04: состояние доски сейвится на каждый merge/move (debounce 300ms) + cloud.<br />
+- [ ] AC-BRD-05: при полной доске и отсутствии merge — предлагается sell/bubble/RV, нет softlock.<br />
+- [ ] AC-BRD-06: апгрейд 6×5→7×6 добавляет клетки справа/снизу без потери items.</p>
+<h3 id="22-item-chain-system">2.2 Item / Chain System</h3>
+<pre><code class="language-json">{
+  &quot;chainId&quot;: &quot;fruit&quot;,
+  &quot;tiers&quot;: [
+    { &quot;tier&quot;: 1, &quot;id&quot;: &quot;item_fruit_01&quot;, &quot;name_ru&quot;: &quot;Яблоко&quot;, &quot;sellSoft&quot;: 1 },
+    { &quot;tier&quot;: 2, &quot;id&quot;: &quot;item_fruit_02&quot;, &quot;name_ru&quot;: &quot;Пара яблок&quot;, &quot;sellSoft&quot;: 3 }
+  ],
+  &quot;maxTier&quot;: 10,
+  &quot;unlockPlayerLevel&quot;: 1
+}
+</code></pre>
+<p><strong>AC:</strong>
+- [ ] AC-ITM-01: 3 цепочки ≥8 тиров каждая в MVP (рекоменд. 10/10/8).<br />
+- [ ] AC-ITM-02: визуальный silhouette читаем на 64×64.<br />
+- [ ] AC-ITM-03: sell возвращает soft по таблице, подтверждение для tier≥5.</p>
+<h3 id="23-generator-system">2.3 Generator System</h3>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;gen_fruit&quot;,
+  &quot;chargesMax&quot;: 8,
+  &quot;cooldownSec&quot;: 20,
+  &quot;spawnTable&quot;: [
+    { &quot;itemId&quot;: &quot;item_fruit_01&quot;, &quot;w&quot;: 70 },
+    { &quot;itemId&quot;: &quot;item_fruit_02&quot;, &quot;w&quot;: 25 },
+    { &quot;itemId&quot;: &quot;item_fruit_03&quot;, &quot;w&quot;: 5 }
+  ],
+  &quot;energyCostPerTap&quot;: 1
+}
+</code></pre>
+<p><strong>AC:</strong>
+- [ ] AC-GEN-01: tap при charges&gt;0 и energy≥cost спавнит в ближайшую пустую клетку.<br />
+- [ ] AC-GEN-02: нет пустой клетки → toast, заряд не тратится.<br />
+- [ ] AC-GEN-03: cooldown UI кольцо видно.<br />
+- [ ] AC-GEN-04: RV skip cooldown 1/charge bundle.<br />
+- [ ] AC-GEN-05: generator занимает 1 клетку (или 2×1 только если явно в данных — MVP = 1).</p>
+<h3 id="24-energy-system">2.4 Energy System</h3>
+<table>
+<thead>
+<tr>
+<th>Param</th>
+<th>MVP value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cap</td>
+<td>50 (ранний), 100 (поздний ап)</td>
+</tr>
+<tr>
+<td>regen</td>
+<td>1 / 90 sec</td>
+</tr>
+<tr>
+<td>start</td>
+<td>50</td>
+</tr>
+<tr>
+<td>RV pack</td>
+<td>+25, cap 5 ads/day soft limit UX</td>
+</tr>
+<tr>
+<td>action cost</td>
+<td>1 per generator tap</td>
+</tr>
+</tbody>
+</table>
+<p><strong>AC:</strong>
+- [ ] AC-EN-01: таймер до следующей энергии на HUD.<br />
+- [ ] AC-EN-02: при 0 энергии — modal: ждать / RV / IAP; доска остаётся usable для merge без энергии.<br />
+- [ ] AC-EN-03: merge <strong>не</strong> тратит энергию.<br />
+- [ ] AC-EN-04: offline regen capped at cap (не бесконечный склад).</p>
+<h3 id="25-orders-system">2.5 Orders System</h3>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;ord_003&quot;,
+  &quot;npc&quot;: &quot;npc_traveler&quot;,
+  &quot;needs&quot;: [{ &quot;itemId&quot;: &quot;item_fruit_04&quot;, &quot;count&quot;: 1 }],
+  &quot;rewardSoft&quot;: 40,
+  &quot;rewardXp&quot;: 15,
+  &quot;timeBonusSec&quot;: 180
+}
+</code></pre>
+<p><strong>AC:</strong>
+- [ ] AC-ORD-01: сдача = авто-снятие items с доски при tap на заказ, если есть.<br />
+- [ ] AC-ORD-02: очередь 2 слота (+1 IAP/pass).<br />
+- [ ] AC-ORD-03: мягкий таймер даёт +25% soft если успели; провал таймера не удаляет заказ.<br />
+- [ ] AC-ORD-04: 20 заказов в пуле MVP с прогрессией нужд.</p>
+<h3 id="26-player-shop-level-unlock">2.6 Player Shop Level / Unlock</h3>
+<p>XP → level → unlocks: chain tiers, generators, board upgrade, décor slots.</p>
+<p><strong>AC:</strong>
+- [ ] AC-LVL-01: таблица уровней 1–20 в JSON.<br />
+- [ ] AC-LVL-02: unlock popup с иллюстрацией.<br />
+- [ ] AC-LVL-03: нельзя получить item locked chain с генератора (spawn table фильтр).</p>
+<h3 id="27-decor-collection">2.7 Decor / Collection</h3>
+<p><strong>AC:</strong>
+- [ ] AC-DEC-01: 10 décor items placeable on shop backdrop hotspots.<br />
+- [ ] AC-DEC-02: max-tier first obtain → collection album entry.<br />
+- [ ] AC-DEC-03: décor MVP косметика (бонусы статов — optional flag off).</p>
+<h3 id="28-bubbles-junk-tools">2.8 Bubbles / Junk / Tools</h3>
+<ul>
+<li>Bubble: предмет в пузыре, RV/hard чтобы раскрыть или свайп dismiss за soft.  </li>
+<li>Junk: редкий мусор блокирует клетку, убрать RV/soft.</li>
+</ul>
+<p><strong>AC:</strong>
+- [ ] AC-TOL-01: всегда есть путь расчистить доску без hard currency (медленно через sell).<br />
+- [ ] AC-TOL-02: stash 1 cell temporary (unlock level 5).</p>
+<h3 id="29-monetization-hooks">2.9 Monetization hooks</h3>
+<p><strong>AC:</strong>
+- [ ] AC-PAY-01: RV точки — energy, gen boost, bubble, junk clear.<br />
+- [ ] AC-PAY-02: interstitial только hub return / big order complete, не mid-drag.<br />
+- [ ] AC-PAY-03: IAP energy/pass/slots/remove ads/décor.<br />
+- [ ] AC-PAY-04: remove ads ≠ remove RV.</p>
+<h3 id="210-save">2.10 Save</h3>
+<p>Board grid, gens cooldowns, energy timestamp, orders, level/xp, décor, pass, IAP flags.</p>
+<p><strong>AC:</strong>
+- [ ] AC-SAVE-01: kill tab mid-drag — предмет не дублируется и не пропадает (commit on pointer up).<br />
+- [ ] AC-SAVE-02: cloud sync on pause + every 60s dirty.</p>
+<hr />
+<h2 id="3-content-design-grammar">3. Content design grammar</h2>
+<h3 id="31-looks">3.1 Как доска LOOKS</h3>
+<ul>
+<li>Деревянный прилавок / полки как рамка.  </li>
+<li>Клетки мягко читаемые, не «Excel».  </li>
+<li>Предметы: тёплый cozy lighting, max-tier с золотым glow.  </li>
+<li>Сверху/сбоку — энергия и заказы.  </li>
+<li>Фон: площадь базара (как key-art).</li>
+</ul>
+<h3 id="32-plays">3.2 Как PLAYS</h3>
+<ol>
+<li>Игрок смотрит заказы → планирует merges.  </li>
+<li>Тратит энергию на gen.  </li>
+<li>Строит «пирамиду» тиров.  </li>
+<li>Сдаёт заказ → juice VFX монет.  </li>
+<li>Расширяет / декор.</li>
+</ol>
+<h3 id="33-merge-recipe-grammar">3.3 Merge recipe grammar</h3>
+<pre><code class="language-text">2 × item(chain, t) → 1 × item(chain, t+1)
+Special: 2 × max → reject + toast
+</code></pre>
+<h3 id="34-chain-recipes">3.4 Chain recipes (визуальная лестница)</h3>
+<p><strong>Fruit:</strong> apple → 2apples → basket_s → basket_m → basket_l → ornate_bowl → glowing_bowl → golden_chalice → ...<br />
+<strong>Potion:</strong> small_blue → med_blue → large_charm → moon_jar → ...<br />
+<strong>Plant:</strong> sprout → flower_bowl → lush → spirit_bonsai → ...</p>
+<p>Каждый тир = +20–30% visual complexity, не только scale.</p>
+<h3 id="35-difficulty-pacing-curve">3.5 Difficulty / pacing curve</h3>
+<table>
+<thead>
+<tr>
+<th>Player min</th>
+<th>Focus</th>
+<th>Energy feel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–5</td>
+<td>Tutorial fruit to t4</td>
+<td>щедро</td>
+</tr>
+<tr>
+<td>5–20</td>
+<td>Orders easy, plant unlock</td>
+<td>комфорт</td>
+</tr>
+<tr>
+<td>20–45</td>
+<td>Board space pressure</td>
+<td>первый RV soft ask</td>
+</tr>
+<tr>
+<td>45–90</td>
+<td>Potion chain + décor</td>
+<td>midgame</td>
+</tr>
+<tr>
+<td>90+</td>
+<td>max tiers + pass</td>
+<td>retention</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Anti-stuck rules:</strong>
+- Если 3 мин нет merge и board &gt;90% full → hint highlight.<br />
+- Daily free bubble pop.</p>
+<h3 id="36-order-grammar">3.6 Order grammar</h3>
+<pre><code class="language-yaml">order:
+  need_tier_band: early|mid|late
+  item_count: 1-3
+  diversity: single_chain|multi
+  reward_scale: f(player_level)
+</code></pre>
+<h3 id="37-mvp-content-volume">3.7 MVP content volume</h3>
+<table>
+<thead>
+<tr>
+<th>Content</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chains</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Tiers total</td>
+<td>≥26</td>
+</tr>
+<tr>
+<td>Generators</td>
+<td>2–3</td>
+</tr>
+<tr>
+<td>Orders</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Decor</td>
+<td>10</td>
+</tr>
+<tr>
+<td>Shop levels</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Tutorial steps</td>
+<td>≤6</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-ui-map-wireframes">4. UI map + wireframes</h2>
+<h3 id="screens">Screens</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SC_Boot</td>
+<td>Boot</td>
+</tr>
+<tr>
+<td>SC_Hub</td>
+<td>Лавка (вид декора)</td>
+</tr>
+<tr>
+<td>SC_Board</td>
+<td>Merge доска (основной)</td>
+</tr>
+<tr>
+<td>SC_Orders</td>
+<td>(может быть панелью на Board)</td>
+</tr>
+<tr>
+<td>SC_Collection</td>
+<td>Альбом</td>
+</tr>
+<tr>
+<td>SC_Decor</td>
+<td>Редактор декора</td>
+</tr>
+<tr>
+<td>SC_Shop</td>
+<td>IAP</td>
+</tr>
+<tr>
+<td>SC_Pass</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>SC_Settings</td>
+<td>Settings</td>
+</tr>
+</tbody>
+</table>
+<h3 id="board-wireframe">Board wireframe</h3>
+<pre><code class="language-text">┌────────────────────────────┐
+│ ⚡42/50  1:12   💰 1200 💎  │
+│ ┌──────┐ ┌──────┐          │
+│ │Заказ1│ │Заказ2│   [Альбом]│
+│ └──────┘ └──────┘          │
+│ ┌────────────────────────┐ │
+│ │  . a  .  g  .  p  .    │ │
+│ │  a .  b  .  .  .  .    │ │ board 6x5
+│ │  ...                   │ │
+│ └────────────────────────┘ │
+│ [Ген][Ген][Склад][Магазин] │
+└────────────────────────────┘
+</code></pre>
+<pre><code class="language-mermaid">flowchart TD
+  Hub --&gt; Board
+  Board --&gt; MergeAct[Merge/Drag]
+  Board --&gt; Orders
+  Board --&gt; Shop
+  Board --&gt; Decor
+  Orders --&gt; Reward
+  Reward --&gt; Board
+</code></pre>
+<h3 id="hub-decor">Hub / Decor</h3>
+<pre><code class="language-text">┌────────────────────────────┐
+│     Витрина лавки          │
+│   (фон + decor hotspots)   │
+│     [К прилавку ▶]         │
+│  [Декор][Pass][Настройки]  │
+└────────────────────────────┘
+</code></pre>
+<h3 id="energy-empty-modal">Energy empty modal</h3>
+<pre><code class="language-text">┌────────────────────────────┐
+│     Запас энергии пуст     │
+│  [▶ Реклама +25]           │
+│  [Купить пакет]            │
+│  [Подождать 01:12]         │
+└────────────────────────────┘
+</code></pre>
+<h3 id="components">Components</h3>
+<table>
+<thead>
+<tr>
+<th>Comp</th>
+<th>Assets</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EnergyBar</td>
+<td><code>ico_energy</code>, <code>ui_bar_energy</code></td>
+</tr>
+<tr>
+<td>OrderCard</td>
+<td><code>ui_order_panel</code>, npc portrait</td>
+</tr>
+<tr>
+<td>BoardCell</td>
+<td>subtle</td>
+</tr>
+<tr>
+<td>ItemSprite</td>
+<td><code>item_*</code></td>
+</tr>
+<tr>
+<td>GenWidget</td>
+<td><code>gen_*</code></td>
+</tr>
+<tr>
+<td>BtnRV</td>
+<td><code>ui_btn_rv</code></td>
+</tr>
+<tr>
+<td>ShopTile</td>
+<td>décor</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-art-bible">5. Art bible</h2>
+<h3 id="style-locks">Style locks</h3>
+<ul>
+<li>Cozy fantasy bazaar, warm sunlight, purple-gold accents.  </li>
+<li>Polished 2D mobile, soft shading, clean edges.  </li>
+<li>Merchant girl + ginger cat mascot consistent.  </li>
+<li><strong>Не:</strong> мрачный dark fantasy, ultra-realistic photo, cluttered cyber neon (это другая игра).</li>
+</ul>
+<h3 id="palette">Palette</h3>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Hex</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>awning_purple</td>
+<td><code>#6B3FA0</code></td>
+</tr>
+<tr>
+<td>gold_trim</td>
+<td><code>#E6B35A</code></td>
+</tr>
+<tr>
+<td>wood</td>
+<td><code>#8B5A2B</code></td>
+</tr>
+<tr>
+<td>leaf</td>
+<td><code>#3F8F4E</code></td>
+</tr>
+<tr>
+<td>potion_blue</td>
+<td><code>#3D6FE8</code></td>
+</tr>
+<tr>
+<td>apple_red</td>
+<td><code>#D63A3A</code></td>
+</tr>
+<tr>
+<td>sky_warm</td>
+<td><code>#F3C98B</code></td>
+</tr>
+<tr>
+<td>ui_cream</td>
+<td><code>#FFF6E8</code></td>
+</tr>
+<tr>
+<td>text_ink</td>
+<td><code>#2A1B12</code></td>
+</tr>
+<tr>
+<td>energy_teal</td>
+<td><code>#2EC4B6</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="dodont">Do/Don't</h3>
+<p><strong>Do:</strong> читаемые merge-тиры; тёплый свет; максимум уюта.<br />
+<strong>Don't:</strong> фиолетовый «AI default» градиент на белом без дерева/ткани; мелкие предметы без силуэта; кровь/horror.</p>
+<hr />
+<h2 id="6-image-generation-prompts">6. Image generation prompts (канон)</h2>
+<p>Полный набор: <code>prompts/ART_PROMPTS.md</code>.</p>
+<p>Key:</p>
+<pre><code class="language-text">Cozy fantasy bazaar shop, cheerful young merchant woman purple vest gold trim, ginger cat, wooden shelves showing merge item progressions fruit potion plants, purple white striped awning, sunny village square fountain, warm polished mobile game art, no text
+</code></pre>
+<p>Item sheet:</p>
+<pre><code class="language-text">Mobile game merge item icon set on transparent, fruit chain 10 tiers from single apple to ornate golden glowing bowl, consistent isometric-lite lighting, cozy fantasy, clear silhouette each tier
+</code></pre>
+<hr />
+<h2 id="7-sprite-sheets-timing">7. Sprite sheets + timing</h2>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>Frames</th>
+<th>FPS</th>
+<th>Size</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vfx_merge_pop</td>
+<td>8</td>
+<td>16</td>
+<td>128</td>
+<td>tiers1-4</td>
+</tr>
+<tr>
+<td>vfx_merge_magic</td>
+<td>10</td>
+<td>16</td>
+<td>192</td>
+<td>tiers5+</td>
+</tr>
+<tr>
+<td>gen_ready_pulse</td>
+<td>6</td>
+<td>8</td>
+<td>128</td>
+<td>loop</td>
+</tr>
+<tr>
+<td>energy_refill</td>
+<td>6</td>
+<td>12</td>
+<td>64</td>
+<td></td>
+</tr>
+<tr>
+<td>order_complete</td>
+<td>10</td>
+<td>16</td>
+<td>256</td>
+<td>coins fly</td>
+</tr>
+<tr>
+<td>cat_idle</td>
+<td>6</td>
+<td>6</td>
+<td>128</td>
+<td>hub mascot</td>
+</tr>
+<tr>
+<td>cat_happy</td>
+<td>8</td>
+<td>10</td>
+<td>128</td>
+<td>on order done</td>
+</tr>
+</tbody>
+</table>
+<p>Atlas: <code>atlas_merge_vfx</code>, <code>atlas_mascot</code>.</p>
+<hr />
+<h2 id="8-prompt-packs">8. Prompt packs</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Agent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>prompts/ART_PROMPTS.md</code></td>
+<td>Art</td>
+</tr>
+<tr>
+<td><code>prompts/SPRITE_ANIM_PROMPTS.md</code></td>
+<td>Anim</td>
+</tr>
+<tr>
+<td><code>prompts/UI_PROMPTS.md</code></td>
+<td>UI</td>
+</tr>
+<tr>
+<td><code>prompts/LEVEL_PROMPTS.md</code></td>
+<td>Chains/orders</td>
+</tr>
+<tr>
+<td><code>prompts/CODE_AGENT_PROMPT.md</code></td>
+<td>Code after CONFIRMED</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-integration-contracts-paths">9. Integration contracts — paths</h2>
+<pre><code class="language-text">public/assets/images/bg/bg_shop_square_01.png
+public/assets/images/bg/bg_board_wood_01.png
+public/assets/images/items/item_fruit_01.png … item_fruit_10.png
+public/assets/images/items/item_potion_01.png … 
+public/assets/images/items/item_plant_01.png …
+public/assets/images/gen/gen_fruit_idle.png
+public/assets/images/gen/gen_fruit_ready.png
+public/assets/images/npc/npc_traveler.png
+public/assets/images/decor/decor_purple_awning.png
+public/assets/images/char/char_merchant.png
+public/assets/images/char/char_cat.png
+public/assets/images/ui/...
+public/assets/atlases/atlas_merge_vfx.png|.json
+public/assets/atlases/atlas_mascot.png|.json
+public/assets/data/chains.json
+public/assets/data/generators.json
+public/assets/data/orders.json
+public/assets/data/shop-levels.json
+public/assets/data/decor.json
+public/assets/data/economy.json
+public/assets/data/i18n/ru.json
+public/assets/audio/bgm/bgm_bazaar.mp3
+public/assets/audio/sfx/sfx_merge.mp3
+</code></pre>
+<h3 id="code-modules-post-confirm">Code modules (post-CONFIRM)</h3>
+<p><code>BoardModel</code>, <code>MergeService</code>, <code>GeneratorService</code>, <code>EnergyService</code>, <code>OrderService</code>, <code>ShopLevelService</code>, <code>DecorService</code>, <code>SaveService</code>, <code>YgSdkFacade</code>.</p>
+<h3 id="events">Events</h3>
+<pre><code class="language-text">EVT_Board_Changed
+EVT_Merge_Done
+EVT_Energy_Changed
+EVT_Order_Completed
+EVT_Gen_Spawned
+EVT_Level_Up
+EVT_Cloud_Synced
+</code></pre>
+<hr />
+<h2 id="10-economy-tables">10. Economy tables</h2>
+<h3 id="energy-early-game-feel">Energy early game feel</h3>
+<ul>
+<li>50 energy ≈ 40–50 gen taps.  </li>
+<li>With merges free, session 8–12 min до первого empty при активной игре.  </li>
+<li>Regen full 50 empty → ~75 min; RV bridges.</li>
+</ul>
+<h3 id="sell-values">Sell values</h3>
+<p><code>sellSoft = round(1.6^(tier-1))</code></p>
+<h3 id="order-rewards">Order rewards</h3>
+<p><code>rewardSoft = 20 + 8*maxNeedTier + 5*playerLevel</code></p>
+<hr />
+<h2 id="11-tutorial-script">11. Tutorial script</h2>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Teach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1</td>
+<td>Drag apple onto apple</td>
+</tr>
+<tr>
+<td>T2</td>
+<td>See basket spawn + VFX</td>
+</tr>
+<tr>
+<td>T3</td>
+<td>Tap generator once</td>
+</tr>
+<tr>
+<td>T4</td>
+<td>Complete first order</td>
+</tr>
+<tr>
+<td>T5</td>
+<td>Show energy</td>
+</tr>
+</tbody>
+</table>
+<p>≤60–90s to first merge success.</p>
+<hr />
+<h2 id="12-definition-of-ready">12. Definition of Ready</h2>
+<ul>
+<li>[ ] DESIGN.md + DESIGN_LLM approved  </li>
+<li>[ ] prompts/* complete  </li>
+<li>[ ] 3 chains tier lists named  </li>
+<li>[ ] 20 orders drafted  </li>
+<li>[ ] Energy numbers signed off  </li>
+<li>[ ] UI wireframes all major screens  </li>
+<li>[ ] Art palette locked to key-art  </li>
+<li>[ ] Asset paths final  </li>
+<li>[ ] Monetization points listed  </li>
+<li>[ ] Status → CONFIRMED in dashboard  </li>
+</ul>
+<p><strong>No coding until CONFIRMED.</strong></p>
+<hr />
+<h2 id="13-store-dod-code-later">13. Store DoD (code later)</h2>
+<ul>
+<li>30+ min no hard stuck  </li>
+<li>Cloud board restore  </li>
+<li>Tutorial ≤1 min  </li>
+<li>RV/IAP/IS paths  </li>
+<li>60 FPS mid Android target  </li>
+</ul>
+<h2 id="14-changelog">14. Changelog</h2>
+<table>
+<thead>
+<tr>
+<th>Ver</th>
+<th>Date</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.1</td>
+<td>2026-07-17</td>
+<td>Initial DESIGN_LLM</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="visual-ground-truth">Visual Ground Truth (обязательные референсы)</h2>
+<p>См. также <code>docs/REFS.md</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Путь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key art</td>
+<td><code>refs/art/key-art.png</code></td>
+</tr>
+<tr>
+<td>UI wireframe</td>
+<td><code>refs/ui/wireframe-main.png</code></td>
+</tr>
+<tr>
+<td>Level layout</td>
+<td><code>refs/levels/layout-main.png</code></td>
+</tr>
+<tr>
+<td>Sprite sheet</td>
+<td><code>refs/sprites/sheet-main.png</code></td>
+</tr>
+</tbody>
+</table>
+<p>Любой арт-агент обязан сверяться с этими файлами перед генерацией финальных ассетов.</p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-refs">
+      <div class="refs-intro doc"><p>﻿# Базар Слияний — Visual References Index</p>
+<blockquote>
+<p>Эти файлы — обязательный вход для арт/UI/level LLM-агентов.<br />
+При генерации новых ассетов держать стиль как у референсов ниже.</p>
+</blockquote>
+<h2 id="art">Art</h2>
+<p><img alt="Key art" src="../../games/merge-bazaar/refs/art/key-art.png" /></p>
+<p><code>refs/art/key-art.png</code> — tonal/mood lock, palette, composition.</p>
+<h2 id="ui-wireframes">UI Wireframes</h2>
+<p><img alt="UI wireframe" src="../../games/merge-bazaar/refs/ui/wireframe-main.png" /></p>
+<p><code>refs/ui/wireframe-main.png</code> — экраны, иерархия, CTA rewarded/IAP зоны.</p>
+<h2 id="level-content-layout">Level / Content Layout</h2>
+<p><img alt="Level layout" src="../../games/merge-bazaar/refs/levels/layout-main.png" /></p>
+<p><code>refs/levels/layout-main.png</code> — грамматика уровней/доски/маршрута.</p>
+<h2 id="sprites-animation-sheet">Sprites / Animation Sheet</h2>
+<p><img alt="Sprites" src="../../games/merge-bazaar/refs/sprites/sheet-main.png" /></p>
+<p><code>refs/sprites/sheet-main.png</code> — пропорции, кадры, иконки.</p>
+<h2 id="_1">Как использовать агентам</h2>
+<ol>
+<li>Открыть <code>DESIGN_LLM.md</code> (контракт).</li>
+<li>Открыть этот <code>REFS.md</code> (визуальный ground truth).</li>
+<li>Взять атомарный промпт из <code>prompts/</code> и <strong>приложить</strong> соответствующий png.</li>
+<li>Сохранять результат в пути из Integration Contract <code>DESIGN_LLM.md</code>.</li>
+</ol>
+<h2 id="dor-visuals">DoR visuals</h2>
+<ul>
+<li>[x] key-art</li>
+<li>[x] wireframe-main</li>
+<li>[x] layout-main</li>
+<li>[x] sheet-main</li>
+</ul></div>
+      <h3 class="gallery-title">Галерея референсов</h3>
+      <div class="ref-grid">
+            <figure class="ref-card">
+              <a href="../../games/merge-bazaar/refs/art/key-art.png" target="_blank" rel="noopener">
+                <img src="../../games/merge-bazaar/refs/art/key-art.png" alt="Ключевой арт" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Ключевой арт</strong>
+                <span>Настроение, палитра, композиция</span>
+                <code>art/key-art.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/merge-bazaar/refs/ui/wireframe-main.png" target="_blank" rel="noopener">
+                <img src="../../games/merge-bazaar/refs/ui/wireframe-main.png" alt="Вайрфрейм UI" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Вайрфрейм UI</strong>
+                <span>Экраны, иерархия, CTA рекламы/покупок</span>
+                <code>ui/wireframe-main.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/merge-bazaar/refs/levels/layout-main.png" target="_blank" rel="noopener">
+                <img src="../../games/merge-bazaar/refs/levels/layout-main.png" alt="Раскладка уровней" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Раскладка уровней</strong>
+                <span>Грамматика уровней / доски / маршрута</span>
+                <code>levels/layout-main.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/merge-bazaar/refs/sprites/sheet-main.png" target="_blank" rel="noopener">
+                <img src="../../games/merge-bazaar/refs/sprites/sheet-main.png" alt="Спрайт-лист" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Спрайт-лист</strong>
+                <span>Пропорции, кадры, иконки</span>
+                <code>sprites/sheet-main.png</code>
+              </figcaption>
+            </figure></div>
+    </section>
+
+    <section class="tab-panel" id="tab-prompts">
+      <p class="lead">Атомарные промпты — копируй в отдельного агента вместе с нужным референсом из вкладки «Референсы».</p>
+      
+          <details class="prompt-acc" open>
+            <summary>Арт <span class="muted">ART_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="art_prompts">ART_PROMPTS — Базар Слияний</h1>
+<blockquote>
+<p>Канон: <code>docs/DESIGN_LLM.md</code> §5–6, §9. Выход: <code>refs/art/</code> → <code>public/assets/images/</code>.</p>
+</blockquote>
+<h2 id="style-lock">Style lock</h2>
+<pre><code class="language-text">Cozy fantasy bazaar, warm sunlight, purple and gold accents, polished 2D mobile game art, soft shading, clean silhouettes, cheerful merchant and ginger cat, no horror, no text, no watermarks
+</code></pre>
+<h2 id="palette">Palette</h2>
+<p><code>#6B3FA0 #E6B35A #8B5A2B #3F8F4E #3D6FE8 #D63A3A #F3C98B #FFF6E8 #2A1B12 #2EC4B6</code></p>
+<hr />
+<h2 id="a-key-store">A. Key / store</h2>
+<h3 id="a1-key-art-ref-exists">A1 Key art (ref exists)</h3>
+<pre><code class="language-text">Cozy fantasy market stall, young merchant woman wavy brown hair purple ribbon purple vest gold trim white blouse, ginger tabby cat, wooden three-tier shelves showing merge progressions apples to golden bowl, blue potions to moon jar, sprouts to spirit bonsai, purple white striped awning, sunny village square fountain half-timbered houses, warm polished mobile key art, no text
+</code></pre>
+<h3 id="a2-icon">A2 Icon</h3>
+<pre><code class="language-text">App icon golden fruit bowl glowing on purple awning cloth, cozy simple readable, no text
+</code></pre>
+<h3 id="a3-cover-169">A3 Cover 16:9</h3>
+<pre><code class="language-text">Wide cozy bazaar banner merchant and cat left, merge shelves center, village right, title-safe center empty, no text
+</code></pre>
+<hr />
+<h2 id="b-environments">B. Environments</h2>
+<h3 id="b1-bg_shop_square_01">B1 <code>bg_shop_square_01</code></h3>
+<pre><code class="language-text">9:16 mobile background sunny fantasy village bazaar square, fountain, banners, flower boxes, soft depth, empty center lower area for shop UI, cozy warm light, no text no characters
+</code></pre>
+<h3 id="b2-bg_board_wood_01">B2 <code>bg_board_wood_01</code></h3>
+<pre><code class="language-text">9:16 wooden merchant countertop top view slight perspective for merge board, purple cloth edges, warm light, empty grid space center, cozy fantasy, no items no text
+</code></pre>
+<h3 id="b3-bg_decor_shop_01">B3 <code>bg_decor_shop_01</code></h3>
+<pre><code class="language-text">Shop interior backdrop with clear hotspots for placing decor, shelves and window to square, cozy purple gold wood, 9:16, no text
+</code></pre>
+<hr />
+<h2 id="c-characters">C. Characters</h2>
+<h3 id="c1-merchant">C1 Merchant</h3>
+<pre><code class="language-text">Full body and bust of cozy fantasy young merchant woman, purple vest gold trim, friendly smile, consistent with key art, mobile game character sheet on transparent, multiple poses: idle wave, present item, happy
+</code></pre>
+<h3 id="c2-cat-mascot">C2 Cat mascot</h3>
+<pre><code class="language-text">Cute ginger tabby cat mascot, transparent, poses: sit, sleep, happy paws, consistent cozy style
+</code></pre>
+<h3 id="c3-npcs">C3 NPCs</h3>
+<pre><code class="language-text">Three cozy fantasy customer NPCs bust portraits: traveler, noble, child, warm style transparent circular crop friendly
+</code></pre>
+<hr />
+<h2 id="d-items-chains">D. Items — chains</h2>
+<h3 id="d1-fruit-chain-0110">D1 Fruit chain 01–10</h3>
+<pre><code class="language-text">Transparent PNG merge icons, fruit chain 10 tiers: single red apple, two apples, small basket, medium basket, large basket, ornate bowl, glowing bowl, golden chalice of apples, legendary crystal fruit, mythical cornucopia; consistent cozy lighting, each clear silhouette, equal canvas 512
+</code></pre>
+<h3 id="d2-potion-chain">D2 Potion chain</h3>
+<pre><code class="language-text">Potion merge chain 10 tiers small blue vial to ornate moon-and-star ceramic jar with gold charms, cozy fantasy alchemy, transparent, consistent style
+</code></pre>
+<h3 id="d3-plant-chain">D3 Plant chain</h3>
+<pre><code class="language-text">Plant merge chain 8-10 tiers sprout in terracotta to flowering plant to spirit bonsai gold blue base, cozy fantasy, transparent
+</code></pre>
+<h3 id="d4-generators">D4 Generators</h3>
+<pre><code class="language-text">Three generator props on transparent: fruit crate generator, alchemy shelf generator, flower pot generator; states idle and ready glow
+</code></pre>
+<hr />
+<h2 id="e-decor-10">E. Decor (10)</h2>
+<pre><code class="language-text">Set of 10 cozy bazaar decor props transparent: purple awning upgrade, lantern, carpet, flower box, signboard, teapot set, cushion, fairy lights, cat bed, golden scale; mobile game
+</code></pre>
+<hr />
+<h2 id="f-ui-adjacent-icons">F. UI-adjacent icons</h2>
+<pre><code class="language-text">Icons transparent 256: energy lightning teardrop teal, gold coin, gem purple, decor key, order check, stash bag
+</code></pre>
+<h2 id="delivery">Delivery</h2>
+<ul>
+<li>File names = asset IDs (<code>item_fruit_01.png</code> …)  </li>
+<li><code>refs/art/MANIFEST.md</code> list</li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Спрайты и анимация <span class="muted">SPRITE_ANIM_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="sprite_anim_prompts">SPRITE_ANIM_PROMPTS — Базар Слияний</h1>
+<blockquote>
+<p>Канон: <code>docs/DESIGN_LLM.md</code> §7. Выход: <code>refs/sprites/</code> → <code>public/assets/atlases/</code>.</p>
+</blockquote>
+<h2 id="rules">Rules</h2>
+<p>Transparent, ≤2048 atlas, 2px pad, names <code>{anim}_{##}</code>.</p>
+<hr />
+<h2 id="1-atlas_merge_vfx">1. <code>atlas_merge_vfx</code></h2>
+<h3 id="merge-pop-low-tiers">Merge pop low tiers</h3>
+<pre><code class="language-text">Sprite sheet 8 frames 128x128 transparent, cozy sparkle pop two items fuse into one, warm gold dust, soft, mobile merge game
+</code></pre>
+<h3 id="merge-magic-high-tiers">Merge magic high tiers</h3>
+<pre><code class="language-text">10 frames 192x192 transparent, magical purple-gold burst merge, moon sparkles, cozy fantasy not dark
+</code></pre>
+<h3 id="energy-refill">Energy refill</h3>
+<pre><code class="language-text">6 frames 64x64 teal energy bolt absorb, clean UI VFX
+</code></pre>
+<h3 id="order-complete-coins">Order complete coins</h3>
+<pre><code class="language-text">10 frames 256x128 coins arc upward puff, cozy gold
+</code></pre>
+<h3 id="bubble-pop">Bubble pop</h3>
+<pre><code class="language-text">6 frames 128 soap bubble pop revealing item silhouette placeholder
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>Frames</th>
+<th>FPS</th>
+<th>Loop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vfx_merge_pop</td>
+<td>8</td>
+<td>16</td>
+<td>no</td>
+</tr>
+<tr>
+<td>vfx_merge_magic</td>
+<td>10</td>
+<td>16</td>
+<td>no</td>
+</tr>
+<tr>
+<td>energy_refill</td>
+<td>6</td>
+<td>12</td>
+<td>no</td>
+</tr>
+<tr>
+<td>order_complete</td>
+<td>10</td>
+<td>16</td>
+<td>no</td>
+</tr>
+<tr>
+<td>bubble_pop</td>
+<td>6</td>
+<td>18</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-atlas_gen_fx">2. <code>atlas_gen_fx</code></h2>
+<pre><code class="language-text">Generator ready pulse 6 frames 128 loop soft green-gold glow ring; spawn puff 5 frames when item appears
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>Frames</th>
+<th>FPS</th>
+<th>Loop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gen_ready_pulse</td>
+<td>6</td>
+<td>8</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>gen_spawn_puff</td>
+<td>5</td>
+<td>16</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-atlas_mascot">3. <code>atlas_mascot</code></h2>
+<pre><code class="language-text">Ginger cat sprite sheet cozy style transparent: idle 6 frames, happy 8 frames, sleep 4 frames, 128x128 cells
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Anim</th>
+<th>Frames</th>
+<th>FPS</th>
+<th>Loop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cat_idle</td>
+<td>6</td>
+<td>6</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>cat_happy</td>
+<td>8</td>
+<td>10</td>
+<td>no</td>
+</tr>
+<tr>
+<td>cat_sleep</td>
+<td>4</td>
+<td>4</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-timing-juice-game">4. Timing juice (game)</h2>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Duration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Merge squash</td>
+<td>120 ms</td>
+</tr>
+<tr>
+<td>Merge VFX</td>
+<td>400–600 ms</td>
+</tr>
+<tr>
+<td>Order claim</td>
+<td>800 ms</td>
+</tr>
+<tr>
+<td>Level-up modal in</td>
+<td>250 ms</td>
+</tr>
+</tbody>
+</table>
+<h2 id="delivery">Delivery</h2>
+<p>Phaser hash atlas JSON + MANIFEST pivots.</p></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Интерфейс <span class="muted">UI_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="ui_prompts">UI_PROMPTS — Базар Слияний</h1>
+<blockquote>
+<p>Канон: <code>docs/DESIGN_LLM.md</code> §4–5. Выход: <code>refs/ui/</code> + kit PNG.</p>
+</blockquote>
+<h2 id="style-lock">Style lock</h2>
+<pre><code class="language-text">Cozy fantasy mobile UI, warm cream panels #FFF6E8, purple #6B3FA0 and gold #E6B35A accents, wood trim, large thumb buttons, friendly rounded but not pill-spam, Russian labels on mockups, clear hierarchy, no cluttered cards wall
+</code></pre>
+<h2 id="screens-to-mock">Screens to mock</h2>
+<h3 id="board-primary">Board (primary)</h3>
+<pre><code class="language-text">9:16 merge bazaar UI, top energy timer coins gems, two order cards, wooden 6x5 board with cute item icons, bottom generator buttons and shop, cozy purple gold, Russian labels Энергия Заказ
+</code></pre>
+<h3 id="energy-modal">Energy modal</h3>
+<pre><code class="language-text">Modal empty energy, options watch ad +25, buy pack, wait timer, cozy friendly not aggressive paywall, Russian
+</code></pre>
+<h3 id="hub-decor">Hub décor</h3>
+<pre><code class="language-text">Shop façade décor editor UI, placeable hotspots, inventory strip décor items, CTA К прилавку, cozy
+</code></pre>
+<h3 id="collection-album">Collection album</h3>
+<pre><code class="language-text">Grid of discovered merge max items, locked silhouettes, cozy sticker album feel
+</code></pre>
+<h3 id="shop-iap">Shop IAP</h3>
+<pre><code class="language-text">Energy packs, pass, board slots, remove ads, décor pack, clear prices, soft cozy store, no gambling art
+</code></pre>
+<h3 id="pass">Pass</h3>
+<pre><code class="language-text">Light battle pass track cozy bazaar rewards energy décor coins
+</code></pre>
+<h2 id="ui-kit-prompt">UI kit prompt</h2>
+<pre><code class="language-text">Cozy mobile UI kit transparent: primary purple gold button states, secondary wood button, modal panel parchment, energy bar, coin gem energy icons, order panel, close and back icons, toggle, progress bar, soft shadows subtle
+</code></pre>
+<h2 id="asset-ids">Asset IDs</h2>
+<pre><code class="language-text">ui_btn_primary_{up,down,dis}
+ui_btn_secondary_*
+ui_modal_panel
+ui_bar_energy
+ui_order_panel
+ui_icon_close / ui_icon_back / ui_icon_stash
+ui_btn_rv
+ui_shop_tile
+ui_pass_node_*
+</code></pre>
+<h2 id="motion">Motion</h2>
+<ul>
+<li>Drag magnet 80ms ease  </li>
+<li>Invalid merge shake 150ms  </li>
+<li>Order complete panel bounce 300ms  </li>
+</ul>
+<h2 id="rules">Rules</h2>
+<p>Min hit 64px; merge не перекрывать модалкой mid-drag; interstitial не на board drag.</p>
+<h2 id="delivery">Delivery</h2>
+<p><code>refs/ui/screens/</code>, <code>refs/ui/kit/</code>, <code>NOTES.md</code> 8px grid.</p></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Уровни <span class="muted">LEVEL_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="level_prompts">LEVEL_PROMPTS — Базар Слияний</h1>
+<blockquote>
+<p>Контент: цепочки, заказы, уровни лавки, экономика. Канон: DESIGN_LLM §3, §10.<br />
+Выход: <code>refs/levels/*.json</code> → <code>public/assets/data/</code>.</p>
+</blockquote>
+<h2 id="prompt-chainsjson">Prompt — chains.json</h2>
+<pre><code class="language-text">Сгенерируй chains.json для merge-tycoon Базар Слияний.
+3 цепочки: fruit (10 tiers), potion (10), plant (8).
+Поля tier, id item_{chain}_{tier}, name_ru, sellSoft (формула round(1.6^(tier-1))), unlockPlayerLevel.
+Визуальные имена по key-art лестнице (яблоко→золотая чаша; флакон→лунный кувшин; росток→spirit bonsai).
+</code></pre>
+<h2 id="prompt-generatorsjson">Prompt — generators.json</h2>
+<pre><code class="language-text">2-3 генератора с chargesMax, cooldownSec, energyCostPerTap=1, spawnTable весов в сторону tier1-2.
+Анлок по shop level.
+</code></pre>
+<h2 id="prompt-ordersjson-20">Prompt — orders.json (20)</h2>
+<pre><code class="language-text">20 заказов с нарастающей сложностью.
+Early: 1 item tier2-3. Mid: tier4-5 or two items. Late: tier6+ or multi-chain.
+npc, needs[], rewardSoft, rewardXp, timeBonusSec.
+Русские короткие flavor-строки.
+</code></pre>
+<h2 id="prompt-shop-levelsjson">Prompt — shop-levels.json</h2>
+<pre><code class="language-text">Levels 1-20: xpToNext, unlocks[] (board_7x6, gen_potion, chain_plant, stash, decor_slot...).
+Pacing: board upgrade ~level 8, third chain ~level 6, stash ~level 5.
+</code></pre>
+<h2 id="prompt-economyjson">Prompt — economy.json</h2>
+<pre><code class="language-text">energy cap/regen, RV packs, IAP SKUs, pass xp curve.
+Validate: first 30 minutes F2P playable without mandatory IAP; merge never costs energy.
+</code></pre>
+<h2 id="prompt-tutorial-script">Prompt — tutorial script</h2>
+<pre><code class="language-text">JSON steps T1-T5: merge apples, see result, tap gen, complete order, explain energy.
+Each tip_ru ≤ 50 chars. Board preset with 2 apples adjacent.
+</code></pre>
+<h2 id="board-preset-grammar">Board preset grammar</h2>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;tutorial_board&quot;,
+  &quot;cols&quot;: 6,
+  &quot;rows&quot;: 5,
+  &quot;cells&quot;: [
+    { &quot;x&quot;: 2, &quot;y&quot;: 2, &quot;itemId&quot;: &quot;item_fruit_01&quot; },
+    { &quot;x&quot;: 3, &quot;y&quot;: 2, &quot;itemId&quot;: &quot;item_fruit_01&quot; },
+    { &quot;x&quot;: 1, &quot;y&quot;: 1, &quot;genId&quot;: &quot;gen_fruit&quot; }
+  ]
+}
+</code></pre>
+<h2 id="acceptance">Acceptance</h2>
+<ul>
+<li>[ ] 3 chains complete naming  </li>
+<li>[ ] ≥26 tier items  </li>
+<li>[ ] 20 orders  </li>
+<li>[ ] 20 shop levels  </li>
+<li>[ ] tutorial preset  </li>
+<li>[ ] economy F2P PASS  </li>
+</ul>
+<h2 id="delivery-paths">Delivery paths</h2>
+<p><code>refs/levels/chains.draft.json</code>, <code>generators.draft.json</code>, <code>orders.draft.json</code>, <code>shop-levels.draft.json</code>, <code>economy.draft.json</code>, <code>tutorial.draft.json</code></p></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Код-агент <span class="muted">CODE_AGENT_PROMPT.md</span></summary>
+            <article class="doc"><h1 id="code_agent_prompt">CODE_AGENT_PROMPT — Базар Слияний</h1>
+<pre><code class="language-text">Ты — единственный разработчик «Базар Слияний» (slug: merge-bazaar) для Яндекс Игр.
+
+ПРАВИЛА:
+1) Код только после design CONFIRMED. Иначе stop.
+2) Стек: Phaser 3 + TypeScript + Vite, portrait 720×1280.
+3) Канон: games/merge-bazaar/docs/DESIGN_LLM.md &gt; DESIGN.md &gt; docs/concepts/05-merge-bazaar.md.
+4) Ядро: merge board drag 1+1, generators, energy (merge free), orders, décor light, hybrid ads/IAP.
+5) Не делать: combat, PvP, city-builder map, hard energy wall early.
+6) Ассеты по §9 DESIGN_LLM. Не трогать другие games/*.
+
+ПОРЯДОК:
+G0: Vite+Phaser skeleton, STATUS.md
+G1: BoardModel + MergeService + drag/merge + save local
+G2: Generators + Energy + offline regen
+G3: Orders + shop XP unlocks + 2-3 chains data
+G4: SDK cloud, RV energy/boost, interstitial hub, IAP energy/pass/slots/remove ads
+G5: Décor 10, tutorial, daily, STORE_CHECKLIST, dist
+
+AC:
+- Merge only same chain+tier
+- Board 6×5→7×6
+- No softlock when full (sell/bubble path)
+- Cloud restore board
+- Tutorial merge ≤1 min
+- 30+ min session without hard stuck
+- Smoke: start, merge×3, order, RV path, shop mock, no red console
+
+DoD: store-ready P0 merge MVP. Срезай декор-анимации, не срезай merge engine + energy + orders + cloud.
+</code></pre>
+<h2 id="status-template">STATUS template</h2>
+<pre><code class="language-markdown"># STATUS — merge-bazaar
+Design: DRAFT|CONFIRMED
+Gate: 0-5
+Done / Next / Blockers
+</code></pre></article>
+          </details>
+    </section>
+
+    <section class="tab-panel" id="tab-manage">
+      <div class="panel manage-panel" data-manage-slug="merge-bazaar">
+        <h3>Статус дизайна</h3>
+        <div class="seg-btns" data-role="design-status">
+          <button data-v="DRAFT">Черновик</button>
+          <button data-v="REVIEW">На ревью</button>
+          <button data-v="CONFIRMED">Подтверждён</button>
+          <button data-v="BLOCKED">Заблокирован</button>
+        </div>
+
+        <h3>Готовность документов</h3>
+        <label class="check"><input type="checkbox" data-k="classic"/> Классический GDD прочитан</label>
+        <label class="check"><input type="checkbox" data-k="llm"/> LLM-спека прочитана</label>
+        <label class="check"><input type="checkbox" data-k="refs"/> Референсы проверены</label>
+
+        <h3>Гейт разработки</h3>
+        <p class="muted">Доступен только после статуса «Подтверждён».</p>
+        <select data-role="gate">
+          <option value="—">— не начато</option>
+          <option value="G0">G0 — Каркас</option>
+          <option value="G1">G1 — Вертикальный слайс</option>
+          <option value="G2">G2 — Контент MVP</option>
+          <option value="G3">G3 — Мета и удержание</option>
+          <option value="G4">G4 — SDK монетизация</option>
+          <option value="G5">G5 — Готово к стору</option>
+        </select>
+
+        <h3>Заметки</h3>
+        <textarea data-role="note" rows="5" placeholder="Комментарии к ревью..."></textarea>
+      </div>
+    </section>
+    
+  </main>
+</div>
+<script>
+window.PORTFOLIO_GAMES = [{"id": "01", "slug": "neon-bullet", "name": "Neon Bullet", "wave": 3, "prio": "P1"}, {"id": "02", "slug": "deadline-escape", "name": "Работник месяца", "wave": 1, "prio": "P0"}, {"id": "03", "slug": "tide-of-relics", "name": "Море Реликвий", "wave": 4, "prio": "P1"}, {"id": "04", "slug": "legends-of-the-pitch", "name": "Легенды Поля", "wave": 4, "prio": "P1"}, {"id": "05", "slug": "merge-bazaar", "name": "Базар Слияний", "wave": 1, "prio": "P0"}, {"id": "06", "slug": "crystal-archipelago", "name": "Кристаллы Архипелага", "wave": 2, "prio": "P0"}, {"id": "07", "slug": "idle-forge", "name": "Кузница Вечности", "wave": 2, "prio": "P0"}, {"id": "08", "slug": "cozy-plot", "name": "Уютный Участок", "wave": 3, "prio": "P1"}, {"id": "09", "slug": "auto-towers", "name": "Автобашни", "wave": 3, "prio": "P1"}, {"id": "10", "slug": "night-courier", "name": "Ночной Курьер", "wave": 1, "prio": "P0"}];
+window.CURRENT_SLUG = "merge-bazaar";
+</script>
+<script src="../demos/demo-engine.js"></script>
+<script src="../demos/demos-01-02.js"></script>
+<script src="../demos/demos-03-06.js"></script>
+<script src="../demos/demos-07-10.js"></script>
+<script src="../assets/dashboard.js"></script>
+</body>
+</html>

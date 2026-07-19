@@ -1,0 +1,2083 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Автобашни — Портфель Яндекс Игры</title>
+<link rel="stylesheet" href="../assets/dashboard.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="../portfolio-dashboard.html">Портфель<br/><span>Яндекс Игры</span></a>
+    <div class="side-section">Навигация</div>
+    <a class="nav-link" href="../portfolio-dashboard.html">Все проекты</a>
+    <div class="side-section">Игры</div>
+    <div class="nav-games"><a class="nav-game " href="neon-bullet.html">01. Neon Bullet</a>
+<a class="nav-game " href="deadline-escape.html">02. Работник месяца</a>
+<a class="nav-game " href="tide-of-relics.html">03. Море Реликвий</a>
+<a class="nav-game " href="legends-of-the-pitch.html">04. Легенды Поля</a>
+<a class="nav-game " href="merge-bazaar.html">05. Базар Слияний</a>
+<a class="nav-game " href="crystal-archipelago.html">06. Кристаллы Архипелага</a>
+<a class="nav-game " href="idle-forge.html">07. Кузница Вечности</a>
+<a class="nav-game " href="cozy-plot.html">08. Уютный Участок</a>
+<a class="nav-game active" href="auto-towers.html">09. Автобашни</a>
+<a class="nav-game " href="night-courier.html">10. Ночной Курьер</a></div>
+    <div class="side-foot">Код запрещён до статуса<br/><strong>Подтверждён</strong></div>
+  </aside>
+  <main class="main">
+
+    <header class="page-head project-head">
+      <div class="crumb"><a href="../portfolio-dashboard.html">← Все проекты</a></div>
+      <div class="project-hero">
+        <div class="hero-art" style="background-image:url('../../games/auto-towers/refs/art/key-art.png')"></div>
+        <div>
+          <div class="muted">09 · P1 · Волна 3 — LTV</div>
+          <h1>Автобашни</h1>
+          <p class="lead">TD + auto-battler · Лёгкий мидкор</p>
+          <div class="inline-status">
+            Статус дизайна: <span class="status-pill" data-status-for="auto-towers">Черновик</span>
+            · Гейт: <span data-gate-label-for="auto-towers">—</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="overview">Обзор</button>
+      <button class="tab" data-tab="demo">Демка</button>
+      <button class="tab" data-tab="classic">Классический диздок</button>
+      <button class="tab" data-tab="llm">LLM-спека</button>
+      <button class="tab" data-tab="refs">Референсы</button>
+      <button class="tab" data-tab="prompts">Промпты</button>
+      <button class="tab" data-tab="manage">Управление</button>
+    </nav>
+
+    <section class="tab-panel active" id="tab-overview">
+      <div class="two-col">
+        <div class="panel">
+          <h3>Что смотреть</h3>
+          <ul class="checklist-static">
+            <li><strong>Демка</strong> — сначала пощупай feel простыми фигурами</li>
+            <li>Классический GDD — видение, лупы, экономика</li>
+            <li>LLM-спека — контракты для агентов, UI, уровни, ассеты</li>
+            <li>Референсы — арт, вайрфреймы, уровни, спрайты</li>
+            <li>Промпты — готовые задания для арт/код агентов</li>
+          </ul>
+          <h3>Правило</h3>
+          <p class="warn">Пока статус не <strong>Подтверждён</strong>, папку <code>src/</code> не создавать. CONFIRM только после playtest демки (F1→F2). См. <code>docs/METHODOLOGY.md</code>.</p>
+        </div>
+        <div class="panel">
+          <h3>Файлы проекта</h3>
+          <ul class="file-list">
+            <li><code>games/auto-towers/docs/DESIGN.md</code></li>
+            <li><code>games/auto-towers/docs/DESIGN_LLM.md</code></li>
+            <li><code>games/auto-towers/docs/REFS.md</code></li>
+            <li><code>games/auto-towers/prompts/*.md</code></li>
+            <li><code>games/auto-towers/refs/**</code></li>
+            <li><code>management/demos/</code> — feel demo</li>
+          </ul>
+          <div class="progress big"><i data-progress-for="auto-towers"></i></div>
+          <div class="muted" style="margin-top:8px">Прогресс готовности (дизайн + гейты)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-demo">
+      <div class="panel demo-wrap">
+        <h3>Feel-демка (простые фигуры)</h3>
+        <p class="lead">Цель — проверить управление и «хочу ещё раз». На телефоне удобнее через LAN-сервер.</p>
+        <div class="lan-box">С телефона: запусти <code>serve-dashboard.bat</code> на ПК, открой URL из окна батника (одна Wi-Fi сеть).</div>
+        <p class="muted" style="margin:0 0 8px">«Работник месяца» = ядро chas-pik (сетка, 3 колонны, 09:00→18:00).</p>
+        <p class="demo-hint" id="demo-hint">Загрузка демки…</p>
+        <canvas id="feel-demo" width="360" height="640" aria-label="Feel demo"></canvas>
+        <div class="demo-actions">
+          <button class="btn" type="button" id="demo-restart">Рестарт</button>
+          <span class="muted">Стик: левая половина экрана · WASD/стрелки · кнопки справа</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-classic">
+      <article class="doc"><h1 id="game-design-document">Автобашни — Game Design Document</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Slug</strong></td>
+<td><code>auto-towers</code></td>
+</tr>
+<tr>
+<td><strong>Название</strong></td>
+<td>Автобашни</td>
+</tr>
+<tr>
+<td><strong>Жанр</strong></td>
+<td>Tower Defense + auto-battler lite</td>
+</tr>
+<tr>
+<td><strong>Сегмент</strong></td>
+<td>I — лёгкий мидкор, 16–40</td>
+</tr>
+<tr>
+<td><strong>Приоритет</strong></td>
+<td>P1</td>
+</tr>
+<tr>
+<td><strong>Стек</strong></td>
+<td>Phaser 3 + TypeScript + Vite</td>
+</tr>
+<tr>
+<td><strong>Статус дизайна</strong></td>
+<td><code>DRAFT</code> — код до <code>CONFIRMED</code> запрещён</td>
+</tr>
+<tr>
+<td><strong>Концепт</strong></td>
+<td><code>docs/concepts/09-auto-towers.md</code></td>
+</tr>
+<tr>
+<td><strong>Арт</strong></td>
+<td><code>assets/concepts/09-auto-towers.png</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-vision">1. Vision</h2>
+<p>Игрок строит оборону на сказочной тропе: ставит башни и героев в слоты, собирает синергии, переживает волны. Бой автоматический; решения — между волнами (магазин/апгрейды) и редкий ручной скилл героя (1 раз за волну).</p>
+<h2 id="2-pillars">2. Pillars</h2>
+<ol>
+<li><strong>Решения между волнами</strong> — во время волны минимум микроконтроля.  </li>
+<li><strong>Читаемые синергии</strong> — 3 тега, бонусы очевидны.  </li>
+<li><strong>Early easy, boss spike</strong> — обучение без tilt.  </li>
+<li><strong>Touch placement без мискликов</strong> — крупные слоты, confirm.  </li>
+<li><strong>Одна глава = одна сессия</strong> (8–12 мин).</li>
+</ol>
+<h2 id="3-core-loop-510">3. Core Loop (5–10 мин глава)</h2>
+<pre><code class="language-mermaid">flowchart LR
+  S[Межволновой шоп] --&gt; W[Автоволна]
+  W --&gt; R{HP&gt;0?}
+  R --&gt;|да| S
+  R --&gt;|босс побеждён| M[Награды + мета]
+  R --&gt;|нет| X[Defeat / RV retry]
+</code></pre>
+<h2 id="4-systems">4. Systems</h2>
+<h3 id="41-battlefield">4.1 Battlefield</h3>
+<ul>
+<li>Path TD: враги идут по сплайну.  </li>
+<li>Build slots: 8–12 фиксированных точек (не freeplace) для touch accuracy.  </li>
+<li>Hero slots: 2.</li>
+</ul>
+<h3 id="42-towers-6">4.2 Towers (6)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Имя</th>
+<th>Тег</th>
+<th>Роль</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>arrow</td>
+<td>Лучник</td>
+<td>Hunt</td>
+<td>single DPS</td>
+</tr>
+<tr>
+<td>cannon</td>
+<td>Пушка</td>
+<td>Blast</td>
+<td>AoE</td>
+</tr>
+<tr>
+<td>frost</td>
+<td>Мороз</td>
+<td>Control</td>
+<td>slow</td>
+</tr>
+<tr>
+<td>beam</td>
+<td>Луч</td>
+<td>Arcane</td>
+<td>% maxHP chip</td>
+</tr>
+<tr>
+<td>barricade</td>
+<td>Частокол</td>
+<td>Bastion</td>
+<td>block/HP wall</td>
+</tr>
+<tr>
+<td>totem</td>
+<td>Тотем</td>
+<td>Arcane</td>
+<td>aura buff</td>
+</tr>
+</tbody>
+</table>
+<p>Уровни башни 1–3 (merge-same или gold upgrade — <strong>LOCKED: gold upgrade</strong>).</p>
+<h3 id="43-heroes-mvp-3-data-ready-4th">4.3 Heroes (MVP 3, data ready 4th)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Имя</th>
+<th>Тег</th>
+<th>Скилл (1/волну)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>knight</td>
+<td>Рыцарь</td>
+<td>Bastion</td>
+<td>Taunt stun</td>
+</tr>
+<tr>
+<td>witch</td>
+<td>Ведьма</td>
+<td>Arcane</td>
+<td>Nova damage</td>
+</tr>
+<tr>
+<td>ranger</td>
+<td>Следопыт</td>
+<td>Hunt</td>
+<td>Multishot</td>
+</tr>
+<tr>
+<td>(lock) druid</td>
+<td>Друид</td>
+<td>Control</td>
+<td>Root path</td>
+</tr>
+</tbody>
+</table>
+<h3 id="44-synergies-3">4.4 Synergies (3)</h3>
+<table>
+<thead>
+<tr>
+<th>Тег</th>
+<th>2</th>
+<th>3+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hunt</td>
+<td>+15% AS</td>
+<td>+35% AS + crit 10%</td>
+</tr>
+<tr>
+<td>Blast</td>
+<td>+20% AoE radius</td>
+<td>+40% AoE dmg</td>
+</tr>
+<tr>
+<td>Arcane</td>
+<td>+10% spell</td>
+<td>skills CD -1 wave equiv buff</td>
+</tr>
+<tr>
+<td>Bastion</td>
+<td>+15% hero/tower HP</td>
+<td>path slow aura</td>
+</tr>
+<tr>
+<td>Control</td>
+<td>slow +10%</td>
+<td>enemies take +10% dmg while slowed</td>
+</tr>
+</tbody>
+</table>
+<p><em>(На экране показываем топ-3 активных; Bastion/Control входят в пул тегов башен/героев.)</em></p>
+<h3 id="45-waves-chapters">4.5 Waves / Chapters</h3>
+<ul>
+<li>3 главы × 10 волн (волна 10 = босс).  </li>
+<li>Глава 1 луг, 2 руины, 3 королевская тропа.  </li>
+<li>Между главами light modifier (опционально): «+gold», «swarm», «armored».</li>
+</ul>
+<h3 id="46-economy-in-run">4.6 Economy in-run</h3>
+<p>Gold за убийства + wave clear bonus. Interest нет (упрощение). Reroll shop 1 gold.</p>
+<h3 id="47-meta-tree">4.7 Meta tree</h3>
+<p>Пыль за главы → узлы: start gold, slot unlock, tower XP, skin.<br />
+Не ломает first-chapter fairness.</p>
+<h2 id="5-monetization-hybrid-midcore">5. Monetization (hybrid midcore)</h2>
+<table>
+<thead>
+<tr>
+<th>Канал</th>
+<th>Использование</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rewarded</td>
+<td>Retry волны; ×2 награда главы; trial hero 1 chapter</td>
+</tr>
+<tr>
+<td>Interstitial</td>
+<td>После поражения / конца главы</td>
+</tr>
+<tr>
+<td>IAP</td>
+<td>Hero unlock, pass, tower skins, remove ads, starter dust</td>
+</tr>
+<tr>
+<td>Soft</td>
+<td>gold in-run, dust meta</td>
+</tr>
+</tbody>
+</table>
+<p>Платные герои = альтернативный стиль, не строго must-have (knight+witch+ranger F2P path).</p>
+<h2 id="6-content-list">6. Content List</h2>
+<p>6 towers, 3 heroes, 3 chapters/30 waves, synergies, meta tree 12 nodes, daily challenge light, SDK.</p>
+<h2 id="7-ux">7. UX</h2>
+<p>Chapter select → Loadout → Battle (shop↔wave) → Result.<br />
+Placement: tap slot → choose tower card → confirm. Cancel easy.</p>
+<h2 id="8-kpis-risks">8. KPIs &amp; Risks</h2>
+<p>Chapter1 clear D1 ≥55%. Risk: balance spikes → telemetry hooks on wave fail rate.</p>
+<h2 id="9-onboarding">9. Onboarding</h2>
+<p>Волна 1: принудительная постановка Лучника → автобой → магазин (Мороз) → подсветка синергии → кнопка скилла → фрагмент победы. Touch-first, без мелкого текста.</p>
+<h2 id="10-audio-juice">10. Audio / Juice</h2>
+<p>Place pop, shoot ticks, slow whoosh, skill sting, leak warning beep, boss intro, win jingle. Numbers optional.</p>
+<h2 id="11-liveops-light">11. LiveOps light</h2>
+<p>Daily challenge: фиксированный seed волны 1–10 главы 1 с модификатором. Pass season cosmetic towers.</p>
+<h2 id="12-out-of-scope">12. Out of Scope</h2>
+<p>Freeform building grid, PvP, complex path editing, 3D, 20+ tower roster.</p>
+<h2 id="13">13. Связанные документы</h2>
+<p><code>DESIGN_LLM.md</code>, <code>prompts/*</code>. Статус: <code>DRAFT</code>.</p>
+<p><strong>Код запрещён до <code>CONFIRMED</code>.</strong></p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-llm">
+      <article class="doc"><h1 id="design_llm-auto-towers">DESIGN_LLM — auto-towers (Автобашни)</h1>
+<blockquote>
+<p>LLM-исполняемая библия. Статус: <code>DRAFT</code>. <strong>⛔ Код запрещён до <code>CONFIRMED</code>.</strong></p>
+</blockquote>
+<hr />
+<h2 id="0-project-contract">0. Project Contract</h2>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>slug</code></td>
+<td><code>auto-towers</code></td>
+</tr>
+<tr>
+<td><code>title_ru</code></td>
+<td>Автобашни</td>
+</tr>
+<tr>
+<td><code>title_en</code></td>
+<td>Auto Towers</td>
+</tr>
+<tr>
+<td><code>engine</code></td>
+<td>Phaser 3 + TypeScript + Vite</td>
+</tr>
+<tr>
+<td><code>platform</code></td>
+<td>Yandex Games HTML5</td>
+</tr>
+<tr>
+<td><code>resolution</code></td>
+<td>720×1280 portrait; battlefield letterbox safe</td>
+</tr>
+<tr>
+<td><code>sim_tick</code></td>
+<td>50ms fixed</td>
+</tr>
+<tr>
+<td><code>design_status</code></td>
+<td><code>DRAFT</code></td>
+</tr>
+<tr>
+<td><code>coding_allowed</code></td>
+<td><strong><code>false</code> until <code>CONFIRMED</code></strong></td>
+</tr>
+<tr>
+<td><code>key_art_ref</code></td>
+<td><code>refs/art/key-art.png</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code>⛔ coding_allowed = false
+IF design_status != CONFIRMED: FORBIDDEN games/auto-towers/src/**
+✅ Allowed: docs/, prompts/, refs/, STATUS.md updates only
+</code></pre>
+<h3 id="folders">Folders</h3>
+<pre><code>games/auto-towers/
+  docs/ prompts/ refs/
+  public/assets/{art,sprites,ui,tiles,audio,data}/
+  src/{scenes,battle,meta,ui,systems,data}/
+  STATUS.md STORE_CHECKLIST.md README.md DEV_MOCK.md
+</code></pre>
+<h3 id="naming-asset-ids">Naming / Asset IDs</h3>
+<p><code>{domain}_{subject}_{variant}</code><br />
+domains: <code>art|tower|hero|enemy|vfx|ui|tile|audio|data|env</code></p>
+<h3 id="integration-paths">Integration paths</h3>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key art</td>
+<td><code>public/assets/art/art_key_towers.png</code></td>
+</tr>
+<tr>
+<td>Chapter BGs</td>
+<td><code>public/assets/env/env_ch{1,2,3}_bg.png</code></td>
+</tr>
+<tr>
+<td>Path overlay</td>
+<td><code>public/assets/env/path_ch{n}.json</code> (waypoints)</td>
+</tr>
+<tr>
+<td>Tower sheets</td>
+<td><code>public/assets/sprites/tower_{id}_sheet.png</code></td>
+</tr>
+<tr>
+<td>Hero sheets</td>
+<td><code>public/assets/sprites/hero_{id}_sheet.png</code></td>
+</tr>
+<tr>
+<td>Enemy sheets</td>
+<td><code>public/assets/sprites/enemy_{id}_sheet.png</code></td>
+</tr>
+<tr>
+<td>Projectiles</td>
+<td><code>public/assets/sprites/proj_{id}_sheet.png</code></td>
+</tr>
+<tr>
+<td>UI atlas</td>
+<td><code>public/assets/ui/ui_kit_atlas.png</code></td>
+</tr>
+<tr>
+<td>Wave data</td>
+<td><code>public/assets/data/chapters.json</code></td>
+</tr>
+<tr>
+<td>Units data</td>
+<td><code>public/assets/data/towers.json</code> <code>heroes.json</code> <code>enemies.json</code> <code>synergies.json</code></td>
+</tr>
+<tr>
+<td>Meta</td>
+<td><code>public/assets/data/meta_tree.json</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-systems-ac">1. Systems + AC</h2>
+<h3 id="11-path-spawner">1.1 Path &amp; Spawner</h3>
+<p>Waypoints array; enemies lerp; spawn schedule from wave table.</p>
+<p><strong>AC:</strong>
+- [ ] AC-PATH-01: enemy reaches end → <code>-1</code> life (start 20).
+- [ ] AC-PATH-02: wave complete when spawned==dead|leaked and queue empty.
+- [ ] AC-PATH-03: boss wave flagged <code>isBoss</code>.</p>
+<h3 id="12-buildslots">1.2 BuildSlots</h3>
+<p>12 slots max; state empty/occupied; adjacency optional for aura.</p>
+<p><strong>AC:</strong>
+- [ ] AC-SLOT-01: mis-tap empty space does nothing.
+- [ ] AC-SLOT-02: confirm modal/card pick before spend gold.
+- [ ] AC-SLOT-03: sell returns 50% invested.</p>
+<h3 id="13-combat-autobattler">1.3 Combat Autobattler</h3>
+<p>Towers retarget nearest/in-range each tick; heroes patrol slot radius; skills gated once per wave.</p>
+<p><strong>AC:</strong>
+- [ ] AC-CBT-01: во время волны нельзя строить (только skill button).
+- [ ] AC-CBT-02: between-wave shop open pause enemies.
+- [ ] AC-CBT-03: damage numbers optional toggle default ON early.</p>
+<h3 id="14-synergysystem">1.4 SynergySystem</h3>
+<p>Count tags among placed towers+heroes; apply mults.</p>
+<p><strong>AC:</strong> AC-SYN-01 UI shows active tiers; AC-SYN-02 recompute on place/sell.</p>
+<h3 id="15-shop-between-waves">1.5 Shop (between waves)</h3>
+<p>Offers 3 cards (tower tier1 / upgrade token / hero if slot free). Reroll cost 1.</p>
+<p><strong>AC:</strong> AC-SHOP-01 always afford at least one option on wave1 after start gold 50.</p>
+<h3 id="16-meta">1.6 Meta</h3>
+<p>Dust rewards; tree nodes; persistent unlocks.</p>
+<h3 id="17-sdk">1.7 SDK</h3>
+<p>RV retry wave (restore lives to 3 min once/chapter), ×2 chapter reward, trial hero.<br />
+Interstitial after chapter/defeat. IAP heroes/pass/skins/remove ads.</p>
+<p><strong>AC-SDK:</strong> no interstitial mid-wave.</p>
+<hr />
+<h2 id="2-content-grammar">2. Content Grammar</h2>
+<h3 id="21-looks">2.1 LOOKS</h3>
+<p>Bright fairy-tale; big silhouettes; path high-contrast dirt <code>#C4A574</code> on grass <code>#7CB518</code>. Enemies readable role colors (red armored, green swarm, blue fast).</p>
+<h3 id="22-plays-wave-authoring-grammar">2.2 PLAYS — wave authoring grammar</h3>
+<p><strong>Grammar:</strong> <code>WAVE := { wave, entries[], clearBonus, isBoss? }</code><br />
+<code>ENTRY := { enemy, count, intervalMs, delayMs? }</code><br />
+<strong>Path:</strong> <code>PATH := { points[8..14], slots[≤12] }</code> — slots 40–60px off path; HUD-safe (top 96 / bottom 140).</p>
+<h4 id="concrete-recipes-5">Concrete recipes (≥5)</h4>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Recipe ID</th>
+<th>Wave JSON essence</th>
+<th>Teach / tension</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td><code>ch1_w1_swarm</code></td>
+<td>swarm×8 @500ms, bonus 20</td>
+<td>place first arrow</td>
+</tr>
+<tr>
+<td>R2</td>
+<td><code>ch1_w3_armor</code></td>
+<td>swarm×10 + armored×2</td>
+<td>need cannon/frost</td>
+</tr>
+<tr>
+<td>R3</td>
+<td><code>ch1_w8_fly</code></td>
+<td>flyer×6 + swarm×12</td>
+<td>beam teach</td>
+</tr>
+<tr>
+<td>R4</td>
+<td><code>ch1_w10_boss</code></td>
+<td>boss_grove + swarm×20</td>
+<td>skill once/wave</td>
+</tr>
+<tr>
+<td>R5</td>
+<td><code>shop_reroll</code></td>
+<td>between-wave 3 cards; reroll cost 1</td>
+<td>economy</td>
+</tr>
+<tr>
+<td>R6</td>
+<td><code>syn_hunt2</code></td>
+<td>place 2 Hunt-tag towers → +dmg UI</td>
+<td>synergy strip</td>
+</tr>
+<tr>
+<td>R7</td>
+<td><code>ch2_scaled</code></td>
+<td>Ch1 table ×1.25 HP + flyer earlier</td>
+<td>chapter escalate</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Wave band</th>
+<th>Composition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1–3</td>
+<td>swarm small</td>
+</tr>
+<tr>
+<td>4–6</td>
+<td>+armored</td>
+</tr>
+<tr>
+<td>7–8</td>
+<td>mixed + flying (beam teach)</td>
+</tr>
+<tr>
+<td>9</td>
+<td>elite pack</td>
+</tr>
+<tr>
+<td>10</td>
+<td>boss + adds</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Encounter recipe JSON:</strong></p>
+<pre><code class="language-json">{&quot;wave&quot;:7,&quot;entries&quot;:[{&quot;enemy&quot;:&quot;swarm&quot;,&quot;count&quot;:20,&quot;intervalMs&quot;:350},{&quot;enemy&quot;:&quot;armored&quot;,&quot;count&quot;:4,&quot;intervalMs&quot;:1200}],&quot;clearBonus&quot;:40}
+</code></pre>
+<h3 id="23-difficulty-curve">2.3 Difficulty curve</h3>
+<p>Chapter1 HP budget forgiving (fail rate &lt;30% first try target).<br />
+Chapter2 +25% HP, new enemy. Chapter3 + boss mechanics (shield phases).</p>
+<h3 id="24-tower-stats-baseline-tier1">2.4 Tower stats baseline (tier1)</h3>
+<table>
+<thead>
+<tr>
+<th>Tower</th>
+<th>Cost</th>
+<th>DPS</th>
+<th>Range</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>arrow</td>
+<td>50</td>
+<td>12</td>
+<td>140</td>
+<td>—</td>
+</tr>
+<tr>
+<td>cannon</td>
+<td>80</td>
+<td>8 AoE</td>
+<td>120</td>
+<td>splash 60</td>
+</tr>
+<tr>
+<td>frost</td>
+<td>70</td>
+<td>4</td>
+<td>130</td>
+<td>slow 30% 1.5s</td>
+</tr>
+<tr>
+<td>beam</td>
+<td>90</td>
+<td>6</td>
+<td>150</td>
+<td>+1% maxHP</td>
+</tr>
+<tr>
+<td>barricade</td>
+<td>60</td>
+<td>0</td>
+<td>—</td>
+<td>block 8 hits</td>
+</tr>
+<tr>
+<td>totem</td>
+<td>100</td>
+<td>0</td>
+<td>110</td>
+<td>+15% dmg aura</td>
+</tr>
+</tbody>
+</table>
+<h3 id="25-synergy-thresholds-authoring">2.5 Synergy thresholds (authoring)</h3>
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Tier2</th>
+<th>Tier3</th>
+<th>Effect sketch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hunt</td>
+<td>2</td>
+<td>4</td>
+<td>+10% / +25% dmg to swarm/fast</td>
+</tr>
+<tr>
+<td>Blast</td>
+<td>2</td>
+<td>3</td>
+<td>AoE radius +10% / +20%</td>
+</tr>
+<tr>
+<td>Arcane</td>
+<td>2</td>
+<td>3</td>
+<td>beam +totem amp</td>
+</tr>
+<tr>
+<td>Bastion</td>
+<td>2</td>
+<td>—</td>
+<td>barricade HP +30%</td>
+</tr>
+<tr>
+<td>Control</td>
+<td>2</td>
+<td>3</td>
+<td>frost slow +5% / +10%</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-ui-map-wireframes">3. UI Map + Wireframes</h2>
+<p>Screens: <code>boot</code>, <code>meta_hub</code>, <code>chapter_select</code>, <code>loadout</code>, <code>battle</code>, <code>shop_panel</code>, <code>skill_btn</code>, <code>pause</code>, <code>result</code>, <code>retry_rv</code>, <code>shop_iap</code>, <code>settings</code>.</p>
+<pre><code class="language-mermaid">stateDiagram-v2
+  [*] --&gt; Boot
+  Boot --&gt; Hub
+  Hub --&gt; ChapterSelect
+  Hub --&gt; MetaTree
+  Hub --&gt; ShopIAP
+  Hub --&gt; Settings
+  ChapterSelect --&gt; Loadout
+  Loadout --&gt; Battle
+  Battle --&gt; ShopPanel: wave clear
+  ShopPanel --&gt; Battle: next wave
+  Battle --&gt; Pause
+  Pause --&gt; Battle
+  Battle --&gt; RetryRV: leak fail
+  Battle --&gt; Result: win/lose
+  Result --&gt; Hub
+</code></pre>
+<h3 id="31-full-ui-component-inventory">3.1 Full UI component inventory</h3>
+<table>
+<thead>
+<tr>
+<th>Component ID</th>
+<th>Screen</th>
+<th>Behavior</th>
+<th>Min touch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ui_btn_chapters</code></td>
+<td>hub</td>
+<td>open chapter select</td>
+<td>48×48</td>
+</tr>
+<tr>
+<td><code>ui_btn_meta</code></td>
+<td>hub</td>
+<td>open dust tree</td>
+<td>48×48</td>
+</tr>
+<tr>
+<td><code>ui_btn_heroes</code></td>
+<td>hub</td>
+<td>hero roster</td>
+<td>48×48</td>
+</tr>
+<tr>
+<td><code>ui_btn_shop_iap</code></td>
+<td>hub</td>
+<td>IAP shop</td>
+<td>48×48</td>
+</tr>
+<tr>
+<td><code>ui_life_bar</code></td>
+<td>battle</td>
+<td>hearts / count</td>
+<td>display</td>
+</tr>
+<tr>
+<td><code>ui_gold_label</code></td>
+<td>battle/shop</td>
+<td>gold tap→shop</td>
+<td>40×40</td>
+</tr>
+<tr>
+<td><code>ui_wave_banner</code></td>
+<td>battle</td>
+<td>wave N/10 intro</td>
+<td>display</td>
+</tr>
+<tr>
+<td><code>ui_synergy_strip</code></td>
+<td>battle</td>
+<td>active tag tiers</td>
+<td>40×40 chips</td>
+</tr>
+<tr>
+<td><code>ui_slot_marker</code></td>
+<td>battle</td>
+<td>empty/filled select</td>
+<td><strong>72×72</strong></td>
+</tr>
+<tr>
+<td><code>ui_card_offer</code></td>
+<td>shop_panel</td>
+<td>buy tower/hero/upg</td>
+<td><strong>96×128</strong></td>
+</tr>
+<tr>
+<td><code>ui_btn_reroll</code></td>
+<td>shop_panel</td>
+<td>spend 1 gold reroll</td>
+<td>48×48</td>
+</tr>
+<tr>
+<td><code>ui_btn_sell</code></td>
+<td>shop_panel</td>
+<td>sell 50% confirm</td>
+<td>48×48</td>
+</tr>
+<tr>
+<td><code>ui_btn_start_wave</code></td>
+<td>shop_panel</td>
+<td>close shop → fight</td>
+<td>56×56</td>
+</tr>
+<tr>
+<td><code>ui_skill_btn</code></td>
+<td>battle</td>
+<td>hero skill 1/wave</td>
+<td><strong>80×80</strong></td>
+</tr>
+<tr>
+<td><code>ui_pause_btn</code></td>
+<td>battle</td>
+<td>pause</td>
+<td>44×44</td>
+</tr>
+<tr>
+<td><code>ui_result_stars</code></td>
+<td>result</td>
+<td>0–3 stars</td>
+<td>display</td>
+</tr>
+<tr>
+<td><code>ui_retry_rv</code></td>
+<td>retry_rv</td>
+<td>restore lives≥3 once</td>
+<td>56×56</td>
+</tr>
+<tr>
+<td><code>ui_btn_x2</code></td>
+<td>result</td>
+<td>RV ×2 dust/gold</td>
+<td>56×56</td>
+</tr>
+<tr>
+<td><code>ui_meta_node</code></td>
+<td>meta</td>
+<td>buy dust node</td>
+<td>48×48</td>
+</tr>
+<tr>
+<td><code>ui_loadout_hero</code></td>
+<td>loadout</td>
+<td>pick 1 hero</td>
+<td>64×64</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-wireframe-boot">3.2 Wireframe — Boot</h3>
+<pre><code>+----------------------------------+
+|           АВТОБАШНИ              |
+|            ░ LOAD ░              |
++----------------------------------+
+</code></pre>
+<h3 id="33-wireframe-meta-hub">3.3 Wireframe — Meta hub</h3>
+<pre><code>+-- Автобашни ----------------+
+| Пыль 320                [⚙] |
+| [Древо] [Главы] [Герои] [🛒]|
+|     (key-art meadow loop)   |
++-----------------------------+
+</code></pre>
+<h3 id="34-wireframe-chapter-select">3.4 Wireframe — Chapter select</h3>
+<pre><code>+-- Главы ---------------------+
+| [Ch1 Meadow ★★☆]            |
+| [Ch2 Ruins  ★☆☆]            |
+| [Ch3 Crown  🔒]             |
+| [Назад]                     |
++-----------------------------+
+</code></pre>
+<h3 id="35-wireframe-loadout">3.5 Wireframe — Loadout</h3>
+<pre><code>+-- Отряд ---------------------+
+| Hero: [Knight][Witch][Ranger]|
+| Trial hero RV chip optional  |
+|      [ В БОЙ ]               |
++------------------------------+
+</code></pre>
+<h3 id="36-wireframe-battle">3.6 Wireframe — Battle</h3>
+<pre><code>+----------------------------------+
+| ❤ 18   💰 120   Wave 3/10  [II]  |
+| Syn: Hunt2 Blast1                |
++----------------------------------+
+|     path + slots + enemies       |
+|                                  |
+|                         [SKILL]  |
++----------------------------------+
+| (shop hidden until wave end)     |
++----------------------------------+
+</code></pre>
+<h3 id="37-wireframe-shop-panel">3.7 Wireframe — Shop panel</h3>
+<pre><code>+-- Магазин волны -----------------+
+| [Arrow 50] [Cannon 80] [Reroll 1]|
+| [Upgrade selected] [Sell 50%]    |
+| [Старт волны]                    |
++----------------------------------+
+</code></pre>
+<h3 id="38-wireframe-pause-retry-rv-result">3.8 Wireframe — Pause / Retry RV / Result</h3>
+<pre><code>PAUSE: [Продолжить][Настройки][Сдаться]
+RETRY: [▶ Повторить волну RV][Поражение]
+RESULT WIN:
++-- Победа главы 1 -----------+
+| Звёзды: ★★☆                 |
+| Пыль +40  Золото мета +120  |
+| [×2 RV] [В хаб] [След. глава]|
++-----------------------------+
+</code></pre>
+<h3 id="39-wireframe-settings-iap">3.9 Wireframe — Settings / IAP</h3>
+<pre><code>SETTINGS: music/sfx/damage numbers/cloud
+IAP: at_remove_ads, at_hero_druid, at_pass_s1, at_skin_pack, at_starter_dust
+</code></pre>
+<hr />
+<h2 id="4-art-bible">4. Art Bible</h2>
+<p>Style: cute stylized fantasy strategy; readable chibi-ish units; <strong>not</strong> grimdark; <strong>not</strong> ultra-real.</p>
+<p>Palette:
+| Role | Hex |
+|------|-----|
+| Grass | <code>#7CB518</code> |
+| Path | <code>#C4A574</code> |
+| Sky | <code>#A8DADC</code> |
+| UI Panel | <code>#F1FAEE</code> |
+| CTA | <code>#E63946</code> |
+| Gold | <code>#F4D35E</code> |
+| Arcane | <code>#9B5DE5</code> |
+| Frost | <code>#00BBF9</code> |
+| Text | <code>#1D3557</code> |</p>
+<p>Do: silhouette test B/W. Don't: blood gibs; busy VFX hiding path; purple-on-white default AI UI.</p>
+<hr />
+<h2 id="5-image-prompts-copy-paste-8">5. Image Prompts (copy-paste, ≥8)</h2>
+<blockquote>
+<p>Ground truth: <code>refs/art/key-art.png</code>, <code>refs/ui/wireframe-main.png</code>, <code>refs/levels/layout-main.png</code>, <code>refs/sprites/sheet-main.png</code>.</p>
+</blockquote>
+<h3 id="p1-key-art-refsartkey-artpng">P1 — Key art → <code>refs/art/key-art.png</code></h3>
+<pre><code>Tower defense auto-battler game key art matching refs/art/key-art.png, fairy tale meadow path, cute stylized towers shooting sparkles at cartoon monsters, heroes near towers, bright strategy casual illustration, clear silhouettes, 16:9, no text, no UI
+</code></pre>
+<h3 id="p2-ui-wireframe-refsuiwireframe-mainpng">P2 — UI wireframe → <code>refs/ui/wireframe-main.png</code></h3>
+<pre><code>Mobile portrait 720x1280 TD UI wireframe matching refs/ui/wireframe-main.png, battle HUD lives gold wave, synergy strip, skill button bottom-right, shop cards bottom, cream #F1FAEE red CTA #E63946, label blocks not real text
+</code></pre>
+<h3 id="p3-level-layout-refslevelslayout-mainpng">P3 — Level layout → <code>refs/levels/layout-main.png</code></h3>
+<pre><code>Top-down fairy tale winding path level layout matching refs/levels/layout-main.png, chapter 1 meadow, build slots as circles beside path, portrait safe margins, soft colors, no text
+</code></pre>
+<h3 id="p4-sprite-sheet-refsspritessheet-mainpng">P4 — Sprite sheet → <code>refs/sprites/sheet-main.png</code></h3>
+<pre><code>Cute fantasy TD sprite sheet overview matching refs/sprites/sheet-main.png, towers 96px idle/attack, enemies 64px walk/die, projectiles, transparent, even grid, no text
+</code></pre>
+<h3 id="p5-chapter-1-battlefield">P5 — Chapter 1 battlefield</h3>
+<pre><code>Portrait game battlefield background chapter 1 meadow, winding dirt path left to right, soft hills, empty build slot markers subtle, match refs/art/key-art.png palette, no text
+</code></pre>
+<h3 id="p6-chapter-2-3-bgs">P6 — Chapter 2 / 3 BGs</h3>
+<pre><code>Chapter 2 ruined stone path and Chapter 3 royal evening trail battlefield backgrounds, same camera framing as meadow chapter and refs/levels/layout-main.png, casual fantasy, no text
+</code></pre>
+<h3 id="p7-towers-heroes">P7 — Towers + heroes</h3>
+<pre><code>Game tower sprites cute archer cannon frost beam barricade totem full body transparent; hero knight witch ranger cute stylized; style locked to refs/sprites/sheet-main.png
+</code></pre>
+<h3 id="p8-enemies-bosses">P8 — Enemies + bosses</h3>
+<pre><code>Game enemy sprites swarm armored fast flyer elite plus boss_grove titan cute not grimdark, readable role colors, transparent, match refs/sprites/sheet-main.png
+</code></pre>
+<h3 id="p9-vfx">P9 — VFX</h3>
+<pre><code>Projectile and hit VFX sprite sheets arrows frost flakes arcane beam aoe ring skill burst, on black/transparent, casual game, refs/sprites/sheet-main.png consistent
+</code></pre>
+<h3 id="p10-ui-kit">P10 — UI kit</h3>
+<pre><code>Mobile strategy UI kit matching refs/ui/wireframe-main.png, cream panels #F1FAEE, red CTA #E63946, gold frames, card offers, synergy icons, 9-slice, no text labels
+</code></pre>
+<hr />
+<h2 id="6-sprite-timing">6. Sprite + Timing</h2>
+<h3 id="61-sheet-registry">6.1 Sheet registry</h3>
+<table>
+<thead>
+<tr>
+<th>Sheet</th>
+<th>Cell</th>
+<th>Anim</th>
+<th>Frames</th>
+<th>FPS</th>
+<th>Loop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tower_{id}_sheet</code></td>
+<td>96×96</td>
+<td>idle</td>
+<td>4</td>
+<td>6</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>tower_{id}_sheet</code></td>
+<td>96×96</td>
+<td>attack</td>
+<td>4</td>
+<td>12</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>hero_{id}_sheet</code></td>
+<td>96×96</td>
+<td>idle</td>
+<td>4</td>
+<td>6</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>hero_{id}_sheet</code></td>
+<td>96×96</td>
+<td>cast</td>
+<td>6</td>
+<td>12</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>enemy_{id}_sheet</code></td>
+<td>64×64</td>
+<td>walk</td>
+<td>6</td>
+<td>10</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>enemy_{id}_sheet</code></td>
+<td>64×64</td>
+<td>die</td>
+<td>4</td>
+<td>14</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>proj_{id}_sheet</code></td>
+<td>32×32</td>
+<td>fly/hit</td>
+<td>2–4 / 3</td>
+<td>16</td>
+<td>fly yes</td>
+</tr>
+<tr>
+<td><code>vfx_slow_sheet</code></td>
+<td>48×48</td>
+<td>flakes</td>
+<td>6</td>
+<td>12</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>vfx_aoe_ring_sheet</code></td>
+<td>128×128</td>
+<td>ring</td>
+<td>8</td>
+<td>16</td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>vfx_skill_burst_sheet</code></td>
+<td>128×128</td>
+<td>burst</td>
+<td>10</td>
+<td>18</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<p>Attack frame 2 = projectile spawn. Bosses optional 96 cell.</p>
+<h3 id="62-runtime-juice-ms">6.2 Runtime juice (ms)</h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>ms</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Place tower pop</td>
+<td>160</td>
+<td>scale outBack</td>
+</tr>
+<tr>
+<td>Sell confirm</td>
+<td>0</td>
+<td>modal unless quickBuild</td>
+</tr>
+<tr>
+<td>Wave start banner</td>
+<td>900</td>
+<td>input soft-lock</td>
+</tr>
+<tr>
+<td>Skill cinematic zoom</td>
+<td>400</td>
+<td>camera punch</td>
+</tr>
+<tr>
+<td>Boss intro</td>
+<td>1500</td>
+<td>once per chapter</td>
+</tr>
+<tr>
+<td>Damage number float</td>
+<td>500</td>
+<td>optional toggle</td>
+</tr>
+<tr>
+<td>Win confetti</td>
+<td>2000</td>
+<td></td>
+</tr>
+<tr>
+<td>Leak warning pulse</td>
+<td>600</td>
+<td>life &lt;5</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-prompt-packs">7. Prompt packs</h2>
+<p><code>games/auto-towers/prompts/*</code></p>
+<hr />
+<h2 id="8-data-schemas">8. Data schemas</h2>
+<p><code>chapters.json</code>: id, waves[], pathAsset, bg<br />
+<code>towers.json</code>: stats per tier, tag, costs<br />
+<code>heroes.json</code>: skill{id,cdWave}, tag<br />
+<code>enemies.json</code>: hp, speed, armor, reward<br />
+<code>synergies.json</code>: tag thresholds effects</p>
+<hr />
+<h2 id="9-skus">9. SKUs</h2>
+<p><code>at_remove_ads</code>, <code>at_hero_druid</code>, <code>at_pass_s1</code>, <code>at_skin_pack</code>, <code>at_starter_dust</code></p>
+<hr />
+<h2 id="10-tutorial">10. Tutorial</h2>
+<p>Wave1 forced arrow place → auto fight → shop buy frost → explain synergy Hunt → skill button once → win chapter fragment.</p>
+<hr />
+<h2 id="11-definition-of-ready">11. Definition of Ready</h2>
+<ul>
+<li>[ ] Slot-based building locked (no freeplace)</li>
+<li>[ ] 30 waves tables drafted</li>
+<li>[ ] Synergy numbers approved</li>
+<li>[ ] Touch placement UX approved</li>
+<li>[ ] Monetization fair hero policy approved</li>
+<li>[ ] Prompts/paths complete</li>
+<li>[ ] <strong>No coding until CONFIRMED</strong></li>
+</ul>
+<h2 id="12-gate">12. Gate</h2>
+<p>⛔ No <code>src/</code> until CONFIRMED.</p>
+<hr />
+<h2 id="13-chapter-1-wave-table-normative-draft">13. Chapter 1 wave table (normative draft)</h2>
+<table>
+<thead>
+<tr>
+<th>W</th>
+<th>Entries</th>
+<th>Gold bonus</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>swarm×8 @500ms</td>
+<td>20</td>
+<td>teach</td>
+</tr>
+<tr>
+<td>2</td>
+<td>swarm×12</td>
+<td>25</td>
+<td></td>
+</tr>
+<tr>
+<td>3</td>
+<td>swarm×10 + armored×2</td>
+<td>30</td>
+<td>armor intro</td>
+</tr>
+<tr>
+<td>4</td>
+<td>swarm×16</td>
+<td>30</td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td>armored×6 + swarm×8</td>
+<td>35</td>
+<td></td>
+</tr>
+<tr>
+<td>6</td>
+<td>fast×10 + swarm×10</td>
+<td>35</td>
+<td></td>
+</tr>
+<tr>
+<td>7</td>
+<td>mixed armored/swarm/fast</td>
+<td>40</td>
+<td></td>
+</tr>
+<tr>
+<td>8</td>
+<td>flyer×6 + swarm×12</td>
+<td>40</td>
+<td>beam teach</td>
+</tr>
+<tr>
+<td>9</td>
+<td>elite×3 + swarm×15</td>
+<td>50</td>
+<td></td>
+</tr>
+<tr>
+<td>10</td>
+<td>boss_grove + swarm×20</td>
+<td>80</td>
+<td>boss</td>
+</tr>
+</tbody>
+</table>
+<p>Повторить структуру с +25% HP для Ch2 и +50% + adds для Ch3 в <code>refs/levels/</code>.</p>
+<h2 id="14-enemy-catalog">14. Enemy catalog</h2>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>hp</th>
+<th>spd</th>
+<th>armor</th>
+<th>reward</th>
+<th>tags</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>swarm</td>
+<td>30</td>
+<td>60</td>
+<td>0</td>
+<td>2</td>
+<td>—</td>
+</tr>
+<tr>
+<td>armored</td>
+<td>120</td>
+<td>35</td>
+<td>5</td>
+<td>6</td>
+<td>—</td>
+</tr>
+<tr>
+<td>fast</td>
+<td>40</td>
+<td>95</td>
+<td>0</td>
+<td>3</td>
+<td>—</td>
+</tr>
+<tr>
+<td>flyer</td>
+<td>50</td>
+<td>70</td>
+<td>0</td>
+<td>4</td>
+<td>flying</td>
+</tr>
+<tr>
+<td>elite</td>
+<td>300</td>
+<td>45</td>
+<td>8</td>
+<td>15</td>
+<td>—</td>
+</tr>
+<tr>
+<td>boss_grove</td>
+<td>2500</td>
+<td>25</td>
+<td>10</td>
+<td>100</td>
+<td>boss</td>
+</tr>
+<tr>
+<td>boss_ruin</td>
+<td>4000</td>
+<td>28</td>
+<td>20</td>
+<td>140</td>
+<td>boss</td>
+</tr>
+<tr>
+<td>boss_crown</td>
+<td>6000</td>
+<td>30</td>
+<td>15</td>
+<td>200</td>
+<td>boss</td>
+</tr>
+</tbody>
+</table>
+<p>Flying: только beam/totem/hero witch полным уроном; arrow 50%.</p>
+<h2 id="15-placement-ux-state-machine">15. Placement UX state machine</h2>
+<pre><code>Idle → SlotSelected → CardListOpen → ConfirmSpend → Placed
+                 ↘ Cancel
+OccupiedSlot → UpgradeOffer | SellOffer
+</code></pre>
+<p>Confirm обязателен если <code>settings.quickBuild=false</code> (default true after tutorial? <strong>LOCKED default: confirm once tutorial done = quick build ON</strong>).</p>
+<h2 id="16-meta-tree-12-nodes">16. Meta tree (12 nodes)</h2>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>costDust</th>
+<th>effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>meta_start_gold_1</td>
+<td>50</td>
+<td>+10 start gold</td>
+</tr>
+<tr>
+<td>meta_start_gold_2</td>
+<td>120</td>
+<td>+15 start gold</td>
+</tr>
+<tr>
+<td>meta_life_1</td>
+<td>80</td>
+<td>+2 lives</td>
+</tr>
+<tr>
+<td>meta_slot_ch1</td>
+<td>100</td>
+<td>+1 slot chapter1</td>
+</tr>
+<tr>
+<td>meta_arrow_dmg</td>
+<td>90</td>
+<td>arrow +10%</td>
+</tr>
+<tr>
+<td>meta_cannon_aoe</td>
+<td>90</td>
+<td>cannon radius +10%</td>
+</tr>
+<tr>
+<td>meta_frost_slow</td>
+<td>90</td>
+<td>slow +5%</td>
+</tr>
+<tr>
+<td>meta_interest_no</td>
+<td>0</td>
+<td>reserved skipped</td>
+</tr>
+<tr>
+<td>meta_dust_gain</td>
+<td>150</td>
+<td>+10% dust rewards</td>
+</tr>
+<tr>
+<td>meta_reroll_free</td>
+<td>200</td>
+<td>1 free reroll/chapter</td>
+</tr>
+<tr>
+<td>meta_skill_boost</td>
+<td>180</td>
+<td>skill dmg +15%</td>
+</tr>
+<tr>
+<td>meta_skin_frame</td>
+<td>60</td>
+<td>cosmetic hub frame</td>
+</tr>
+</tbody>
+</table>
+<h2 id="17-extra-wireframes">17. Extra wireframes</h2>
+<h3 id="result">Result</h3>
+<pre><code>+-- Победа главы 1 -----------+
+| Звёзды: ★★☆                 |
+| Пыль +40  Золото мета +120  |
+| [×2 RV] [В хаб] [След. глава]|
++-----------------------------+
+</code></pre>
+<h3 id="meta-hub">Meta hub</h3>
+<pre><code>+-- Автобашни ----------------+
+| Пыль 320                    |
+| [Древо] [Главы] [Герои] [🛒]|
++-----------------------------+
+</code></pre>
+<h2 id="18-save-schema">18. Save schema</h2>
+<pre><code class="language-json">{
+  &quot;v&quot;: 1,
+  &quot;dust&quot;: 0,
+  &quot;metaOwned&quot;: [],
+  &quot;heroesUnlocked&quot;: [&quot;knight&quot;,&quot;witch&quot;,&quot;ranger&quot;],
+  &quot;skins&quot;: [],
+  &quot;chapterStars&quot;: [0,0,0],
+  &quot;removeAds&quot;: false,
+  &quot;lastSeenAt&quot;: 0
+}
+</code></pre>
+<h2 id="19-audio">19. Audio</h2>
+<p>BGM per chapter; SFX: place, shoot, slow, skill, leak warning, boss roar (cute), win jingle.</p>
+<h2 id="20-agent-handoff-protocol">20. Agent handoff protocol</h2>
+<p><strong>Locks:</strong> slug <code>auto-towers</code>; fixed slots only; mid-wave no build; paths from JSON; <strong><code>coding_allowed: false</code> until CONFIRMED</strong>.</p>
+<h3 id="201-exact-message-templates">20.1 Exact message templates</h3>
+<h4 id="art-agent">→ Art agent</h4>
+<pre><code class="language-text">ROLE: Art agent for auto-towers.
+READ: games/auto-towers/docs/DESIGN_LLM.md §0,§4,§5 + prompts/ART_PROMPTS.md
+GROUND TRUTH: refs/art/key-art.png, refs/ui/wireframe-main.png, refs/levels/layout-main.png, refs/sprites/sheet-main.png
+DO: key art, 3 chapter BGs, towers/heroes/enemies stills → refs/art/; IDs per §0.
+FORBIDDEN: src/**; grimdark gore; freeplace building art implying free placement.
+coding_allowed=false until CONFIRMED.
+</code></pre>
+<h4 id="anim-agent">→ Anim agent</h4>
+<pre><code class="language-text">ROLE: Anim agent for auto-towers.
+READ: DESIGN_LLM.md §6 + prompts/SPRITE_ANIM_PROMPTS.md
+GROUND TRUTH: refs/sprites/sheet-main.png
+DO: tower/hero/enemy/proj sheets with FPS from §6.1 → refs/sprites/ → public/assets/sprites/.
+FORBIDDEN: src/**; die anim pivoting hitbox wildly.
+coding_allowed=false until CONFIRMED.
+</code></pre>
+<h4 id="ui-agent">→ UI agent</h4>
+<pre><code class="language-text">ROLE: UI agent for auto-towers.
+READ: DESIGN_LLM.md §3 + prompts/UI_PROMPTS.md
+GROUND TRUTH: refs/ui/wireframe-main.png
+DO: mocks for ALL screens §3; slot≥72, card≥96×128, skill≥80; mid-wave shop hidden.
+FORBIDDEN: interstitial mid-wave; src/**.
+coding_allowed=false until CONFIRMED.
+</code></pre>
+<h4 id="level-agent">→ Level agent</h4>
+<pre><code class="language-text">ROLE: Level agent for auto-towers.
+READ: DESIGN_LLM.md §2,§13,§14 + prompts/LEVEL_PROMPTS.md
+GROUND TRUTH: refs/levels/layout-main.png
+DO: path_chN.json + 30 wave tables; Ch2×1.25 HP Ch3×1.5; boss scripts; refs/levels/.
+FORBIDDEN: freeplace; unfair full-block path; src/**.
+coding_allowed=false until CONFIRMED.
+</code></pre>
+<h4 id="code-agent">→ Code agent</h4>
+<pre><code class="language-text">ROLE: Code agent for auto-towers.
+READ: DESIGN_LLM.md + prompts/CODE_AGENT_PROMPT.md + DESIGN.md
+IF design_status != CONFIRMED: STOP. No src/**.
+AFTER CONFIRMED: slots+waves+shop+synergies+meta+SDK; sim_tick 50ms.
+SCOPE: games/auto-towers/ only.
+</code></pre>
+<h3 id="202-handoff-checklist">20.2 Handoff checklist</h3>
+<ul>
+<li>[ ] Pack file linked  </li>
+<li>[ ] Refs ground truth cited  </li>
+<li>[ ] Output paths named  </li>
+<li>[ ] coding_allowed=false restated  </li>
+</ul>
+<hr />
+<h2 id="21-asset-id-registry-sample">21. Asset ID registry (sample)</h2>
+<table>
+<thead>
+<tr>
+<th>asset_id</th>
+<th>domain</th>
+<th>path (final)</th>
+<th>notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>art_key_towers</code></td>
+<td>art</td>
+<td><code>public/assets/art/art_key_towers.png</code></td>
+<td>refs/art/key-art.png</td>
+</tr>
+<tr>
+<td><code>env_ch1_bg</code></td>
+<td>env</td>
+<td><code>public/assets/env/env_ch1_bg.png</code></td>
+<td>meadow</td>
+</tr>
+<tr>
+<td><code>env_ch2_bg</code></td>
+<td>env</td>
+<td><code>public/assets/env/env_ch2_bg.png</code></td>
+<td>ruins</td>
+</tr>
+<tr>
+<td><code>env_ch3_bg</code></td>
+<td>env</td>
+<td><code>public/assets/env/env_ch3_bg.png</code></td>
+<td>crown</td>
+</tr>
+<tr>
+<td><code>path_ch1</code></td>
+<td>data</td>
+<td><code>public/assets/env/path_ch1.json</code></td>
+<td>waypoints+slots</td>
+</tr>
+<tr>
+<td><code>tower_arrow_sheet</code></td>
+<td>tower</td>
+<td><code>public/assets/sprites/tower_arrow_sheet.png</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>hero_knight_sheet</code></td>
+<td>hero</td>
+<td><code>public/assets/sprites/hero_knight_sheet.png</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>enemy_swarm_sheet</code></td>
+<td>enemy</td>
+<td><code>public/assets/sprites/enemy_swarm_sheet.png</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>enemy_boss_grove_sheet</code></td>
+<td>enemy</td>
+<td><code>public/assets/sprites/enemy_boss_grove_sheet.png</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>proj_arrow_sheet</code></td>
+<td>vfx</td>
+<td><code>public/assets/sprites/proj_arrow_sheet.png</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>ui_kit_atlas</code></td>
+<td>ui</td>
+<td><code>public/assets/ui/ui_kit_atlas.png</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>data_chapters</code></td>
+<td>data</td>
+<td><code>public/assets/data/chapters.json</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>data_synergies</code></td>
+<td>data</td>
+<td><code>public/assets/data/synergies.json</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>data_meta_tree</code></td>
+<td>data</td>
+<td><code>public/assets/data/meta_tree.json</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="22-integration-acceptance-tests">22. Integration acceptance tests</h2>
+<h3 id="221-design-gate">22.1 Design gate</h3>
+<ul>
+<li>[ ] <code>coding_allowed: false</code> until CONFIRMED</li>
+<li>[ ] Slot-based building locked (no freeplace)</li>
+<li>[ ] UI inventory + all major wireframes (§3)</li>
+<li>[ ] ≥5 wave/content recipes (§2.2)</li>
+<li>[ ] ≥8 image prompts with refs paths (§5)</li>
+<li>[ ] Anim timing complete (§6)</li>
+<li>[ ] Ch1 wave table + enemy catalog (§13–14)</li>
+<li>[ ] Touch placement UX state machine (§15)</li>
+<li>[ ] Prompt packs ready</li>
+<li>[ ] Asset registry IDs unique (§21)</li>
+</ul>
+<h3 id="222-post-confirmed-smoke">22.2 Post-CONFIRMED smoke</h3>
+<ul>
+<li>[ ] Mid-wave build disabled; skill only</li>
+<li>[ ] Leak → −1 life; start 20</li>
+<li>[ ] Shop between waves; wave1 affordability</li>
+<li>[ ] RV retry once/chapter; no interstitial mid-wave</li>
+<li>[ ] Synergy recompute on place/sell</li>
+<li>[ ] 60fps target; path from JSON</li>
+</ul>
+<h3 id="223-coding-ban">22.3 Coding ban</h3>
+<pre><code>⛔ DO NOT START CODING until design status is CONFIRMED.
+⛔ coding_allowed: false
+</code></pre>
+<hr />
+<h2 id="visual-ground-truth">Visual Ground Truth (обязательные референсы)</h2>
+<p>См. также <code>docs/REFS.md</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Путь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key art</td>
+<td><code>refs/art/key-art.png</code></td>
+</tr>
+<tr>
+<td>UI wireframe</td>
+<td><code>refs/ui/wireframe-main.png</code></td>
+</tr>
+<tr>
+<td>Level layout</td>
+<td><code>refs/levels/layout-main.png</code></td>
+</tr>
+<tr>
+<td>Sprite sheet</td>
+<td><code>refs/sprites/sheet-main.png</code></td>
+</tr>
+</tbody>
+</table>
+<p>Любой арт-агент обязан сверяться с этими файлами перед генерацией финальных ассетов.</p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-refs">
+      <div class="refs-intro doc"><p>﻿# Автобашни — Visual References Index</p>
+<blockquote>
+<p>Эти файлы — обязательный вход для арт/UI/level LLM-агентов.<br />
+При генерации новых ассетов держать стиль как у референсов ниже.</p>
+</blockquote>
+<h2 id="art">Art</h2>
+<p><img alt="Key art" src="../../games/auto-towers/refs/art/key-art.png" /></p>
+<p><code>refs/art/key-art.png</code> — tonal/mood lock, palette, composition.</p>
+<h2 id="ui-wireframes">UI Wireframes</h2>
+<p><img alt="UI wireframe" src="../../games/auto-towers/refs/ui/wireframe-main.png" /></p>
+<p><code>refs/ui/wireframe-main.png</code> — экраны, иерархия, CTA rewarded/IAP зоны.</p>
+<h2 id="level-content-layout">Level / Content Layout</h2>
+<p><img alt="Level layout" src="../../games/auto-towers/refs/levels/layout-main.png" /></p>
+<p><code>refs/levels/layout-main.png</code> — грамматика уровней/доски/маршрута.</p>
+<h2 id="sprites-animation-sheet">Sprites / Animation Sheet</h2>
+<p><img alt="Sprites" src="../../games/auto-towers/refs/sprites/sheet-main.png" /></p>
+<p><code>refs/sprites/sheet-main.png</code> — пропорции, кадры, иконки.</p>
+<h2 id="_1">Как использовать агентам</h2>
+<ol>
+<li>Открыть <code>DESIGN_LLM.md</code> (контракт).</li>
+<li>Открыть этот <code>REFS.md</code> (визуальный ground truth).</li>
+<li>Взять атомарный промпт из <code>prompts/</code> и <strong>приложить</strong> соответствующий png.</li>
+<li>Сохранять результат в пути из Integration Contract <code>DESIGN_LLM.md</code>.</li>
+</ol>
+<h2 id="dor-visuals">DoR visuals</h2>
+<ul>
+<li>[x] key-art</li>
+<li>[x] wireframe-main</li>
+<li>[x] layout-main</li>
+<li>[x] sheet-main</li>
+</ul></div>
+      <h3 class="gallery-title">Галерея референсов</h3>
+      <div class="ref-grid">
+            <figure class="ref-card">
+              <a href="../../games/auto-towers/refs/art/key-art.png" target="_blank" rel="noopener">
+                <img src="../../games/auto-towers/refs/art/key-art.png" alt="Ключевой арт" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Ключевой арт</strong>
+                <span>Настроение, палитра, композиция</span>
+                <code>art/key-art.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/auto-towers/refs/ui/wireframe-main.png" target="_blank" rel="noopener">
+                <img src="../../games/auto-towers/refs/ui/wireframe-main.png" alt="Вайрфрейм UI" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Вайрфрейм UI</strong>
+                <span>Экраны, иерархия, CTA рекламы/покупок</span>
+                <code>ui/wireframe-main.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/auto-towers/refs/levels/layout-main.png" target="_blank" rel="noopener">
+                <img src="../../games/auto-towers/refs/levels/layout-main.png" alt="Раскладка уровней" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Раскладка уровней</strong>
+                <span>Грамматика уровней / доски / маршрута</span>
+                <code>levels/layout-main.png</code>
+              </figcaption>
+            </figure>
+            <figure class="ref-card">
+              <a href="../../games/auto-towers/refs/sprites/sheet-main.png" target="_blank" rel="noopener">
+                <img src="../../games/auto-towers/refs/sprites/sheet-main.png" alt="Спрайт-лист" loading="lazy"/>
+              </a>
+              <figcaption>
+                <strong>Спрайт-лист</strong>
+                <span>Пропорции, кадры, иконки</span>
+                <code>sprites/sheet-main.png</code>
+              </figcaption>
+            </figure></div>
+    </section>
+
+    <section class="tab-panel" id="tab-prompts">
+      <p class="lead">Атомарные промпты — копируй в отдельного агента вместе с нужным референсом из вкладки «Референсы».</p>
+      
+          <details class="prompt-acc" open>
+            <summary>Арт <span class="muted">ART_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="art_prompts-auto-towers">ART_PROMPTS — auto-towers</h1>
+<p><strong>Роль:</strong> арт-агент.<br />
+<strong>Читать:</strong> <code>docs/DESIGN_LLM.md</code> §0, §4, §5.<br />
+<strong>coding_allowed:</strong> false until CONFIRMED.</p>
+<h2 id="ground-truth">Ground truth</h2>
+<table>
+<thead>
+<tr>
+<th>Ref</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key art</td>
+<td><code>refs/art/key-art.png</code></td>
+</tr>
+<tr>
+<td>UI wireframe</td>
+<td><code>refs/ui/wireframe-main.png</code></td>
+</tr>
+<tr>
+<td>Level layout</td>
+<td><code>refs/levels/layout-main.png</code></td>
+</tr>
+<tr>
+<td>Sprite sheet</td>
+<td><code>refs/sprites/sheet-main.png</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="master-lock">Master lock</h2>
+<pre><code>Bright cute stylized fantasy casual strategy art, readable silhouettes, grass #7CB518, path #C4A574, sky #A8DADC, no grimdark, no gore, no photorealism, no text, no UI, no watermark
+</code></pre>
+<h2 id="a1-key-refsartkey-artpng-art_key_towerspng">A1 Key → <code>refs/art/key-art.png</code> → <code>art_key_towers.png</code></h2>
+<pre><code>{lock} match refs/art/key-art.png, 16:9 TD auto-battler key art, meadow path, cute towers shooting sparkles, cartoon monsters, heroes near towers
+</code></pre>
+<h2 id="a2-battlefields-portrait">A2 Battlefields portrait</h2>
+<p><code>env_ch1_bg.png</code> meadow path L→R (align <code>refs/levels/layout-main.png</code>)<br />
+<code>env_ch2_bg.png</code> ruined stone path same framing<br />
+<code>env_ch3_bg.png</code> royal evening trail same framing<br />
+Empty centers for units; subtle slot markers ok as faint circles.</p>
+<h2 id="a3-towers-still-sheet-source">A3 Towers (still + sheet source)</h2>
+<p>arrow, cannon, frost, beam, barricade, totem — full body transparent; scale vs <code>refs/sprites/sheet-main.png</code>.</p>
+<h2 id="a4-heroes">A4 Heroes</h2>
+<p>knight, witch, ranger, druid (locked art ok).</p>
+<h2 id="a5-enemies">A5 Enemies</h2>
+<p>swarm, armored, fast, flyer, elite, boss_grove, boss_ruin, boss_crown.</p>
+<h2 id="a6-synergy-icons-128">A6 Synergy icons 128</h2>
+<p>Hunt, Blast, Arcane, Bastion, Control — simple emblem, transparent.</p>
+<h2 id="a7-iap">A7 IAP</h2>
+<p>hero unlock banner, pass banner — empty text band.</p>
+<h2 id="copy-paste">Copy-paste</h2>
+<p>DESIGN_LLM §5 P1–P10 (refs paths included).</p>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>[ ] Silhouette B/W test pass</li>
+<li>[ ] Filenames = IDs (§21 registry)</li>
+<li>[ ] No freeplace-building implication</li>
+<li>[ ] No <code>src/**</code></li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Спрайты и анимация <span class="muted">SPRITE_ANIM_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="sprite_anim_prompts-auto-towers">SPRITE_ANIM_PROMPTS — auto-towers</h1>
+<p><strong>Роль:</strong> спрайт-агент.<br />
+<strong>Читать:</strong> DESIGN_LLM §6.<br />
+<strong>Ground truth:</strong> <code>refs/sprites/sheet-main.png</code>.<br />
+<strong>coding_allowed:</strong> false until CONFIRMED.</p>
+<h2 id="lock">Lock</h2>
+<pre><code>Cute fantasy TD sprites, thick outline, transparent bg, tower/hero 96px, enemy 64px, consistent light top-left, no text
+</code></pre>
+<h2 id="sheets-timing">Sheets &amp; timing</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Cell</th>
+<th>Anims</th>
+<th>FPS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tower_{id}_sheet.png</code></td>
+<td>96</td>
+<td>idle4 loop, attack4 oneshot</td>
+<td>6 / 12</td>
+</tr>
+<tr>
+<td><code>hero_{id}_sheet.png</code></td>
+<td>96</td>
+<td>idle4, cast6 oneshot</td>
+<td>6 / 12</td>
+</tr>
+<tr>
+<td><code>enemy_{id}_sheet.png</code></td>
+<td>64</td>
+<td>walk6 loop, die4 oneshot</td>
+<td>10 / 14</td>
+</tr>
+<tr>
+<td><code>proj_{id}_sheet.png</code></td>
+<td>32</td>
+<td>fly2–4, hit3</td>
+<td>16</td>
+</tr>
+<tr>
+<td><code>vfx_slow_sheet.png</code></td>
+<td>48</td>
+<td>6</td>
+<td>12</td>
+</tr>
+<tr>
+<td><code>vfx_aoe_ring_sheet.png</code></td>
+<td>128</td>
+<td>8</td>
+<td>16</td>
+</tr>
+<tr>
+<td><code>vfx_skill_burst_sheet.png</code></td>
+<td>128</td>
+<td>10</td>
+<td>18</td>
+</tr>
+</tbody>
+</table>
+<p>Attack frame 2 = projectile spawn. Bosses use enemy sheet with 96 cell optional.</p>
+<h2 id="prompt">Prompt</h2>
+<pre><code>{lock}
+Sprite sheet grid evenly spaced [SPEC] matching refs/sprites/sheet-main.png, no frame bleed, anchored feet bottom-center
+</code></pre>
+<h2 id="runtime-juice-ms">Runtime juice (ms)</h2>
+<p>Place 160 · Wave banner 900 · Skill zoom 400 · Boss intro 1500 · Win 2000</p>
+<h2 id="acceptance">Acceptance</h2>
+<ul>
+<li>[ ] Die anim doesn't shift hitbox anchor wildly</li>
+<li>[ ] Projectile readable on grass path</li>
+<li>[ ] Skill burst ≤10 frames</li>
+<li>[ ] Frame counts match DESIGN_LLM §6.1</li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Интерфейс <span class="muted">UI_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="ui_prompts-auto-towers">UI_PROMPTS — auto-towers</h1>
+<p><strong>Роль:</strong> UI агент.<br />
+<strong>Читать:</strong> DESIGN_LLM §3 (full inventory + wireframes).<br />
+<strong>Ground truth:</strong> <code>refs/ui/wireframe-main.png</code>.<br />
+<strong>coding_allowed:</strong> false until CONFIRMED.</p>
+<h2 id="lock">Lock</h2>
+<pre><code>Mobile TD UI kit, cream panels #F1FAEE, navy text #1D3557, red CTA #E63946, gold #F4D35E, arcane purple #9B5DE5 accents, large card offers for thumbs, synergy strip, no text labels, no fake numbers
+</code></pre>
+<h2 id="atlas">Atlas</h2>
+<p>panel, btn_cta, btn_secondary, card_offer_frame, slot_marker_empty/filled, synergy_chip, life_heart, gold_coin_chip, skill_btn, wave_banner, result_stars, modal_retry_rv, meta_node_locked/owned.</p>
+<h2 id="mocks-refsui-all-major">Mocks → <code>refs/ui/</code> (ALL major)</h2>
+<p>boot, meta hub, chapter select, loadout, battle HUD, shop panel, skill button states, pause, result win/lose, rewarded retry, meta tree, IAP shop, settings.</p>
+<p>Align primary battle mock to <code>refs/ui/wireframe-main.png</code>.</p>
+<h2 id="touch-contract">Touch contract</h2>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Min</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Slot marker</td>
+<td>72×72</td>
+</tr>
+<tr>
+<td>Card offer</td>
+<td>96×128</td>
+</tr>
+<tr>
+<td>Skill</td>
+<td>80×80 BR</td>
+</tr>
+<tr>
+<td>Pause</td>
+<td>44×44 TR</td>
+</tr>
+<tr>
+<td>Reroll / sell / start wave</td>
+<td>48×48 / 56×56</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ru-copy">RU copy</h2>
+<p>«Старт волны», «Перебросить», «Продать 50%», «Скилл героя», «Повторить волну», «×2 награда», «Синергия», «Пыль».</p>
+<h2 id="rules">Rules</h2>
+<p>No interstitial mid-wave; RV retry labeled; confirm sell accidental-proof; mid-wave shop hidden.</p>
+<h2 id="acceptance">Acceptance</h2>
+<ul>
+<li>[ ] All §3 screens mocked</li>
+<li>[ ] Touch mins met</li>
+<li>[ ] Matches wireframe-main</li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Уровни <span class="muted">LEVEL_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="level_prompts-auto-towers">LEVEL_PROMPTS — auto-towers</h1>
+<p><strong>Роль:</strong> волны/пути/боссы.<br />
+<strong>Читать:</strong> DESIGN_LLM §2 recipes R1–R7, §13–14.<br />
+<strong>Ground truth:</strong> <code>refs/levels/layout-main.png</code>.<br />
+<strong>Выход:</strong> <code>refs/levels/</code> сейчас; <code>public/assets/data/</code> после CONFIRMED.<br />
+<strong>coding_allowed:</strong> false until CONFIRMED.</p>
+<h2 id="path-grammar">Path grammar</h2>
+<ul>
+<li>8–14 waypoints; min corner radius 80px  </li>
+<li>Slots 40–60px off path, no overlap  </li>
+<li>Export <code>path_chN.json</code>: <code>{points, slots}</code>  </li>
+<li>Portrait safe: path not under HUD top 96px / bottom 140px shop  </li>
+<li>Visual align to <code>refs/levels/layout-main.png</code></li>
+</ul>
+<h2 id="wave-authoring-must-include-recipes">Wave authoring — must include recipes</h2>
+<table>
+<thead>
+<tr>
+<th>Recipe</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ch1_w1_swarm</code></td>
+<td>R1</td>
+</tr>
+<tr>
+<td><code>ch1_w3_armor</code></td>
+<td>R2</td>
+</tr>
+<tr>
+<td><code>ch1_w8_fly</code></td>
+<td>R3</td>
+</tr>
+<tr>
+<td><code>ch1_w10_boss</code></td>
+<td>R4</td>
+</tr>
+<tr>
+<td><code>shop_reroll</code> economy note</td>
+<td>R5</td>
+</tr>
+<tr>
+<td><code>syn_hunt2</code> placement test</td>
+<td>R6</td>
+</tr>
+<tr>
+<td><code>ch2_scaled</code></td>
+<td>R7</td>
+</tr>
+</tbody>
+</table>
+<p>Use DESIGN_LLM §13 Ch1 table as baseline.<br />
+Ch2: ×1.25 HP, add flyer earlier, boss_ruin.<br />
+Ch3: ×1.5 HP, boss_crown add spawns.</p>
+<pre><code class="language-json">{&quot;wave&quot;:1,&quot;entries&quot;:[{&quot;enemy&quot;:&quot;swarm&quot;,&quot;count&quot;:8,&quot;intervalMs&quot;:500}],&quot;clearBonus&quot;:20}
+</code></pre>
+<h2 id="boss-cards">Boss cards</h2>
+<table>
+<thead>
+<tr>
+<th>Ch</th>
+<th>Boss</th>
+<th>Mechanic script</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Grove Titan</td>
+<td>tank only</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Ruin Warden</td>
+<td>at 50% armor+10 for 5s</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Crown Horror</td>
+<td>every 20% HP spawn swarm×6</td>
+</tr>
+</tbody>
+</table>
+<h2 id="path-sketch-prompt">Path sketch prompt</h2>
+<pre><code>Top-down fairy tale winding path level layout matching refs/levels/layout-main.png chapter 1, build slots as circles beside path, portrait, soft colors, no text
+</code></pre>
+<h2 id="balance-llm">Balance LLM</h2>
+<pre><code>Симулируй главу 1 со статами DESIGN_LLM. Цель winrate 55–70% random-shop бота.
+Править HP врагов ±15% макс. Не добавлять freeplace building.
+</code></pre>
+<h2 id="acceptance">Acceptance</h2>
+<ul>
+<li>[ ] 30 waves numeric</li>
+<li>[ ] No unfair full-block path</li>
+<li>[ ] Chapter session 8–12 мин estimate</li>
+<li>[ ] ≥5 concrete recipes exported</li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Код-агент <span class="muted">CODE_AGENT_PROMPT.md</span></summary>
+            <article class="doc"><h1 id="code_agent_prompt-auto-towers">CODE_AGENT_PROMPT — auto-towers</h1>
+<pre><code class="language-text">Ты — код-агент «Автобашни» (auto-towers) для Яндекс Игр.
+
+⛔ coding_allowed: false until design_status == CONFIRMED.
+⛔ Нет src/ пока дизайн ≠ CONFIRMED (сейчас DRAFT).
+✅ Можно: docs/, prompts/, refs/, STATUS.md (если попросили).
+
+Прочитай DESIGN.md, DESIGN_LLM.md (§1 AC, §3 UI, §15 placement UX, §20–22), prompts/*,
+docs/concepts/09-auto-towers.md, control-methodology.md.
+
+Стек Phaser3+TS+Vite. Только games/auto-towers/.
+
+После CONFIRMED:
+1) STATUS + battle scene path+slots
+2) Wave spawner + enemy leak lives
+3) 6 towers combat + gold shop between waves
+4) 3 heroes + 1 skill/wave + synergies
+5) 3 chapters ×10 waves data-driven
+6) Meta dust tree
+7) SDK RV retry/x2/trial; interstitial after chapter; IAP; cloud
+8) Touch placement без мискликов, STORE_CHECKLIST, dist, README
+
+DoD: одна глава = сессия; early easy; build green; ads fair.
+Asset IDs/paths: DESIGN_LLM §0 / §21.
+</code></pre></article>
+          </details>
+    </section>
+
+    <section class="tab-panel" id="tab-manage">
+      <div class="panel manage-panel" data-manage-slug="auto-towers">
+        <h3>Статус дизайна</h3>
+        <div class="seg-btns" data-role="design-status">
+          <button data-v="DRAFT">Черновик</button>
+          <button data-v="REVIEW">На ревью</button>
+          <button data-v="CONFIRMED">Подтверждён</button>
+          <button data-v="BLOCKED">Заблокирован</button>
+        </div>
+
+        <h3>Готовность документов</h3>
+        <label class="check"><input type="checkbox" data-k="classic"/> Классический GDD прочитан</label>
+        <label class="check"><input type="checkbox" data-k="llm"/> LLM-спека прочитана</label>
+        <label class="check"><input type="checkbox" data-k="refs"/> Референсы проверены</label>
+
+        <h3>Гейт разработки</h3>
+        <p class="muted">Доступен только после статуса «Подтверждён».</p>
+        <select data-role="gate">
+          <option value="—">— не начато</option>
+          <option value="G0">G0 — Каркас</option>
+          <option value="G1">G1 — Вертикальный слайс</option>
+          <option value="G2">G2 — Контент MVP</option>
+          <option value="G3">G3 — Мета и удержание</option>
+          <option value="G4">G4 — SDK монетизация</option>
+          <option value="G5">G5 — Готово к стору</option>
+        </select>
+
+        <h3>Заметки</h3>
+        <textarea data-role="note" rows="5" placeholder="Комментарии к ревью..."></textarea>
+      </div>
+    </section>
+    
+  </main>
+</div>
+<script>
+window.PORTFOLIO_GAMES = [{"id": "01", "slug": "neon-bullet", "name": "Neon Bullet", "wave": 3, "prio": "P1"}, {"id": "02", "slug": "deadline-escape", "name": "Работник месяца", "wave": 1, "prio": "P0"}, {"id": "03", "slug": "tide-of-relics", "name": "Море Реликвий", "wave": 4, "prio": "P1"}, {"id": "04", "slug": "legends-of-the-pitch", "name": "Легенды Поля", "wave": 4, "prio": "P1"}, {"id": "05", "slug": "merge-bazaar", "name": "Базар Слияний", "wave": 1, "prio": "P0"}, {"id": "06", "slug": "crystal-archipelago", "name": "Кристаллы Архипелага", "wave": 2, "prio": "P0"}, {"id": "07", "slug": "idle-forge", "name": "Кузница Вечности", "wave": 2, "prio": "P0"}, {"id": "08", "slug": "cozy-plot", "name": "Уютный Участок", "wave": 3, "prio": "P1"}, {"id": "09", "slug": "auto-towers", "name": "Автобашни", "wave": 3, "prio": "P1"}, {"id": "10", "slug": "night-courier", "name": "Ночной Курьер", "wave": 1, "prio": "P0"}];
+window.CURRENT_SLUG = "auto-towers";
+</script>
+<script src="../demos/demo-engine.js"></script>
+<script src="../demos/demos-01-02.js"></script>
+<script src="../demos/demos-03-06.js"></script>
+<script src="../demos/demos-07-10.js"></script>
+<script src="../assets/dashboard.js"></script>
+</body>
+</html>

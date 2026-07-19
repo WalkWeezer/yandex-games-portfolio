@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Портфель Яндекс Игры — Дашборд</title>
+<link rel="stylesheet" href="assets/dashboard.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="portfolio-dashboard.html">Портфель<br/><span>Яндекс Игры</span></a>
+    <div class="side-section">Навигация</div>
+    <a class="nav-link active" href="portfolio-dashboard.html">Все проекты</a>
+    <div class="side-section">Игры</div>
+    <div class="nav-games"><a class="nav-game" href="projects/neon-bullet.html">01. Neon Bullet</a>
+<a class="nav-game" href="projects/deadline-escape.html">02. Работник месяца</a>
+<a class="nav-game" href="projects/tide-of-relics.html">03. Море Реликвий</a>
+<a class="nav-game" href="projects/legends-of-the-pitch.html">04. Легенды Поля</a>
+<a class="nav-game" href="projects/merge-bazaar.html">05. Базар Слияний</a>
+<a class="nav-game" href="projects/crystal-archipelago.html">06. Кристаллы Архипелага</a>
+<a class="nav-game" href="projects/idle-forge.html">07. Кузница Вечности</a>
+<a class="nav-game" href="projects/cozy-plot.html">08. Уютный Участок</a>
+<a class="nav-game" href="projects/auto-towers.html">09. Автобашни</a>
+<a class="nav-game" href="projects/night-courier.html">10. Ночной Курьер</a></div>
+    <div class="side-foot">Данные статусов хранятся<br/>в браузере (localStorage)</div>
+  </aside>
+  <main class="main">
+
+    <header class="page-head">
+      <div>
+        <h1>Портфель из 10 игр</h1>
+        <p class="lead">Сначала подтверждаем диздоки, потом разработка. Открой проект → вкладки с документами, картинками и промптами.</p>
+      </div>
+      <div class="head-actions">
+        <button class="btn" onclick="exportReport()">Экспорт отчёта</button>
+        <button class="btn ghost" onclick="exportJSON()">JSON</button>
+        <button class="btn ghost" onclick="resetAll()">Сброс</button>
+      </div>
+    </header>
+
+    <section class="stats" id="stats"></section>
+
+    <section class="filters">
+      <button class="chip active" data-wave="all">Все</button>
+      <button class="chip" data-wave="1">Волна 1</button>
+      <button class="chip" data-wave="2">Волна 2</button>
+      <button class="chip" data-wave="3">Волна 3</button>
+      <button class="chip" data-wave="4">Волна 4</button>
+    </section>
+
+    <section class="grid" id="grid">
+      
+        <a class="card" href="projects/neon-bullet.html" data-slug="neon-bullet">
+          <div class="card-art" style="background-image:url('../games/neon-bullet/refs/art/key-art.png')"></div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="muted">01</span>
+              <span class="badge prio">P1</span>
+            </div>
+            <h2>Neon Bullet</h2>
+            <p class="muted">Top-down экшен</p>
+            <p class="seg">Экшен / 14–35</p>
+            <div class="card-meta">
+              <span>Волна 3 — LTV</span>
+              <span class="status-pill" data-status-for="neon-bullet">Черновик</span>
+            </div>
+            <div class="progress"><i data-progress-for="neon-bullet"></i></div>
+          </div>
+        </a>
+        <a class="card" href="projects/deadline-escape.html" data-slug="deadline-escape">
+          <div class="card-art" style="background-image:url('../games/deadline-escape/refs/art/key-art.png')"></div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="muted">02</span>
+              <span class="badge prio">P0</span>
+            </div>
+            <h2>Работник месяца</h2>
+            <p class="muted">Офисная escape-аркада</p>
+            <p class="seg">Вирусный юмор / 18–45</p>
+            <div class="card-meta">
+              <span>Волна 1 — кэшфлоу</span>
+              <span class="status-pill" data-status-for="deadline-escape">Черновик</span>
+            </div>
+            <div class="progress"><i data-progress-for="deadline-escape"></i></div>
+          </div>
+        </a>
+        <a class="card" href="projects/tide-of-relics.html" data-slug="tide-of-relics">
+          <div class="card-art" style="background-image:url('../games/tide-of-relics/refs/art/key-art.png')"></div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="muted">03</span>
+              <span class="badge prio">P1</span>
+            </div>
+            <h2>Море Реликвий</h2>
+            <p class="muted">Naval FTL-like</p>
+            <p class="seg">Стратегия midcore / 20–40</p>
+            <div class="card-meta">
+              <span>Волна 4 — флагманы</span>
+              <span class="status-pill" data-status-for="tide-of-relics">Черновик</span>
+            </div>
+            <div class="progress"><i data-progress-for="tide-of-relics"></i></div>
+          </div>
+        </a>
+        <a class="card" href="projects/legends-of-the-pitch.html" data-slug="legends-of-the-pitch">
+          <div class="card-art" style="background-image:url('../games/legends-of-the-pitch/refs/art/key-art.png')"></div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="muted">04</span>
+              <span class="badge prio">P1</span>
+            </div>
+            <h2>Легенды Поля</h2>
+            <p class="muted">Футбол CCG + autochess</p>
+            <p class="seg">Спорт / коллекционеры</p>
+            <div class="card-meta">
+              <span>Волна 4 — флагманы</span>
+              <span class="status-pill" data-status-for="legends-of-the-pitch">Черновик</span>
+            </div>
+            <div class="progress"><i data-progress-for="legends-of-the-pitch"></i></div>
+          </div>
+        </a>
+        <a class="card" href="projects/merge-bazaar.html" data-slug="merge-bazaar">
+          <div class="card-art" style="background-image:url('../games/merge-bazaar/refs/art/key-art.png')"></div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="muted">05</span>
+              <span class="badge prio">P0</span>
+            </div>
+            <h2>Базар Слияний</h2>
+            <p class="muted">Merge-tycoon</p>
+            <p class="seg">Уютный казуал / 25–55</p>
+            <div class="card-meta">
+              <span>Волна 1 — кэшфлоу</span>
+              <span class="status-pill" data-status-for="merge-bazaar">Черновик</span>
+            </div>
+            <div class="progress"><i data-progress-for="merge-bazaar"></i></div>
+          </div>
+        </a>
+        <a class="card" href="projects/crystal-archipelago.html" data-slug="crystal-archipelago">
+          <div class="card-art" style="background-image:url('../games/crystal-archipelago/refs/art/key-art.png')"></div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="muted">06</span>
+              <span class="badge prio">P0</span>
+            </div>
+            <h2>Кристаллы Архипелага</h2>
+            <p class="muted">Match-3</p>
+            <p class="seg">Головоломки / 25–60</p>
+            <div class="card-meta">
+              <span>Волна 2 — гибрид</span>
+              <span class="status-pill" data-status-for="crystal-archipelago">Черновик</span>
+            </div>
+            <div class="progress"><i data-progress-for="crystal-archipelago"></i></div>
+          </div>
+        </a>
+        <a class="card" href="projects/idle-forge.html" data-slug="idle-forge">
+          <div class="card-art" style="background-image:url('../games/idle-forge/refs/art/key-art.png')"></div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="muted">07</span>
+              <span class="badge prio">P0</span>
+            </div>
+            <h2>Кузница Вечности</h2>
+            <p class="muted">Idle / incremental</p>
+            <p class="seg">AFK / idle</p>
+            <div class="card-meta">
+              <span>Волна 2 — гибрид</span>
+              <span class="status-pill" data-status-for="idle-forge">Черновик</span>
+            </div>
+            <div class="progress"><i data-progress-for="idle-forge"></i></div>
+          </div>
+        </a>
+        <a class="card" href="projects/cozy-plot.html" data-slug="cozy-plot">
+          <div class="card-art" style="background-image:url('../games/cozy-plot/refs/art/key-art.png')"></div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="muted">08</span>
+              <span class="badge prio">P1</span>
+            </div>
+            <h2>Уютный Участок</h2>
+            <p class="muted">Cozy farm</p>
+            <p class="seg">Cozy / life-sim</p>
+            <div class="card-meta">
+              <span>Волна 3 — LTV</span>
+              <span class="status-pill" data-status-for="cozy-plot">Черновик</span>
+            </div>
+            <div class="progress"><i data-progress-for="cozy-plot"></i></div>
+          </div>
+        </a>
+        <a class="card" href="projects/auto-towers.html" data-slug="auto-towers">
+          <div class="card-art" style="background-image:url('../games/auto-towers/refs/art/key-art.png')"></div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="muted">09</span>
+              <span class="badge prio">P1</span>
+            </div>
+            <h2>Автобашни</h2>
+            <p class="muted">TD + auto-battler</p>
+            <p class="seg">Лёгкий мидкор</p>
+            <div class="card-meta">
+              <span>Волна 3 — LTV</span>
+              <span class="status-pill" data-status-for="auto-towers">Черновик</span>
+            </div>
+            <div class="progress"><i data-progress-for="auto-towers"></i></div>
+          </div>
+        </a>
+        <a class="card" href="projects/night-courier.html" data-slug="night-courier">
+          <div class="card-art" style="background-image:url('../games/night-courier/refs/art/key-art.png')"></div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="muted">10</span>
+              <span class="badge prio">P0</span>
+            </div>
+            <h2>Ночной Курьер</h2>
+            <p class="muted">Endless runner</p>
+            <p class="seg">Сессионный runner</p>
+            <div class="card-meta">
+              <span>Волна 1 — кэшфлоу</span>
+              <span class="status-pill" data-status-for="night-courier">Черновик</span>
+            </div>
+            <div class="progress"><i data-progress-for="night-courier"></i></div>
+          </div>
+        </a>
+    </section>
+
+    <section class="help">
+      <h3>Как работать</h3>
+      <ol>
+        <li>Открой карточку игры</li>
+        <li>Просмотри вкладки: обзор, классический диздок, LLM-спека, референсы, промпты</li>
+        <li>На вкладке «Управление» поставь статус <strong>На ревью</strong> → после проверки <strong>Подтверждён</strong></li>
+        <li>Только после «Подтверждён» можно запускать код-агента (гейты G0–G5)</li>
+      </ol>
+    </section>
+    
+  </main>
+</div>
+<script>
+window.PORTFOLIO_GAMES = [{"id": "01", "slug": "neon-bullet", "name": "Neon Bullet", "wave": 3, "prio": "P1"}, {"id": "02", "slug": "deadline-escape", "name": "Работник месяца", "wave": 1, "prio": "P0"}, {"id": "03", "slug": "tide-of-relics", "name": "Море Реликвий", "wave": 4, "prio": "P1"}, {"id": "04", "slug": "legends-of-the-pitch", "name": "Легенды Поля", "wave": 4, "prio": "P1"}, {"id": "05", "slug": "merge-bazaar", "name": "Базар Слияний", "wave": 1, "prio": "P0"}, {"id": "06", "slug": "crystal-archipelago", "name": "Кристаллы Архипелага", "wave": 2, "prio": "P0"}, {"id": "07", "slug": "idle-forge", "name": "Кузница Вечности", "wave": 2, "prio": "P0"}, {"id": "08", "slug": "cozy-plot", "name": "Уютный Участок", "wave": 3, "prio": "P1"}, {"id": "09", "slug": "auto-towers", "name": "Автобашни", "wave": 3, "prio": "P1"}, {"id": "10", "slug": "night-courier", "name": "Ночной Курьер", "wave": 1, "prio": "P0"}];
+</script>
+<script src="assets/dashboard.js"></script>
+</body>
+</html>

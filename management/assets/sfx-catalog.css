@@ -1,0 +1,90 @@
+/* SFX catalog tab */
+.sfx-app { margin-top: 12px; }
+.sfx-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.sfx-toolbar .btn-sfx {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #1e3a5f;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+.sfx-toolbar .btn-sfx.muted {
+  background: #3b2f14;
+  border-color: #a16207;
+  color: #fde68a;
+}
+.sfx-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.sfx-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #121820;
+  padding: 12px 14px;
+}
+.sfx-card h4 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.sfx-card p {
+  margin: 0 0 10px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.sfx-card .sfx-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.sfx-card button.play {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #2a6b4a;
+  background: #163528;
+  color: #b7f5d0;
+  font: inherit;
+  cursor: pointer;
+}
+.sfx-card button.play:hover { filter: brightness(1.1); }
+.sfx-bgm-card {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #3b5a7a;
+  background: #152030;
+}
+.sfx-bgm-card h4 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.sfx-bgm-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.sfx-note {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #163528;
+  border: 1px solid #2a6b4a;
+  color: #b7f5d0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
