@@ -148,15 +148,142 @@ function setupManage() {
   syncGateDisabled();
 }
 
+function setupMobileNav() {
+  const layout = document.querySelector(".layout");
+  const sidebar = document.querySelector(".sidebar");
+  if (!layout || !sidebar || document.querySelector(".mobile-bar")) return;
+
+  const bar = document.createElement("header");
+  bar.className = "mobile-bar";
+  bar.innerHTML = `
+    <button type="button" class="mobile-nav-btn" aria-label="Меню" aria-expanded="false">
+      <span class="mobile-nav-icon" aria-hidden="true"></span>
+    </button>
+    <a class="mobile-bar-brand" href="${sidebar.querySelector(".brand")?.getAttribute("href") || "#"}">Портфель</a>
+  `;
+  const backdrop = document.createElement("div");
+  backdrop.className = "sidebar-backdrop";
+  backdrop.hidden = true;
+  layout.prepend(bar);
+  document.body.appendChild(backdrop);
+
+  const btn = bar.querySelector(".mobile-nav-btn");
+  function setOpen(open) {
+    document.body.classList.toggle("nav-open", open);
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    backdrop.hidden = !open;
+  }
+  btn.addEventListener("click", () => setOpen(!document.body.classList.contains("nav-open")));
+  backdrop.addEventListener("click", () => setOpen(false));
+  sidebar.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => setOpen(false)));
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && document.body.classList.contains("nav-open")) setOpen(false);
+  });
+}
+
 function setupDemo() {
   const canvas = document.getElementById("feel-demo");
   if (!canvas || !window.FeelDemo || !window.CURRENT_SLUG) return;
   const hud = document.getElementById("demo-hint");
+  const wrap = canvas.closest(".demo-wrap") || canvas.parentElement;
+  const actions = wrap?.querySelector(".demo-actions");
   let handle = null;
+  let fsMode = false;
+
+  function ensureFsControls() {
+    if (!actions) return null;
+    let btn = document.getElementById("demo-fullscreen");
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.className = "btn";
+      btn.type = "button";
+      btn.id = "demo-fullscreen";
+      btn.textContent = "На весь экран";
+      const restart = document.getElementById("demo-restart");
+      if (restart) restart.insertAdjacentElement("afterend", btn);
+      else actions.prepend(btn);
+    }
+    let exit = document.getElementById("demo-fs-exit");
+    if (!exit) {
+      exit = document.createElement("button");
+      exit.type = "button";
+      exit.id = "demo-fs-exit";
+      exit.className = "demo-fs-exit";
+      exit.setAttribute("aria-label", "Закрыть полный экран");
+      exit.textContent = "✕";
+      wrap.appendChild(exit);
+    }
+    let hint = actions.querySelector(".demo-controls-hint");
+    if (!hint) {
+      const muted = actions.querySelector(".muted");
+      if (muted) {
+        muted.classList.add("demo-controls-hint");
+        muted.textContent = "На телефоне: «На весь экран» → стики · WASD / свайпы вне FS";
+      }
+    }
+    return { btn, exit };
+  }
+
+  const fsControls = ensureFsControls();
+
+  function syncSticks() {
+    if (handle) handle.setSticksEnabled(fsMode);
+  }
+
   function start() {
     if (handle) handle.destroy();
     handle = window.FeelDemo.mount(window.CURRENT_SLUG, canvas, hud);
+    syncSticks();
   }
+
+  function isNativeFs() {
+    return document.fullscreenElement === wrap || document.webkitFullscreenElement === wrap;
+  }
+
+  function enterFs() {
+    fsMode = true;
+    document.body.classList.add("demo-fs");
+    wrap.classList.add("is-fs");
+    if (fsControls?.btn) fsControls.btn.textContent = "Свернуть";
+    syncSticks();
+    const req = wrap.requestFullscreen || wrap.webkitRequestFullscreen;
+    if (req) {
+      try {
+        const p = req.call(wrap);
+        if (p && typeof p.catch === "function") p.catch(() => {});
+      } catch (_) { /* CSS fallback */ }
+    }
+    // Prefer landscape lock when available (phones); ignore failures.
+    try {
+      screen.orientation?.lock?.("portrait").catch?.(() => {});
+    } catch (_) {}
+  }
+
+  function exitFs() {
+    fsMode = false;
+    document.body.classList.remove("demo-fs");
+    wrap.classList.remove("is-fs");
+    if (fsControls?.btn) fsControls.btn.textContent = "На весь экран";
+    syncSticks();
+    if (isNativeFs()) {
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if (exit) {
+        try {
+          const p = exit.call(document);
+          if (p && typeof p.catch === "function") p.catch(() => {});
+        } catch (_) {}
+      }
+    }
+    try {
+      screen.orientation?.unlock?.();
+    } catch (_) {}
+  }
+
+  function toggleFs() {
+    if (fsMode) exitFs();
+    else enterFs();
+  }
+
   // Start when Demo tab opened first time
   const demoTab = document.querySelector('.tab[data-tab="demo"]');
   if (demoTab) {
@@ -169,6 +296,25 @@ function setupDemo() {
   document.getElementById("demo-restart")?.addEventListener("click", () => {
     if (handle) handle.restart();
     else start();
+  });
+  fsControls?.btn?.addEventListener("click", () => {
+    if (!handle) start();
+    toggleFs();
+  });
+  fsControls?.exit?.addEventListener("click", () => exitFs());
+
+  document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && fsMode) {
+      // Native FS closed via system UI — keep CSS FS or fully exit?
+      // Exit play mode entirely so sticks hide again.
+      exitFs();
+    }
+  });
+  document.addEventListener("webkitfullscreenchange", () => {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && fsMode) exitFs();
+  });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && fsMode && !isNativeFs()) exitFs();
   });
 }
 
@@ -211,5 +357,6 @@ document.addEventListener("DOMContentLoaded", () => {
   setupFilters();
   setupTabs();
   setupManage();
+  setupMobileNav();
   setupDemo();
 });
