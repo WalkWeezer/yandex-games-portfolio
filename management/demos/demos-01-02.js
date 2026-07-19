@@ -1263,7 +1263,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png`));
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
     ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png`));
     this._art = art;
@@ -1361,8 +1361,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
     ctx.restore();
     return true;
   },
-  // 0 floor · 1 desk1×1 · 3 plant · 4 cooler · 5 desk2×1 anchor (рисуется целиком) · 6 занятость второй клетки
-  // стены не используются — враги из тумана войны за краем сетки
+  // 0 floor · 1 desk1×1 · 2 wall · 3 plant · 4 cooler · 5 desk2×1 anchor · 6 desk2 occupancy · 7 window
+  // периметр: ~20% стены/окна, ~80% проходы (пол) — мобы входят только из проходов
+  /** Радиус тела для хитбокса (клетки). Хит = пересечение тел, не «общая клетка». */
+  HIT_BODY: 0.36,
+  /** Доля периметра, которая остаётся проходом (спавн мобов). */
+  PASSAGE_RATIO: 0.8,
   FLOOR_TINT: [
     "rgba(36, 26, 82, 1)",
     "rgba(30, 40, 70, 1)",
@@ -1552,12 +1556,70 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
     return reach === open;
   },
-  /** Пол без стен; препятствия 1×1 или стол 2×1; край открыт в туман */
+  /** Периметр по часовой: верх → право → низ → лево (углы один раз). */
+  perimeterCells(cols, rows) {
+    const cells = [];
+    for (let c = 0; c < cols; c++) cells.push({ c, r: 0, edge: "n" });
+    for (let r = 1; r < rows - 1; r++) cells.push({ c: cols - 1, r, edge: "e" });
+    for (let c = cols - 1; c >= 0; c--) cells.push({ c, r: rows - 1, edge: "s" });
+    for (let r = rows - 2; r >= 1; r--) cells.push({ c: 0, r, edge: "w" });
+    return cells;
+  },
+  /**
+   * Стены/окна на периметре как «мебель»: seed от этажа, ~PASSAGE_RATIO проходов.
+   * Мобы спавнятся только из проходов (пол на краю).
+   */
+  placePerimeterWalls(map, rnd) {
+    const rows = map.length, cols = map[0].length;
+    const ring = this.perimeterCells(cols, rows);
+    const n = ring.length;
+    const wallBudget = Math.max(4, Math.round(n * (1 - this.PASSAGE_RATIO)));
+    // короткие сегменты 1–3 клетки, разбросаны по кольцу
+    const marks = Array(n).fill(0); // 0 passage · 1 wall · 2 window
+    let placed = 0;
+    let guard = 0;
+    while (placed < wallBudget && guard < 80) {
+      guard++;
+      const start = (rnd() * n) | 0;
+      const len = 1 + ((rnd() * 3) | 0);
+      let ok = true;
+      for (let k = 0; k < len; k++) {
+        if (marks[(start + k) % n]) { ok = false; break; }
+      }
+      // не склеивать сегменты вплотную — оставляем проход между кусками
+      if (marks[(start - 1 + n) % n] || marks[(start + len) % n]) ok = false;
+      if (!ok) continue;
+      for (let k = 0; k < len && placed < wallBudget; k++) {
+        const idx = (start + k) % n;
+        const edge = ring[idx].edge;
+        // окна чаще на севере (концепт layout-feel), реже на других сторонах
+        const wantWin = edge === "n" ? rnd() < 0.65 : rnd() < 0.22;
+        marks[idx] = wantWin ? 2 : 1;
+        placed++;
+      }
+    }
+    // на каждой стороне ≥1 проход — иначе мобы не зайдут с этой кромки
+    for (const side of ["n", "e", "s", "w"]) {
+      const idxs = [];
+      for (let i = 0; i < n; i++) if (ring[i].edge === side) idxs.push(i);
+      if (!idxs.length) continue;
+      if (idxs.every((i) => marks[i])) {
+        const open = idxs[(rnd() * idxs.length) | 0];
+        marks[open] = 0;
+      }
+    }
+    for (let i = 0; i < n; i++) {
+      if (!marks[i]) continue;
+      const { c, r } = ring[i];
+      map[r][c] = marks[i] === 2 ? 7 : 2;
+    }
+  },
+  /** Интерьерные пропы + периметр стен/окон (~80% проходов) */
   buildMap(floor, cols = 7, rows = 9) {
     const rnd = this.floorRng(floor);
     const map = Array.from({ length: rows }, () => Array.from({ length: cols }, () => 0));
     const candidates = [];
-    // не ставим пропы вплотную к краю — коридор из тумана
+    // пропы только внутри — край отдаём стенам/проходам
     for (let r = 1; r < rows - 1; r++) {
       for (let c = 1; c < cols - 1; c++) candidates.push({ c, r });
     }
@@ -1598,6 +1660,18 @@ window.FEEL_DEMOS["deadline-escape"] = {
       }
       pi++;
     }
+    this.placePerimeterWalls(map, rnd);
+    // периметр не должен резать связность (пропы уже проверены)
+    if (!this.mapConnected(map)) {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if ((r === 0 || r === rows - 1 || c === 0 || c === cols - 1)
+            && (map[r][c] === 2 || map[r][c] === 7)) {
+            map[r][c] = 0;
+          }
+        }
+      }
+    }
     return map;
   },
   walkable(s, col, row) {
@@ -1605,7 +1679,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return s.map[row][col] === 0;
   },
   isBlockedProp(cell) {
-    return cell === 1 || cell === 3 || cell === 4 || cell === 5 || cell === 6;
+    return cell === 1 || cell === 2 || cell === 3 || cell === 4 || cell === 5 || cell === 6 || cell === 7;
+  },
+  isWallCell(cell) {
+    return cell === 2 || cell === 7;
   },
   walkList(s, excludeCol, excludeRow) {
     const out = [];
@@ -1619,7 +1696,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return out;
   },
   edgeSpawns(s, dir) {
-    // вход с края сетки из тумана (крайние клетки — пол, не стены)
+    // вход только из проходов периметра (пол); стены/окна — не спавн
     const cells = [];
     if (dir === "down") {
       for (let c = 0; c < s.cols; c++) if (this.walkable(s, c, 0)) cells.push({ col: c, row: 0, dir });
@@ -1800,7 +1877,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   onPlayFloor(s, col, row) {
     return this.walkable(s, col, row);
   },
-  /** Стол/проп — препятствие (директор ghost проходит) */
+  /** Стол/проп/стена — препятствие (директор ghost лезет медленнее) */
   isObstacleCell(s, col, row) {
     if (col < 0 || row < 0 || col >= s.cols || row >= s.rows) return false;
     return this.isBlockedProp(s.map[row][col]);
@@ -1988,18 +2065,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
     return true;
   },
+  /** Ghost тоже только из проходов — не из стен/окон. */
   edgeSpawnsAny(s, dir) {
-    const cells = [];
-    if (dir === "down") {
-      for (let c = 1; c < s.cols - 1; c++) cells.push({ col: c, row: 0, dir });
-    } else if (dir === "up") {
-      for (let c = 1; c < s.cols - 1; c++) cells.push({ col: c, row: s.rows - 1, dir });
-    } else if (dir === "right") {
-      for (let r = 1; r < s.rows - 1; r++) cells.push({ col: 0, row: r, dir });
-    } else if (dir === "left") {
-      for (let r = 1; r < s.rows - 1; r++) cells.push({ col: s.cols - 1, row: r, dir });
-    }
-    return cells;
+    return this.edgeSpawns(s, dir);
   },
   baseThreat(s, kind, dir, pick) {
     const d = this.DIRS[dir];
@@ -2634,50 +2702,35 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (t.pattern === "wide") return this.advanceWide(s, t, cellsPerSec, dt);
     return this.advanceDash(s, t, cellsPerSec, dt);
   },
-  threatHits(s, t) {
+  /** Непрерывная позиция тела моба (не индекс клетки). */
+  threatBodyPos(t) {
     const waiting = (t.pattern === "peek" || t.pattern === "hold") && t.peekPhase === "wait";
-    if (waiting) return t.col === s.col && t.row === s.row;
-
-    // секретарь: своя + соседняя клетка
-    if (t.pattern === "wide" && t.entered) {
-      if (t.col === s.col && t.row === s.row) return true;
-      if (t.col + t.wideDc === s.col && t.row + t.wideDr === s.row) return true;
-      const cx = t.col + t.dc * t.frac, cy = t.row + t.dr * t.frac;
-      if (Math.abs(cx - s.col) < 0.42 && Math.abs(cy - s.row) < 0.42) return true;
-      if (Math.abs(cx + t.wideDc - s.col) < 0.42 && Math.abs(cy + t.wideDr - s.row) < 0.42) return true;
-      return false;
-    }
-
+    if (waiting) return { x: t.col, y: t.row };
     const sliding = t.pattern === "ghost" || t.pattern === "dash" || t.pattern === "peek" || t.pattern === "hold"
       || t.pattern === "weave" || t.pattern === "patrol" || t.pattern === "chaos" || t.pattern === "hunt"
       || t.pattern === "pincer" || t.pattern === "report" || t.pattern === "blink"
       || t.pattern === "wide" || !t.entered;
-
-    if (t.col < 0 || t.row < 0 || t.col >= s.cols || t.row >= s.rows) {
-      if (sliding) {
-        const cx = t.col + t.dc * t.frac;
-        const cy = t.row + t.dr * t.frac;
-        if (cx < -0.2 || cy < -0.2 || cx > s.cols - 0.8 || cy > s.rows - 0.8) return false;
-      } else return false;
+    if (sliding) return { x: t.col + t.dc * t.frac, y: t.row + t.dr * t.frac };
+    return { x: t.col, y: t.row };
+  },
+  /** Хит по пересечению тел (игрок px/py ↔ моб), не по общей клетке сетки. */
+  bodiesOverlap(ax, ay, bx, by, r) {
+    return Math.abs(ax - bx) < r && Math.abs(ay - by) < r;
+  },
+  threatHits(s, t) {
+    const body = this.threatBodyPos(t);
+    const r = this.HIT_BODY;
+    // ещё глубоко в тумане — не бьёт
+    if (body.x < -0.35 || body.y < -0.35 || body.x > s.cols - 0.65 || body.y > s.rows - 0.65) {
+      return false;
     }
-
-    if (sliding || t.pattern === "ghost") {
-      const tc = Math.round(t.col), tr = Math.round(t.row);
-      if (tc === s.col && tr === s.row) return true;
-      if ((t.dir === "down" || t.dir === "up") && Math.round(t.col) === s.col) {
-        const y = t.row + t.dr * t.frac;
-        return Math.abs(y - s.row) < 0.42;
-      }
-      if ((t.dir === "left" || t.dir === "right") && Math.round(t.row) === s.row) {
-        const x = t.col + t.dc * t.frac;
-        return Math.abs(x - s.col) < 0.42;
-      }
-      // для смены направления (patrol/chaos/hunt) — дробная позиция
-      const cx = t.col + t.dc * t.frac;
-      const cy = t.row + t.dr * t.frac;
-      return Math.abs(cx - s.col) < 0.42 && Math.abs(cy - s.row) < 0.42;
+    const px = s.px, py = s.py;
+    if (this.bodiesOverlap(body.x, body.y, px, py, r)) return true;
+    // секретарь: второе тело рядом
+    if (t.pattern === "wide" && t.entered) {
+      if (this.bodiesOverlap(body.x + t.wideDc, body.y + t.wideDr, px, py, r)) return true;
     }
-    return t.col === s.col && t.row === s.row;
+    return false;
   },
   resetDay(s, api, keepMeta) {
     const floor = keepMeta.floor;
@@ -2791,8 +2844,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
         this.sfx("caught");
         api.setHud(`ЗАСТАВИЛИ · ${this.clock(s.gameMin)} · этаж ${s.floor}`);
       } else {
-        const tc = Math.round(t.col), tr = Math.round(t.row);
-        if (Math.abs(tc - s.col) + Math.abs(tr - s.row) === 1) {
+        const body = this.threatBodyPos(t);
+        const dist = Math.abs(body.x - s.px) + Math.abs(body.y - s.py);
+        if (dist > this.HIT_BODY && dist < 1.15) {
           if (s.nearMiss <= 0) this.sfx("near_miss", { minGap: 0.35 });
           s.nearMiss = 0.22;
         }
@@ -2886,7 +2940,38 @@ window.FEEL_DEMOS["deadline-escape"] = {
     ctx.drawImage(img, x, y, w, h);
     return true;
   },
+  drawWall(ctx, x, y, w, h, isWindow) {
+    if (!this.drawTile(ctx, "tile_wall", x, y, w, h)) {
+      ctx.fillStyle = "#6b7c93";
+      ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
+      ctx.fillStyle = "#9aa8bc";
+      ctx.fillRect(x + 2, y + 2, w - 4, 4);
+      ctx.fillStyle = "#8b98ab";
+      ctx.fillRect(x + 2, y + 2, 3, h - 4);
+      ctx.fillRect(x + w - 5, y + 2, 3, h - 4);
+    }
+    if (isWindow) {
+      const insetX = w * 0.18, insetY = h * 0.22;
+      const gw = w - insetX * 2, gh = h - insetY * 2;
+      ctx.fillStyle = "rgba(120, 190, 230, 0.72)";
+      ctx.fillRect(x + insetX, y + insetY, gw, gh);
+      ctx.strokeStyle = "rgba(230, 245, 255, 0.55)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x + insetX, y + insetY, gw, gh);
+      ctx.beginPath();
+      ctx.moveTo(x + insetX + gw * 0.5, y + insetY);
+      ctx.lineTo(x + insetX + gw * 0.5, y + insetY + gh);
+      ctx.moveTo(x + insetX, y + insetY + gh * 0.5);
+      ctx.lineTo(x + insetX + gw, y + insetY + gh * 0.5);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+      ctx.stroke();
+    }
+  },
   drawProp(ctx, x, y, w, h, cell) {
+    if (cell === 2 || cell === 7) {
+      this.drawWall(ctx, x, y, w, h, cell === 7);
+      return;
+    }
     if (cell === 1 && this.drawTile(ctx, "tile_desk", x, y, w, h)) return;
     if (cell === 3 && this.drawTile(ctx, "tile_plant", x, y, w, h)) return;
     if (cell === 4 && this.drawTile(ctx, "tile_cooler", x, y, w, h)) return;
@@ -2990,17 +3075,26 @@ window.FEEL_DEMOS["deadline-escape"] = {
         }
       }
     }
-    // 2) пропы поверх (desk2 — один спрайт на две клетки)
+    // 2) пропы поверх (desk2 — один спрайт на две клетки); стены/окна — после тумана
     for (let r = 0; r < s.rows; r++) {
       for (let c = 0; c < s.cols; c++) {
         const x = s.padX + c * s.cellW, y = s.padT + r * s.cellH;
         const cell = s.map[r][c];
-        if (cell === 6) continue;
+        if (cell === 6 || cell === 2 || cell === 7) continue;
         if (cell === 5) this.drawDesk2(ctx, x, y, s.cellW, s.cellH);
         else if (cell !== 0) this.drawProp(ctx, x, y, s.cellW, s.cellH, cell);
       }
     }
     this.drawFogOfWar(ctx, s, api);
+    // 3) стены/окна поверх тумана — читаемый каркас кабинета, проходы = дыры в периметре
+    for (let r = 0; r < s.rows; r++) {
+      for (let c = 0; c < s.cols; c++) {
+        const cell = s.map[r][c];
+        if (cell !== 2 && cell !== 7) continue;
+        const x = s.padX + c * s.cellW, y = s.padT + r * s.cellH;
+        this.drawWall(ctx, x, y, s.cellW, s.cellH, cell === 7);
+      }
+    }
 
     for (const p of s.pickups) {
       const pos = this.cell(s, p.col, p.row);

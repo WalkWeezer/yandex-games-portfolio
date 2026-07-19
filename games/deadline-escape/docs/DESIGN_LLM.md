@@ -55,7 +55,7 @@ games/deadline-escape/
 | INV-DE-02 | **Full office grid** dodge (base 7×9 + props); NOT free-move chase; NOT hide/LOS MVP; NOT «только колонки 1/3/5» |
 | INV-DE-03 | Win = survive clock **09:00→18:00** (`totalMin=540`); Fail = contact threat/zone without shield |
 | INV-DE-04 | Coffee = **world slow-mo** (scale 0.42, 3s); Badge = **1-hit shield** from floor drop |
-| INV-DE-05 | Hit = immediate cell/lane overlap (no 0.15s dwell requirement) |
+| INV-DE-05 | Hit = immediate **body overlap** (player `px/py` ↔ threat fractional pos, `HIT_BODY`); not shared grid cell |
 | INV-DE-06 | SDK: `LoadingAPI.ready()`, `GameplayAPI.start/stop` as methods (post-G0) |
 | INV-DE-07 | Feel file = `demos-01-02.js` FEEL_DEMOS key — **не** отдельный `deadline-escape.js` |
 | INV-DE-08 | No `src/` writes while `designStatus != CONFIRMED` |
@@ -143,17 +143,19 @@ Colleague = ally (slow, offer pause, mint ring) — not a threat mob.
 
 ## 3. Level grammar
 
-Cell codes: `0` floor · `1` desk 1×1 · `3` plant · `4` cooler · `5`/`6` desk 2×1 (W/E). `2` wall unused.
+Cell codes: `0` floor · `1` desk 1×1 · `2` wall · `3` plant · `4` cooler · `5`/`6` desk 2×1 (W/E) · `7` window.
 
 ```
-. = floor (edge open to fog of war)
+. = floor / passage
+# = wall
+W = window
 D = desk 1×1
 DD = desk 2×1
 P = plant
 C = cooler
 ```
 
-**Rules:** no outer walls; props are 1–2 cells; enemies enter from fog beyond the grid; aisles connected; no soft-lock spawn.
+**Rules:** perimeter ~80% passages / ~20% wall+window segments (seeded like furniture); props 1–2 cells interior; enemies enter **only from passages** from fog; aisles connected; no soft-lock spawn. Hit = body overlap, not cell equality.
 
 **Forbidden in MVP maps:** hideZones, LOS cones as primary verb, free-move navmesh chase.
 
