@@ -117,6 +117,7 @@ def shell_page(title: str, body: str, active: str = "index") -> str:
     <a class="brand" href="../portfolio-dashboard.html">Портфель<br/><span>Яндекс Игры</span></a>
     <div class="side-section">Навигация</div>
     <a class="nav-link {'active' if active=='index' else ''}" href="../portfolio-dashboard.html">Все проекты</a>
+    <a class="nav-link" href="../pipeline.html">Пайплайн</a>
     <a class="nav-link" href="../CHECKLIST.md">Чеклист (MD)</a>
     <div class="side-section">Игры</div>
     <div class="nav-games">{nav_games}</div>
@@ -185,8 +186,8 @@ def index_page() -> str:
     <section class="help">
       <h3>Как работать</h3>
       <ol>
-        <li>Открой карточку игры</li>
-        <li>Просмотри вкладки: обзор, классический диздок, LLM-спека, референсы, промпты</li>
+        <li>Открой <a href="pipeline.html">Пайплайн</a> — порядок этапов по факту Работника и Легенд</li>
+        <li>Открой карточку игры → вкладки: обзор, демка, диздоки, референсы, промпты</li>
         <li>На вкладке «Управление» поставь статус <strong>На ревью</strong> → после проверки <strong>Подтверждён</strong></li>
         <li>Только после «Подтверждён» можно запускать код-агента (гейты G0–G5)</li>
       </ol>
@@ -211,6 +212,7 @@ def index_page() -> str:
     <a class="brand" href="portfolio-dashboard.html">Портфель<br/><span>Яндекс Игры</span></a>
     <div class="side-section">Навигация</div>
     <a class="nav-link active" href="portfolio-dashboard.html">Все проекты</a>
+    <a class="nav-link" href="pipeline.html">Пайплайн</a>
     <div class="side-section">Игры</div>
     <div class="nav-games">{nav_games}</div>
     <div class="side-foot">Данные статусов хранятся<br/>в браузере (localStorage)</div>
@@ -414,6 +416,7 @@ def project_page(g: dict) -> str:
     <a class="brand" href="../portfolio-dashboard.html">Портфель<br/><span>Яндекс Игры</span></a>
     <div class="side-section">Навигация</div>
     <a class="nav-link" href="../portfolio-dashboard.html">Все проекты</a>
+    <a class="nav-link" href="../pipeline.html">Пайплайн</a>
     <div class="side-section">Игры</div>
     <div class="nav-games">{nav_games}</div>
     <div class="side-foot">Код запрещён до статуса<br/><strong>Подтверждён</strong></div>

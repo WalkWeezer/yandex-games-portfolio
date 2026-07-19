@@ -156,4 +156,5 @@ flowchart TD
 
 - Сравнение Работник месяца vs chas-pik: `games/deadline-escape/docs/GAP_VS_CHAS_PIK.md`  
 - Дашборд: `management/portfolio-dashboard.html` → вкладка «Демка»  
+- Интерактивный пайплайн (пройденные этапы): `management/pipeline.html`  
 - Feel demos: `management/demos/`  

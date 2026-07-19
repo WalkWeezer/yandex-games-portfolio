@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Пайплайн разработки — Портфель Яндекс Игры</title>
+<link rel="stylesheet" href="assets/dashboard.css"/>
+<link rel="stylesheet" href="assets/pipeline.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="portfolio-dashboard.html">Портфель<br/><span>Яндекс Игры</span></a>
+    <div class="side-section">Навигация</div>
+    <a class="nav-link" href="portfolio-dashboard.html">Все проекты</a>
+    <a class="nav-link active" href="pipeline.html">Пайплайн</a>
+    <div class="side-section">Игры</div>
+    <div class="nav-games"><a class="nav-game" href="projects/neon-bullet.html">01. Neon Bullet</a>
+<a class="nav-game" href="projects/deadline-escape.html">02. Работник месяца</a>
+<a class="nav-game" href="projects/tide-of-relics.html">03. Море Реликвий</a>
+<a class="nav-game" href="projects/legends-of-the-pitch.html">04. Легенды Поля</a>
+<a class="nav-game" href="projects/merge-bazaar.html">05. Базар Слияний</a>
+<a class="nav-game" href="projects/crystal-archipelago.html">06. Кристаллы Архипелага</a>
+<a class="nav-game" href="projects/idle-forge.html">07. Кузница Вечности</a>
+<a class="nav-game" href="projects/cozy-plot.html">08. Уютный Участок</a>
+<a class="nav-game" href="projects/auto-towers.html">09. Автобашни</a>
+<a class="nav-game" href="projects/night-courier.html">10. Ночной Курьер</a></div>
+    <div class="side-foot">Только этапы,<br/>уже пройденные хотя бы раз</div>
+  </aside>
+  <main class="main" id="pipeline-app">
+
+    <header class="page-head pl-intro">
+      <div>
+        <h1>Пайплайн разработки</h1>
+        <p class="lead">Интерактивная карта процесса по факту <strong>Работника месяца</strong> и <strong>Легенд Поля</strong>. Показаны только этапы, которые хотя бы одна из этих игр уже проходила. F2 / CONFIRM / G0+ — серым: ещё ни разу не доходили.</p>
+        <div class="pl-legend" aria-label="Легенда">
+          <span><i class="done"></i> пройден</span>
+          <span><i class="partial"></i> частично</span>
+          <span><i class="none"></i> не брали</span>
+          <span>точки на этапе: Работник · Легенды</span>
+        </div>
+      </div>
+    </header>
+
+    <section id="pipeline-compare" aria-label="Сравнение эталонов"></section>
+
+    <section class="pl-track-wrap" aria-label="Этапы пайплайна">
+      <div id="pipeline-track"></div>
+      <div class="pl-nav-btns">
+        <button type="button" class="btn ghost" id="pipeline-prev">← Назад</button>
+        <button type="button" class="btn" id="pipeline-next">Дальше →</button>
+      </div>
+    </section>
+
+    <section id="pipeline-detail" class="pl-detail" aria-live="polite"></section>
+
+    <section class="pl-method">
+      <h3>Порядок из методологии</h3>
+      <ol>
+        <li><strong>F0</strong> вектор → <strong>F1</strong> демка → playtest → углубление → wireframe / арт / SFX</li>
+        <li><strong>REVIEW</strong> → human playtest → (ещё не проходили) <strong>F2</strong> freeze → <strong>CONFIRMED</strong></li>
+        <li>Только потом <code>src/</code> и гейты G0–G5</li>
+      </ol>
+      <p class="muted" style="margin:10px 0 0">Документы: <a href="../docs/METHODOLOGY.md">METHODOLOGY.md</a> · <a href="CHECKLIST.md">CHECKLIST.md</a> · <a href="demos/PROMPT_DEEPEN_FEEL_DEMO.md">PROMPT_DEEPEN_FEEL_DEMO.md</a></p>
+    </section>
+
+  </main>
+</div>
+<script src="assets/dashboard.js"></script>
+<script src="assets/pipeline.js"></script>
+</body>
+</html>
