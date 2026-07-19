@@ -26,6 +26,19 @@
     let tapQueue = [];
     let swipeQueue = [];
     let swipeStart = null;
+    /** Virtual sticks only in fullscreen play mode (mobile). */
+    let sticksEnabled = false;
+
+    function clearSticks() {
+      stick.active = false;
+      stick.dx = 0;
+      stick.dy = 0;
+      stick.id = null;
+      aim.active = false;
+      aim.dx = 0;
+      aim.dy = 0;
+      aim.id = null;
+    }
 
     function onKey(e, down) {
       keys[e.code] = down;
@@ -80,21 +93,24 @@
           e.preventDefault();
           continue;
         }
-        // left half = move stick; right half = aim stick (twin-stick)
-        if (p.x < canvas.width * 0.5) {
-          stick.active = true;
-          stick.ox = p.x;
-          stick.oy = p.y;
-          stick.dx = 0;
-          stick.dy = 0;
-          stick.id = p.id;
-        } else {
-          aim.active = true;
-          aim.ox = p.x;
-          aim.oy = p.y;
-          aim.dx = 0;
-          aim.dy = 0;
-          aim.id = p.id;
+        // Virtual sticks only in fullscreen; otherwise keep tap/swipe path.
+        if (sticksEnabled) {
+          // left half = move stick; right half = aim stick (twin-stick)
+          if (p.x < canvas.width * 0.5) {
+            stick.active = true;
+            stick.ox = p.x;
+            stick.oy = p.y;
+            stick.dx = 0;
+            stick.dy = 0;
+            stick.id = p.id;
+          } else {
+            aim.active = true;
+            aim.ox = p.x;
+            aim.oy = p.y;
+            aim.dx = 0;
+            aim.dy = 0;
+            aim.id = p.id;
+          }
         }
         swipeStart = { x: p.x, y: p.y, id: p.id, t: performance.now() };
         pointers.set(p.id, p);
@@ -180,6 +196,13 @@
       aim,
       mouse,
       tapButtons,
+      get sticksEnabled() {
+        return sticksEnabled;
+      },
+      setSticksEnabled(on) {
+        sticksEnabled = !!on;
+        if (!sticksEnabled) clearSticks();
+      },
       addButton(btn) {
         const b = Object.assign({ pressed: false, _held: false }, btn);
         // edge-trigger: pressed true for one frame via consume
@@ -223,6 +246,7 @@
         return tapQueue;
       },
       drawStick(ctx) {
+        if (!sticksEnabled) return;
         // ghost zones: move (left) + aim (right)
         ctx.save();
         ctx.globalAlpha = 0.15;
@@ -331,6 +355,12 @@
       restart() {
         state = demo.create(api);
         api.setHud(demo.hint || "Играй");
+      },
+      setSticksEnabled(on) {
+        input.setSticksEnabled(on);
+      },
+      get sticksEnabled() {
+        return input.sticksEnabled;
       },
     };
   }
