@@ -5,7 +5,7 @@
 window.FEEL_DEMOS = window.FEEL_DEMOS || {};
 
 window.FEEL_DEMOS["legends-of-the-pitch"] = {
-  hint: "Состав 5/5 → магазин (скамейка 7, 3→★) → матч. Следи за пространством: винг рвётся, опорник страхует, открывается зона 14.",
+  hint: "Ты сам ставишь состав на слоты. Покупка → на скамейку → тап на слот. В матче бегут плавно от твоей расстановки.",
 
   TACTICS: ["Gegenpress", "TikiTaka", "ParkBus", "Counter", "WingPlay"],
   TACTIC_RU: {
@@ -191,12 +191,36 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     sl.ty = sl.homeY;
     sl.formX = sl.homeX;
     sl.formY = sl.homeY;
+    sl.desireX = sl.homeX;
+    sl.desireY = sl.homeY;
     sl.vx = 0;
     sl.vy = 0;
     sl.action = null;
     sl.actionT = 0;
     sl.intent = "hold";
     sl.cover = null;
+  },
+
+  /** Вернуть к твоей расстановке без «телепорта» логики — только цели */
+  settleToHome(sl) {
+    sl.desireX = sl.homeX;
+    sl.desireY = sl.homeY;
+    sl.formX = sl.homeX;
+    sl.formY = sl.homeY;
+    sl.tx = sl.homeX;
+    sl.ty = sl.homeY;
+    sl.intent = "hold";
+    sl.cover = null;
+    sl.action = null;
+    sl.actionT = 0;
+  },
+
+  snapToHome(sl) {
+    this.settleToHome(sl);
+    sl.px = sl.homeX;
+    sl.py = sl.homeY;
+    sl.vx = 0;
+    sl.vy = 0;
   },
 
   fresh(api, btns, keep) {
@@ -419,14 +443,14 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
   },
 
   /**
-   * Живые цели: не держат сетку.
-   * Винг без блока → вперёд; опорник тянется за вингом;
-   * опорник ушёл → зона 14 открыта для партнёра / дальнего.
+   * Желаемые точки = твоя расстановка (home) + ограниченный сдвиг.
+   * form плавно догоняет desire — без телепорта по полю.
    */
-  updateSpaceAI(s) {
+  updateSpaceAI(s, dt) {
     const P = this.PITCH;
     const atk = s.possessSide || "us";
     s.marks = [];
+    const ease = Math.min(1, 1.8 * dt);
 
     for (const side of ["us", "opp"]) {
       const team = side === "us" ? s.ours : s.opp;
@@ -436,142 +460,171 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       const fwd = team.find((x) => x.card && x.zone === "FWD");
       const gk = team.find((x) => x.card && x.zone === "GK");
       const attacking = side === atk;
-      const dir = side === "us" ? -1 : 1;
+      const dir = side === "us" ? -1 : 1; // us атакует вверх
 
-      // GK — почти дома, чуть к мячу
+      const setDesire = (sl, dx, dy, intent, maxFwd, maxSide) => {
+        if (!sl) return;
+        const fwdOff = clamp(dy, -maxFwd, maxFwd);
+        const sideOff = clamp(dx, -maxSide, maxSide);
+        const c = this.clampPitch(sl.homeX + sideOff, sl.homeY + fwdOff);
+        sl.desireX = c.x;
+        sl.desireY = c.y;
+        sl.intent = intent;
+      };
+
       if (gk) {
-        gk.formX = gk.homeX + (s.ball.x - gk.homeX) * 0.08;
-        gk.formY = side === "us" ? P.y1 - 36 : P.y0 + 36;
-        gk.intent = "gk";
+        setDesire(gk, (s.ball.x - gk.homeX) * 0.1, 0, "gk", 18, 28);
       }
 
-      // DEF — линия + страховка зоны 14 если mid ушёл
       if (def) {
-        def.formX = def.homeX + (s.ball.x - def.homeX) * 0.15;
-        def.formY = attacking
-          ? (side === "us" ? P.midY + 50 : P.midY - 50)
-          : (side === "us" ? P.y1 - 110 : P.y0 + 110);
-        def.intent = "line";
+        const push = attacking ? dir * 36 : -dir * 28;
+        setDesire(def, (s.ball.x - def.homeX) * 0.18, push, "line", 55, 50);
       }
 
-      // WING — ключ: если коридор свободен → рвётся
       if (wing) {
-        const block = this.blockerAhead(s, wing, side, 140);
-        const laneX = side === "us" ? P.x0 + 56 : P.x1 - 56;
+        const block = this.blockerAhead(s, wing, side, 130);
+        const lanePull = side === "us" ? P.x0 + 50 - wing.homeX : P.x1 - 50 - wing.homeX;
         if (attacking && !block) {
-          wing.formX = laneX;
-          wing.formY = side === "us" ? P.y0 + 70 : P.y1 - 70;
-          wing.intent = "overlap";
-          s.marks.push({ kind: "lane", x: laneX, y: wing.formY, side, label: "КОРИДОР" });
-          if (s.storyT <= 0) {
-            s.subline = "Винг " + wing.card.name + " — коридор свободен, идёт вперёд";
-          }
+          setDesire(wing, lanePull * 0.35, dir * 110, "overlap", 130, 70);
+          s.marks.push({ kind: "lane", x: wing.desireX, y: wing.desireY, side, label: "КОРИДОР" });
+          if (s.storyT <= 0) s.subline = "Винг " + wing.card.name + " открывает бровку";
         } else if (attacking && block) {
-          wing.formX = laneX;
-          wing.formY = block.py - dir * 28;
-          wing.intent = "hold-wide";
+          setDesire(wing, lanePull * 0.25, dir * 40, "hold-wide", 70, 60);
         } else {
-          // defending: drop + mark nearest threat
-          const threat = (side === "us" ? s.opp : s.ours).find((x) => x.card && (x.zone === "WING" || x.zone === "FWD"));
-          wing.formX = threat ? threat.px : laneX;
-          wing.formY = threat ? threat.py + dir * 22 : (side === "us" ? P.midY + 40 : P.midY - 40);
-          wing.intent = "mark";
+          const threat = (side === "us" ? s.opp : s.ours).find(
+            (x) => x.card && (x.zone === "WING" || x.zone === "FWD")
+          );
+          if (threat) {
+            setDesire(
+              wing,
+              (threat.px - wing.homeX) * 0.45,
+              (threat.py - wing.homeY) * 0.35,
+              "mark",
+              80,
+              70
+            );
+          } else setDesire(wing, 0, -dir * 20, "hold-wide", 40, 40);
         }
       }
 
-      // MID (опорник) — тянется за убегающим вингом своей или чужой команды
       if (mid) {
         const ourWingRun = wing && wing.intent === "overlap";
-        const enemyWing = (side === "us" ? s.opp : s.ours).find((x) => x.card && x.zone === "WING" && x.intent === "overlap");
+        const enemyWing = (side === "us" ? s.opp : s.ours).find(
+          (x) => x.card && x.zone === "WING" && x.intent === "overlap"
+        );
         if (!attacking && enemyWing) {
-          // догоняем чужого винга
-          mid.formX = enemyWing.px * 0.55 + mid.homeX * 0.45;
-          mid.formY = enemyWing.py + dir * 18;
-          mid.intent = "recover";
+          setDesire(
+            mid,
+            (enemyWing.px - mid.homeX) * 0.55,
+            (enemyWing.py - mid.homeY) * 0.5,
+            "recover",
+            120,
+            90
+          );
           mid.cover = "wing";
-          s.marks.push({ kind: "chase", x: mid.formX, y: mid.formY, side, label: "СТРАХОВКА" });
-          if (s.storyT <= 0) {
-            s.subline = "Опорник " + mid.card.name + " догоняет винга";
-          }
+          s.marks.push({ kind: "chase", x: mid.desireX, y: mid.desireY, side, label: "СТРАХОВКА" });
+          if (s.storyT <= 0) s.subline = "Опорник " + mid.card.name + " догоняет";
         } else if (attacking && ourWingRun) {
-          // тянемся вслед — освобождаем зону 14 за спиной
-          mid.formX = wing.px * 0.4 + mid.homeX * 0.6;
-          mid.formY = wing.py - dir * 50;
-          mid.intent = "support-wing";
+          setDesire(
+            mid,
+            (wing.px - mid.homeX) * 0.35,
+            (wing.py - mid.homeY) * 0.35 + dir * 20,
+            "support-wing",
+            100,
+            80
+          );
           const z14 = this.zone14Point(side);
           s.marks.push({ kind: "z14", x: z14.x, y: z14.y, side, label: "ЗОНА 14" });
           if (s.storyT <= 0) {
-            s.subline = "Опорник ушёл за вингом — открылась зона 14";
-            s.storyT = 1.6;
+            s.subline = "Опорник ушёл — зона 14 открыта";
+            s.storyT = 1.8;
           }
-        } else if (attacking) {
-          // можем сами занять зону 14 если винг растянул
+        } else if (attacking && wing && wing.intent === "overlap") {
           const z14 = this.zone14Point(side);
-          const spaceOpen = wing && wing.intent === "overlap";
-          mid.formX = spaceOpen ? z14.x : mid.homeX + (s.ball.x - mid.homeX) * 0.2;
-          mid.formY = spaceOpen ? z14.y : (side === "us" ? P.midY - 10 : P.midY + 10);
-          mid.intent = spaceOpen ? "zone14" : "pivot";
+          setDesire(mid, z14.x - mid.homeX, z14.y - mid.homeY, "zone14", 110, 90);
+        } else if (attacking) {
+          setDesire(mid, (s.ball.x - mid.homeX) * 0.2, dir * 28, "pivot", 70, 55);
         } else {
-          mid.formX = mid.homeX + (s.ball.x - mid.homeX) * 0.25;
-          mid.formY = side === "us" ? P.midY + 30 : P.midY - 30;
-          mid.intent = "screen";
+          setDesire(mid, (s.ball.x - mid.homeX) * 0.22, -dir * 18, "screen", 55, 50);
         }
       }
 
-      // FWD — в разрыв / под кросс
       if (fwd) {
         if (attacking) {
           const block = this.blockerAhead(s, fwd, side, 100);
-          fwd.formX = wing && wing.intent === "overlap" ? (wing.formX + fwd.homeX) / 2 : fwd.homeX + (Math.random() - 0.5) * 10;
-          fwd.formY = block
-            ? block.py - dir * 20
-            : side === "us"
-              ? P.y0 + 90
-              : P.y1 - 90;
-          fwd.intent = block ? "pinch" : "inbehind";
+          const towardWing = wing && wing.intent === "overlap" ? (wing.px - fwd.homeX) * 0.25 : 0;
+          setDesire(fwd, towardWing, block ? dir * 35 : dir * 85, block ? "pinch" : "inbehind", 110, 70);
         } else {
-          fwd.formX = fwd.homeX;
-          fwd.formY = side === "us" ? P.midY + 10 : P.midY - 10;
-          fwd.intent = "rest";
+          setDesire(fwd, 0, -dir * 12, "rest", 30, 30);
         }
+      }
+
+      // плавно тянем form → desire (не прыгаем)
+      for (const sl of team) {
+        if (!sl.card) continue;
+        if (sl.desireX == null) {
+          sl.desireX = sl.homeX;
+          sl.desireY = sl.homeY;
+        }
+        sl.formX += (sl.desireX - sl.formX) * ease;
+        sl.formY += (sl.desireY - sl.formY) * ease;
       }
     }
   },
 
   updateRunners(s, dt) {
-    if (s.phase === "fight") this.updateSpaceAI(s);
+    if (s.phase === "fight") this.updateSpaceAI(s, dt);
     const units = this.allUnits(s);
     for (const { sl } of units) {
       if (s.phase !== "fight") {
-        sl.tx = sl.homeX + Math.sin(s.pulse * 2 + sl.homeX) * 3;
+        // в магазине/составе стоим на слотах расстановки
+        sl.tx = sl.homeX;
         sl.ty = sl.homeY;
+        sl.px += (sl.homeX - sl.px) * Math.min(1, 8 * dt);
+        sl.py += (sl.homeY - sl.py) * Math.min(1, 8 * dt);
+        sl.vx = 0;
+        sl.vy = 0;
       } else {
         let tx = sl.formX;
         let ty = sl.formY;
         const isOwner = s.ball.owner && this.slotRef(s, s.ball.owner.side, s.ball.owner.index) === sl;
-        if (s.ball.visible) {
-          const d = Math.hypot(s.ball.x - sl.px, s.ball.y - sl.py) || 1;
-          const pull = isOwner ? 0.7 : sl.intent === "recover" ? 0.2 : d < 80 ? 0.22 : 0.05;
-          tx = tx * (1 - pull) + s.ball.x * pull;
-          ty = ty * (1 - pull) + s.ball.y * pull;
+        if (isOwner && s.ball.visible) {
+          // носитель чуть к мячу, не телепорт
+          tx = tx * 0.75 + s.ball.x * 0.25;
+          ty = ty * 0.75 + s.ball.y * 0.25;
+        } else if (sl.intent === "recover" && s.ball.visible) {
+          tx = tx * 0.85 + s.ball.x * 0.15;
+          ty = ty * 0.85 + s.ball.y * 0.15;
         }
         const c = this.clampPitch(tx, ty);
         sl.tx = c.x;
         sl.ty = c.y;
+
+        const dx = sl.tx - sl.px;
+        const dy = sl.ty - sl.py;
+        const dist = Math.hypot(dx, dy) || 0.001;
+        const sprint =
+          sl.intent === "overlap" || sl.intent === "recover" || sl.intent === "inbehind" ? 1.2 : 1;
+        const maxSpd = (48 + (sl.card?.pac || 5) * 6 + ((sl.card?.stars || 1) - 1) * 8) * sprint;
+        // догоняем цель с потолком скорости — без рывков через всё поле
+        const want = Math.min(maxSpd, dist * 2.8);
+        const ax = (dx / dist) * want;
+        const ay = (dy / dist) * want;
+        sl.vx = sl.vx * 0.82 + ax * 0.18;
+        sl.vy = sl.vy * 0.82 + ay * 0.18;
+        const spdNow = Math.hypot(sl.vx, sl.vy);
+        if (spdNow > maxSpd) {
+          sl.vx = (sl.vx / spdNow) * maxSpd;
+          sl.vy = (sl.vy / spdNow) * maxSpd;
+        }
+        sl.px += sl.vx * dt;
+        sl.py += sl.vy * dt;
+        const c2 = this.clampPitch(sl.px, sl.py);
+        sl.px = c2.x;
+        sl.py = c2.y;
+        if (spdNow > 12) sl.facing = Math.atan2(sl.vy, sl.vx);
       }
-      const sprint =
-        sl.intent === "overlap" || sl.intent === "recover" || sl.intent === "inbehind" ? 1.35 : 1;
-      const pac = sl.card ? (4.6 + sl.card.pac * 0.32 + ((sl.card.stars || 1) - 1) * 0.55) * sprint : 4;
-      const spd = s.phase === "fight" ? pac : 3.2;
-      sl.vx = sl.vx * 0.7 + (sl.tx - sl.px) * spd * 0.3;
-      sl.vy = sl.vy * 0.7 + (sl.ty - sl.py) * spd * 0.3;
-      sl.px += sl.vx * dt;
-      sl.py += sl.vy * dt;
-      const c2 = this.clampPitch(sl.px, sl.py);
-      sl.px = c2.x;
-      sl.py = c2.y;
-      if (Math.hypot(sl.vx, sl.vy) > 10) sl.facing = Math.atan2(sl.vy, sl.vx);
-      sl.armPhase += dt * (11 + Math.hypot(sl.vx, sl.vy) * 0.12);
+      sl.armPhase += dt * (10 + Math.hypot(sl.vx, sl.vy) * 0.1);
       if (sl.actionT > 0) sl.actionT -= dt;
       else sl.action = null;
     }
@@ -582,9 +635,9 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
         let dx = b.px - a.px;
         let dy = b.py - a.py;
         let d = Math.hypot(dx, dy) || 0.01;
-        const minD = a.side === b.side ? 26 : 18;
+        const minD = a.side === b.side ? 28 : 20;
         if (d < minD) {
-          const push = (minD - d) * 0.45;
+          const push = (minD - d) * 0.35;
           dx /= d;
           dy /= d;
           a.px -= dx * push;
@@ -645,8 +698,9 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       ang: sl.facing,
       color: this.TACTIC_COLOR[sl.card.tactic] || "#38bdf8",
     });
-    sl.px += Math.cos(sl.facing + 0.9) * 14;
-    sl.py += Math.sin(sl.facing + 0.9) * 14;
+    // импульс скорости, не телепорт
+    sl.vx += Math.cos(sl.facing + 0.9) * 70;
+    sl.vy += Math.sin(sl.facing + 0.9) * 70;
     s.subline = "Финт · " + sl.card.name;
   },
 
@@ -883,9 +937,16 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       return;
     }
 
-    // 7) Ведение в пространство
-    owner.sl.formY += atkSide === "us" ? -22 : 22;
-    if (owner.sl.zone === "WING") owner.sl.formX = atkSide === "us" ? P.x0 + 50 : P.x1 - 50;
+    // 7) Ведение — чуть сдвигаем desire от home, бег догонит сам
+    const dir = atkSide === "us" ? -1 : 1;
+    owner.sl.desireY = clamp(
+      (owner.sl.desireY ?? owner.sl.homeY) + dir * 18,
+      owner.sl.homeY - 120,
+      owner.sl.homeY + 120
+    );
+    if (owner.sl.zone === "WING") {
+      owner.sl.desireX = atkSide === "us" ? P.x0 + 56 : P.x1 - 56;
+    }
     s.subline = "Ведение · " + owner.sl.card.name + (owner.sl.intent === "overlap" ? " по бровке" : "");
   },
 
@@ -959,8 +1020,9 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     s.coins += 4 + interest;
     this.oppShopAI(s, api);
     this.refreshShop(s, api);
-    s.note = "+🪙 · скамейка " + s.bench.length + "/" + this.BENCH_MAX + " · 3 копии = ★";
-    for (const sl of [...s.ours, ...s.opp]) if (sl.card) this.place(sl, sl.card);
+    s.note = "Расставь сам: скамейка → слот · свап слотов · 3=★";
+    // вернуться к ТВОЕЙ расстановке (home), не к чужой сетке
+    for (const sl of [...s.ours, ...s.opp]) if (sl.card) this.snapToHome(sl);
   },
 
   oppShopAI(s, api) {
@@ -980,7 +1042,7 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
 
   startFight(s, api) {
     if (this.filled(s.ours) < 5) {
-      s.note = "Нужен полный состав 5/5";
+      s.note = "Расставь 5/5 сам (скамейка → слот)";
       return;
     }
     this.syncLayout(api);
@@ -992,17 +1054,20 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     s.speed.y = 12;
     s.start.label = "…";
     s.start.color = "#334155";
-    s.segmentT = 20;
-    s.thinkT = 0.5;
+    s.segmentT = 22;
+    s.thinkT = 0.85;
     s.ball.visible = true;
     s.ball.x = (this.PITCH.x0 + this.PITCH.x1) / 2;
     s.ball.y = this.PITCH.midY;
+    // старт строго с твоей расстановки
+    for (const sl of [...s.ours, ...s.opp]) if (sl.card) this.snapToHome(sl);
     const kick = this.pickZoneUnit(s.ours, "us", ["MID"]) || this.allUnits(s).find((u) => u.side === "us");
     if (kick) this.giveBall(s, kick.side, kick.index);
     const tl = this.tacticLevels(s.ours);
-    s.subline = tl.active.length
-      ? "Тактики: " + tl.active.map((a) => this.TACTIC_RU[a.id] + "×" + a.n).join(" · ")
-      : "Нет тактики ×2 — лови пространство";
+    s.subline = "С вашей расстановки · " +
+      (tl.active.length
+        ? tl.active.map((a) => this.TACTIC_RU[a.id] + "×" + a.n).join(" · ")
+        : "без тактики ×2");
     s.banner = s.minute + "'";
     s.bannerColor = "#e2e8f0";
     s.bannerT = 0.55;
@@ -1117,17 +1182,18 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       s.note = "Нужно " + offer.price + "🪙";
       return;
     }
-    const empty = s.ours.find((sl) => !sl.card);
-    if (!empty && s.bench.length >= this.BENCH_MAX) {
-      s.note = "Нет места (скамейка 7/7)";
+    // покупка всегда на скамейку — расстановку на поле выбираешь сам
+    if (s.bench.length >= this.BENCH_MAX) {
+      s.note = "Скамейка 7/7 — продай или поставь на поле";
       return;
     }
     s.coins -= offer.price;
-    if (empty) this.place(empty, offer.card);
-    else s.bench.push(offer.card);
+    s.bench.push(offer.card);
     s.shop[i] = null;
     const m = this.tryMerge(s);
-    s.note = m ? "MERGE " + m.name + " " + this.starLabel(m) : "Купил " + offer.card.name;
+    s.note = m
+      ? "MERGE " + m.name + " " + this.starLabel(m)
+      : "Купил " + offer.card.name + " → поставь на слот";
   },
 
   updateShop(s, api) {
@@ -1197,11 +1263,29 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
             }
             s.selected = null;
             this.tryMerge(s);
+            s.note = "Поставил на " + sl.zone;
+          } else if (s.selected?.from === "field") {
+            const a = s.ours[s.selected.index];
+            if (a === sl) {
+              // повторный тап того же слота → на скамейку
+              if (sl.card && s.bench.length < this.BENCH_MAX) {
+                s.bench.push(sl.card);
+                sl.card = null;
+                s.note = "Убрал на скамейку";
+              } else s.note = "Скамейка полна";
+            } else if (a) {
+              // свап слотов — расстановку выбираешь сам
+              const tmp = a.card;
+              a.card = sl.card;
+              sl.card = tmp;
+              if (a.card) this.snapToHome(a);
+              if (sl.card) this.snapToHome(sl);
+              s.note = "Поменял местами";
+            }
+            s.selected = null;
           } else if (sl.card) {
-            if (s.bench.length < this.BENCH_MAX) {
-              s.bench.push(sl.card);
-              sl.card = null;
-            } else s.selected = { from: "field", index: i };
+            s.selected = { from: "field", index: i };
+            s.note = sl.zone + ": другой слот = свап · тот же = скамейка";
           }
           return;
         }
@@ -1212,13 +1296,16 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
         this.endMatch(s, api);
         return;
       }
+      if (this.filled(s.ours) < 5) {
+        s.note = "Расставь 5/5 сам — скамейка → слот";
+        return;
+      }
       this.startFight(s, api);
     }
     const tl = this.tacticLevels(s.ours);
     api.setHud(
-      "🪙" + s.coins + " · скамейка " + s.bench.length + "/" + this.BENCH_MAX + " · [" +
-        (tl.active.map((a) => this.TACTIC_RU[a.id] + "×" + a.n).join(", ") || "нет×2") +
-        "] · " + s.note
+      "🪙" + s.coins + " · расстановка " + this.filled(s.ours) + "/5 · скамейка " + s.bench.length + "/" + this.BENCH_MAX +
+        " · [" + (tl.active.map((a) => this.TACTIC_RU[a.id] + "×" + a.n).join(", ") || "нет×2") + "] · " + s.note
     );
   },
 
