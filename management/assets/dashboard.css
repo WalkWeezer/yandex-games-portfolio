@@ -256,6 +256,9 @@ a:hover { text-decoration: underline; }
   width: 100%;
   position: relative;
 }
+.demo-wrap:has(#feel-demo.demo-hires) {
+  max-width: 580px;
+}
 #feel-demo {
   width: min(360px, 100%);
   max-width: 100%;
@@ -269,6 +272,10 @@ a:hover { text-decoration: underline; }
   touch-action: none;
   -webkit-user-select: none;
   user-select: none;
+}
+#feel-demo.demo-hires {
+  width: min(540px, 100%);
+  aspect-ratio: 540 / 960;
 }
 .demo-hint { color: var(--accent); font-size: .92rem; }
 .demo-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center; }
@@ -353,6 +360,10 @@ body.demo-fs .demo-wrap #feel-demo {
   border-radius: 0;
   border: 0;
   flex: 0 1 auto;
+}
+.demo-wrap.is-fs #feel-demo.demo-hires,
+body.demo-fs .demo-wrap #feel-demo.demo-hires {
+  aspect-ratio: 540 / 960;
 }
 .demo-wrap.is-fs .demo-actions,
 body.demo-fs .demo-wrap .demo-actions {

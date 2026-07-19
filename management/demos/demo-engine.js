@@ -288,7 +288,7 @@
           ctx.fill();
           ctx.globalAlpha = 1;
           ctx.fillStyle = "#fff";
-          ctx.font = "bold 15px Segoe UI, sans-serif";
+          ctx.font = "bold " + Math.max(15, Math.round(canvas.width / 32)) + "px Segoe UI, sans-serif";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(b.label || "", b.x + b.w / 2, b.y + b.h / 2);
@@ -322,15 +322,16 @@
         if (hudEl) hudEl.textContent = text;
       },
       drawBanner(ctx, text, color) {
+        const fs = Math.max(22, Math.round(canvas.width / 20));
         ctx.fillStyle = "rgba(0,0,0,0.55)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = color || "#fff";
-        ctx.font = "bold 22px Segoe UI, sans-serif";
+        ctx.font = "bold " + fs + "px Segoe UI, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(text, canvas.width / 2, canvas.height / 2 - 8);
+        ctx.fillText(text, canvas.width / 2, canvas.height / 2 - 10);
         ctx.fillStyle = "#ddd";
-        ctx.font = "14px Segoe UI, sans-serif";
-        ctx.fillText("Тап / кнопка — продолжить", canvas.width / 2, canvas.height / 2 + 24);
+        ctx.font = Math.max(14, Math.round(fs * 0.55)) + "px Segoe UI, sans-serif";
+        ctx.fillText("Тап / кнопка — продолжить", canvas.width / 2, canvas.height / 2 + 28);
       },
     };
     let state = demo.create(api);
