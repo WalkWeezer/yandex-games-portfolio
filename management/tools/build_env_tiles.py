@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build seamless floor + office props (no walls) for deadline-escape."""
+"""Build seamless floor + office props (+ wall tile) for deadline-escape."""
 from __future__ import annotations
 
 import sys
