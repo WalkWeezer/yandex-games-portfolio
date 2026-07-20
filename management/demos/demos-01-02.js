@@ -1263,21 +1263,21 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallart2`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallnice1`));
     // каркас: прямые + L + stub (+ U в запасе)
     ["n", "s", "e", "w"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallart2`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallart2`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallnice1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallnice1`);
     });
     ["nw", "ne", "sw", "se"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallart2`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallart2`);
-      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=wallart2`);
-      tryLoad("tile_window_stub_" + d, `frames/tile_window_stub_${d}.png?v=wallart2`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallnice1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallnice1`);
+      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=wallnice1`);
+      tryLoad("tile_window_stub_" + d, `frames/tile_window_stub_${d}.png?v=wallnice1`);
     });
     ["nwe", "nsw", "nse", "swe"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallart2`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallart2`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallnice1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallnice1`);
     });
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
     ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png`));
@@ -1726,12 +1726,13 @@ window.FEEL_DEMOS["deadline-escape"] = {
       }
       if (idxs.length < 2) continue;
       const marks = Array(idxs.length).fill(0);
-      const budget = Math.max(1, Math.round(idxs.length * 0.38));
+      const budget = Math.max(2, Math.round(idxs.length * 0.48));
       let placed = 0, guard = 0;
-      while (placed < budget && guard < 80) {
+      while (placed < budget && guard < 100) {
         guard++;
         const start = (rnd() * idxs.length) | 0;
-        const len = 1 + ((rnd() * Math.min(3, idxs.length - start)) | 0);
+        // длиннее сегменты — меньше «рваных» полосок
+        const len = 2 + ((rnd() * Math.min(4, idxs.length - start)) | 0);
         if (start + len > idxs.length) continue;
         let ok = true;
         for (let k = 0; k < len; k++) if (marks[start + k]) { ok = false; break; }
@@ -1739,7 +1740,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
         if (start + len < idxs.length && marks[start + len]) ok = false;
         if (!ok) continue;
         for (let k = 0; k < len && placed < budget; k++) {
-          const wantWin = side === "n" ? rnd() < 0.55 : side === "s" ? rnd() < 0.1 : rnd() < 0.18;
+          const wantWin = side === "n" ? rnd() < 0.45 : side === "s" ? rnd() < 0.08 : rnd() < 0.15;
           marks[start + k] = wantWin ? 2 : 1;
           placed++;
         }
@@ -3217,8 +3218,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return true;
   },
   /**
-   * Стена/окно: полоса на внутреннем краю (к play). Углы — stub / L / U.
-   * Снаружи клетки — почти чёрная подложка. Без пропов.
+   * Стена/окно: толстая перегородка на внутреннем краю (к play).
+   * + мягкая тень на соседнюю клетку play.
    */
   drawWallAt(ctx, s, col, row, x, y, w, h) {
     const isWin = s.map[row][col] === 7;
@@ -3232,18 +3233,46 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (!drawn && isWin) drawn = this.drawTile(ctx, "tile_window", x, y, w, h);
     if (!drawn) drawn = this.drawTile(ctx, "tile_wall", x, y, w, h);
     if (!drawn) {
-      const band = Math.max(10, Math.round((edge === "n" || edge === "s" ? h : w) * 0.34));
-      ctx.fillStyle = "#343944";
+      const band = Math.max(14, Math.round((edge === "n" || edge === "s" ? h : w) * 0.45));
+      ctx.fillStyle = "#5c3a24";
       if (edge === "n") ctx.fillRect(x, y + h - band, w, band);
       else if (edge === "s") ctx.fillRect(x, y, w, band);
       else if (edge === "w") ctx.fillRect(x + w - band, y, band, h);
       else ctx.fillRect(x, y, band, h);
-      ctx.fillStyle = "#b8a990";
-      const face = Math.max(4, (band * 0.22) | 0);
-      if (edge === "n") ctx.fillRect(x, y + h - band, w, face);
-      else if (edge === "s") ctx.fillRect(x, y + band - face, w, face);
-      else if (edge === "w") ctx.fillRect(x + w - band, y, face, h);
-      else ctx.fillRect(x + band - face, y, face, h);
+      ctx.fillStyle = "#d6c4a8";
+      const face = Math.max(6, (band * 0.28) | 0);
+      if (edge === "n") ctx.fillRect(x + 2, y + h - band, w - 4, face);
+      else if (edge === "s") ctx.fillRect(x + 2, y + band - face, w - 4, face);
+      else if (edge === "w") ctx.fillRect(x + w - band, y + 2, face, h - 4);
+      else ctx.fillRect(x + band - face, y + 2, face, h - 4);
+    }
+    // мягкая тень на play (внутрь арены)
+    const sh = Math.max(6, Math.round(Math.min(w, h) * 0.18));
+    let g;
+    if (edge === "n") {
+      g = ctx.createLinearGradient(0, y + h, 0, y + h + sh);
+      g.addColorStop(0, "rgba(0,0,0,0.35)");
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(x, y + h, w, sh);
+    } else if (edge === "s") {
+      g = ctx.createLinearGradient(0, y, 0, y - sh);
+      g.addColorStop(0, "rgba(0,0,0,0.35)");
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(x, y - sh, w, sh);
+    } else if (edge === "w") {
+      g = ctx.createLinearGradient(x + w, 0, x + w + sh, 0);
+      g.addColorStop(0, "rgba(0,0,0,0.35)");
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(x + w, y, sh, h);
+    } else {
+      g = ctx.createLinearGradient(x, 0, x - sh, 0);
+      g.addColorStop(0, "rgba(0,0,0,0.35)");
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(x - sh, y, sh, h);
     }
   },
   drawProp(ctx, x, y, w, h, cell) {
@@ -3308,9 +3337,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     ctx.fillRect(gx + gw, gy, w - (gx + gw), gh);
 
     const fogStops = (g) => {
-      g.addColorStop(0, "rgba(2,3,8,0.94)");
-      g.addColorStop(0.45, "rgba(6,8,16,0.62)");
-      g.addColorStop(0.82, "rgba(8,10,20,0.22)");
+      g.addColorStop(0, "rgba(2,3,8,0.90)");
+      g.addColorStop(0.5, "rgba(6,8,16,0.48)");
+      g.addColorStop(0.85, "rgba(8,10,20,0.14)");
       g.addColorStop(1, "rgba(8,10,20,0)");
     };
 
