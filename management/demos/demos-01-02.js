@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
   /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250721h",
+  ART_BUST: "w250721i",
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
@@ -1265,10 +1265,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721h`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721i`));
     // стены — proof-геометрия без спрайтов (wall/window tiles не грузим)
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721h`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721i`));
     this._art = art;
     return art;
   },
@@ -3407,7 +3407,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /**
    * Градиент тумана на клетках кольца границы — поверх пола.
    * Ребро: линейный от края арены к play.
-   * Угол: от сторон у края к противолежащему (внутреннему) углу.
+   * Угол: два линейных градиента по примыкающим границам (чёрный вдоль обеих сторон).
    */
   paintBorderCellFog(ctx, s) {
     const b = Math.max(1, s.border | 0);
@@ -3421,25 +3421,29 @@ window.FEEL_DEMOS["deadline-escape"] = {
       g.addColorStop(1, "rgba(2,3,8,0)");
     };
 
-    for (const { c, r } of ring) {
-      const { x, y, w: cw, h: ch } = this.cellRect(s, c, r);
-      const corner = this.mapCornerOf(s, c, r);
+    const paintEdge = (x, y, cw, ch, edge) => {
       let g;
-      if (corner === "nw") g = ctx.createLinearGradient(x, y, x + cw, y + ch);
-      else if (corner === "ne") g = ctx.createLinearGradient(x + cw, y, x, y + ch);
-      else if (corner === "sw") g = ctx.createLinearGradient(x, y + ch, x + cw, y);
-      else if (corner === "se") g = ctx.createLinearGradient(x + cw, y + ch, x, y);
-      else {
-        const edge = this.fogEdgeOf(s, c, r);
-        if (edge === "n") g = ctx.createLinearGradient(0, y, 0, y + ch);
-        else if (edge === "s") g = ctx.createLinearGradient(0, y + ch, 0, y);
-        else if (edge === "w") g = ctx.createLinearGradient(x, 0, x + cw, 0);
-        else if (edge === "e") g = ctx.createLinearGradient(x + cw, 0, x, 0);
-        else continue;
-      }
+      if (edge === "n") g = ctx.createLinearGradient(0, y, 0, y + ch);
+      else if (edge === "s") g = ctx.createLinearGradient(0, y + ch, 0, y);
+      else if (edge === "w") g = ctx.createLinearGradient(x, 0, x + cw, 0);
+      else if (edge === "e") g = ctx.createLinearGradient(x + cw, 0, x, 0);
+      else return;
       fogStops(g);
       ctx.fillStyle = g;
       ctx.fillRect(x, y, cw, ch);
+    };
+
+    for (const { c, r } of ring) {
+      const { x, y, w: cw, h: ch } = this.cellRect(s, c, r);
+      const corner = this.mapCornerOf(s, c, r);
+      if (corner === "nw") { paintEdge(x, y, cw, ch, "n"); paintEdge(x, y, cw, ch, "w"); }
+      else if (corner === "ne") { paintEdge(x, y, cw, ch, "n"); paintEdge(x, y, cw, ch, "e"); }
+      else if (corner === "sw") { paintEdge(x, y, cw, ch, "s"); paintEdge(x, y, cw, ch, "w"); }
+      else if (corner === "se") { paintEdge(x, y, cw, ch, "s"); paintEdge(x, y, cw, ch, "e"); }
+      else {
+        const edge = this.fogEdgeOf(s, c, r);
+        if (edge) paintEdge(x, y, cw, ch, edge);
+      }
     }
   },
   /**
