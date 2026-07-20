@@ -224,6 +224,9 @@ a:hover { text-decoration: underline; }
   height: 200px; display: grid; place-items: center; color: var(--bad); background: #1a1214;
 }
 .gallery-title { margin-top: 22px; }
+.concept-grid { margin-bottom: 8px; }
+.concept-grid .ref-card img { height: 220px; }
+.concept-card-tall img { height: 280px !important; object-fit: contain !important; background: #0b0f14; }
 .prompt-acc {
   background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
   margin-bottom: 10px; padding: 0 12px 12px;

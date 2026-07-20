@@ -8,6 +8,27 @@
 
 `refs/art/key-art.png` — tonal/mood lock, palette, composition.
 
+## Concept art (variants на выбор)
+
+Черновики: `refs/art/concepts/` · индекс `refs/art/concepts/MANIFEST.md`.  
+На сайте: вкладка **Концепт-арт**. По **3 варианта** на запрос (key art / карты / матч-доска).  
+Пока не аппрувнуты — **не** заменяют `key-art.png`.
+
+### Key art
+![KA v1](../refs/art/concepts/key-art/v1-stadium-cards.jpg)
+![KA v2](../refs/art/concepts/key-art/v2-sideline-holograms.jpg)
+![KA v3](../refs/art/concepts/key-art/v3-ball-streak.jpg)
+
+### Cards
+![Cards v1](../refs/art/concepts/cards/v1-trio-frame.jpg)
+![Cards v2](../refs/art/concepts/cards/v2-striker-portrait.jpg)
+![Cards v3](../refs/art/concepts/cards/v3-roles-row.jpg)
+
+### Match board
+![Board v1](../refs/art/concepts/match-board/v1-tokens-cross.jpg)
+![Board v2](../refs/art/concepts/match-board/v2-topdown-grid.jpg)
+![Board v3](../refs/art/concepts/match-board/v3-isometric.jpg)
+
 ## UI Wireframes
 ![UI wireframe](../refs/ui/wireframe-main.png)
 

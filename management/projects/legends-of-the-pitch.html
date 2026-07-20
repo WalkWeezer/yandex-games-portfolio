@@ -50,6 +50,7 @@
       <button class="tab" data-tab="classic">Классический диздок</button>
       <button class="tab" data-tab="llm">LLM-спека</button>
       <button class="tab" data-tab="refs">Референсы</button>
+      <button class="tab" data-tab="concept">Концепт-арт</button>
       <button class="tab" data-tab="prompts">Промпты</button>
       <button class="tab" data-tab="manage">Управление</button>
     </nav>
@@ -63,6 +64,7 @@
             <li>Классический GDD — видение, лупы, экономика</li>
             <li>LLM-спека — контракты для агентов, UI, уровни, ассеты</li>
             <li>Референсы — арт, вайрфреймы, уровни, спрайты</li>
+            <li><strong>Концепт-арт</strong> — 3 варианта на запрос, выбрать направление</li>
             <li>Промпты — готовые задания для арт/код агентов</li>
           </ul>
           <h3>Правило</h3>
@@ -2081,6 +2083,119 @@ EVT_Cloud_Synced
                 <code>sprites/sheet-main.png</code>
               </figcaption>
             </figure></div>
+    </section>
+
+    <section class="tab-panel" id="tab-concept">
+      <div class="panel demo-wrap">
+        <h3>Концепт-арт — варианты на выбор</h3>
+        <p class="lead">По каждому запросу 3 варианта. Канон пока <code>refs/art/key-art.png</code> — замена только после аппрува.</p>
+        <p class="muted" style="margin:0 0 12px">Файлы: <code>games/legends-of-the-pitch/refs/art/concepts/</code> · <code>MANIFEST.md</code></p>
+
+        <h3 class="gallery-title">1. Key art / mood</h3>
+        <p class="muted">Ночной стадион Arena League, голографические карты, cyber-fantasy sports.</p>
+        <div class="ref-grid concept-grid">
+          <figure class="ref-card">
+            <a href="../../games/legends-of-the-pitch/refs/art/concepts/key-art/v1-stadium-cards.jpg" target="_blank" rel="noopener">
+              <img src="../../games/legends-of-the-pitch/refs/art/concepts/key-art/v1-stadium-cards.jpg" alt="Key art v1" loading="lazy"/>
+            </a>
+            <figcaption>
+              <strong>V1 · Stadium + cards</strong>
+              <span>Карты на газоне, широкий плакат</span>
+              <code>concepts/key-art/v1-stadium-cards.jpg</code>
+            </figcaption>
+          </figure>
+          <figure class="ref-card">
+            <a href="../../games/legends-of-the-pitch/refs/art/concepts/key-art/v2-sideline-holograms.jpg" target="_blank" rel="noopener">
+              <img src="../../games/legends-of-the-pitch/refs/art/concepts/key-art/v2-sideline-holograms.jpg" alt="Key art v2" loading="lazy"/>
+            </a>
+            <figcaption>
+              <strong>V2 · Sideline holograms</strong>
+              <span>Ракурс с бровки, карты как фигуры</span>
+              <code>concepts/key-art/v2-sideline-holograms.jpg</code>
+            </figcaption>
+          </figure>
+          <figure class="ref-card">
+            <a href="../../games/legends-of-the-pitch/refs/art/concepts/key-art/v3-ball-streak.jpg" target="_blank" rel="noopener">
+              <img src="../../games/legends-of-the-pitch/refs/art/concepts/key-art/v3-ball-streak.jpg" alt="Key art v3" loading="lazy"/>
+            </a>
+            <figcaption>
+              <strong>V3 · Ball streak</strong>
+              <span>Акцент на мяч и динамику</span>
+              <code>concepts/key-art/v3-ball-streak.jpg</code>
+            </figcaption>
+          </figure>
+        </div>
+
+        <h3 class="gallery-title">2. Карты / коллекция</h3>
+        <p class="muted">Collectible CCG look: амплуа + рамка, без реальных лиц/клубов.</p>
+        <div class="ref-grid concept-grid">
+          <figure class="ref-card">
+            <a href="../../games/legends-of-the-pitch/refs/art/concepts/cards/v1-trio-frame.jpg" target="_blank" rel="noopener">
+              <img src="../../games/legends-of-the-pitch/refs/art/concepts/cards/v1-trio-frame.jpg" alt="Cards v1" loading="lazy"/>
+            </a>
+            <figcaption>
+              <strong>V1 · Trio frame</strong>
+              <span>Три карты GK / MID / FWD</span>
+              <code>concepts/cards/v1-trio-frame.jpg</code>
+            </figcaption>
+          </figure>
+          <figure class="ref-card concept-card-tall">
+            <a href="../../games/legends-of-the-pitch/refs/art/concepts/cards/v2-striker-portrait.jpg" target="_blank" rel="noopener">
+              <img src="../../games/legends-of-the-pitch/refs/art/concepts/cards/v2-striker-portrait.jpg" alt="Cards v2" loading="lazy"/>
+            </a>
+            <figcaption>
+              <strong>V2 · Striker portrait</strong>
+              <span>Одна карта, портрет браконьера</span>
+              <code>concepts/cards/v2-striker-portrait.jpg</code>
+            </figcaption>
+          </figure>
+          <figure class="ref-card">
+            <a href="../../games/legends-of-the-pitch/refs/art/concepts/cards/v3-roles-row.jpg" target="_blank" rel="noopener">
+              <img src="../../games/legends-of-the-pitch/refs/art/concepts/cards/v3-roles-row.jpg" alt="Cards v3" loading="lazy"/>
+            </a>
+            <figcaption>
+              <strong>V3 · Roles row</strong>
+              <span>Линейка ролей как набор</span>
+              <code>concepts/cards/v3-roles-row.jpg</code>
+            </figcaption>
+          </figure>
+        </div>
+
+        <h3 class="gallery-title">3. Матч-доска (feel)</h3>
+        <p class="muted">Сетка, токены с «ручками», пересечение составов — вайб демки.</p>
+        <div class="ref-grid concept-grid">
+          <figure class="ref-card">
+            <a href="../../games/legends-of-the-pitch/refs/art/concepts/match-board/v1-tokens-cross.jpg" target="_blank" rel="noopener">
+              <img src="../../games/legends-of-the-pitch/refs/art/concepts/match-board/v1-tokens-cross.jpg" alt="Board v1" loading="lazy"/>
+            </a>
+            <figcaption>
+              <strong>V1 · Tokens cross</strong>
+              <span>Команды пересекаются, мяч в полёте</span>
+              <code>concepts/match-board/v1-tokens-cross.jpg</code>
+            </figcaption>
+          </figure>
+          <figure class="ref-card">
+            <a href="../../games/legends-of-the-pitch/refs/art/concepts/match-board/v2-topdown-grid.jpg" target="_blank" rel="noopener">
+              <img src="../../games/legends-of-the-pitch/refs/art/concepts/match-board/v2-topdown-grid.jpg" alt="Board v2" loading="lazy"/>
+            </a>
+            <figcaption>
+              <strong>V2 · Top-down grid</strong>
+              <span>Чистая 3×5 сетка</span>
+              <code>concepts/match-board/v2-topdown-grid.jpg</code>
+            </figcaption>
+          </figure>
+          <figure class="ref-card">
+            <a href="../../games/legends-of-the-pitch/refs/art/concepts/match-board/v3-isometric.jpg" target="_blank" rel="noopener">
+              <img src="../../games/legends-of-the-pitch/refs/art/concepts/match-board/v3-isometric.jpg" alt="Board v3" loading="lazy"/>
+            </a>
+            <figcaption>
+              <strong>V3 · Isometric</strong>
+              <span>Изометрия + планшет менеджера</span>
+              <code>concepts/match-board/v3-isometric.jpg</code>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
     </section>
 
     <section class="tab-panel" id="tab-prompts">
