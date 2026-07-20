@@ -1663,10 +1663,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return this.isFrameSolid(s.map[row][col]);
   },
   /**
-   * Стены на рёбрах (без клеток угла карты) + углы карты.
-   * Цель: ≥70% проходных на кольце + целые сегменты (без дыр),
-   * чтобы wallGeomOf давал корректные 1/2/3 стороны и stub.
-   * Окна временно отключены.
+   * Битмап препятствий на кольце границы → клетки map = 2 (стены).
+   * Картинка стены потом только из соседей битмапа (wallGeomOf) — дыры ок.
+   * ≥70% клеток кольца проходные. Окна отключены. Арена сюда не лезет.
    */
   placeFogDecor(map, border, rnd) {
     const rows = map.length, cols = map[0].length;
@@ -1680,35 +1679,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       return (onN || onS) && (onW || onE);
     };
 
-    /** Сегменты единиц в marks[0..n): {lo,hi} включительно. */
-    const markSegs = (marks) => {
-      const segs = [];
-      for (let i = 0; i < marks.length; ) {
-        if (!marks[i]) { i++; continue; }
-        let j = i + 1;
-        while (j < marks.length && marks[j]) j++;
-        segs.push({ lo: i, hi: j - 1 });
-        i = j;
-      }
-      return segs;
-    };
-    /**
-     * Убрать одну стену с торца сегмента (или весь соло), без дыр посередине.
-     * Иначе wallGeomOf ломается: середина ряда → две U вместо L–mid–L.
-     */
-    const trimMarkEnd = (marks) => {
-      const segs = markSegs(marks);
-      if (!segs.length) return false;
-      const multi = segs.filter((s) => s.hi > s.lo);
-      const pick = multi.length ? multi : segs;
-      const s = pick[(rnd() * pick.length) | 0];
-      if (s.hi === s.lo) marks[s.lo] = 0;
-      else if (rnd() < 0.5) marks[s.lo] = 0;
-      else marks[s.hi] = 0;
-      return true;
-    };
-
-    // sparse walls on mid-edge (~22% бюджет), остальное — проходы
+    // mid-edge: короткие сегменты ~22% бюджета
     for (const side of ["n", "e", "s", "w"]) {
       const idxs = [];
       for (let i = 0; i < ring.length; i++) {
@@ -1736,10 +1707,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
           placed++;
         }
       }
-      // на ребре ≥55% открытых — только trim с торцов сегментов
-      let open = marks.filter((m) => !m).length;
-      const minOpenSide = Math.max(1, Math.ceil(idxs.length * 0.55));
-      while (open < minOpenSide && trimMarkEnd(marks)) open++;
       for (let i = 0; i < idxs.length; i++) {
         if (!marks[i]) continue;
         const { c, r } = ring[idxs[i]];
@@ -1754,7 +1721,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       { c: b - 1, r: rows - b, d1: [1, 0], d2: [0, -1] },
       { c: cols - b, r: rows - b, d1: [-1, 0], d2: [0, -1] },
     ];
-    // углы без форса соседей: stub только если уже есть обе руки; 1 рука — редко
+    // угол: stub если обе руки; 1 рука — редко
     for (const corner of corners) {
       const { c, r, d1, d2 } = corner;
       if (c < 0 || r < 0 || c >= cols || r >= rows) continue;
@@ -1767,61 +1734,28 @@ window.FEEL_DEMOS["deadline-escape"] = {
       else if ((a || b2) && rnd() < 0.20) map[r][c] = 2;
     }
 
-    // жёсткий пол ≥70%: укорачиваем сегменты с торцов (не дырявим середину)
+    // ≥70% открытых на кольце — снимаем любые стены (картинка из битмапа пересчитается)
     const needOpen = Math.ceil(ring.length * 0.70);
-    const sideCells = { n: [], e: [], s: [], w: [] };
-    for (const cell of ring) {
-      if (isRingCorner(cell.c, cell.r)) continue;
-      if (sideCells[cell.edge]) sideCells[cell.edge].push(cell);
+    const walls = [];
+    for (const { c, r } of ring) if (map[r][c] === 2) walls.push({ c, r });
+    let openCount = ring.length - walls.length;
+    for (let i = walls.length - 1; i > 0; i--) {
+      const j = (rnd() * (i + 1)) | 0;
+      const tmp = walls[i]; walls[i] = walls[j]; walls[j] = tmp;
     }
-    const countOpen = () => {
-      let n = 0;
-      for (const { c, r } of ring) if (map[r][c] !== 2) n++;
-      return n;
-    };
-    let openCount = countOpen();
-    let guard = 0;
-    while (openCount < needOpen && guard++ < 200) {
-      const cands = [];
-      for (const side of ["n", "e", "s", "w"]) {
-        const cells = sideCells[side];
-        if (!cells.length) continue;
-        const marks = cells.map(({ c, r }) => (map[r][c] === 2 ? 1 : 0));
-        const segs = markSegs(marks);
-        for (const seg of segs) {
-          cands.push({ c: cells[seg.lo].c, r: cells[seg.lo].r, len: seg.hi - seg.lo + 1 });
-          if (seg.hi !== seg.lo) {
-            cands.push({ c: cells[seg.hi].c, r: cells[seg.hi].r, len: seg.hi - seg.lo + 1 });
-          }
-        }
-      }
-      if (!cands.length) break;
-      // сначала торцы длинных сегментов, соло — в последнюю очередь
-      cands.sort((a, b) => b.len - a.len);
-      const topLen = cands[0].len;
-      const pool = cands.filter((c) => c.len === topLen);
-      const pick = pool[(rnd() * pool.length) | 0];
-      map[pick.r][pick.c] = 0;
+    for (const cell of walls) {
+      if (openCount >= needOpen) break;
+      if (isRingCorner(cell.c, cell.r)) continue;
+      map[cell.r][cell.c] = 0;
       openCount++;
     }
-    // если всё ещё мало — снимаем углы (stub/1-arm), geom уже не про mid-сегменты
-    if (openCount < needOpen) {
-      const cornerWalls = [];
-      for (const { c, r } of corners) {
-        if (c < 0 || r < 0 || c >= cols || r >= rows) continue;
-        if (map[r][c] === 2) cornerWalls.push({ c, r });
-      }
-      for (let i = cornerWalls.length - 1; i > 0; i--) {
-        const j = (rnd() * (i + 1)) | 0;
-        const tmp = cornerWalls[i]; cornerWalls[i] = cornerWalls[j]; cornerWalls[j] = tmp;
-      }
-      for (const cell of cornerWalls) {
-        if (openCount >= needOpen) break;
-        map[cell.r][cell.c] = 0;
-        openCount++;
-      }
+    for (const cell of walls) {
+      if (openCount >= needOpen) break;
+      if (map[cell.r][cell.c] !== 2) continue;
+      map[cell.r][cell.c] = 0;
+      openCount++;
     }
-    // после trim рук: угол без соседей убрать (пустой sides); stub только при 2 руках
+    // угол без рук — не стена
     for (const corner of corners) {
       const { c, r, d1, d2 } = corner;
       if (c < 0 || r < 0 || c >= cols || r >= rows) continue;
@@ -1910,7 +1844,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
     const b = border | 0;
     return r === b || r === rows - b - 1 || c === b || c === cols - b - 1;
   },
-  /** Play-пропы + полоса тумана со стенами/окнами (+ визуальные оверлеи у стен) */
+  /**
+   * Play-пропы (столы и т.п.) + битмап стен на границе.
+   * Порядок: арена → препятствия-мебель; кольцо → препятствия-стены (placeFogDecor).
+   * Рисование стен — только wallGeomOf/wallPictureOf по соседям битмапа.
+   */
   buildMap(floor, grid) {
     const { cols, rows, border, playCols, playRows } = grid;
     const b = border | 0;
@@ -3280,21 +3218,36 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return true;
   },
   /**
-   * Геометрия стены в клетке каркаса (proof, без спрайтов).
-   * { sides: n/s/w/e[], square: nw|ne|sw|se|null }
+   * Подбор картинки стены из битмапа (соседи cell===2|7).
+   * mid=1 сторона, L=2, U=3, stub=квадрат в углу арены, face=продолжение на клетке угла.
+   */
+  wallPictureOf(s, col, row) {
+    const geom = this.wallGeomOf(s, col, row);
+    if (geom.square) return { kind: "stub", ...geom };
+    if (this.mapCornerOf(s, col, row)) {
+      return { kind: geom.sides.length ? "face" : "empty", ...geom };
+    }
+    const n = geom.sides.length;
+    if (n <= 1) return { kind: "mid", ...geom };
+    if (n === 2) return { kind: "L", ...geom };
+    return { kind: "U", ...geom };
+  },
+  /**
+   * Геометрия стены из битмапа препятствий на границе (не из мебели арены).
+   * Сосед вдоль кольца solid → нет торца; пусто → торец (в т.ч. пустой угол карты).
    *
-   * Полоса к play (N→s, S→n, W→e, E→w). Торцы — «хвостики» до внешнего края клетки.
-   *  1 side  — середина ряда
-   *  2 sides — торец (полоса + хвостик до экрана)
-   *  3 sides — одиночная U (полоса + оба хвостика до экрана)
-   *  square  — угол арены между двумя стенами: stub у стыка к play
+   * Полоса к play (N→s, S→n, W→e, E→w).
+   *  1 side  — mid
+   *  2 sides — L
+   *  3 sides — U
+   *  square  — stub у стыка к play
    */
   wallGeomOf(s, col, row) {
     const sides = [];
     const push = (side) => { if (!sides.includes(side)) sides.push(side); };
     const corner = this.mapCornerOf(s, col, row);
 
-    // Угол арены: 2 соседа → stub к play; 1 сосед → продолжение полосы к play
+    // Угол арены: 2 руки → stub; 1 рука → полоса-продолжение к play
     if (corner === "nw") {
       const a = this.frameSolidAt(s, col + 1, row);
       const b = this.frameSolidAt(s, col, row + 1);
@@ -3328,41 +3281,40 @@ window.FEEL_DEMOS["deadline-escape"] = {
       return { sides, square: null };
     }
 
-    // Ребро: полоса к play + торцы, если разрыв вдоль кольца.
-    // У края арены (сосед = угол карты) хвостик не ставим — стена остаётся прямой.
+    // Ребро: лицо к play + торец в каждую пустую клетку вдоль кольца
     const edge = this.fogEdgeOf(s, col, row);
-    const endCap = (nc, nr) => {
-      if (this.frameSolidAt(s, nc, nr)) return false;
+    const openAlong = (nc, nr) => {
       if (nc < 0 || nr < 0 || nc >= s.cols || nr >= s.rows) return false;
-      if (this.mapCornerOf(s, nc, nr)) return false;
-      return true;
+      return !this.frameSolidAt(s, nc, nr);
     };
     if (edge === "n") {
       push("s");
-      if (endCap(col - 1, row)) push("w");
-      if (endCap(col + 1, row)) push("e");
+      if (openAlong(col - 1, row)) push("w");
+      if (openAlong(col + 1, row)) push("e");
     } else if (edge === "s") {
       push("n");
-      if (endCap(col - 1, row)) push("w");
-      if (endCap(col + 1, row)) push("e");
+      if (openAlong(col - 1, row)) push("w");
+      if (openAlong(col + 1, row)) push("e");
     } else if (edge === "w") {
       push("e");
-      if (endCap(col, row - 1)) push("n");
-      if (endCap(col, row + 1)) push("s");
+      if (openAlong(col, row - 1)) push("n");
+      if (openAlong(col, row + 1)) push("s");
     } else if (edge === "e") {
       push("w");
-      if (endCap(col, row - 1)) push("n");
-      if (endCap(col, row + 1)) push("s");
+      if (openAlong(col, row - 1)) push("n");
+      if (openAlong(col, row + 1)) push("s");
     }
     return { sides, square: null };
   },
   /**
-   * Стены — полоса к play; хвостики торцов продлены до внешнего края (к экрану).
+   * Стены — proof по wallPictureOf (битмап → mid/L/U/stub/face).
    */
   drawWallAt(ctx, s, col, row, x, y, w, h) {
     ctx.fillStyle = "#020308";
     ctx.fillRect(x, y, w, h);
-    const { sides, square } = this.wallGeomOf(s, col, row);
+    const pic = this.wallPictureOf(s, col, row);
+    const { sides, square, kind } = pic;
+    if (kind === "empty") return;
     const band = Math.max(10, Math.round(Math.min(s.cellW, s.cellH) * 0.42));
     const body = "#c4a882";
     const edgeCol = "#6b4a2e";
@@ -3420,7 +3372,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       else if (sq === "nw") ctx.fillRect(x, y, lip, lip);
     };
 
-    if (square) {
+    if (kind === "stub" && square) {
       ctx.fillStyle = body;
       fillSquare(square);
       ctx.fillStyle = edgeCol;
@@ -3429,9 +3381,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
     if (!sides.length) return;
 
-    // Угол карты: fogEdgeOf неоднозначен (N/S раньше W/E) — не трактовать sides как face+торец,
-    // иначе продолжение прямой стены рисуется как L.
-    if (this.mapCornerOf(s, col, row)) {
+    // Угол карты: только face-полосы (fogEdgeOf неоднозначен — иначе ложный L)
+    if (kind === "face") {
       ctx.fillStyle = body;
       for (const side of sides) fillFace(side);
       ctx.fillStyle = edgeCol;
