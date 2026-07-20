@@ -11,7 +11,7 @@
   const APPROVED_FILE = "style-seed-hero.APPROVED.json";
   const REJECTED_FILE = "style-seed-hero.REJECTED.json";
   const LS_KEY = "deadline-escape.style-seed";
-  const BUST = "w250720t";
+  const BUST = "w250720u";
 
   const CHECKER = "background:repeating-conic-gradient(#2a3340 0% 25%, #1a222c 0% 50%) 50%/12px 12px";
 
