@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
   /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250720x",
+  ART_BUST: "w250720y",
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
@@ -1265,10 +1265,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250720x`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250720y`));
     // стены — proof-геометрия без спрайтов (wall/window tiles не грузим)
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250720x`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250720y`));
     this._art = art;
     return art;
   },
@@ -3312,6 +3312,34 @@ window.FEEL_DEMOS["deadline-escape"] = {
       else if (face === "w" && end === "n") ctx.fillRect(x + band, y, w - band, band);
       else if (face === "w" && end === "s") ctx.fillRect(x + band, y + h - band, w - band, band);
     };
+    /** Тёмная кайма хвостика — с внешней стороны (к экрану), как у лицевой полосы к play. */
+    const fillEndTailLip = (face, end) => {
+      if (face === "s" && end === "w") {
+        ctx.fillRect(x, y, band, lip);
+        ctx.fillRect(x, y, lip, h - band);
+      } else if (face === "s" && end === "e") {
+        ctx.fillRect(x + w - band, y, band, lip);
+        ctx.fillRect(x + w - lip, y, lip, h - band);
+      } else if (face === "n" && end === "w") {
+        ctx.fillRect(x, y + h - lip, band, lip);
+        ctx.fillRect(x, y + band, lip, h - band);
+      } else if (face === "n" && end === "e") {
+        ctx.fillRect(x + w - band, y + h - lip, band, lip);
+        ctx.fillRect(x + w - lip, y + band, lip, h - band);
+      } else if (face === "e" && end === "n") {
+        ctx.fillRect(x, y, lip, band);
+        ctx.fillRect(x, y, w - band, lip);
+      } else if (face === "e" && end === "s") {
+        ctx.fillRect(x, y + h - band, lip, band);
+        ctx.fillRect(x, y + h - lip, w - band, lip);
+      } else if (face === "w" && end === "n") {
+        ctx.fillRect(x + w - lip, y, lip, band);
+        ctx.fillRect(x + band, y, w - band, lip);
+      } else if (face === "w" && end === "s") {
+        ctx.fillRect(x + w - lip, y + h - band, lip, band);
+        ctx.fillRect(x + band, y + h - lip, w - band, lip);
+      }
+    };
     const fillSquare = (sq) => {
       if (sq === "se") ctx.fillRect(x + w - band, y + h - band, band, band);
       else if (sq === "sw") ctx.fillRect(x, y + h - band, band, band);
@@ -3354,6 +3382,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
 
     ctx.fillStyle = edgeCol;
     fillFaceLip(face);
+    for (const end of ends) fillEndTailLip(face, end);
   },
   drawProp(ctx, x, y, w, h, cell) {
     if (cell === 2 || cell === 7) return;
