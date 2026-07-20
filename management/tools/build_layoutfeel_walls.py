@@ -173,78 +173,155 @@ def blend_ai_n(ai_band: Image.Image) -> Image.Image:
 
 
 def orient(n_tile: Image.Image, edge: str) -> Image.Image:
-    """n_tile has band on TOP; derive other edges (PIL ROTATE_90 = CCW)."""
     if edge == "n":
         return n_tile
     if edge == "s":
         return n_tile.transpose(Image.Transpose.ROTATE_180)
     if edge == "e":
-        return n_tile.transpose(Image.Transpose.ROTATE_270)  # CW → right
+        return n_tile.transpose(Image.Transpose.ROTATE_270)
     if edge == "w":
-        return n_tile.transpose(Image.Transpose.ROTATE_90)  # CCW → left
+        return n_tile.transpose(Image.Transpose.ROTATE_90)
     return n_tile
 
 
-def compose_corner(mids: dict[str, Image.Image], corner: str) -> Image.Image:
-    """L from mid tiles so panel seams match n/s/e/w (no depth-paint mush)."""
-    a = np.array(under(), copy=True)
-    n = np.asarray(mids["n"].convert("RGBA"))
-    s = np.asarray(mids["s"].convert("RGBA"))
-    e = np.asarray(mids["e"].convert("RGBA"))
-    w = np.asarray(mids["w"].convert("RGBA"))
-    if corner == "nw":
-        a[:BAND, :] = n[:BAND, :]
-        a[BAND:, :BAND] = w[BAND:, :BAND]
-    elif corner == "ne":
-        a[:BAND, :] = n[:BAND, :]
-        a[BAND:, SIDE - BAND :] = e[BAND:, SIDE - BAND :]
-    elif corner == "sw":
-        a[SIDE - BAND :, :] = s[SIDE - BAND :, :]
-        a[: SIDE - BAND, :BAND] = w[: SIDE - BAND, :BAND]
-    else:  # se
-        a[SIDE - BAND :, :] = s[SIDE - BAND :, :]
-        a[: SIDE - BAND, SIDE - BAND :] = e[: SIDE - BAND, SIDE - BAND :]
-    a[:, SIDE - 1] = a[:, 0]
-    return Image.fromarray(a)
+def band_layer_color(t: float, band: int = BAND):
+    cap_h = max(12, int(band * 0.16))
+    base_h = max(14, int(band * 0.18))
+    if t < 2:
+        return CAP_HI
+    if t < cap_h:
+        return CAP
+    if t < band - base_h:
+        # soft face gradient
+        ft = (t - cap_h) / max(1, band - base_h - cap_h)
+        c0 = np.array(FACE[:3], dtype=np.float32)
+        c1 = np.array(FACE_DK[:3], dtype=np.float32)
+        rgb = (c0 * (1 - ft) + c1 * ft).astype(np.uint8)
+        return (int(rgb[0]), int(rgb[1]), int(rgb[2]), 255)
+    return BASE
 
 
-def compose_stub(mids: dict[str, Image.Image], corner: str) -> Image.Image:
-    """Outer-corner square cropped from the matching L."""
-    L = np.asarray(compose_corner(mids, corner).convert("RGBA"))
-    a = np.array(under(), copy=True)
+def depth_l(ys, xs, corner: str):
+    """L arms by geographic corner name: nw = top+left, se = bottom+right."""
     if corner == "nw":
-        a[:BAND, :BAND] = L[:BAND, :BAND]
+        # top + left
+        d_h = (BAND - 1) - ys
+        d_v = (BAND - 1) - xs
+        on_h = ys < BAND
+        on_v = xs < BAND
+        depth = np.full(ys.shape, -1, dtype=np.int32)
+        depth[on_h] = d_h[on_h]
+        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
+        mask = on_h | on_v
     elif corner == "ne":
-        a[:BAND, SIDE - BAND :] = L[:BAND, SIDE - BAND :]
+        # top + right
+        d_h = (BAND - 1) - ys
+        d_v = xs - (SIDE - BAND)
+        on_h = ys < BAND
+        on_v = xs >= SIDE - BAND
+        depth = np.full(ys.shape, -1, dtype=np.int32)
+        depth[on_h] = d_h[on_h]
+        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
+        mask = on_h | on_v
     elif corner == "sw":
-        a[SIDE - BAND :, :BAND] = L[SIDE - BAND :, :BAND]
+        # bottom + left
+        d_h = ys - (SIDE - BAND)
+        d_v = (BAND - 1) - xs
+        on_h = ys >= SIDE - BAND
+        on_v = xs < BAND
+        depth = np.full(ys.shape, -1, dtype=np.int32)
+        depth[on_h] = d_h[on_h]
+        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
+        mask = on_h | on_v
     else:
-        a[SIDE - BAND :, SIDE - BAND :] = L[SIDE - BAND :, SIDE - BAND :]
-    return Image.fromarray(a)
+        # se = bottom + right
+        d_h = ys - (SIDE - BAND)
+        d_v = xs - (SIDE - BAND)
+        on_h = ys >= SIDE - BAND
+        on_v = xs >= SIDE - BAND
+        depth = np.full(ys.shape, -1, dtype=np.int32)
+        depth[on_h] = d_h[on_h]
+        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
+        mask = on_h | on_v
+    return mask, depth
 
 
-def compose_u(mids: dict[str, Image.Image], key: str) -> Image.Image:
-    """U from mid tiles by geographic face letters."""
+def paint_by_depth(mask: np.ndarray, depth: np.ndarray, face_tex: Image.Image | None) -> Image.Image:
     a = np.array(under(), copy=True)
-    n = np.asarray(mids["n"].convert("RGBA"))
-    s = np.asarray(mids["s"].convert("RGBA"))
-    e = np.asarray(mids["e"].convert("RGBA"))
-    w = np.asarray(mids["w"].convert("RGBA"))
-    if "n" in key:
-        a[:BAND, :] = n[:BAND, :]
-    if "s" in key:
-        a[SIDE - BAND :, :] = s[SIDE - BAND :, :]
-    if "w" in key:
-        # below/above horizontal bands already placed
-        y0 = BAND if "n" in key else 0
-        y1 = SIDE - BAND if "s" in key else SIDE
-        a[y0:y1, :BAND] = w[y0:y1, :BAND]
-    if "e" in key:
-        y0 = BAND if "n" in key else 0
-        y1 = SIDE - BAND if "s" in key else SIDE
-        a[y0:y1, SIDE - BAND :] = e[y0:y1, SIDE - BAND :]
-    a[:, SIDE - 1] = a[:, 0]
+    ys, xs = np.where(mask & (depth >= 0))
+    tex = None
+    if face_tex is not None:
+        tex = np.asarray(face_tex.convert("RGBA"))
+    for y, x in zip(ys, xs):
+        t = int(depth[y, x])
+        if t < 0 or t >= BAND:
+            continue
+        col = band_layer_color(t)
+        cap_h = max(12, int(BAND * 0.16))
+        base_h = max(14, int(BAND * 0.18))
+        if tex is not None and cap_h <= t < BAND - base_h:
+            # sample AI face row
+            ty = min(BAND - 1, t)
+            tx = x % SIDE
+            tr, tg, tb, ta = tex[ty, tx]
+            if ta > 200:
+                # mix AI face into cool grey target
+                mix = np.array([tr, tg, tb], dtype=np.float32) * 0.55 + np.array(col[:3], dtype=np.float32) * 0.45
+                col = (int(mix[0]), int(mix[1]), int(mix[2]), 255)
+        a[y, x] = col
+    # inner rim highlight
+    inner = mask & (depth >= 0) & (depth <= 2)
+    a[inner] = CAP_HI
     return Image.fromarray(a)
+
+
+def make_corner(corner: str, face_tex: Image.Image | None) -> Image.Image:
+    ys, xs = np.indices((SIDE, SIDE))
+    mask, depth = depth_l(ys, xs, corner)
+    return paint_by_depth(mask, depth, face_tex)
+
+
+def make_stub(corner: str, face_tex: Image.Image | None) -> Image.Image:
+    ys, xs = np.indices((SIDE, SIDE))
+    if corner == "nw":
+        mask = (ys >= SIDE - BAND) & (xs >= SIDE - BAND)
+        depth = np.minimum(ys - (SIDE - BAND), xs - (SIDE - BAND))
+    elif corner == "ne":
+        mask = (ys >= SIDE - BAND) & (xs < BAND)
+        depth = np.minimum(ys - (SIDE - BAND), (BAND - 1) - xs)
+    elif corner == "sw":
+        mask = (ys < BAND) & (xs >= SIDE - BAND)
+        depth = np.minimum((BAND - 1) - ys, xs - (SIDE - BAND))
+    else:
+        mask = (ys < BAND) & (xs < BAND)
+        depth = np.minimum((BAND - 1) - ys, (BAND - 1) - xs)
+    depth = np.where(mask, depth, -1)
+    return paint_by_depth(mask, depth, face_tex)
+
+
+def make_u(key: str, face_tex: Image.Image | None) -> Image.Image:
+    """U by geographic face letters: n=top, s=bottom, e=right, w=left."""
+    ys, xs = np.indices((SIDE, SIDE))
+    depth = np.full((SIDE, SIDE), 10**9, dtype=np.int32)
+    mask = np.zeros((SIDE, SIDE), dtype=bool)
+    if "n" in key:
+        m = ys < BAND
+        mask |= m
+        depth = np.where(m, np.minimum(depth, (BAND - 1) - ys), depth)
+    if "s" in key:
+        m = ys >= SIDE - BAND
+        mask |= m
+        depth = np.where(m, np.minimum(depth, ys - (SIDE - BAND)), depth)
+    if "e" in key:
+        m = xs >= SIDE - BAND
+        mask |= m
+        depth = np.where(m, np.minimum(depth, xs - (SIDE - BAND)), depth)
+    if "w" in key:
+        m = xs < BAND
+        mask |= m
+        depth = np.where(m, np.minimum(depth, (BAND - 1) - xs), depth)
+    depth = np.where(mask, depth, -1)
+    return paint_by_depth(mask, depth, face_tex)
 
 
 def save(name: str, im: Image.Image) -> None:
@@ -275,11 +352,11 @@ def main() -> None:
         band = extract_n_band(raw)
         band.save(ART / "ai-set-wall-n.png")
         n = blend_ai_n(band)
-        # outer-edge canon: band on TOP of N tile (CAP outward)
-        n = n.transpose(Image.Transpose.ROTATE_180)
+        face_tex = band
     else:
         print("no AI wall master — procedural layout-feel")
-        n = paint_procedural_n(False).transpose(Image.Transpose.ROTATE_180)
+        n = paint_procedural_n(False)
+        face_tex = n.crop((0, SIDE - BAND, SIDE, SIDE))
 
     if win_src:
         print("master window:", win_src)
@@ -288,16 +365,17 @@ def main() -> None:
         try:
             wband = extract_n_band(wraw)
             wband.save(ART / "ai-set-window-n.png")
-            win_n = place_band_bottom(wband).transpose(Image.Transpose.ROTATE_180)
+            win_n = place_band_bottom(wband)
+            # reinforce dark under
             wa = np.array(win_n, copy=True)
             lum = wa[..., :3].astype(np.int16).sum(-1)
             wa[lum < 40] = UNDER
             win_n = Image.fromarray(wa)
         except Exception as e:
             print("window extract failed, procedural:", e)
-            win_n = paint_procedural_n(True).transpose(Image.Transpose.ROTATE_180)
+            win_n = paint_procedural_n(True)
     else:
-        win_n = paint_procedural_n(True).transpose(Image.Transpose.ROTATE_180)
+        win_n = paint_procedural_n(True)
 
     walls = {e: orient(n, e) for e in "nsew"}
     wins = {e: orient(win_n, e) for e in "nsew"}
@@ -310,16 +388,17 @@ def main() -> None:
     save("tile_window.png", wins["n"])
 
     for c in ("nw", "ne", "sw", "se"):
-        corner = compose_corner(walls, c)
+        corner = make_corner(c, face_tex)
         save(f"tile_wall_{c}.png", corner)
-        save(f"tile_window_{c}.png", compose_corner(wins, c))
-        stub = compose_stub(walls, c)
+        save(f"tile_window_{c}.png", corner)
+        stub = make_stub(c, face_tex)
         save(f"tile_wall_stub_{c}.png", stub)
-        save(f"tile_window_stub_{c}.png", compose_stub(wins, c))
+        save(f"tile_window_stub_{c}.png", stub)
 
     for key in ("nwe", "nsw", "nse", "swe"):
-        save(f"tile_wall_{key}.png", compose_u(walls, key))
-        save(f"tile_window_{key}.png", compose_u(wins, key))
+        u = make_u(key, face_tex)
+        save(f"tile_wall_{key}.png", u)
+        save(f"tile_window_{key}.png", u)
 
     # catalog copies
     for src_name, dst_name in [
