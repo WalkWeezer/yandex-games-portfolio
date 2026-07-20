@@ -762,10 +762,45 @@ def build_gifs() -> None:
             save_gif(pframes[:3], GIFS / "pickups_sheet.gif", duration=300)
 
     vfx = SPRITES / "vfx_sheet.png"
+    if not vfx.exists():
+        # fall back to alpha cut already in tree
+        alt = SPRITES / "alpha" / "vfx_sheet.png"
+        vfx = alt if alt.exists() else vfx
     if vfx.exists():
-        vframes = slice_by_blobs(Image.open(vfx), expect=8, min_area=250)
+        # 4×2 composed sheet — blob/column split wrongly cuts vertical strips
+        raw = Image.open(vfx).convert("RGBA")
+        # kill near-black leftover from keyed masters
+        import numpy as _np
+        _a = _np.array(raw)
+        _lum = _a[:, :, :3].astype(_np.int16).sum(-1)
+        _a[:, :, 3] = _np.where(_lum < 40, 0, _a[:, :, 3])
+        raw = Image.fromarray(_a)
+        W, H = raw.size
+        cols, rows = 4, 2
+        cw, rh = W // cols, H // rows
+        margin = 20
+        vframes = []
+        for r in range(rows):
+            for c in range(cols):
+                cell = raw.crop((c * cw, r * rh, (c + 1) * cw, (r + 1) * rh))
+                bb = content_bbox(cell, alpha_min=18)
+                if not bb:
+                    vframes.append(Image.new("RGBA", (FRAME_SIZE, FRAME_SIZE), (0, 0, 0, 0)))
+                    continue
+                x0, y0, x1, y1 = bb
+                x0, y0 = max(0, x0 - 4), max(0, y0 - 4)
+                x1, y1 = min(cell.width, x1 + 4), min(cell.height, y1 + 4)
+                cropped = cell.crop((x0, y0, x1, y1))
+                max_w, max_h = FRAME_SIZE - margin * 2, FRAME_SIZE - margin * 2
+                scale = min(max_w / max(cropped.width, 1), max_h / max(cropped.height, 1), 1.0)
+                nw = max(1, int(round(cropped.width * scale)))
+                nh = max(1, int(round(cropped.height * scale)))
+                scaled = cropped.resize((nw, nh), Image.Resampling.LANCZOS)
+                fr = Image.new("RGBA", (FRAME_SIZE, FRAME_SIZE), (0, 0, 0, 0))
+                fr.paste(scaled, ((FRAME_SIZE - nw) // 2, (FRAME_SIZE - nh) // 2), scaled)
+                vframes.append(fr)
         names = ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"]
-        print("VFX blobs", len(vframes))
+        print("VFX grid 4x2", len(vframes))
         for i, name in enumerate(names):
             if i >= len(vframes):
                 break
