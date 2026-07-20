@@ -1212,14 +1212,16 @@ window.FEEL_DEMOS["deadline-escape"] = {
   hint: "BETA спрайты · тап — шаг · кофе/бейдж · день ≈60с",
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
+  /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
+  ART_BUST: "w250720j",
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
     "../games/deadline-escape/refs/sprites/",
   ],
   ensureArt() {
-    if (this._art) return this._art;
-    const art = { ready: false, base: "", img: Object.create(null), failed: Object.create(null) };
+    if (this._art && this._art.bust === this.ART_BUST) return this._art;
+    const art = { ready: false, base: "", bust: this.ART_BUST, img: Object.create(null), failed: Object.create(null) };
     const tryLoad = (key, rel) => {
       if (art.img[key] || art.failed[key]) return;
       const img = new Image();
@@ -1263,21 +1265,21 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallfix1`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250720j`));
     // каркас: полосы + цельные L/U (одна заливка, без склейки полос) + stub
     ["n", "s", "e", "w"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallfix1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallfix1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=w250720j`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=w250720j`);
     });
     ["nw", "ne", "sw", "se"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallfix1`);
-      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=wallfix1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=w250720j`);
+      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=w250720j`);
     });
     ["nwe", "nsw", "nse", "swe"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallfix1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=w250720j`);
     });
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=wallfix1`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250720j`));
     this._art = art;
     return art;
   },
@@ -3215,7 +3217,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (s.allyFlash > 0 && s.allyFlashText) {
       api.setHud(s.allyFlashText);
     } else {
-      api.setHud(`${this.clock(s.gameMin)} · ${ph.label} · эт.${s.floor} · 🪙${s.coins}${buff ? " · " + buff : ""}${god}${startTip}${s.nearMiss > 0 ? " · near!" : ""}${tip}`);
+      api.setHud(`${this.clock(s.gameMin)} · ${ph.label} · эт.${s.floor} · 🪙${s.coins}${buff ? " · " + buff : ""}${god}${startTip}${s.nearMiss > 0 ? " · near!" : ""}${tip} · ${this.ART_BUST}`);
     }
   },
   /** Пиксельные границы клетки — без субпиксельных щелей между спрайтами. */
