@@ -1958,17 +1958,59 @@ window.FEEL_DEMOS["deadline-escape"] = {
   },
   edgeSpawns(s, dir) {
     // спавн на внешней кромке полосы тумана (открытый пол); стены — не спавн
+    // угол каркаса / лайн вдоль fog → play недоступен — такие клетки отбрасываем
     const cells = [];
     if (dir === "down") {
-      for (let c = 0; c < s.cols; c++) if (this.spawnCellOpen(s, c, 0)) cells.push({ col: c, row: 0, dir });
+      for (let c = 0; c < s.cols; c++) {
+        if (this.spawnCellOpen(s, c, 0) && this.edgeLeadsToPlay(s, c, 0, dir)) cells.push({ col: c, row: 0, dir });
+      }
     } else if (dir === "up") {
-      for (let c = 0; c < s.cols; c++) if (this.spawnCellOpen(s, c, s.rows - 1)) cells.push({ col: c, row: s.rows - 1, dir });
+      for (let c = 0; c < s.cols; c++) {
+        if (this.spawnCellOpen(s, c, s.rows - 1) && this.edgeLeadsToPlay(s, c, s.rows - 1, dir)) {
+          cells.push({ col: c, row: s.rows - 1, dir });
+        }
+      }
     } else if (dir === "right") {
-      for (let r = 0; r < s.rows; r++) if (this.spawnCellOpen(s, 0, r)) cells.push({ col: 0, row: r, dir });
+      for (let r = 0; r < s.rows; r++) {
+        if (this.spawnCellOpen(s, 0, r) && this.edgeLeadsToPlay(s, 0, r, dir)) cells.push({ col: 0, row: r, dir });
+      }
     } else if (dir === "left") {
-      for (let r = 0; r < s.rows; r++) if (this.spawnCellOpen(s, s.cols - 1, r)) cells.push({ col: s.cols - 1, row: r, dir });
+      for (let r = 0; r < s.rows; r++) {
+        if (this.spawnCellOpen(s, s.cols - 1, r) && this.edgeLeadsToPlay(s, s.cols - 1, r, dir)) {
+          cells.push({ col: s.cols - 1, row: r, dir });
+        }
+      }
     }
     return cells;
+  },
+  /**
+   * Из клетки тумана по dir можно за 1 шаг tryMoverStep попасть в play
+   * (отсекает углы каркаса и лайны вдоль fog-полосы).
+   */
+  edgeLeadsToPlay(s, col, row, dir) {
+    const d = this.DIRS[dir];
+    if (!d) return false;
+    const land = this.tryMoverStep(s, col, row, d.dc, d.dr);
+    if (!land) return false;
+    return this.onPlayFloor(s, land.col, land.row);
+  },
+  corridorClear(s, col, row, dir, depth) {
+    // от входа: после fog-перескока — depth клеток play-пола без пропов
+    const d = this.DIRS[dir];
+    let c = col, r = row;
+    let playChecked = 0;
+    for (let i = 0; i < depth + 4; i++) {
+      c += d.dc; r += d.dr;
+      if (c < 0 || r < 0 || c >= s.cols || r >= s.rows) return false;
+      if (this.inFogBorder(s, c, r)) {
+        if (s.map[r][c] !== 0) return false;
+        continue;
+      }
+      if (s.map[r][c] !== 0) return false;
+      playChecked++;
+      if (playChecked >= depth) return true;
+    }
+    return playChecked >= depth;
   },
   /** 0 на 1 этаже; растёт с каждым днём */
   floorIdx(s) {
@@ -2167,7 +2209,13 @@ window.FEEL_DEMOS["deadline-escape"] = {
     this.sfx("drop");
     return true;
   },
-  /** Escape graph: player can reach ≥1 safe cell not under imminent threat lanes */
+  /** Линейные паттерны: fairness режет 1–2 клетки впереди по курсу (не мёртвый "line"). */
+  isLaneThreat(t) {
+    return t.pattern === "dash" || t.pattern === "pincer" || t.pattern === "wide"
+      || t.pattern === "report" || t.pattern === "ghost" || t.pattern === "peek"
+      || t.pattern === "hold";
+  },
+  /** Escape graph: player can reach ≥3 safe cells not under imminent threat lanes */
   hasEscape(s, extraThreat) {
     const threats = extraThreat ? s.threats.concat(extraThreat) : s.threats;
     const blocked = new Set();
@@ -2175,8 +2223,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const c = Math.round(t.col), r = Math.round(t.row);
       if (c < 0 || r < 0 || c >= s.cols || r >= s.rows) continue;
       blocked.add(`${c},${r}`);
-      if (t.pattern === "line") {
-        const d = this.DIRS[t.dir];
+      if (this.isLaneThreat(t)) {
+        const d = this.DIRS[t.dir] || { dc: t.dc || 0, dr: t.dr || 0 };
         for (let i = 1; i <= 2; i++) {
           const bc = c + d.dc * i, br = r + d.dr * i;
           if (bc < 0 || br < 0 || bc >= s.cols || br >= s.rows) continue;
@@ -2219,17 +2267,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
     return this.KINDS.find((k) => k.id === id) || this.KINDS.find((k) => k.id === "hr");
   },
-  corridorClear(s, col, row, dir, depth) {
-    // от входа: транзит края → пол арены (не стены/пропы)
-    const d = this.DIRS[dir];
-    let c = col, r = row;
-    for (let i = 0; i < depth; i++) {
-      c += d.dc; r += d.dr;
-      if (c < 0 || r < 0 || c >= s.cols || r >= s.rows) continue;
-      if (s.map[r][c] !== 0) return false;
-    }
-    return true;
-  },
   /** Ghost тоже только из проходов — не из стен/окон. */
   edgeSpawnsAny(s, dir) {
     return this.edgeSpawns(s, dir);
@@ -2256,7 +2293,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
       peekPhase: "in",
       peekDepth: 2 + ((Math.random() * 3) | 0),
       floorSteps: 0,
-      waitDur: kind.pattern === "hold" ? (0.55 + Math.random() * 0.45) : (0.75 + Math.random() * 0.7),
+      // hold (ВСТР) держит клетку дольше peek; peek — короткий загляд
+      waitDur: kind.pattern === "hold" ? (1.85 + Math.random() * 1.35) : (0.75 + Math.random() * 0.7),
       waitT: 0,
       holdDone: false,
       blinkT: 0.35 + Math.random() * 0.25,
@@ -2305,36 +2343,46 @@ window.FEEL_DEMOS["deadline-escape"] = {
     const kind = this.KINDS.find((k) => k.id === "client");
     const b = s.border | 0;
     const vertical = Math.random() < 0.5;
+    const tryPair = (dirA, pickA, dirB, pickB) => {
+      const a = this.baseThreat(s, kind, dirA, pickA);
+      const b2 = this.baseThreat(s, kind, dirB, pickB);
+      a.pattern = "pincer"; b2.pattern = "pincer";
+      // fairness как у makeThreat: оба входа на краю + полоса впереди
+      const ghostA = { ...a, col: pickA.col, row: pickA.row };
+      const ghostB = { ...b2, col: pickB.col, row: pickB.row };
+      if (!this.hasEscape(s, [ghostA, ghostB])) return false;
+      s.threats.push(a, b2);
+      return true;
+    };
     if (vertical) {
       const cols = [];
       for (let c = b; c < s.cols - b; c++) {
         if (this.walkable(s, c, b) && this.walkable(s, c, s.rows - b - 1)) cols.push(c);
       }
       if (!cols.length) return false;
-      const lane = api.pick(cols);
-      const top = this.edgeSpawns(s, "down").find((o) => o.col === lane);
-      const bot = this.edgeSpawns(s, "up").find((o) => o.col === lane);
-      if (!top || !bot) return false;
-      const a = this.baseThreat(s, kind, "down", top);
-      const b2 = this.baseThreat(s, kind, "up", bot);
-      a.pattern = "pincer"; b2.pattern = "pincer";
-      s.threats.push(a, b2);
-      return true;
+      // несколько попыток лайна — hasEscape может отвергнуть узкий коридор
+      const shuffled = cols.slice().sort(() => Math.random() - 0.5);
+      for (const lane of shuffled.slice(0, Math.min(6, shuffled.length))) {
+        const top = this.edgeSpawns(s, "down").find((o) => o.col === lane);
+        const bot = this.edgeSpawns(s, "up").find((o) => o.col === lane);
+        if (!top || !bot) continue;
+        if (tryPair("down", top, "up", bot)) return true;
+      }
+      return false;
     }
     const rows = [];
     for (let r = b; r < s.rows - b; r++) {
       if (this.walkable(s, b, r) && this.walkable(s, s.cols - b - 1, r)) rows.push(r);
     }
     if (!rows.length) return false;
-    const lane = api.pick(rows);
-    const left = this.edgeSpawns(s, "right").find((o) => o.row === lane);
-    const right = this.edgeSpawns(s, "left").find((o) => o.row === lane);
-    if (!left || !right) return false;
-    const a = this.baseThreat(s, kind, "right", left);
-    const b2 = this.baseThreat(s, kind, "left", right);
-    a.pattern = "pincer"; b2.pattern = "pincer";
-    s.threats.push(a, b2);
-    return true;
+    const shuffled = rows.slice().sort(() => Math.random() - 0.5);
+    for (const lane of shuffled.slice(0, Math.min(6, shuffled.length))) {
+      const left = this.edgeSpawns(s, "right").find((o) => o.row === lane);
+      const right = this.edgeSpawns(s, "left").find((o) => o.row === lane);
+      if (!left || !right) continue;
+      if (tryPair("right", left, "left", right)) return true;
+    }
+    return false;
   },
   spawnWave(s, api, ph) {
     const max = this.maxThreats(s);
@@ -2546,6 +2594,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
   advanceWeave(s, t, cellsPerSec, dt) {
     if (!t.entered) {
       if (this.enterUntilFloor(s, t, cellsPerSec, dt, 0.9)) return;
+      if (t.entered) {
+        this.weavePickNext(s, t);
+        t.frac = 0;
+      }
       return;
     }
     const speed = cellsPerSec * 0.85;
@@ -2590,7 +2642,17 @@ window.FEEL_DEMOS["deadline-escape"] = {
     while (t.frac >= 1) {
       t.frac -= 1;
       const land = this.tryMoverStep(s, t.col, t.row, t.dc, t.dr);
-      if (!land) { t._dead = true; return; }
+      if (!land) {
+        // упёрся в проп: при заходе — ранний wait+разворот; на выходе — despawn
+        if (t.peekPhase === "in" && t.entered) {
+          t.peekPhase = "wait";
+          t.waitT = t.waitDur;
+          t.frac = 0;
+          return;
+        }
+        t._dead = true;
+        return;
+      }
       t.col = land.col; t.row = land.row;
       if (this.onPlayFloor(s, t.col, t.row)) {
         t.entered = true;
@@ -2618,18 +2680,37 @@ window.FEEL_DEMOS["deadline-escape"] = {
   advanceDash(s, t, cellsPerSec, dt) {
     this.lineStepPassable(s, t, cellsPerSec, dt, 1.35);
   },
+  /**
+   * ВСТР (hold): зашёл → долго держит клетку → уходит обратно.
+   * Не «короткий peek без разворота» и не dash с паузой.
+   */
   advanceHold(s, t, cellsPerSec, dt) {
     if (t.peekPhase === "wait") {
       t.waitT -= dt;
       t.frac = 0;
-      if (t.waitT <= 0) t.peekPhase = "out";
+      t.holdDone = true;
+      if (t.waitT <= 0) {
+        t.peekPhase = "out";
+        this.reverseDir(t);
+      }
       return;
     }
-    t.frac += cellsPerSec * 0.88 * dt;
+    const speed = cellsPerSec * (t.peekPhase === "out" ? 1.0 : 0.88);
+    t.frac += speed * dt;
     while (t.frac >= 1) {
       t.frac -= 1;
       const land = this.tryMoverStep(s, t.col, t.row, t.dc, t.dr);
-      if (!land) { t._dead = true; return; }
+      if (!land) {
+        if (t.peekPhase === "in" && t.entered) {
+          t.peekPhase = "wait";
+          t.waitT = t.waitDur;
+          t.holdDone = true;
+          t.frac = 0;
+          return;
+        }
+        t._dead = true;
+        return;
+      }
       t.col = land.col; t.row = land.row;
       if (this.onPlayFloor(s, t.col, t.row)) {
         t.entered = true;
@@ -2638,6 +2719,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
           if (t.floorSteps >= t.peekDepth) {
             t.peekPhase = "wait";
             t.waitT = t.waitDur;
+            t.holdDone = true;
             t.frac = 0;
             return;
           }
@@ -2654,19 +2736,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
       if (cx < -1.4 || cy < -1.4 || cx > s.cols + 0.4 || cy > s.rows + 0.4) t._dead = true;
     }
   },
-  /** Охранник: патруль туда-сюда по ряду/колонке — плавно */
+  /** Охранник: патруль туда-сюда; ось выбирается по доступным соседям (не умирает в узком коридоре). */
   advancePatrol(s, t, cellsPerSec, dt) {
     if (!t.entered) {
       if (this.enterUntilFloor(s, t, cellsPerSec, dt, 0.85)) return;
       if (t.entered) {
-        if (t.homeDir === "down" || t.homeDir === "up") {
-          t.dc = Math.random() < 0.5 ? 1 : -1;
-          t.dr = 0;
-        } else {
-          t.dc = 0;
-          t.dr = Math.random() < 0.5 ? 1 : -1;
-        }
-        t.dir = t.dc === 1 ? "right" : t.dc === -1 ? "left" : t.dr === 1 ? "down" : "up";
+        this.patrolPickDir(s, t);
         t.frac = 0;
       }
       return;
@@ -2679,11 +2754,33 @@ window.FEEL_DEMOS["deadline-escape"] = {
       if (!this.walkable(s, nc, nr)) {
         this.reverseDir(t);
         nc = t.col + t.dc; nr = t.row + t.dr;
-        if (!this.walkable(s, nc, nr)) { t._dead = true; return; }
+        if (!this.walkable(s, nc, nr)) {
+          // оба конца оси закрыты — сменить ось/курс
+          this.patrolPickDir(s, t);
+          nc = t.col + t.dc; nr = t.row + t.dr;
+          if (!this.walkable(s, nc, nr)) { t._dead = true; return; }
+        }
       }
       t.col = nc; t.row = nr;
       if (t.age > 16) { t._dead = true; return; }
     }
+  },
+  patrolPickDir(s, t) {
+    const horiz = [{ dc: 1, dr: 0 }, { dc: -1, dr: 0 }]
+      .filter((d) => this.walkable(s, t.col + d.dc, t.row + d.dr));
+    const vert = [{ dc: 0, dr: 1 }, { dc: 0, dr: -1 }]
+      .filter((d) => this.walkable(s, t.col + d.dc, t.row + d.dr));
+    const preferHoriz = t.homeDir === "down" || t.homeDir === "up";
+    let pool = preferHoriz ? horiz : vert;
+    if (!pool.length) pool = preferHoriz ? vert : horiz;
+    if (!pool.length) pool = horiz.concat(vert);
+    if (!pool.length) {
+      t.dc = 0; t.dr = 0;
+      return;
+    }
+    const pick = pool[(Math.random() * pool.length) | 0];
+    t.dc = pick.dc; t.dr = pick.dr;
+    t.dir = t.dc === 1 ? "right" : t.dc === -1 ? "left" : t.dr === 1 ? "down" : "up";
   },
   /** Стажёр: хаотичные шаги — плавное скольжение */
   advanceChaos(s, t, cellsPerSec, dt) {
@@ -2732,6 +2829,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
   advanceHunt(s, t, cellsPerSec, dt) {
     if (!t.entered) {
       if (this.enterUntilFloor(s, t, cellsPerSec, dt, 0.8)) return;
+      if (t.entered) {
+        // сразу курс на игрока, не «в стену по направлению входа»
+        t.dc = 0; t.dr = 0;
+      }
       return;
     }
     const pickHunt = () => {
@@ -2750,11 +2851,16 @@ window.FEEL_DEMOS["deadline-escape"] = {
       }
       t.dc = Math.sign(next.col - t.col);
       t.dr = Math.sign(next.row - t.row);
-      if (!t.dc && !t.dr) return;
+      if (!t.dc && !t.dr) {
+        // уже на клетке игрока — стоим (хит по телу), не крутимся
+        return;
+      }
       t.dir = t.dc === 1 ? "right" : t.dc === -1 ? "left" : t.dr === 1 ? "down" : "up";
     };
     if (!t.dc && !t.dr) pickHunt();
     if (t._dead) return;
+    // на клетке игрока — не накапливаем frac в никуда
+    if (!t.dc && !t.dr) return;
     const speed = cellsPerSec * 0.48;
     t.frac += speed * dt;
     while (t.frac >= 1) {
@@ -2762,13 +2868,14 @@ window.FEEL_DEMOS["deadline-escape"] = {
       let nc = t.col + t.dc, nr = t.row + t.dr;
       if (!this.walkable(s, nc, nr)) {
         pickHunt();
-        if (t._dead) return;
+        if (t._dead || (!t.dc && !t.dr)) return;
         nc = t.col + t.dc; nr = t.row + t.dr;
         if (!this.walkable(s, nc, nr)) { t._dead = true; return; }
       }
       t.col = nc; t.row = nr;
       pickHunt();
       if (t._dead) return;
+      if (!t.dc && !t.dr) { t.frac = 0; return; }
       if (t.age > 14) { t._dead = true; return; }
     }
   },
@@ -2800,7 +2907,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
     if (t.entered && (t.col < 0 || t.row < 0 || t.col >= s.cols || t.row >= s.rows)) t._dead = true;
   },
-  /** IT: быстрый рывок на 2 клетки — плавно, без телепорта */
+  /** IT: быстрый рывок на 2 клетки — плавно, без телепорта; в проп не despawn */
   advanceBlink(s, t, cellsPerSec, dt) {
     if (!t.entered) {
       if (this.enterUntilFloor(s, t, cellsPerSec, dt, 1.0)) return;
@@ -2816,9 +2923,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
       t.frac -= 1;
       const land = this.tryMoverStep(s, t.col, t.row, t.dc, t.dr);
       if (!land) {
+        // упёрся: отменить рывок, сменить курс, не _dead на середине арены
         t.dashLeft = 0;
-        t._dead = true;
-        return;
+        t.frac = 0;
+        this.blinkRepath(s, t);
+        t.blinkT = 0.35 + Math.random() * 0.3;
+        break;
       }
       t.col = land.col; t.row = land.row;
       if (dashing) {
@@ -2844,10 +2954,24 @@ window.FEEL_DEMOS["deadline-escape"] = {
         t.flash = 0.2;
         t.blinkT = 99;
       } else {
+        this.blinkRepath(s, t);
         t.blinkT = 0.4 + Math.random() * 0.3;
       }
     }
     if (t.entered && (t.col < 0 || t.row < 0 || t.col >= s.cols || t.row >= s.rows)) t._dead = true;
+    if (t.age > 14) t._dead = true;
+  },
+  blinkRepath(s, t) {
+    const opts = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+      .map(([dc, dr]) => ({ dc, dr }))
+      .filter((d) => this.walkable(s, t.col + d.dc, t.row + d.dr));
+    if (!opts.length) return;
+    // предпочитаем не разворот на 180, если есть выбор
+    const forward = opts.filter((d) => !(d.dc === -t.dc && d.dr === -t.dr));
+    const pool = forward.length ? forward : opts;
+    const pick = pool[(Math.random() * pool.length) | 0];
+    t.dc = pick.dc; t.dr = pick.dr;
+    t.dir = t.dc === 1 ? "right" : t.dc === -1 ? "left" : t.dr === 1 ? "down" : "up";
   },
   /** Секретарь: медленно, хитбокс на 2 клетки */
   advanceWide(s, t, cellsPerSec, dt) {
