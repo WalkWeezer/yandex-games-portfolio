@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
 /** Меняй при выкладке стен — сбрасывает кэш ensureArt (не показывать игроку в prod) */
-  ART_BUST: "w250721x",
+  ART_BUST: "w250721y",
   /** Production = без DEV∞/эт±/GOD. play/ ставит DEADLINE_PROD=true; дашборд: ?dev=1 включает дев. */
   isProd() {
     if (window.DEADLINE_PROD === true) return true;
@@ -1276,21 +1276,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721x`));
-    // стены layout-feel: mid / L / U / stub (+ window)
-    [
-      "wall_n", "wall_s", "wall_e", "wall_w",
-      "wall_nw", "wall_ne", "wall_sw", "wall_se",
-      "wall_nwe", "wall_nsw", "wall_nse", "wall_swe",
-      "wall_stub_nw", "wall_stub_ne", "wall_stub_sw", "wall_stub_se",
-      "window_n", "window_s", "window_e", "window_w",
-      "window_nw", "window_ne", "window_sw", "window_se",
-      "window_nwe", "window_nsw", "window_nse", "window_swe",
-      "window_stub_nw", "window_stub_ne", "window_stub_sw", "window_stub_se",
-      "wall", "window",
-    ].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721x`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721y`));
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721x`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721y`));
     this._art = art;
     return art;
   },
@@ -3291,7 +3279,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
    *  1 side  — mid
    *  2 sides — L
    *  3 sides — U
-   *  square  — stub (имя квадрата к play; wallTileKey зеркалит в geographic file)
+   *  square  — stub (имя квадрата к play)
    */
   wallGeomOf(s, col, row) {
     const sides = [];
@@ -3361,53 +3349,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return { sides, square: null };
   },
   /**
-   * Ключ спрайта стены из wallPictureOf (layout-feel tiles).
-   * sides = полосы в клетке (n/s/e/w географически: n=верх клетки).
-   * mid: face→ребро карты (s→tile_wall_n — полоса снизу к play).
-   * L/U: имя = набор faces (nw = верх+лево).
-   */
-  wallTileKey(s, col, row) {
-    const pic = this.wallPictureOf(s, col, row);
-    const { kind, sides, square } = pic;
-    if (kind === "empty") return null;
-    const win = s.map[row][col] === 7;
-    const pref = win ? "tile_window_" : "tile_wall_";
-    const faceToEdge = { s: "n", n: "s", e: "w", w: "e" };
-    if (kind === "stub" && square) {
-      const bySq = { se: "nw", sw: "ne", ne: "sw", nw: "se" };
-      return pref + "stub_" + (bySq[square] || "nw");
-    }
-    if (kind === "mid" || kind === "face") {
-      if (sides.length !== 1) return null;
-      const edge = faceToEdge[sides[0]];
-      return edge ? pref + edge : null;
-    }
-    if (kind === "L") {
-      const set = new Set(sides);
-      if (set.has("n") && set.has("w")) return pref + "nw";
-      if (set.has("n") && set.has("e")) return pref + "ne";
-      if (set.has("s") && set.has("w")) return pref + "sw";
-      if (set.has("s") && set.has("e")) return pref + "se";
-      return null;
-    }
-    if (kind === "U") {
-      const set = new Set(sides);
-      if (set.has("n") && set.has("w") && set.has("e")) return pref + "nwe";
-      if (set.has("n") && set.has("s") && set.has("w")) return pref + "nsw";
-      if (set.has("n") && set.has("s") && set.has("e")) return pref + "nse";
-      if (set.has("s") && set.has("w") && set.has("e")) return pref + "swe";
-      return null;
-    }
-    return null;
-  },
-  /**
-   * Стены — спрайты layout-feel по wallPictureOf; fallback — proof-геометрия.
+   * Стены — только procedural-заглушки по wallPictureOf (без спрайтов).
    */
   drawWallAt(ctx, s, col, row, x, y, w, h) {
     ctx.fillStyle = "#020308";
     ctx.fillRect(x, y, w, h);
-    const key = this.wallTileKey(s, col, row);
-    if (key && this.drawTile(ctx, key, x, y, w, h)) return;
     const pic = this.wallPictureOf(s, col, row);
     const { sides, square, kind } = pic;
     if (kind === "empty") return;

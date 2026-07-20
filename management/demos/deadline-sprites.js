@@ -11,7 +11,7 @@
   const APPROVED_FILE = "style-seed-hero.APPROVED.json";
   const REJECTED_FILE = "style-seed-hero.REJECTED.json";
   const LS_KEY = "deadline-escape.style-seed";
-  const BUST = "w250721x";
+  const BUST = "w250721y";
 
   const CHECKER = "background:repeating-conic-gradient(#2a3340 0% 25%, #1a222c 0% 50%) 50%/12px 12px";
 
@@ -308,32 +308,12 @@
     {
       id: "walls",
       group: "Feel demo",
-      nav: "Стены / окна",
+      nav: "Стены",
       html: () =>
         card(
-          "Каркас · layout-feel mid / L / U / stub",
-          "Сборка: <code>build_layoutfeel_walls.py</code> от <code>refs/levels/layout-feel.png</code> + AI masters. " +
-            "Демка рисует спрайты через <code>wallTileKey</code> ← <code>wallPictureOf</code>.",
-          pngRow([
-            ["ai-wall-n-layoutfeel.png", "AI wall N", true, ART],
-            ["ai-window-n-layoutfeel.png", "AI window N", true, ART],
-            ["ai-set-wall-n.png", "band master", true, ART],
-            ["wall_layoutfeel_preview.png", "set preview", true],
-          ]) +
-            pngRow([
-              ["frames/tile_wall_n.png", "wall N"],
-              ["frames/tile_wall_s.png", "wall S"],
-              ["frames/tile_wall_e.png", "wall E"],
-              ["frames/tile_wall_w.png", "wall W"],
-              ["frames/tile_window_n.png", "window N"],
-              ["frames/tile_window_e.png", "window E"],
-            ]) +
-            pngRow([
-              ["frames/tile_wall_nw.png", "угол nw"],
-              ["frames/tile_wall_ne.png", "угол ne"],
-              ["frames/tile_wall_nwe.png", "U nwe"],
-              ["frames/tile_wall_stub_nw.png", "stub nw"],
-            ])
+          "Каркас · procedural-заглушки",
+          "Feel-демка рисует только геометрические заглушки через <code>wallPictureOf</code> / <code>drawWallAt</code> (полосы, L, U, stub).",
+          `<p class="sp-desc" style="margin:0">Отдельных ассетов для стен в каталоге нет.</p>`
         ),
     },
     {
