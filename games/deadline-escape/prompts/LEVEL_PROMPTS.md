@@ -33,23 +33,22 @@ encounters:
 notes: no hide zones; no soft-lock pockets
 ```
 
-## JOB B — ASCII sketch (example floor 1)
+## JOB B — ASCII sketch (example floor 1, play 5×7)
 
 ```
-(fog band 1 — example; walls frame play)
+(fog 1; desks not on entry perimeter)
 .2.7.2.
 2.....2
-..1.1..
 .......
-..1.3..
-.......
-..1.1..
-...4...
+..1[]..
 2.....2
-.2...7.
+....3..
+....4..
+2.....2
+.2...2.
 ```
 
-(Outer `.` = fog floor for spawn silhouettes; `2`/`7` = decor. Play aisles stay connected.)
+(Outer fog `.` = spawn enter/exit; `2`/`7` = wall/window. Play aisles connected; props prefer interior.)
 
 ## JOB C — Encounter recipes (not tint-only)
 
