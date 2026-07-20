@@ -9,7 +9,6 @@ import {
   LOGICAL_W,
   MINUTES_PER_SECOND,
   MOVE_DUR,
-  PALETTE,
   SHIELD_IFRAMES,
   START_IFRAMES,
   TIME_SCALE,
@@ -28,6 +27,7 @@ import {
 } from "../systems/ThreatSystem";
 import { buildMap, findStart, gridSizeForFloor, walkable } from "../systems/GridMap";
 import { loadMeta, saveMeta } from "../systems/MetaSave";
+import { FONT, MU, addProgressBar, fillSafeBg, setProgress } from "../ui/UiKit";
 
 interface RunInit {
   floor?: number;
@@ -41,8 +41,6 @@ export class RunScene extends Phaser.Scene {
   private border = FOG_BORDER;
   private cols = 0;
   private rows = 0;
-  private playCols = 5;
-  private playRows = 7;
 
   private playerCol = 0;
   private playerRow = 0;
@@ -72,13 +70,18 @@ export class RunScene extends Phaser.Scene {
   private cell = 64;
   private ox = 0;
   private oy = 0;
+  private fieldTop = 180;
+  private fieldH = 900;
 
   private layerMap!: Phaser.GameObjects.Container;
   private layerEnt!: Phaser.GameObjects.Container;
   private hero!: Phaser.GameObjects.Image;
   private hudClock!: Phaser.GameObjects.Text;
   private hudPhase!: Phaser.GameObjects.Text;
-  private hudBuff!: Phaser.GameObjects.Text;
+  private dayFill!: Phaser.GameObjects.Rectangle;
+  private dayTrack!: Phaser.GameObjects.Rectangle;
+  private buffCoffee!: Phaser.GameObjects.Container;
+  private buffShield!: Phaser.GameObjects.Container;
   private tipLayer!: Phaser.GameObjects.Container;
   private threatSprites = new Map<string, Phaser.GameObjects.Image>();
   private pickupSprites: Phaser.GameObjects.Image[] = [];
@@ -97,10 +100,10 @@ export class RunScene extends Phaser.Scene {
 
   create(): void {
     registerPlaceholders(this);
-    this.cameras.main.setBackgroundColor(PALETTE.carpet);
+    fillSafeBg(this);
     this.ended = false;
     this.paused = false;
-    this.tipOn = true;
+    this.tipOn = !loadMeta().tutSeen;
     this.gameMin = 0;
     this.coffeeLeft = 0;
     this.shield = false;
@@ -120,8 +123,6 @@ export class RunScene extends Phaser.Scene {
     this.border = grid.border;
     this.cols = grid.cols;
     this.rows = grid.rows;
-    this.playCols = grid.playCols;
-    this.playRows = grid.playRows;
     this.map = buildMap(this.floor, grid);
     const start = findStart(this.map, this.border);
     this.playerCol = start.col;
@@ -129,49 +130,16 @@ export class RunScene extends Phaser.Scene {
     this.playerPx = start.col;
     this.playerPy = start.row;
 
+    this.buildHud();
     this.layoutMetrics();
-    this.layerMap = this.add.container(0, 0);
+    this.drawPlayfieldFrame();
+    this.layerMap = this.add.container(0, 0).setDepth(2);
     this.layerEnt = this.add.container(0, 0).setDepth(5);
     this.drawMap();
     this.spawnFloorPickups();
 
     this.hero = this.add.image(0, 0, "char_hero").setDepth(10);
     this.placeHero();
-
-    this.hudClock = this.add
-      .text(24, 16, "09:00", {
-        fontFamily: "Trebuchet MS, Segoe UI, sans-serif",
-        fontSize: "28px",
-        color: "#1d3557",
-        fontStyle: "bold",
-      })
-      .setDepth(40);
-    this.hudPhase = this.add
-      .text(24, 50, "Утро", {
-        fontFamily: "Trebuchet MS, Segoe UI, sans-serif",
-        fontSize: "20px",
-        color: "#5b6b82",
-      })
-      .setDepth(40);
-    this.hudBuff = this.add
-      .text(LOGICAL_W - 24, 16, "", {
-        fontFamily: "Trebuchet MS, Segoe UI, sans-serif",
-        fontSize: "24px",
-        color: "#1d3557",
-      })
-      .setOrigin(1, 0)
-      .setDepth(40);
-
-    const pauseBtn = this.add
-      .text(LOGICAL_W - 24, 56, "❚❚", {
-        fontFamily: "Trebuchet MS, Segoe UI, sans-serif",
-        fontSize: "26px",
-        color: "#1d3557",
-      })
-      .setOrigin(1, 0)
-      .setInteractive({ useHandCursor: true })
-      .setDepth(40);
-    pauseBtn.on("pointerup", () => this.openPause());
 
     const kb = this.input.keyboard!;
     this.keys = {
@@ -201,6 +169,7 @@ export class RunScene extends Phaser.Scene {
     });
 
     this.buildTip();
+    if (!this.tipOn) this.tipLayer.setVisible(false);
     getSdk().gameplayStart();
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       if (!this.ended) getSdk().gameplayStop();
@@ -218,12 +187,97 @@ export class RunScene extends Phaser.Scene {
     this.scene.start("Hub");
   }
 
+  private buildHud(): void {
+    this.add
+      .rectangle(LOGICAL_W / 2, 56, MU.contentW, 72, MU.panelHi, 0.96)
+      .setStrokeStyle(2, MU.line)
+      .setDepth(40);
+    this.hudClock = this.add
+      .text(56, 56, "09:00", {
+        fontFamily: FONT,
+        fontSize: "28px",
+        color: "#1d3557",
+        fontStyle: "bold",
+      })
+      .setOrigin(0, 0.5)
+      .setDepth(41);
+
+    this.add
+      .text(LOGICAL_W / 2, 56, `эт.${this.floor}`, {
+        fontFamily: FONT,
+        fontSize: "22px",
+        color: "#5b6b82",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setDepth(41);
+
+    const pauseBg = this.add
+      .rectangle(LOGICAL_W - 68, 56, 72, 56, MU.panelHi)
+      .setStrokeStyle(2, MU.line)
+      .setDepth(41)
+      .setInteractive({ useHandCursor: true });
+    this.add
+      .text(LOGICAL_W - 68, 56, "⏸", {
+        fontFamily: FONT,
+        fontSize: "28px",
+        color: "#1d3557",
+      })
+      .setOrigin(0.5)
+      .setDepth(42);
+    pauseBg.on("pointerup", () => this.openPause());
+
+    this.hudPhase = this.add
+      .text(56, 118, "УТРО", {
+        fontFamily: FONT,
+        fontSize: "18px",
+        color: "#5b6b82",
+        fontStyle: "bold",
+      })
+      .setOrigin(0, 0.5)
+      .setDepth(41);
+
+    this.buffCoffee = this.makeBuff(LOGICAL_W - 160, 118, "☕");
+    this.buffShield = this.makeBuff(LOGICAL_W - 88, 118, "🪪");
+
+    const bar = addProgressBar(this, 156, 0, MU.contentW);
+    this.dayTrack = bar.track.setDepth(40);
+    this.dayFill = bar.fill.setDepth(41);
+  }
+
+  private makeBuff(x: number, y: number, glyph: string): Phaser.GameObjects.Container {
+    const bg = this.add.rectangle(0, 0, 60, 60, MU.panel).setStrokeStyle(2, MU.line);
+    const t = this.add.text(0, 0, glyph, { fontFamily: FONT, fontSize: "26px" }).setOrigin(0.5);
+    return this.add.container(x, y, [bg, t]).setDepth(41).setAlpha(0.35);
+  }
+
+  private setBuffOn(c: Phaser.GameObjects.Container, on: boolean): void {
+    c.setAlpha(on ? 1 : 0.35);
+    const bg = c.list[0] as Phaser.GameObjects.Rectangle;
+    if (on) {
+      bg.setFillStyle(0xfff8e6);
+      bg.setStrokeStyle(2, 0xc9a24a);
+    } else {
+      bg.setFillStyle(MU.panel);
+      bg.setStrokeStyle(2, MU.line);
+    }
+  }
+
+  private drawPlayfieldFrame(): void {
+    this.add
+      .rectangle(LOGICAL_W / 2, this.fieldTop + this.fieldH / 2, MU.contentW, this.fieldH, 0xc8d2e0)
+      .setStrokeStyle(2, MU.line)
+      .setDepth(1);
+  }
+
   private layoutMetrics(): void {
-    const maxW = LOGICAL_W - 48;
-    const maxH = LOGICAL_H - 220;
+    this.fieldTop = 180;
+    this.fieldH = LOGICAL_H - this.fieldTop - 40;
+    const maxW = MU.contentW - 24;
+    const maxH = this.fieldH - 24;
     this.cell = Math.floor(Math.min(maxW / this.cols, maxH / this.rows));
     this.ox = (LOGICAL_W - this.cols * this.cell) / 2;
-    this.oy = 100;
+    this.oy = this.fieldTop + (this.fieldH - this.rows * this.cell) / 2;
   }
 
   private drawMap(): void {
@@ -241,9 +295,7 @@ export class RunScene extends Phaser.Scene {
           .image(this.ox + c * this.cell + this.cell / 2, this.oy + r * this.cell + this.cell / 2, key)
           .setDisplaySize(this.cell - 1, this.cell - 1);
         this.layerMap.add(img);
-        if (fog && code === 0) {
-          img.setAlpha(0.75);
-        }
+        if (fog && code === 0) img.setAlpha(0.75);
       }
     }
   }
@@ -285,30 +337,46 @@ export class RunScene extends Phaser.Scene {
 
   private buildTip(): void {
     this.tipLayer = this.add.container(0, 0).setDepth(50);
-    const dim = this.add.rectangle(LOGICAL_W / 2, LOGICAL_H / 2, LOGICAL_W, LOGICAL_H, 0x1d3557, 0.45);
-    const panel = this.add.rectangle(LOGICAL_W / 2, 560, 560, 420, 0xf7fafc).setStrokeStyle(2, 0xb7c4d4);
-    const title = this.add
-      .text(LOGICAL_W / 2, 400, "Как играть", {
-        fontFamily: "Trebuchet MS, Segoe UI, sans-serif",
-        fontSize: "32px",
-        color: "#1d3557",
+    const dim = this.add.rectangle(LOGICAL_W / 2, LOGICAL_H / 2, LOGICAL_W, LOGICAL_H, 0x1d3557, 0.28);
+    const panelH = 320;
+    const panelY = LOGICAL_H - 40 - panelH / 2;
+    const panel = this.add
+      .rectangle(LOGICAL_W / 2, panelY, MU.contentW, panelH, MU.panelHi, 0.97)
+      .setStrokeStyle(2, MU.line);
+    const label = this.add
+      .text(56, panelY - 120, COPY.tutTitle.toUpperCase(), {
+        fontFamily: FONT,
+        fontSize: "16px",
+        color: "#5b6b82",
         fontStyle: "bold",
       })
-      .setOrigin(0.5);
-    const body = this.add
-      .text(LOGICAL_W / 2, 520, COPY.tut, {
-        fontFamily: "Trebuchet MS, Segoe UI, sans-serif",
+      .setOrigin(0, 0.5);
+    const rules = this.add
+      .text(56, panelY - 60, COPY.tutRules, {
+        fontFamily: FONT,
         fontSize: "22px",
-        color: "#5b6b82",
-        align: "center",
-        wordWrap: { width: 480 },
-        lineSpacing: 8,
+        color: "#1d3557",
+        fontStyle: "bold",
+        wordWrap: { width: MU.contentW - 64 },
+        lineSpacing: 6,
       })
-      .setOrigin(0.5);
-    const btn = this.add.rectangle(LOGICAL_W / 2, 700, 280, 64, PALETTE.uiCta).setStrokeStyle(2, 0xc9a24a);
+      .setOrigin(0, 0.5);
+    const controls = this.add
+      .text(56, panelY + 20, COPY.tutControls, {
+        fontFamily: FONT,
+        fontSize: "18px",
+        color: "#5b6b82",
+        fontStyle: "bold",
+        wordWrap: { width: MU.contentW - 64 },
+      })
+      .setOrigin(0, 0.5);
+    const shadow = this.add.rectangle(LOGICAL_W / 2, panelY + 108, MU.contentW - 48, 64, MU.ctaLo);
+    const btn = this.add
+      .rectangle(LOGICAL_W / 2, panelY + 102, MU.contentW - 48, 64, MU.cta)
+      .setStrokeStyle(2, 0xc9a24a);
     const btnT = this.add
-      .text(LOGICAL_W / 2, 700, "Понятно", {
-        fontFamily: "Trebuchet MS, Segoe UI, sans-serif",
+      .text(LOGICAL_W / 2, panelY + 102, COPY.tutOk, {
+        fontFamily: FONT,
         fontSize: "24px",
         color: "#3d2e0a",
         fontStyle: "bold",
@@ -317,8 +385,11 @@ export class RunScene extends Phaser.Scene {
     btn.setInteractive({ useHandCursor: true }).on("pointerup", () => {
       this.tipOn = false;
       this.tipLayer.setVisible(false);
+      const m = loadMeta();
+      m.tutSeen = true;
+      saveMeta(m);
     });
-    this.tipLayer.add([dim, panel, title, body, btn, btnT]);
+    this.tipLayer.add([dim, panel, label, rules, controls, shadow, btn, btnT]);
   }
 
   private openPause(): void {
@@ -426,8 +497,7 @@ export class RunScene extends Phaser.Scene {
 
   private tickThreats(dt: number): void {
     const phase = phaseOf(this.gameMin);
-    const alive = this.threats.filter((t) => !t.dead);
-    this.threats = alive;
+    this.threats = this.threats.filter((t) => !t.dead);
     const baseInterval = 1.15 * phase.spawnMul;
     this.spawnAcc += dt;
     if (this.spawnAcc >= baseInterval) {
@@ -500,12 +570,10 @@ export class RunScene extends Phaser.Scene {
 
   private refreshHud(): void {
     this.hudClock.setText(clockOf(this.gameMin));
-    this.hudPhase.setText(`${phaseOf(this.gameMin).label} · эт.${this.floor}`);
-    const buffs: string[] = [];
-    if (this.shield) buffs.push("ID");
-    if (this.coffeeLeft > 0) buffs.push("☕");
-    buffs.push(`🪙${this.coinsRun}`);
-    this.hudBuff.setText(buffs.join(" "));
+    this.hudPhase.setText(phaseOf(this.gameMin).label.toUpperCase());
+    this.setBuffOn(this.buffCoffee, this.coffeeLeft > 0);
+    this.setBuffOn(this.buffShield, this.shield);
+    setProgress(this.dayFill, this.dayTrack, this.gameMin / TOTAL_MIN);
   }
 
   private fail(): void {

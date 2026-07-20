@@ -1,6 +1,15 @@
 import Phaser from "phaser";
 import { COPY } from "../data/canon";
-import { addCta, addMuted, addSecondary, addTitle, fillBg } from "../ui/UiKit";
+import {
+  FONT,
+  LOGICAL_W,
+  MU,
+  addCta,
+  addLabel,
+  addPanel,
+  addSecondary,
+  fillSafeBg,
+} from "../ui/UiKit";
 
 interface ResultData {
   win: boolean;
@@ -21,19 +30,40 @@ export class ResultScene extends Phaser.Scene {
   }
 
   create(): void {
-    fillBg(this, this.payload.win ? 0xe6f6f3 : 0xffe8ea);
-    addTitle(this, 280, this.payload.win ? COPY.promote : COPY.failTitle, 42);
-    if (this.payload.win) {
-      addMuted(this, 360, `Этаж → ${this.payload.floor}`);
-      addMuted(this, 410, "Время до 18:00 ✓");
-      addMuted(this, 460, `🪙 итого ${this.payload.coins}`);
-      addCta(this, 700, COPY.nextFloor, () => this.scene.start("Run", { floor: this.payload.floor }));
-    } else {
-      addMuted(this, 360, `Этаж ${this.payload.floor}`);
-      addMuted(this, 410, `Время ${this.payload.clock || "—"}`);
-      addMuted(this, 460, `🪙 ${this.payload.coins}`);
-      addCta(this, 700, COPY.again, () => this.scene.start("Run", { floor: this.payload.floor }));
-    }
-    addSecondary(this, 800, COPY.toHub, () => this.scene.start("Hub"));
+    fillSafeBg(this);
+    const win = this.payload.win;
+
+    addPanel(this, 160, 140, MU.contentW, win ? MU.okBg : MU.dangerBg, win ? 0x9ed9d0 : 0xf1a0a6);
+    addLabel(this, 80, 110, "Result", 0);
+    this.add
+      .text(LOGICAL_W / 2, 175, win ? COPY.promote : COPY.failTitle, {
+        fontFamily: FONT,
+        fontSize: "40px",
+        color: win ? "#115e59" : "#7a1520",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5);
+
+    const rows = win
+      ? [`Этаж → ${this.payload.floor}`, "Время до 18:00 ✓", `🪙 итого ${this.payload.coins}`]
+      : [`Этаж ${this.payload.floor}`, `Время ${this.payload.clock || "—"}`, `🪙 ${this.payload.coins}`];
+
+    rows.forEach((line, i) => {
+      const y = 360 + i * 110;
+      addPanel(this, y, 88);
+      this.add
+        .text(LOGICAL_W / 2, y, line, {
+          fontFamily: FONT,
+          fontSize: "26px",
+          color: "#1d3557",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5);
+    });
+
+    addCta(this, 820, win ? COPY.nextFloor : COPY.again, () => {
+      this.scene.start("Run", { floor: this.payload.floor });
+    });
+    addSecondary(this, 960, COPY.toHub, () => this.scene.start("Hub"));
   }
 }

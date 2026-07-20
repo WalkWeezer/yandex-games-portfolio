@@ -2,36 +2,41 @@ import Phaser from "phaser";
 import { registerPlaceholders } from "../assets/placeholders";
 import { COPY } from "../data/canon";
 import { createYandexSdk } from "../sdk/yandex";
-import { addMuted, addTitle, fillBg } from "../ui/UiKit";
+import { FONT, MU, addBrand, addLabel, addMuted, addProgressBar, fillSafeBg, setProgress } from "../ui/UiKit";
 
 export class BootScene extends Phaser.Scene {
   constructor() {
     super("Boot");
   }
 
-  preload(): void {
-    /* placeholders generated in create */
-  }
-
   async create(): Promise<void> {
-    fillBg(this, 0xeaf0f7);
-    addTitle(this, 420, COPY.brand, 40);
-    addMuted(this, 490, "Yandex Games · HTML5");
-    const barBg = this.add.rectangle(360, 640, 420, 18, 0xc5d0df).setStrokeStyle(1, 0xb7c4d4);
-    const bar = this.add.rectangle(360 - 210 + 8, 640, 16, 12, 0x2a9d8f).setOrigin(0, 0.5);
-    const msg = addMuted(this, 700, "Инициализация SDK…");
+    fillSafeBg(this);
+    addBrand(this, 420, "Yandex Games · HTML5");
+
+    const panel = this.add.rectangle(360, 640, MU.contentW * 0.92, 160, MU.panelHi).setStrokeStyle(2, MU.line);
+    addLabel(this, 360, 580, "LoadingAPI");
+    const msg = this.add
+      .text(360, 620, "Инициализация SDK…", {
+        fontFamily: FONT,
+        fontSize: "20px",
+        color: "#5b6b82",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5);
+    const { track, fill } = addProgressBar(this, 680, 0.1, MU.contentW * 0.78);
+    void panel;
 
     registerPlaceholders(this);
 
     const sdk = await createYandexSdk();
     await sdk.init();
-    bar.width = 200;
+    setProgress(fill, track, 0.55);
     msg.setText(sdk.isMock ? "SDK DEV_MOCK…" : "SDK…");
     await new Promise((r) => setTimeout(r, 180));
-    bar.width = 400;
+    setProgress(fill, track, 1);
     sdk.loadingReady();
     msg.setText("LoadingAPI.ready()");
-    void barBg;
+    addMuted(this, 1180, "portrait-primary · 720×1280");
     await new Promise((r) => setTimeout(r, 160));
     this.scene.start("Menu");
   }
