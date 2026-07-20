@@ -208,20 +208,18 @@
         ${pngRow([["char_hero_idle_sheet.png", "ГГ idle sheet"], ["char_hero_walk_sheet.png", "ГГ walk sheet"]], SP)}
       </div>
       <div class="sp-card">
-        <h3>Необходимые env-спрайты</h3>
+        <h3>Необходимые env-спрайты · каркас</h3>
         <p class="sp-desc">
-          Полоса тумана + каркас офиса. Полный список: <code>DESIGN.md</code> §8.
-          Новые обязательные: <strong>wall</strong>, <strong>window</strong>.
+          Полоса тумана. <strong>Конец сегмента стены = угол</strong> (<code>tile_wall_end_*</code>).
+          Список: <code>DESIGN.md</code> §8 · сборка <code>build_border_tiles.py</code>.
         </p>
-        <ul class="sp-desc" style="margin:0.4rem 0 0.8rem 1.1rem;line-height:1.45">
-          <li><code>tile_floor_a/b</code> · <code>tile_desk</code> · <code>tile_desk2</code> · <code>tile_plant</code> · <code>tile_cooler</code> · <code>tile_fog</code></li>
-          <li><code>tile_wall.png</code> — клетка <code>2</code> (есть черновик)</li>
-          <li><code>tile_window.png</code> — клетка <code>7</code> <span class="sp-chip todo">нужен</span></li>
-        </ul>
         ${pngRow([
-          ["frames/tile_wall.png", "tile_wall"],
-          ["frames/tile_floor_a.png", "tile_floor_a"],
-          ["frames/tile_desk.png", "tile_desk"],
+          ["frames/tile_wall_n.png", "wall N"],
+          ["frames/tile_window_n.png", "window N"],
+          ["frames/tile_wall_end_n_l.png", "end/угол L"],
+          ["frames/tile_wall_end_n_r.png", "end/угол R"],
+          ["frames/tile_corner_nw.png", "corner NW"],
+          ["border_wall_preview.png", "preview set", true],
         ], SP)}
       </div>
     `;

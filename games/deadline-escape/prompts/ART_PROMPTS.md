@@ -65,14 +65,18 @@ Top-down cartoon 7 by 9 office floor plan illustration: border walls, desks bloc
 
 ## JOB I — Env tiles (fog-frame) → `refs/sprites/frames/`
 
-Нужны для полосы тумана / каркаса офиса (feel demo + MVP). Якорь: `layout-feel.png`.
+Каркас полосы тумана. Якорь: `layout-feel.png`.  
+**Закон:** конец сегмента стены = **угловой** спрайт (`tile_wall_end_*`), не обрез mid-тайла.
 
-| Out | Prompt focus |
-|-----|----------------|
-| `tile_wall.png` | Top-down cartoon office wall / cubicle partition tile 32×32, gray-blue panel + metal trim, game-ready, seamless-ish edge, no characters, no text |
-| `tile_window.png` | Top-down cartoon office window wall segment 32×32, same frame language as wall tile, light blue glass panes, satirical corporate, game-ready, no text |
+| Out | Role |
+|-----|------|
+| `tile_wall_{n,s,e,w}` | прямая стена, лицо к play |
+| `tile_window_{n,s,e,w}` | окно на ребре |
+| `tile_wall_end_*` | конец сегмента (угол / end-cap) |
+| `tile_corner_{nw,ne,sw,se}` | L-угол комнаты |
 
-Уже в scaffolding (не регать без нужды): `tile_floor_a/b`, `tile_desk`, `tile_desk2`, `tile_plant`, `tile_cooler`, `tile_fog`.
+Сборка из chroma-листов: `python management/tools/build_border_tiles.py`  
+Исходники: `refs/sprites/chroma/border_wall_sheet_*_chroma.png`.
 
 ## DoD
 

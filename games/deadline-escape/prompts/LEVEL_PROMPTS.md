@@ -10,7 +10,7 @@ Cell: 0 floor · 1 desk · 2 wall · 3 plant · 4 cooler · 5/6 desk2×1 · 7 wi
 Play grid: 7×9 (+growth every 25 floors)
 Fog band: always +1 cell each side (player cannot walk; FoW gradient outer→black)
 Decor: wall/window segments on fog frame (beauty obstacles, seeded like furniture)
-Required sprites: tile_wall, tile_window (+ existing floor/desk/plant/cooler/fog)
+Required sprites: tile_wall_*/window_*/wall_end_*(ends=corners)/corner_* (+ floor/desk/plant/cooler/fog)
 Interior: desks/props in play only; aisles connected
 Spawn: from open fog-band edge cells; visible under FoW
 Hit: body overlap (px/py), not shared cell

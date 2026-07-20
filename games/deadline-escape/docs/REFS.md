@@ -22,8 +22,12 @@
 | `frames/tile_desk.png` · `tile_desk2.png` | столы |
 | `frames/tile_plant.png` · `tile_cooler.png` | пропы |
 | `frames/tile_fog.png` | текстура FoW |
-| `frames/tile_wall.png` | **стена** (полоса тумана, клетка `2`) |
-| `frames/tile_window.png` | **окно** (полоса тумана, клетка `7`) — нужен production |
+| `frames/tile_wall_{n,s,e,w}.png` | прямая стена каркаса |
+| `frames/tile_window_{n,s,e,w}.png` | окно каркаса |
+| `frames/tile_wall_end_*.png` | конец сегмента (= угол) |
+| `frames/tile_corner_{nw,ne,sw,se}.png` | угол комнаты |
+| `border_wall_preview.png` | превью набора |
+| `chroma/border_wall_sheet_*_chroma.png` | исходники листа |
 | `frames/pu_*` · `vfx_*` | пикапы / VFX scaffolding |
 
 Motion tutorial: [Slynyrd Pixelblog 55](https://www.slynyrd.com/blog/2025/3/24/pixelblog-55-top-down-character-animation)
