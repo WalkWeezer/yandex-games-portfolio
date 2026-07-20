@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="../assets/sprite-catalog.css?v=w250721q"/>
 <link rel="stylesheet" href="../assets/sprite-demo.css?v=w250721q"/>
 <link rel="stylesheet" href="../assets/sfx-catalog.css?v=w250721q"/>
+<link rel="stylesheet" href="../assets/deadline-mock-ui.css?v=mu250720a"/>
 </head>
 <body>
 <div class="layout">
@@ -52,6 +53,7 @@
 
     <nav class="tabs" role="tablist">
       <button class="tab active" data-tab="overview">Обзор</button>
+      <button class="tab" data-tab="beta">Бета-тест</button>
       <button class="tab" data-tab="demo">Демка</button>
       <button class="tab" data-tab="wireframe">Wireframe UI</button>
       <button class="tab" data-tab="sprites">Спрайты</button>
@@ -68,13 +70,13 @@
         <div class="panel">
           <h3>Что смотреть</h3>
           <ul class="checklist-static">
-            <li><strong>Демка</strong> — сначала пощупай feel простыми фигурами</li>
+            <li><strong>Бета-тест</strong> — мок UI шелл под Яндекс Игры (экраны + SDK log)</li>
+            <li><strong>Демка</strong> — feel сетки со спрайтами</li>
             <li><strong>Wireframe UI</strong> — сверка экранов (блоки без арта)</li>
             <li><strong>Спрайты</strong> — инвентарь кадров (каталог + vibe refs)</li>
             <li><strong>SFX</strong> — процедурные звуки + office_loop</li>
             <li>Классический GDD / LLM-спека — <strong>полный текст</strong> + оглавление (<code>REVIEW</code>)</li>
-            <li>Референсы — новый vibe-set (key art, mood, герой, боссы)</li>
-            <li>Промпты — атомарные задания под grid-canon</li>
+            <li>Референсы — vibe-set · Промпты — атомарные задания</li>
           </ul>
           <h3>Правило</h3>
           <p class="warn">Пока статус не <strong>Подтверждён</strong>, папку <code>src/</code> не создавать. CONFIRM только после playtest демки (F1→F2). См. <code>docs/METHODOLOGY.md</code>.</p>
@@ -87,11 +89,20 @@
             <li><code>docs/REFS.md</code> · <code>GAP_VS_CHAS_PIK.md</code></li>
             <li><code>prompts/*.md</code> · <code>refs/**</code></li>
             <li><code>archive/2026-07-17-pre-feel-sync/</code> — старый пакет</li>
-            <li><code>management/demos/</code> — feel SoT</li>
+            <li><code>management/demos/</code> — feel SoT + <code>deadline-mock-ui.js</code></li>
           </ul>
           <div class="progress big"><i data-progress-for="deadline-escape"></i></div>
           <div class="muted" style="margin-top:8px">Прогресс готовности (дизайн + гейты)</div>
         </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-beta">
+      <div class="panel">
+        <h3>Бета-тест — мок UI (Яндекс Игры)</h3>
+        <p class="lead">Интерактивный шелл экранов MVP: Boot → Menu → Hub → Daily/Run → Pause / Caught(RV) → Result → Shop. Портрет 720×1280, DEV_MOCK LoadingAPI / GameplayAPI / Rewarded / Interstitial.</p>
+        <div class="lan-box">С телефона: <code>serve-dashboard.bat</code> → <code>/management/projects/deadline-escape.html#beta</code>. Feel геймплея — вкладка «Демка».</div>
+        <div id="mu-app"></div>
       </div>
     </section>
 
@@ -268,6 +279,7 @@ window.CURRENT_SLUG = "deadline-escape";
 <script src="../demos/demos-03-06.js?v=w250721q"></script>
 <script src="../demos/demos-07-10.js?v=w250721q"></script>
 <script src="../demos/deadline-wireframes.js?v=w250721q"></script>
+<script src="../demos/deadline-mock-ui.js?v=mu250720a"></script>
 <script src="../demos/deadline-sprites.js?v=w250721q"></script>
 <script src="../demos/deadline-sfx.js?v=w250721q"></script>
 <script src="../assets/deadline-docs-bundle.js?v=w250721q"></script>

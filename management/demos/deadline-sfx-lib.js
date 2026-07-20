@@ -129,7 +129,7 @@
   const CATALOG = [
     { id: "step", label: "Шаг", when: "Игрок сходил на клетку", dur: "~45ms", prio: "MVP" },
     { id: "coin", label: "Монета", when: "Подобрал coin", dur: "~150ms", prio: "MVP" },
-    { id: "coffee", label: "Кофе", when: "Подобрал slow-mo у коллеги", dur: "~200ms", prio: "MVP" },
+    { id: "coffee", label: "Кофе", when: "Подобрал slow-mo с карты", dur: "~200ms", prio: "MVP" },
     { id: "badge", label: "Бейдж", when: "Подобрал щит с пола", dur: "~200ms", prio: "MVP" },
     { id: "drop", label: "Падение", when: "Бейдж упал на пол", dur: "~90ms", prio: "MVP" },
     { id: "shield_break", label: "Щит лопнул", when: "Поглощён удар", dur: "~200ms", prio: "MVP" },

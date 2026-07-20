@@ -1454,7 +1454,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       moving: false, fromCol: start.col, fromRow: start.row, moveT: 0, moveDur: 0.095,
       walkStride: 0,
       gameMin: 0, minutesPerSecond: 18, totalMin: 540,
-      threats: [], pickups: [], colleagues: [], zones: [], spawnT: 1.2,
+      threats: [], pickups: [], zones: [], spawnT: 1.2,
       alive: true, won: false, invuln: 1.5,
       coffeeBoost: 0, shield: false, coins: 0, floor, bestFloor: floor,
       nearMiss: 0, tutorial: 3.2, pendingClick: null,
@@ -1560,7 +1560,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return this.edgeTransitOk(s, col, row);
   },
   /**
-   * Один шаг моба/коллеги. Клетки тени (fog) недоступны: открытый лайн
+   * Один шаг моба. Клетки тени (fog) недоступны: открытый лайн
    * перескакивается в том же шаге (off-map ↔ play), стена на каркасе — стоп.
    */
   tryMoverStep(s, col, row, dc, dr) {
@@ -1969,17 +1969,59 @@ window.FEEL_DEMOS["deadline-escape"] = {
   },
   edgeSpawns(s, dir) {
     // спавн на внешней кромке полосы тумана (открытый пол); стены — не спавн
+    // угол каркаса / лайн вдоль fog → play недоступен — такие клетки отбрасываем
     const cells = [];
     if (dir === "down") {
-      for (let c = 0; c < s.cols; c++) if (this.spawnCellOpen(s, c, 0)) cells.push({ col: c, row: 0, dir });
+      for (let c = 0; c < s.cols; c++) {
+        if (this.spawnCellOpen(s, c, 0) && this.edgeLeadsToPlay(s, c, 0, dir)) cells.push({ col: c, row: 0, dir });
+      }
     } else if (dir === "up") {
-      for (let c = 0; c < s.cols; c++) if (this.spawnCellOpen(s, c, s.rows - 1)) cells.push({ col: c, row: s.rows - 1, dir });
+      for (let c = 0; c < s.cols; c++) {
+        if (this.spawnCellOpen(s, c, s.rows - 1) && this.edgeLeadsToPlay(s, c, s.rows - 1, dir)) {
+          cells.push({ col: c, row: s.rows - 1, dir });
+        }
+      }
     } else if (dir === "right") {
-      for (let r = 0; r < s.rows; r++) if (this.spawnCellOpen(s, 0, r)) cells.push({ col: 0, row: r, dir });
+      for (let r = 0; r < s.rows; r++) {
+        if (this.spawnCellOpen(s, 0, r) && this.edgeLeadsToPlay(s, 0, r, dir)) cells.push({ col: 0, row: r, dir });
+      }
     } else if (dir === "left") {
-      for (let r = 0; r < s.rows; r++) if (this.spawnCellOpen(s, s.cols - 1, r)) cells.push({ col: s.cols - 1, row: r, dir });
+      for (let r = 0; r < s.rows; r++) {
+        if (this.spawnCellOpen(s, s.cols - 1, r) && this.edgeLeadsToPlay(s, s.cols - 1, r, dir)) {
+          cells.push({ col: s.cols - 1, row: r, dir });
+        }
+      }
     }
     return cells;
+  },
+  /**
+   * Из клетки тумана по dir можно за 1 шаг tryMoverStep попасть в play
+   * (отсекает углы каркаса и лайны вдоль fog-полосы).
+   */
+  edgeLeadsToPlay(s, col, row, dir) {
+    const d = this.DIRS[dir];
+    if (!d) return false;
+    const land = this.tryMoverStep(s, col, row, d.dc, d.dr);
+    if (!land) return false;
+    return this.onPlayFloor(s, land.col, land.row);
+  },
+  corridorClear(s, col, row, dir, depth) {
+    // от входа: после fog-перескока — depth клеток play-пола без пропов
+    const d = this.DIRS[dir];
+    let c = col, r = row;
+    let playChecked = 0;
+    for (let i = 0; i < depth + 4; i++) {
+      c += d.dc; r += d.dr;
+      if (c < 0 || r < 0 || c >= s.cols || r >= s.rows) return false;
+      if (this.inFogBorder(s, c, r)) {
+        if (s.map[r][c] !== 0) return false;
+        continue;
+      }
+      if (s.map[r][c] !== 0) return false;
+      playChecked++;
+      if (playChecked >= depth) return true;
+    }
+    return playChecked >= depth;
   },
   /** 0 на 1 этаже; растёт с каждым днём */
   floorIdx(s) {
@@ -2105,7 +2147,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
     this.stepToward(s, cell.col, cell.row);
   },
-  /** Кофе = slow-mo мира (боссы/коллеги), не ускорение шага */
+  /** Кофе = slow-mo мира (боссы), не ускорение шага */
   worldScale(s) {
     return s.coffeeBoost > 0 ? 0.42 : 1;
   },
@@ -2161,123 +2203,30 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (t.frac > 0.02 && this.isObstacleCell(s, t.col + t.dc, t.row + t.dr)) return true;
     return false;
   },
-  spawnColleague(s, api) {
-    const bonus = Math.random() < 0.42 ? "shield" : "coffee";
-    if (s.colleagues.some((c) => c.bonus === bonus)) return false;
-    if (bonus === "shield" && s.pickups.some((p) => p.type === "shield")) return false;
-    const dirs = ["down", "up", "left", "right"];
-    const shuffled = dirs.slice().sort(() => Math.random() - 0.5);
-    for (const dir of shuffled) {
-      let opts = this.edgeSpawns(s, dir).filter((o) => this.corridorClear(s, o.col, o.row, dir, 2));
-      if (!opts.length) continue;
-      // не «летит в игрока» по его полосе — предпочитаем соседние коридоры
-      const offLane = opts.filter((o) => (dir === "down" || dir === "up") ? o.col !== s.col : o.row !== s.row);
-      if (offLane.length) opts = offLane;
-      const pick = api.pick(opts);
-      const d = this.DIRS[dir];
-      const start = this.offMapStart(pick, dir);
-      const entryC = pick.col;
-      const entryR = pick.row;
-      if (!this.spawnCellOpen(s, entryC, entryR)) continue;
-      if (entryC === s.col && entryR === s.row) continue;
-      s.colleagues.push({
-        col: start.col, row: start.row, frac: 0,
-        dir, dc: d.dc, dr: d.dr,
-        px: start.col, py: start.row,
-        bonus,
-        age: 0,
-        floorSteps: 0,
-        dropAfter: 1 + ((Math.random() * 2) | 0), // через 1–2 шага по полу бейдж падает
-        offerT: 0,
-        offerDone: false,
-        helped: false,
-        waveT: 0,
-      });
-      if (!(s.allyFlash > 0)) {
-        s.allyFlash = 1.6;
-        s.allyFlashText = bonus === "coffee" ? "Коллега несёт кофе!" : "Коллега несёт бейдж!";
-      }
-      return true;
+  /** Кофе / бейдж — сразу на клетке карты, без моба-коллеги */
+  spawnMapBonus(s, api) {
+    const type = Math.random() < 0.42 ? "shield" : "coffee";
+    if (s.pickups.some((p) => p.type === type)) return false;
+    const cells = this.walkList(s, s.col, s.row).filter((cell) =>
+      !s.pickups.some((p) => p.col === cell.col && p.row === cell.row)
+    );
+    if (!cells.length) return false;
+    const pick = api.pick(cells);
+    s.pickups.push({ col: pick.col, row: pick.row, type });
+    if (!(s.allyFlash > 0)) {
+      s.allyFlash = 1.4;
+      s.allyFlashText = type === "coffee" ? "Кофе на карте!" : "Бейдж на карте!";
     }
-    return false;
-  },
-  /** Бейдж падает на клетку — его надо подобрать, не срывать с коллеги */
-  dropBadge(s, c) {
-    if (c.bonus !== "shield" || c.dropped) return false;
-    let col = c.col, row = c.row;
-    if (!this.walkable(s, col, row)) {
-      const near = this.walkList(s);
-      if (!near.length) return false;
-      let best = near[0], bestD = 99;
-      for (const cell of near) {
-        const d = Math.abs(cell.col - col) + Math.abs(cell.row - row);
-        if (d < bestD) { bestD = d; best = cell; }
-      }
-      col = best.col; row = best.row;
-    }
-    if (s.pickups.some((p) => p.type === "shield" && p.col === col && p.row === row)) return false;
-    s.pickups.push({ col, row, type: "shield" });
-    c.bonus = null;
-    c.dropped = true;
     this.sfx("drop");
     return true;
   },
-  colleagueFacePlayer(s, c) {
-    const fdc = Math.sign(Math.round(s.px) - c.col);
-    const fdr = Math.sign(Math.round(s.py) - c.row);
-    if (fdc || fdr) c.dir = this.facingFromDelta(fdc, fdr);
+  /** Линейные паттерны: fairness режет 1–2 клетки впереди по курсу (не мёртвый "line"). */
+  isLaneThreat(t) {
+    return t.pattern === "dash" || t.pattern === "pincer" || t.pattern === "wide"
+      || t.pattern === "report" || t.pattern === "ghost" || t.pattern === "peek"
+      || t.pattern === "hold";
   },
-  colleagueTravelDir(c) {
-    c.dir = c.dc === 1 ? "right" : c.dc === -1 ? "left" : c.dr === 1 ? "down" : "up";
-  },
-  advanceColleague(s, c, cellsPerSec, dt) {
-    c.age += dt;
-    c.px = c.col + c.dc * c.frac;
-    c.py = c.row + c.dr * c.frac;
-
-    // после кофе — помахал и уходит живым (не «убитый моб»)
-    if (c.waveT > 0) {
-      c.waveT -= dt;
-      this.colleagueFacePlayer(s, c);
-      return;
-    }
-
-    const dist = Math.abs(c.px - s.px) + Math.abs(c.py - s.py);
-    // пауза-предложение: друг ждёт, игрок сам подходит
-    if (c.bonus && !c.helped && dist <= 1.6) {
-      if (c.offerT <= 0 && !c.offerDone) {
-        c.offerT = 0.85;
-        c.offerDone = true;
-      }
-    }
-    if (c.offerT > 0) {
-      c.offerT -= dt;
-      this.colleagueFacePlayer(s, c);
-      return;
-    }
-
-    this.colleagueTravelDir(c);
-    const speed = cellsPerSec * 0.38;
-    c.frac += speed * dt;
-    while (c.frac >= 1) {
-      c.frac -= 1;
-      const land = this.tryMoverStep(s, c.col, c.row, c.dc, c.dr);
-      if (!land) { c._dead = true; return; }
-      c.col = land.col; c.row = land.row;
-      if (c.bonus === "shield" && !c.dropped && this.onPlayFloor(s, c.col, c.row)) {
-        c.floorSteps = (c.floorSteps || 0) + 1;
-        if (c.floorSteps >= (c.dropAfter || 1)) this.dropBadge(s, c);
-      }
-    }
-    c.px = c.col + c.dc * c.frac;
-    c.py = c.row + c.dr * c.frac;
-    // ушёл за противоположный край после прохода поля
-    if (c.age > 1 && (c.px < -1.35 || c.py < -1.35 || c.px > s.cols + 0.35 || c.py > s.rows + 0.35)) {
-      if (c.bonus === "shield" && !c.dropped) this.dropBadge(s, c);
-      c._dead = true;
-    }
-  },
-  /** Escape graph: player can reach ≥1 safe cell not under imminent threat lanes */
+  /** Escape graph: player can reach ≥3 safe cells not under imminent threat lanes */
   hasEscape(s, extraThreat) {
     const threats = extraThreat ? s.threats.concat(extraThreat) : s.threats;
     const blocked = new Set();
@@ -2285,8 +2234,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const c = Math.round(t.col), r = Math.round(t.row);
       if (c < 0 || r < 0 || c >= s.cols || r >= s.rows) continue;
       blocked.add(`${c},${r}`);
-      if (t.pattern === "line") {
-        const d = this.DIRS[t.dir];
+      if (this.isLaneThreat(t)) {
+        const d = this.DIRS[t.dir] || { dc: t.dc || 0, dr: t.dr || 0 };
         for (let i = 1; i <= 2; i++) {
           const bc = c + d.dc * i, br = r + d.dr * i;
           if (bc < 0 || br < 0 || bc >= s.cols || br >= s.rows) continue;
@@ -2329,17 +2278,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
     return this.KINDS.find((k) => k.id === id) || this.KINDS.find((k) => k.id === "hr");
   },
-  corridorClear(s, col, row, dir, depth) {
-    // от входа: транзит края → пол арены (не стены/пропы)
-    const d = this.DIRS[dir];
-    let c = col, r = row;
-    for (let i = 0; i < depth; i++) {
-      c += d.dc; r += d.dr;
-      if (c < 0 || r < 0 || c >= s.cols || r >= s.rows) continue;
-      if (s.map[r][c] !== 0) return false;
-    }
-    return true;
-  },
   /** Ghost тоже только из проходов — не из стен/окон. */
   edgeSpawnsAny(s, dir) {
     return this.edgeSpawns(s, dir);
@@ -2366,7 +2304,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
       peekPhase: "in",
       peekDepth: 2 + ((Math.random() * 3) | 0),
       floorSteps: 0,
-      waitDur: kind.pattern === "hold" ? (0.55 + Math.random() * 0.45) : (0.75 + Math.random() * 0.7),
+      // hold (ВСТР) держит клетку дольше peek; peek — короткий загляд
+      waitDur: kind.pattern === "hold" ? (1.85 + Math.random() * 1.35) : (0.75 + Math.random() * 0.7),
       waitT: 0,
       holdDone: false,
       blinkT: 0.35 + Math.random() * 0.25,
@@ -2415,36 +2354,46 @@ window.FEEL_DEMOS["deadline-escape"] = {
     const kind = this.KINDS.find((k) => k.id === "client");
     const b = s.border | 0;
     const vertical = Math.random() < 0.5;
+    const tryPair = (dirA, pickA, dirB, pickB) => {
+      const a = this.baseThreat(s, kind, dirA, pickA);
+      const b2 = this.baseThreat(s, kind, dirB, pickB);
+      a.pattern = "pincer"; b2.pattern = "pincer";
+      // fairness как у makeThreat: оба входа на краю + полоса впереди
+      const ghostA = { ...a, col: pickA.col, row: pickA.row };
+      const ghostB = { ...b2, col: pickB.col, row: pickB.row };
+      if (!this.hasEscape(s, [ghostA, ghostB])) return false;
+      s.threats.push(a, b2);
+      return true;
+    };
     if (vertical) {
       const cols = [];
       for (let c = b; c < s.cols - b; c++) {
         if (this.walkable(s, c, b) && this.walkable(s, c, s.rows - b - 1)) cols.push(c);
       }
       if (!cols.length) return false;
-      const lane = api.pick(cols);
-      const top = this.edgeSpawns(s, "down").find((o) => o.col === lane);
-      const bot = this.edgeSpawns(s, "up").find((o) => o.col === lane);
-      if (!top || !bot) return false;
-      const a = this.baseThreat(s, kind, "down", top);
-      const b2 = this.baseThreat(s, kind, "up", bot);
-      a.pattern = "pincer"; b2.pattern = "pincer";
-      s.threats.push(a, b2);
-      return true;
+      // несколько попыток лайна — hasEscape может отвергнуть узкий коридор
+      const shuffled = cols.slice().sort(() => Math.random() - 0.5);
+      for (const lane of shuffled.slice(0, Math.min(6, shuffled.length))) {
+        const top = this.edgeSpawns(s, "down").find((o) => o.col === lane);
+        const bot = this.edgeSpawns(s, "up").find((o) => o.col === lane);
+        if (!top || !bot) continue;
+        if (tryPair("down", top, "up", bot)) return true;
+      }
+      return false;
     }
     const rows = [];
     for (let r = b; r < s.rows - b; r++) {
       if (this.walkable(s, b, r) && this.walkable(s, s.cols - b - 1, r)) rows.push(r);
     }
     if (!rows.length) return false;
-    const lane = api.pick(rows);
-    const left = this.edgeSpawns(s, "right").find((o) => o.row === lane);
-    const right = this.edgeSpawns(s, "left").find((o) => o.row === lane);
-    if (!left || !right) return false;
-    const a = this.baseThreat(s, kind, "right", left);
-    const b2 = this.baseThreat(s, kind, "left", right);
-    a.pattern = "pincer"; b2.pattern = "pincer";
-    s.threats.push(a, b2);
-    return true;
+    const shuffled = rows.slice().sort(() => Math.random() - 0.5);
+    for (const lane of shuffled.slice(0, Math.min(6, shuffled.length))) {
+      const left = this.edgeSpawns(s, "right").find((o) => o.row === lane);
+      const right = this.edgeSpawns(s, "left").find((o) => o.row === lane);
+      if (!left || !right) continue;
+      if (tryPair("right", left, "left", right)) return true;
+    }
+    return false;
   },
   spawnWave(s, api, ph) {
     const max = this.maxThreats(s);
@@ -2497,7 +2446,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
         s.pickups.push({ col: c.col, row: c.row, type: "coin" });
       }
     }
-    if (Math.random() < 0.36 + Math.min(0.12, fi * 0.03)) this.spawnColleague(s, api);
+    if (Math.random() < 0.36 + Math.min(0.12, fi * 0.03)) this.spawnMapBonus(s, api);
     // если у лимита — подождать дольше
     const full = this.liveThreatCount(s) >= max;
     s.spawnT = Math.max(0.32, (full ? 1.1 : 0.85) * (1.2 - fi * 0.04) * ph.spawnMul);
@@ -2656,6 +2605,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
   advanceWeave(s, t, cellsPerSec, dt) {
     if (!t.entered) {
       if (this.enterUntilFloor(s, t, cellsPerSec, dt, 0.9)) return;
+      if (t.entered) {
+        this.weavePickNext(s, t);
+        t.frac = 0;
+      }
       return;
     }
     const speed = cellsPerSec * 0.85;
@@ -2700,7 +2653,17 @@ window.FEEL_DEMOS["deadline-escape"] = {
     while (t.frac >= 1) {
       t.frac -= 1;
       const land = this.tryMoverStep(s, t.col, t.row, t.dc, t.dr);
-      if (!land) { t._dead = true; return; }
+      if (!land) {
+        // упёрся в проп: при заходе — ранний wait+разворот; на выходе — despawn
+        if (t.peekPhase === "in" && t.entered) {
+          t.peekPhase = "wait";
+          t.waitT = t.waitDur;
+          t.frac = 0;
+          return;
+        }
+        t._dead = true;
+        return;
+      }
       t.col = land.col; t.row = land.row;
       if (this.onPlayFloor(s, t.col, t.row)) {
         t.entered = true;
@@ -2728,18 +2691,37 @@ window.FEEL_DEMOS["deadline-escape"] = {
   advanceDash(s, t, cellsPerSec, dt) {
     this.lineStepPassable(s, t, cellsPerSec, dt, 1.35);
   },
+  /**
+   * ВСТР (hold): зашёл → долго держит клетку → уходит обратно.
+   * Не «короткий peek без разворота» и не dash с паузой.
+   */
   advanceHold(s, t, cellsPerSec, dt) {
     if (t.peekPhase === "wait") {
       t.waitT -= dt;
       t.frac = 0;
-      if (t.waitT <= 0) t.peekPhase = "out";
+      t.holdDone = true;
+      if (t.waitT <= 0) {
+        t.peekPhase = "out";
+        this.reverseDir(t);
+      }
       return;
     }
-    t.frac += cellsPerSec * 0.88 * dt;
+    const speed = cellsPerSec * (t.peekPhase === "out" ? 1.0 : 0.88);
+    t.frac += speed * dt;
     while (t.frac >= 1) {
       t.frac -= 1;
       const land = this.tryMoverStep(s, t.col, t.row, t.dc, t.dr);
-      if (!land) { t._dead = true; return; }
+      if (!land) {
+        if (t.peekPhase === "in" && t.entered) {
+          t.peekPhase = "wait";
+          t.waitT = t.waitDur;
+          t.holdDone = true;
+          t.frac = 0;
+          return;
+        }
+        t._dead = true;
+        return;
+      }
       t.col = land.col; t.row = land.row;
       if (this.onPlayFloor(s, t.col, t.row)) {
         t.entered = true;
@@ -2748,6 +2730,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
           if (t.floorSteps >= t.peekDepth) {
             t.peekPhase = "wait";
             t.waitT = t.waitDur;
+            t.holdDone = true;
             t.frac = 0;
             return;
           }
@@ -2764,19 +2747,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
       if (cx < -1.4 || cy < -1.4 || cx > s.cols + 0.4 || cy > s.rows + 0.4) t._dead = true;
     }
   },
-  /** Охранник: патруль туда-сюда по ряду/колонке — плавно */
+  /** Охранник: патруль туда-сюда; ось выбирается по доступным соседям (не умирает в узком коридоре). */
   advancePatrol(s, t, cellsPerSec, dt) {
     if (!t.entered) {
       if (this.enterUntilFloor(s, t, cellsPerSec, dt, 0.85)) return;
       if (t.entered) {
-        if (t.homeDir === "down" || t.homeDir === "up") {
-          t.dc = Math.random() < 0.5 ? 1 : -1;
-          t.dr = 0;
-        } else {
-          t.dc = 0;
-          t.dr = Math.random() < 0.5 ? 1 : -1;
-        }
-        t.dir = t.dc === 1 ? "right" : t.dc === -1 ? "left" : t.dr === 1 ? "down" : "up";
+        this.patrolPickDir(s, t);
         t.frac = 0;
       }
       return;
@@ -2789,11 +2765,33 @@ window.FEEL_DEMOS["deadline-escape"] = {
       if (!this.walkable(s, nc, nr)) {
         this.reverseDir(t);
         nc = t.col + t.dc; nr = t.row + t.dr;
-        if (!this.walkable(s, nc, nr)) { t._dead = true; return; }
+        if (!this.walkable(s, nc, nr)) {
+          // оба конца оси закрыты — сменить ось/курс
+          this.patrolPickDir(s, t);
+          nc = t.col + t.dc; nr = t.row + t.dr;
+          if (!this.walkable(s, nc, nr)) { t._dead = true; return; }
+        }
       }
       t.col = nc; t.row = nr;
       if (t.age > 16) { t._dead = true; return; }
     }
+  },
+  patrolPickDir(s, t) {
+    const horiz = [{ dc: 1, dr: 0 }, { dc: -1, dr: 0 }]
+      .filter((d) => this.walkable(s, t.col + d.dc, t.row + d.dr));
+    const vert = [{ dc: 0, dr: 1 }, { dc: 0, dr: -1 }]
+      .filter((d) => this.walkable(s, t.col + d.dc, t.row + d.dr));
+    const preferHoriz = t.homeDir === "down" || t.homeDir === "up";
+    let pool = preferHoriz ? horiz : vert;
+    if (!pool.length) pool = preferHoriz ? vert : horiz;
+    if (!pool.length) pool = horiz.concat(vert);
+    if (!pool.length) {
+      t.dc = 0; t.dr = 0;
+      return;
+    }
+    const pick = pool[(Math.random() * pool.length) | 0];
+    t.dc = pick.dc; t.dr = pick.dr;
+    t.dir = t.dc === 1 ? "right" : t.dc === -1 ? "left" : t.dr === 1 ? "down" : "up";
   },
   /** Стажёр: хаотичные шаги — плавное скольжение */
   advanceChaos(s, t, cellsPerSec, dt) {
@@ -2842,6 +2840,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
   advanceHunt(s, t, cellsPerSec, dt) {
     if (!t.entered) {
       if (this.enterUntilFloor(s, t, cellsPerSec, dt, 0.8)) return;
+      if (t.entered) {
+        // сразу курс на игрока, не «в стену по направлению входа»
+        t.dc = 0; t.dr = 0;
+      }
       return;
     }
     const pickHunt = () => {
@@ -2860,11 +2862,16 @@ window.FEEL_DEMOS["deadline-escape"] = {
       }
       t.dc = Math.sign(next.col - t.col);
       t.dr = Math.sign(next.row - t.row);
-      if (!t.dc && !t.dr) return;
+      if (!t.dc && !t.dr) {
+        // уже на клетке игрока — стоим (хит по телу), не крутимся
+        return;
+      }
       t.dir = t.dc === 1 ? "right" : t.dc === -1 ? "left" : t.dr === 1 ? "down" : "up";
     };
     if (!t.dc && !t.dr) pickHunt();
     if (t._dead) return;
+    // на клетке игрока — не накапливаем frac в никуда
+    if (!t.dc && !t.dr) return;
     const speed = cellsPerSec * 0.48;
     t.frac += speed * dt;
     while (t.frac >= 1) {
@@ -2872,13 +2879,14 @@ window.FEEL_DEMOS["deadline-escape"] = {
       let nc = t.col + t.dc, nr = t.row + t.dr;
       if (!this.walkable(s, nc, nr)) {
         pickHunt();
-        if (t._dead) return;
+        if (t._dead || (!t.dc && !t.dr)) return;
         nc = t.col + t.dc; nr = t.row + t.dr;
         if (!this.walkable(s, nc, nr)) { t._dead = true; return; }
       }
       t.col = nc; t.row = nr;
       pickHunt();
       if (t._dead) return;
+      if (!t.dc && !t.dr) { t.frac = 0; return; }
       if (t.age > 14) { t._dead = true; return; }
     }
   },
@@ -2910,7 +2918,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
     if (t.entered && (t.col < 0 || t.row < 0 || t.col >= s.cols || t.row >= s.rows)) t._dead = true;
   },
-  /** IT: быстрый рывок на 2 клетки — плавно, без телепорта */
+  /** IT: быстрый рывок на 2 клетки — плавно, без телепорта; в проп не despawn */
   advanceBlink(s, t, cellsPerSec, dt) {
     if (!t.entered) {
       if (this.enterUntilFloor(s, t, cellsPerSec, dt, 1.0)) return;
@@ -2926,9 +2934,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
       t.frac -= 1;
       const land = this.tryMoverStep(s, t.col, t.row, t.dc, t.dr);
       if (!land) {
+        // упёрся: отменить рывок, сменить курс, не _dead на середине арены
         t.dashLeft = 0;
-        t._dead = true;
-        return;
+        t.frac = 0;
+        this.blinkRepath(s, t);
+        t.blinkT = 0.35 + Math.random() * 0.3;
+        break;
       }
       t.col = land.col; t.row = land.row;
       if (dashing) {
@@ -2954,10 +2965,24 @@ window.FEEL_DEMOS["deadline-escape"] = {
         t.flash = 0.2;
         t.blinkT = 99;
       } else {
+        this.blinkRepath(s, t);
         t.blinkT = 0.4 + Math.random() * 0.3;
       }
     }
     if (t.entered && (t.col < 0 || t.row < 0 || t.col >= s.cols || t.row >= s.rows)) t._dead = true;
+    if (t.age > 14) t._dead = true;
+  },
+  blinkRepath(s, t) {
+    const opts = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+      .map(([dc, dr]) => ({ dc, dr }))
+      .filter((d) => this.walkable(s, t.col + d.dc, t.row + d.dr));
+    if (!opts.length) return;
+    // предпочитаем не разворот на 180, если есть выбор
+    const forward = opts.filter((d) => !(d.dc === -t.dc && d.dr === -t.dr));
+    const pool = forward.length ? forward : opts;
+    const pick = pool[(Math.random() * pool.length) | 0];
+    t.dc = pick.dc; t.dr = pick.dr;
+    t.dir = t.dc === 1 ? "right" : t.dc === -1 ? "left" : t.dr === 1 ? "down" : "up";
   },
   /** Секретарь: медленно, хитбокс на 2 клетки */
   advanceWide(s, t, cellsPerSec, dt) {
@@ -3025,7 +3050,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       px: start.col, py: start.row,
       moving: false, fromCol: start.col, fromRow: start.row, moveT: 0, moveDur: this.playerMoveMs({ floor }),
       walkStride: 0,
-      gameMin: 0, threats: [], pickups: [], colleagues: [], zones: [], spawnT: Math.max(0.55, 1.05 - (floor - 1) * 0.04),
+      gameMin: 0, threats: [], pickups: [], zones: [], spawnT: Math.max(0.55, 1.05 - (floor - 1) * 0.04),
       alive: true, won: false, invuln: 1.45,
       coffeeBoost: 0, shield: false, nearMiss: 0, tutorial: keepMeta.tutorial || 0, pendingClick: null,
       allyFlash: 0, allyFlashText: "",
@@ -3097,7 +3122,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (s.spawnT <= 0) this.spawnWave(s, api, ph);
 
     const scroll = 2.35 * ph.speedMul * this.threatSpeedScale(s);
-    for (const c of s.colleagues) this.advanceColleague(s, c, scroll, wdt);
 
     for (const t of s.threats) {
       this.advanceThreat(s, t, scroll, wdt);
@@ -3164,6 +3188,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
         if (p.type === "shield") {
           s.shield = true;
           this.sfx("badge");
+        } else if (p.type === "coffee") {
+          s.coffeeBoost = Math.max(s.coffeeBoost, 3.0);
+          this.sfx("coffee");
         } else {
           s.coins += 1;
           this.sfx("coin");
@@ -3172,27 +3199,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
     s.pickups = s.pickups.filter((p) => !p._dead);
 
-    for (const c of s.colleagues) {
-      // кофе — только подход на клетку (не lane-sweep как у боссов); бейдж с пола
-      const sameCell = c.col === s.col && c.row === s.row;
-      if (c.bonus === "coffee" && sameCell && !c.helped) {
-        s.coffeeBoost = Math.max(s.coffeeBoost, 3.0);
-        c.bonus = null;
-        c.helped = true;
-        c.waveT = 0.55;
-        c.offerT = 0;
-        this.colleagueFacePlayer(s, c);
-        this.sfx("coffee");
-      }
-    }
-    s.colleagues = s.colleagues.filter((c) => !c._dead && c.col >= -2 && c.row >= -2 && c.col <= s.cols + 1 && c.row <= s.rows + 1);
-
     if (s.gameMin >= s.totalMin) {
       s.won = true;
       s.floor += 1;
       s.bestFloor = Math.max(s.bestFloor, s.floor);
       s.threats = [];
-      s.colleagues = [];
       s.zones = [];
       this.sfx("promote");
       api.setHud(`ПОВЫШЕНИЕ! Этаж ${s.floor}`);
@@ -3629,6 +3640,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
           ctx.fillStyle = "#38bdf8";
           ctx.beginPath(); ctx.arc(pos.x, pos.y + bob, 10, 0, Math.PI * 2); ctx.fill();
         }
+      } else if (p.type === "coffee") {
+        if (!this.drawArt(ctx, "pu_coffee", pos.x, pos.y + bob, unit * 0.55)) {
+          ctx.fillStyle = "#fbbf24";
+          ctx.beginPath(); ctx.arc(pos.x, pos.y + bob, 10, 0, Math.PI * 2); ctx.fill();
+        }
       } else if (!this.drawArt(ctx, "pu_coin", pos.x, pos.y + bob * 0.5, unit * 0.45)) {
         ctx.beginPath(); ctx.arc(pos.x, pos.y, 9, 0, Math.PI * 2);
         ctx.fillStyle = "#fcd34d"; ctx.fill();
@@ -3644,54 +3660,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
         ctx.fillRect(x + 3, y + 3, s.cellW - 6, s.cellH - 6);
         ctx.fillStyle = "#ccfbf1"; ctx.font = "bold 8px Segoe UI"; ctx.textAlign = "center";
         ctx.fillText("ОТЧ", x + s.cellW / 2, y + s.cellH / 2 + 3);
-      }
-    }
-
-    for (const c of s.colleagues) {
-      if (c.px < -1.35 || c.py < -1.35 || c.px > s.cols + 0.35 || c.py > s.rows + 0.35) continue;
-      const offering = c.offerT > 0 || c.waveT > 0;
-      const bob = offering ? Math.sin(performance.now() * 0.014) * 3 : 0;
-      const pos = {
-        x: s.padX + (c.px + 0.5) * s.cellW,
-        y: s.padT + (c.py + 0.5) * s.cellH + bob,
-      };
-      if (pos.y < 70 || pos.y > h - 100 || pos.x < 0 || pos.x > w) continue;
-
-      // ally-маркер: мятное кольцо (не danger-цвета боссов)
-      const pulse = 0.55 + 0.45 * Math.sin(performance.now() * 0.01);
-      const ringR = (offering ? 20 : 16) + pulse * 3;
-      ctx.beginPath();
-      ctx.arc(pos.x, pos.y + unit * 0.22, ringR, 0, Math.PI * 2);
-      ctx.strokeStyle = offering
-        ? `rgba(52, 211, 153, ${0.55 + pulse * 0.35})`
-        : `rgba(45, 212, 191, ${0.35 + pulse * 0.25})`;
-      ctx.lineWidth = offering ? 3.2 : 2.4;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(pos.x, pos.y + unit * 0.22, ringR * 0.55, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(167, 243, 208, ${0.12 + pulse * 0.08})`;
-      ctx.fill();
-
-      const ck = "colleague_" + this.dirKey(c.dir);
-      const allyAlpha = coffee ? 0.92 : 1; // не гасим как угрозы
-      const drawn = this.drawArt(ctx, ck, pos.x, pos.y, unit * 0.95, allyAlpha);
-      if (!drawn) {
-        ctx.globalAlpha = allyAlpha;
-        ctx.beginPath(); ctx.arc(pos.x, pos.y, 13, 0, Math.PI * 2);
-        ctx.fillStyle = "#2dd4bf"; ctx.fill();
-        ctx.globalAlpha = 1;
-      }
-
-      // дар сверху по центру (без текстовых подписей)
-      const giftKey = c.bonus === "coffee" ? "pu_coffee" : c.bonus === "shield" ? "pu_badge" : null;
-      if (giftKey) {
-        const gy = pos.y - unit * 0.58;
-        if (!this.drawArt(ctx, giftKey, pos.x, gy, unit * 0.48)) {
-          ctx.beginPath();
-          ctx.arc(pos.x, gy, 7, 0, Math.PI * 2);
-          ctx.fillStyle = c.bonus === "coffee" ? "#fbbf24" : "#38bdf8";
-          ctx.fill();
-        }
       }
     }
 

@@ -8,6 +8,7 @@
 | **displayName.en** | Employee of the Month |
 | **coding_allowed** | `false` until `CONFIRMED` |
 | **feel SoT** | `management/demos/demos-01-02.js` → `FEEL_DEMOS["deadline-escape"]` |
+| **mock UI beta** | dashboard → вкладка **Бета-тест** (`management/demos/deadline-mock-ui.js`) |
 | **ART_STATUS** | `PIPELINE_V1` (2026-07-18) — визуал с нуля по `SPRITE_PIPELINE.md` |
 | **synced** | 2026-07-17 (grid feel → docs/prompts/refs) |
 | **archive** | `archive/2026-07-17-pre-feel-sync/` · `archive/2026-07-18-sprites-cleanup/` · `archive/2026-07-18-pipeline-v1-reset/` |
