@@ -11,7 +11,7 @@
   const APPROVED_FILE = "style-seed-hero.APPROVED.json";
   const REJECTED_FILE = "style-seed-hero.REJECTED.json";
   const LS_KEY = "deadline-escape.style-seed";
-  const BUST = "wallai1";
+  const BUST = "wallseam1";
 
   const CHECKER = "background:repeating-conic-gradient(#2a3340 0% 25%, #1a222c 0% 50%) 50%/12px 12px";
 
@@ -311,14 +311,14 @@
       nav: "Стены / окна",
       html: () =>
         card(
-          "Каркас · AI flush (без боковых гэпов)",
-          "Мастера: <code>refs/art/ai-wall-n-flush.png</code>, <code>ai-window-n-flush.png</code>. " +
-            "Сборка: <code>build_ai_wall_tiles.py</code>. Окно только на одинарной стене (50%). " +
+          "Каркас · Бесшовный набор (стена=окно, угол целиком)",
+          "Мастера: <code>refs/art/ai-set-wall-n.png</code>, <code>ai-set-window-n.png</code>. " +
+            "Сборка: <code>build_seamless_wall_set.py</code>. Окно только на одинарной стене (50%). " +
             "Угол карты при двух стенах — stub-квадрат.",
           pngRow([
-            ["ai-wall-n-flush.png", "AI master wall", true, ART],
-            ["ai-window-n-flush.png", "AI master window", true, ART],
-            ["wall_ai_flush_preview.png", "preview sheet", true],
+            ["ai-set-wall-n.png", "AI master wall", true, ART],
+            ["ai-set-window-n.png", "AI master window", true, ART],
+            ["wall_seamless_preview.png", "preview sheet", true],
           ]) +
             pngRow([
               ["frames/tile_wall_n.png", "wall N"],
@@ -461,7 +461,7 @@
     root.innerHTML = `
       <p class="sp-intro">
         <strong>ART_STATUS = PIPELINE_V1</strong> · каталог = всё, что грузит feel-демо + gate.
-        Стены: AI flush <code>?v=${BUST}</code>.
+        Стены: seamless set <code>?v=${BUST}</code>.
       </p>
       <div class="sp-layout">
         <nav class="sp-nav" aria-label="Sprites"></nav>

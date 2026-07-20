@@ -66,7 +66,7 @@ Top-down cartoon 7 by 9 office floor plan illustration: border walls, desks bloc
 ## JOB I — Env tiles (fog-frame) → `refs/sprites/frames/`
 
 Каркас полосы тумана. Якорь стиля: desk + AI masters  
-`refs/art/ai-wall-n-flush.png`, `ai-window-n-flush.png`.
+`refs/art/ai-set-wall-n.png` (+ window/corner refs). Бесшовный набор: стена и окно — одна геометрия/палитра; угол — цельная форма, не compose.
 
 **Сейчас:** полоса **full-bleed** (без боковых гэпов) на внутреннем крае к play;
 L / U / stub-квадрат на углах. Окно только на одинарной стене (50%).
@@ -81,7 +81,7 @@ L / U / stub-квадрат на углах. Окно только на один
 | `tile_cabinet` / `tile_printer` / `tile_trash` | AI пропы |
 | `tile_wall_{n,s,e,w}_{prop}` | композит стена+проп (запас) |
 
-Сборка стен: `python management/tools/build_ai_wall_tiles.py`  
+Сборка стен: `python management/tools/build_seamless_wall_set.py`  
 (старое: `process_styled_walls.py` / `build_wall_corner_tiles.py`)
 
 ## DoD

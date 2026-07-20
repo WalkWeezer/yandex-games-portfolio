@@ -1263,21 +1263,21 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallai1`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallseam1`));
     // каркас: прямые + L + stub (+ U в запасе)
     ["n", "s", "e", "w"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallai1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallai1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallseam1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallseam1`);
     });
     ["nw", "ne", "sw", "se"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallai1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallai1`);
-      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=wallai1`);
-      tryLoad("tile_window_stub_" + d, `frames/tile_window_stub_${d}.png?v=wallai1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallseam1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallseam1`);
+      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=wallseam1`);
+      tryLoad("tile_window_stub_" + d, `frames/tile_window_stub_${d}.png?v=wallseam1`);
     });
     ["nwe", "nsw", "nse", "swe"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallai1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallai1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallseam1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallseam1`);
     });
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
     ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png`));
@@ -3235,7 +3235,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
    * Угол карты:
    *   одна стена-сосед → одна полоса;
    *   две стены-соседа → маленький квадрат у стыка к play (не L в пустоту).
-   * Ребро: лицо к play + торцы к открытому туману → 1 / 2 / 3.
+   * Ребро: только лицо к play (без L/U-торцов — они выглядят как склейка).
    */
   wallGeomOf(s, col, row) {
     const sides = [];
@@ -3281,19 +3281,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (edge === "w") push("e");
     if (edge === "e") push("w");
 
-    // торцы к открытому туману на карте (не play, не за сеткой)
-    const neigh = [
-      { dc: -1, dr: 0, side: "w" },
-      { dc: 1, dr: 0, side: "e" },
-      { dc: 0, dr: -1, side: "n" },
-      { dc: 0, dr: 1, side: "s" },
-    ];
-    for (const n of neigh) {
-      const nc = col + n.dc, nr = row + n.dr;
-      if (nc < 0 || nr < 0 || nc >= s.cols || nr >= s.rows) continue;
-      if (this.inPlayArea(s, nc, nr)) continue;
-      if (!this.frameSolidAt(s, nc, nr)) push(n.side);
-    }
+    // без торцов в открытый туман: иначе L/U выглядят как две склеенные стены.
+    // рёбра — одна бесшовная полоса к play; углы карты — stub-квадрат.
     return { sides, square: null };
   },
   /**
