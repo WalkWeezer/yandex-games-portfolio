@@ -34,6 +34,58 @@
     { id: "box", name: "Бокс-мид", role: "MID", w: { save: 0, tackle: 1.6, pass: 1.8, shoot: 0.6, cross: 0.6, control: 1.3 } },
   ];
 
+  const ROLE_BADGE = {
+    GK: { short: "ВР", full: "Вратарь", color: "#d4a017" },
+    DEF: { short: "ЗЩ", full: "Защита", color: "#3d7ec9" },
+    MID: { short: "ПЗ", full: "Центр", color: "#2f9e6a" },
+    WING: { short: "КР", full: "Край", color: "#c47a2a" },
+    FWD: { short: "НП", full: "Напад", color: "#c44a3a" },
+  };
+
+  /** 5 opponent lineup presets — cells anywhere on 3×5 */
+  const OPP_PRESETS = [
+    [
+      [1, 0],
+      [0, 1],
+      [2, 1],
+      [1, 2],
+      [0, 3],
+      [2, 3],
+    ],
+    [
+      [0, 0],
+      [2, 0],
+      [1, 1],
+      [0, 2],
+      [2, 2],
+      [1, 4],
+    ],
+    [
+      [1, 0],
+      [1, 1],
+      [0, 2],
+      [2, 2],
+      [0, 4],
+      [2, 4],
+    ],
+    [
+      [0, 0],
+      [1, 0],
+      [2, 0],
+      [1, 2],
+      [0, 3],
+      [2, 4],
+    ],
+    [
+      [2, 0],
+      [0, 1],
+      [1, 2],
+      [2, 3],
+      [0, 3],
+      [1, 4],
+    ],
+  ];
+
   const NAMES = [
     "Риф", "Нова", "Кедр", "Лис", "Игл", "Форж", "Скат", "Волт",
     "Мира", "Дюна", "Клин", "Арк", "Зефир", "Бард", "Оникс", "Тайд",
@@ -313,22 +365,15 @@
   }
 
   function seedOpponent(s) {
+    const preset = OPP_PRESETS[(Math.random() * OPP_PRESETS.length) | 0];
+    s.oppPreset = OPP_PRESETS.indexOf(preset);
     const defs = CARD_DEFS.slice().sort(() => Math.random() - 0.5);
-    const cells = [];
-    for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) cells.push({ col: c, row: r });
-    // prefer whole grid, including player's half — intentional overlap allowed
-    for (let i = cells.length - 1; i > 0; i--) {
-      const j = (Math.random() * (i + 1)) | 0;
-      const t = cells[i];
-      cells[i] = cells[j];
-      cells[j] = t;
-    }
     s.oppField = [];
     for (let i = 0; i < MAX_FIELD; i++) {
       const def = defs[i % defs.length];
       const u = makeUnit(def, "opp", 1 + ((i % 3) === 0 ? 1 : 0));
-      u.col = cells[i].col;
-      u.row = cells[i].row;
+      u.col = preset[i][0];
+      u.row = preset[i][1];
       s.oppField.push(u);
     }
     applyCellOffsets([...s.field, ...s.oppField]);
@@ -346,22 +391,51 @@
     }
   }
 
+  function pitchCenter(pr) {
+    return { x: pr.x + pr.w / 2, y: pr.y + pr.h / 2 };
+  }
+
+  /** Possession change: fly ball to unit — never hard-snap across the pitch */
+  function takeBall(s, unit, opts) {
+    opts = opts || {};
+    const pr = s._pr;
+    const p = unitPos(pr, unit);
+    const dist = Math.hypot(p.x - s.ball.x, p.y - s.ball.y);
+    const finish = () => {
+      s.ball.holderId = unit.id;
+      s.ball.x = p.x;
+      s.ball.y = p.y;
+      s.ball.flight = null;
+      if (opts.fx) pushFx(s, opts.fx, p.x, p.y);
+      if (opts.beat) setBeat(s, opts.beat, opts.beatSec || 0.7);
+      if (opts.onDone) opts.onDone();
+    };
+    s.ball.holderId = null;
+    if (dist < 16) {
+      finish();
+      return;
+    }
+    const dur = opts.dur || clamp(dist / 420, 0.22, 0.55);
+    beginFlight(s, null, p.x, p.y, opts.kind || "loose", finish, dur);
+  }
+
   function startBall(s, pr) {
+    const mid = pitchCenter(pr);
     const holders = s.field.length ? s.field : s.oppField;
-    const u = pick(holders);
+    const u = holders.find((x) => x.role === "MID") || pick(holders);
     s.ball = {
-      x: 0,
-      y: 0,
-      holderId: u ? u.id : null,
+      x: mid.x,
+      y: mid.y,
+      holderId: null,
       flight: null,
       lastFromId: null,
       lastToId: null,
       passPairBan: 0,
+      passStreak: 0,
     };
     if (u) {
-      const p = unitPos(pr, u);
-      s.ball.x = p.x;
-      s.ball.y = p.y;
+      // Kickoff: center → first holder (visible flight, no teleport)
+      takeBall(s, u, { kind: "pass", dur: 0.5, beat: "Свисток", beatSec: 0.55 });
     }
   }
 
@@ -520,14 +594,11 @@
       const foes = teamUnits(s, from.team === "you" ? "opp" : "you");
       const interceptor = foes.find((f) => sameOrNear(f, to) && Math.random() < 0.18 + tacLevel(foes, "press") * 0.05 + f.weights.tackle * 0.04);
       if (interceptor) {
-        s.ball.holderId = interceptor.id;
         s.ball.passStreak = 0;
         s.stats.intercepts = (s.stats.intercepts || 0) + 1;
-        pushFx(s, "intercept", unitPos(pr, interceptor).x, unitPos(pr, interceptor).y);
-        setBeat(s, "Перехват", 0.7);
+        takeBall(s, interceptor, { kind: "loose", fx: "intercept", beat: "Перехват", beatSec: 0.75 });
       } else {
-        s.ball.holderId = to.id;
-        setBeat(s, label, 0.45);
+        takeBall(s, to, { kind: "loose", beat: label, beatSec: 0.45 });
       }
       if (s.ball.passPairBan > 0) s.ball.passPairBan--;
     });
@@ -552,15 +623,11 @@
         ? clamp(0.28 + gk.def * 0.035 + gk.weights.save * 0.08 + tacLevel(foes, "bus") * 0.06 - from.sht * 0.03, 0.18, 0.72)
         : 0.22;
       if (Math.random() < saveChance && gk) {
-        s.ball.holderId = gk.id;
-        const gp = unitPos(pr, gk);
-        s.ball.x = gp.x;
-        s.ball.y = gp.y;
         s.stats.saves = (s.stats.saves || 0) + 1;
-        pushFx(s, "save", gp.x, gp.y);
-        setBeat(s, "Сейв", 0.95);
         gk.lunge = 12;
-        gk.lungeAng = Math.atan2(gy - gp.y, gx - gp.x);
+        gk.lungeAng = Math.atan2(gy - unitPos(pr, gk).y, gx - unitPos(pr, gk).x);
+        // Ball stays at shot end, then flies into GK hands — no snap
+        takeBall(s, gk, { kind: "save", fx: "save", beat: "Сейв", beatSec: 0.95, dur: 0.35 });
       } else {
         if (from.team === "you") s.scoreYou++;
         else s.scoreOpp++;
@@ -569,7 +636,7 @@
         s._koTeam = from.team;
         pushFx(s, "goal", gx, gy);
         setBeat(s, "ГОЛ ⚽", 1.4);
-        s.pendingKickoff = 0.2;
+        s.pendingKickoff = 0.25;
         s.ball.holderId = null;
       }
     }, 0.58);
@@ -583,11 +650,10 @@
     const chance = clamp(0.35 + tackler.def * 0.03 + tackler.weights.tackle * 0.08 + tacLevel(teamUnits(s, tackler.team), "press") * 0.05 - victim.pac * 0.02, 0.2, 0.8);
     s.stats.tackles = (s.stats.tackles || 0) + 1;
     if (Math.random() < chance) {
-      s.ball.holderId = tackler.id;
       s.ball.passStreak = 0;
       s.ball.lastFromId = null;
-      pushFx(s, "tackle", p.x, p.y);
-      setBeat(s, "Отбор", 0.75);
+      // Ball is already at victim feet — fly/attach to tackler, no hard teleport
+      takeBall(s, tackler, { kind: "loose", fx: "tackle", beat: "Отбор", beatSec: 0.75, dur: 0.28 });
     } else {
       pushFx(s, "tackle", p.x, p.y, { miss: true });
       setBeat(s, "Фол-мимо", 0.4);
@@ -611,19 +677,18 @@
 
   function kickoffAfterGoal(s) {
     const pr = s._pr;
-    // Conceding team restarts from their placed cells (no formation teleport)
     s._koTeam = s._lastGoalTeam === "you" ? "opp" : "you";
     const pool = teamUnits(s, s._koTeam);
     const u = pool.find((x) => x.role === "MID") || pick(pool);
-    if (u) {
-      s.ball.holderId = u.id;
-      const p = unitPos(pr, u);
-      s.ball.x = p.x;
-      s.ball.y = p.y;
-    }
-    s.ball.flight = null;
-    s.ball.passStreak = 0;
+    s.ball.holderId = null;
     s.pendingKickoff = 0;
+    s.ball.passStreak = 0;
+    if (!u) return;
+    const mid = pitchCenter(pr);
+    // Goal mouth → center → holder (two legs, always flying)
+    beginFlight(s, null, mid.x, mid.y, "pass", () => {
+      takeBall(s, u, { kind: "pass", dur: 0.4, beat: "Розыгрыш", beatSec: 0.5 });
+    }, 0.45);
   }
 
   function updateFight(s, api, dt) {
@@ -643,12 +708,8 @@
 
     if (s.beat > 0) {
       s.beat -= dt * speed;
-      // still move ball if in flight during short beats? Only pause decisions
-      if (s.ball.flight) {
-        // allow flight to finish during beat for readability of pass→arrive
-      } else {
-        syncBallToHolder(s, pr);
-      }
+      // Keep ball on holder only when grounded — never snap during / after episode flights
+      if (!s.ball.flight && s.ball.holderId) syncBallToHolder(s, pr);
       updateFlight(s, api, dt * speed);
       if (s.beat <= 0 && s.pendingKickoff) {
         kickoffAfterGoal(s);
@@ -660,7 +721,7 @@
     updateFlight(s, api, dt * speed);
     if (s.ball.flight) return;
 
-    syncBallToHolder(s, pr);
+    if (s.ball.holderId) syncBallToHolder(s, pr);
 
     if (s.pendingKickoff) {
       s.pendingKickoff -= dt * speed;
@@ -724,7 +785,10 @@
     rollShop(s);
     s.flash = `Сегмент ${s.segment - 1} · магазин`;
     s.flashT = 1.4;
-    // keep placements — no teleport
+    // Hide opponent between segments
+    s.oppField = [];
+    s.ball.holderId = null;
+    s.ball.flight = null;
   }
 
   function startFight(s, api) {
@@ -736,24 +800,24 @@
     while (s.field.length > MAX_FIELD) {
       s.bench.push(s.field.pop());
     }
-    if (s.oppField.length < MAX_FIELD) seedOpponent(s);
+    // Reveal opponent only now — 1 of 5 presets
+    seedOpponent(s);
     applyCellOffsets([...s.field, ...s.oppField]);
     s.phase = "fight";
     s.matchTime = 0;
-    s.thinkT = 0.8;
-    s.beat = 0.9;
-    s.beatLabel = "Свисток";
-    s.fx.push({ kind: "banner", text: "Свисток", t: 0.9, life: 0.9 });
+    s.thinkT = 1.1;
+    s.beat = 0;
+    s.beatLabel = "";
+    s.pendingKickoff = 0;
     // engage from placed cells — slight lunge toward center, no teleport
     const pr = s._pr;
-    const mid = { x: pr.x + pr.w / 2, y: pr.y + pr.h / 2 };
+    const mid = pitchCenter(pr);
     for (const u of s.field.concat(s.oppField)) {
       const p = unitPos(pr, u);
       u.lunge = 8;
       u.lungeAng = Math.atan2(mid.y - p.y, mid.x - p.x);
     }
     startBall(s, pr);
-    s.ball.passStreak = 0;
     s._koTeam = "opp";
   }
 
@@ -877,19 +941,8 @@
       stats: { flights: 0, passes: 0, shots: 0, tackles: 0, intercepts: 0, saves: 0, goals: 0, pingPong: 0, passEdges: [], placements: [], byKind: {} },
     };
     giveStarters(s);
-    seedOpponent(s);
+    // Opponent hidden until fight — seeded from presets on kickoff
     rollShop(s);
-    // auto-place starters loosely so fight is reachable, but all cells allowed
-    const startCells = [
-      { col: 1, row: 4 },
-      { col: 0, row: 3 },
-      { col: 2, row: 3 },
-      { col: 1, row: 2 },
-      { col: 0, row: 1 },
-      { col: 2, row: 1 },
-    ];
-    // Don't auto-place — leave on bench for lineup feel. Player must place.
-    // For smoke tests we place programmatically.
     return s;
   }
 
@@ -936,7 +989,7 @@
   }
 
   const demo = {
-    hint: "Состав → любая клетка 3×5 · магазин/merge · смотри матч ×7",
+    hint: "Состав (позиция ВР/ЗЩ/ПЗ/КР/НП) → клетка 3×5 · магазин · матч ×7",
 
     create(api) {
       // force canvas logical size for hires if needed
@@ -1055,13 +1108,15 @@
 
       drawPitch(ctx, pr);
 
-      // units
-      applyCellOffsets([...s.field, ...s.oppField]);
-      for (const u of s.oppField) drawUnit(ctx, pr, u, s);
+      // units — opponent only visible during fight
+      applyCellOffsets(s.phase === "fight" ? [...s.field, ...s.oppField] : s.field.slice());
+      if (s.phase === "fight") {
+        for (const u of s.oppField) drawUnit(ctx, pr, u, s);
+      }
       for (const u of s.field) drawUnit(ctx, pr, u, s);
 
       // ball
-      if (s.phase === "fight" || s.ball.flight) {
+      if (s.phase === "fight") {
         drawBall(ctx, s);
       }
 
@@ -1209,6 +1264,21 @@
     }
   }
 
+  function drawRoleBadge(ctx, x, y, role, scale) {
+    scale = scale || 1;
+    const b = ROLE_BADGE[role] || ROLE_BADGE.MID;
+    const w = 22 * scale;
+    const h = 12 * scale;
+    ctx.fillStyle = b.color;
+    roundRect(ctx, x - w / 2, y - h / 2, w, h, 3 * scale);
+    ctx.fill();
+    ctx.fillStyle = "#111";
+    ctx.font = "bold " + Math.round(9 * scale) + "px Trebuchet MS, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(b.short, x, y + 0.5);
+  }
+
   function drawUnit(ctx, pr, u, s) {
     if (u.col < 0) return;
     const p = unitPos(pr, u);
@@ -1216,6 +1286,7 @@
     const r = 15 + (u.star - 1) * 2;
     const body = u.team === "you" ? "#2f8f6b" : "#b84a3a";
     const stroke = u.sel ? "#fff" : u.tacticColor;
+    const badge = ROLE_BADGE[u.role] || ROLE_BADGE.MID;
 
     // shadow
     ctx.fillStyle = "rgba(0,0,0,0.25)";
@@ -1245,19 +1316,29 @@
     ctx.lineTo(p.x + Math.cos(armB) * (r + 5), p.y + Math.sin(armB) * (r + 5) + breath);
     ctx.stroke();
 
+    // role letter inside body
+    ctx.fillStyle = "#f2f7f2";
+    ctx.font = "bold 11px Trebuchet MS, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(badge.short, p.x, p.y + breath * 0.3 + 1);
+
     // star pips
     ctx.fillStyle = "#f0d060";
     ctx.font = "9px Trebuchet MS, sans-serif";
-    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
     ctx.fillText("★".repeat(u.star), p.x, p.y - r - 2);
 
-    // name + amp
+    // name + role full + amp
     ctx.fillStyle = "#f2f7f2";
     ctx.font = "bold 10px Trebuchet MS, sans-serif";
     ctx.fillText(u.name, p.x, p.y + r + 10);
-    ctx.fillStyle = "rgba(220,230,220,0.85)";
+    drawRoleBadge(ctx, p.x - 18, p.y + r + 22, u.role, 0.95);
+    ctx.fillStyle = "rgba(220,230,220,0.9)";
     ctx.font = "9px Trebuchet MS, sans-serif";
-    ctx.fillText(u.ampName, p.x, p.y + r + 20);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(u.ampName, p.x - 4, p.y + r + 22);
   }
 
   function drawBall(ctx, s) {
@@ -1340,13 +1421,18 @@
       ctx.fillStyle = "#f0f4f0";
       ctx.font = "bold 12px Trebuchet MS, sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText(slot.def.name, x + 8, y + 16);
+      ctx.fillText(slot.def.name, x + 30, y + 16);
+      drawRoleBadge(ctx, x + 16, y + 14, slot.def.role, 1);
       ctx.font = "10px Trebuchet MS, sans-serif";
       ctx.fillStyle = "#b8c8b8";
-      ctx.fillText(`${slot.def.ampName} · ${slot.def.tacticName}`, x + 8, y + 32);
+      const rb = ROLE_BADGE[slot.def.role] || ROLE_BADGE.MID;
+      ctx.fillText(`${rb.full} · ${slot.def.ampName}`, x + 8, y + 32);
+      ctx.fillStyle = slot.def.tacticColor;
+      ctx.fillText(slot.def.tacticName, x + 8, y + 46);
       ctx.fillStyle = "#f0d060";
       ctx.font = "bold 12px Trebuchet MS, sans-serif";
-      ctx.fillText(`💰${slot.cost}`, x + 8, y + 48);
+      ctx.textAlign = "right";
+      ctx.fillText(`💰${slot.cost}`, x + w - 8, y + 16);
     }
   }
 
@@ -1378,12 +1464,16 @@
       ctx.fillStyle = "#f0f4f0";
       ctx.font = "bold 10px Trebuchet MS, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(u.name, x + chipW / 2, y0 + 14);
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText(u.name, x + chipW / 2, y0 + 12);
+      drawRoleBadge(ctx, x + chipW / 2, y0 + 24, u.role, 1);
       ctx.fillStyle = "#a8b8a8";
-      ctx.font = "9px Trebuchet MS, sans-serif";
-      ctx.fillText(u.ampName.slice(0, 7), x + chipW / 2, y0 + 28);
+      ctx.font = "8px Trebuchet MS, sans-serif";
+      ctx.textBaseline = "alphabetic";
+      const rb = ROLE_BADGE[u.role] || ROLE_BADGE.MID;
+      ctx.fillText(rb.full, x + chipW / 2, y0 + 38);
       ctx.fillStyle = "#f0d060";
-      ctx.fillText("★".repeat(u.star) + ` ${u.cost}`, x + chipW / 2, y0 + 42);
+      ctx.fillText("★".repeat(u.star) + ` ${u.cost}`, x + chipW / 2, y0 + 48);
     }
   }
 
