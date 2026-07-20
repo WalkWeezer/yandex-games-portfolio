@@ -163,13 +163,10 @@ boot → menu → hub → (daily) → run HUD ↔ pause
 | `frames/tile_plant.png` | `3` растение | scaffolding |
 | `frames/tile_cooler.png` | `4` кулер | scaffolding |
 | `frames/tile_fog.png` | туман / FoW текстура | scaffolding |
-| `frames/tile_wall_{n,s,e,w}.png` | прямая стена на ребре | **есть** |
-| `frames/tile_window_{n,s,e,w}.png` | окно на ребре | **есть** |
-| `frames/tile_wall_end_* .png` | **конец сегмента = угол** (end-cap) | **есть** |
-| `frames/tile_corner_{nw,ne,sw,se}.png` | угол комнаты (L) | **есть** |
-| `frames/tile_wall.png` · `tile_window.png` | alias → `_n` | есть |
+| `frames/tile_wall.png` | `2` стена (прямая, на всю клетку) | **есть** (simple v1) |
+| `frames/tile_window.png` | `7` окно (прямая, на всю клетку) | **есть** (simple v1) |
 
-Автовыбор в демке: mid → `wall_/window_`; конец сегмента → `wall_end_*` (угол); стык рёбер → `corner_*`.  
+Пока **без углов/end-cap** — один тайл стены и один окна на любую сторону.  
 Сборка: `python management/tools/build_border_tiles.py`  
 Концепт-якорь: `refs/levels/layout-feel.png`.
 
