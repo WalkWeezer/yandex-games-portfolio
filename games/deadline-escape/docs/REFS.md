@@ -10,6 +10,12 @@
 | `refs/art/style-seed-hero.png` | **Style seed** — P1 gate |
 | `refs/art/style-seed-hero-board.png` | seed + idle sheet |
 | `refs/art/style-seed-hero.APPROVED.json` | маркер после кнопки APPROVED (Спрайты) |
+| `refs/art/seed-hr.png` | **HR seed** (idle_s, empty hands) |
+| `refs/art/hr-turnaround.png` | **HR P2** idle turnaround S/E/N/W |
+| `refs/art/seed-hr.APPROVED.json` | маркер APPROVED HR P2 |
+| `sprites/boss_hr_idle_sheet.png` | idle sheet preview |
+| `chroma/boss_hr_idle_*_chroma.png` | HR green-chroma SoT |
+| `frames/boss_hr/idle_{s,e,n,w}.png` | HR idle frames (256²) |
 | `char_hero_idle_sheet.png` | носитель стиля / idle |
 | `char_hero_walk_sheet.png` | walk ГГ |
 | `char_hero_caught_sheet.png` | caught |

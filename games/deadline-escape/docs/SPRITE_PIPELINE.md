@@ -147,7 +147,7 @@ Fail → **reject strip**, не «подкрутить warp».
 | # | ID | Scope сейчас |
 |---|-----|----------------|
 | 0 | **style / hero** | P0–P1: утвердить style-seed-hero; затем QA walk ГГ под пайплайн |
-| 1 | hr | P1–P5 заново **от** style-seed (не старые warp/reart каши) |
+| 1 | hr | **P2 APPROVED** (`seed-hr` + turnaround) → **P3 walk** того же body |
 | 2 | director | 4-dir (+ walk later) |
 | 3 | looker / meeting / kpi / it | concepts → 4-dir |
 | 4 | rest bosses | 4-dir only |
@@ -184,7 +184,7 @@ Fail → **reject strip**, не «подкрутить warp».
 | Поле | Значение |
 |------|----------|
 | **pipeline** | `v1` (2026-07-18) |
-| **phase** | **P1** (style seed ГГ) |
-| **next human gate** | кнопка **APPROVED** на сайте → вкладка **Спрайты** |
-| **marker** | `refs/art/style-seed-hero.APPROVED.json` (или `.REJECTED.json`) |
+| **phase** | **P1** style-seed ГГ (сайт) · **HR = P2 APPROVED** → next **P3 walk** |
+| **next human gate** | кнопка **APPROVED** на style-seed (Спрайты); HR walk strips от `seed-hr` |
+| **marker** | `refs/art/style-seed-hero.APPROVED.json` · `refs/art/seed-hr.APPROVED.json` |
 | **archive** | `archive/2026-07-18-pipeline-v1-reset/` — старые концепты/HR/боссы, не SoT |

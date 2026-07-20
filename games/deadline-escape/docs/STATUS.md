@@ -33,6 +33,7 @@ G0+ src/ Phaser    ⛔ до CONFIRMED — перенос строго по docs/
 - [x] PORT.md ALLOW/DENY · production без DEV-читов
 - [x] `play/` вход (Yandex-shaped)
 - [ ] Human APPROVED на style-seed
+- [x] Human APPROVED на HR seed + idle turnaround (`seed-hr.APPROVED.json`)
 - [ ] Human playtest через `play/` (~2–3 рана)
 - [ ] Продюсер ставит `CONFIRMED`
 

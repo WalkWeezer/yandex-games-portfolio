@@ -1,0 +1,15 @@
+{
+  "id": "hr",
+  "asset": "seed-hr.png",
+  "turnaround": "hr-turnaround.png",
+  "phase": "P2",
+  "status": "APPROVED",
+  "approved_at": "2026-07-20T16:40:50Z",
+  "notes": [
+    "Empty-handed idle turnaround (no clipboard/folder)",
+    "Full plus-size body lock from approved sheet",
+    "E/W = full 90° profiles (right / left)",
+    "Chroma key = #00FF00 (green) — pink blazer unsafe on #FF00FF",
+    "Next: P3 walk strips from this body; do not slim or re-gen identity"
+  ]
+}
