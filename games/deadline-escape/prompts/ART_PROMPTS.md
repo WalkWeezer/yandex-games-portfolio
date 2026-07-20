@@ -65,19 +65,24 @@ Top-down cartoon 7 by 9 office floor plan illustration: border walls, desks bloc
 
 ## JOB I — Env tiles (fog-frame) → `refs/sprites/frames/`
 
-Каркас полосы тумана. Якорь: `layout-feel.png`.  
-**Сейчас:** полоса на всю ширину/высоту клетки, **вплотную к внешнему краю**; бока — отдельные спрайты. Без углов.
+Каркас полосы тумана. Якорь стиля: desk + AI masters  
+`refs/art/ai-wall-n-flush.png`, `ai-window-n-flush.png`.
+
+**Сейчас:** полоса **full-bleed** (без боковых гэпов) на внутреннем крае к play;
+L / U / stub-квадрат на углах. Окно только на одинарной стене (50%).
 
 | Out | Role |
 |-----|------|
-| `tile_wall_n/s` | гориз. стена у верха / низа клетки |
-| `tile_wall_w/e` | боковая стена у левого / правого края |
+| `tile_wall_{n,s,e,w}` | прямая стена flush |
 | `tile_window_{n,s,e,w}` | то же с окном |
+| `tile_wall_{nw,ne,sw,se}` | L |
+| `tile_wall_stub_*` | квадрат стыка угла карты |
+| `tile_wall_{nwe,nsw,nse,swe}` | U |
 | `tile_cabinet` / `tile_printer` / `tile_trash` | AI пропы |
-| `tile_wall_{n,s,e,w}_{prop}` | композит стена+проп |
-| `tile_window_{n,s,e,w}_{prop}` | композит окно+проп |
+| `tile_wall_{n,s,e,w}_{prop}` | композит стена+проп (запас) |
 
-Сборка: `python management/tools/process_styled_walls.py` (стены в стиле desk/cooler)
+Сборка стен: `python management/tools/build_ai_wall_tiles.py`  
+(старое: `process_styled_walls.py` / `build_wall_corner_tiles.py`)
 
 ## DoD
 

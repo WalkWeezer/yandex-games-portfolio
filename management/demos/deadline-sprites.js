@@ -1,15 +1,17 @@
 /**
- * Работник месяца — Pipeline v1 sprites UI (style-seed approve gate).
- * Legacy roster sheets live in archive/2026-07-18-pipeline-v1-reset/.
+ * Работник месяца — каталог спрайтов (всё, что грузит feel-демо + pipeline gate).
  */
 (function () {
   const ART = "../../games/deadline-escape/refs/art/";
   const SP = "../../games/deadline-escape/refs/sprites/";
+  const FR = SP + "frames/";
+  const ARCH = "../../games/deadline-escape/archive/2026-07-18-pipeline-v1-reset/sprites/";
   const SEED = "style-seed-hero.png";
   const BOARD = "style-seed-hero-board.png";
   const APPROVED_FILE = "style-seed-hero.APPROVED.json";
   const REJECTED_FILE = "style-seed-hero.REJECTED.json";
   const LS_KEY = "deadline-escape.style-seed";
+  const BUST = "wallai1";
 
   const CHECKER = "background:repeating-conic-gradient(#2a3340 0% 25%, #1a222c 0% 50%) 50%/12px 12px";
 
@@ -24,11 +26,11 @@
   }
   function png(rel, caption, large, base) {
     const root = base || SP;
-    const src = `${root}${rel}?v=seed2`;
+    const src = `${root}${rel}?v=${BUST}`;
     return mediaCard(src, caption || rel, { large, zoom: true, fullSrc: src });
   }
   function gif(name, caption, large) {
-    const src = `${SP}gifs/${name}?v=seed2`;
+    const src = `${SP}gifs/${name}?v=${BUST}`;
     return mediaCard(src, caption || name, { large, zoom: true, fullSrc: src });
   }
   function pngRow(items, base) {
@@ -36,6 +38,9 @@
   }
   function gifRow(items) {
     return `<div class="sp-demo-row">${items.map((it) => gif(it[0], it[1], it[2])).join("")}</div>`;
+  }
+  function card(title, desc, body) {
+    return `<div class="sp-card"><h3>${title}</h3><p class="sp-desc">${desc}</p>${body}</div>`;
   }
 
   function ensureLightbox() {
@@ -202,32 +207,6 @@
               : `Нажми APPROVED — сохранится маркер <code>${APPROVED_FILE}</code> в <code>refs/art/</code> (диалог сохранения или Download).`
         }</p>
       </div>
-      <div class="sp-card">
-        <h3>Активно сейчас</h3>
-        <p class="sp-desc">Только style-seed + sheets ГГ (носитель стиля). Боссы/HR/концепты — в архиве.</p>
-        ${pngRow([["char_hero_idle_sheet.png", "ГГ idle sheet"], ["char_hero_walk_sheet.png", "ГГ walk sheet"]], SP)}
-      </div>
-      <div class="sp-card">
-        <h3>Необходимые env-спрайты · каркас + пропы</h3>
-        <p class="sp-desc">
-          Стена вплотную к краю; проп — готовый композит в той же клетке
-          (<code>tile_wall_{n,s,e,w}_{plant|cooler|cabinet|printer|trash}</code>).
-          Сборка: <code>build_wall_prop_tiles.py</code>.
-        </p>
-        ${pngRow([
-          ["frames/tile_wall_n_plant.png", "N+plant"],
-          ["frames/tile_wall_n_cooler.png", "N+cooler"],
-          ["frames/tile_wall_n_cabinet.png", "N+cabinet"],
-          ["frames/tile_wall_n_printer.png", "N+printer"],
-          ["frames/tile_wall_n_trash.png", "N+trash"],
-          ["border_wall_props_preview.png", "all edges×props", true],
-        ], SP)}
-        ${pngRow([
-          ["frames/tile_cabinet.png", "cabinet"],
-          ["frames/tile_printer.png", "printer"],
-          ["frames/tile_trash.png", "trash"],
-        ], SP)}
-      </div>
     `;
   }
 
@@ -284,6 +263,184 @@
       html: () => gateHtml({ status: "PENDING" }),
     },
     {
+      id: "hero",
+      group: "Feel demo",
+      nav: "Герой",
+      html: () =>
+        card(
+          "Герой · frames + sheets + GIF",
+          "Грузит <code>ensureArt</code>: idle / walk 6f / caught. Носитель стиля.",
+          pngRow([
+            ["char_hero_idle_sheet.png", "idle sheet"],
+            ["char_hero_walk_sheet.png", "walk sheet"],
+            ["char_hero_caught_sheet.png", "caught sheet"],
+            ["char_hero_sheet.png", "legacy sheet"],
+          ]) +
+            gifRow([
+              ["char_hero_idle.gif", "idle S"],
+              ["char_hero_walk.gif", "walk S"],
+              ["char_hero_idle_turn.gif", "idle turn"],
+              ["char_hero_caught.gif", "caught"],
+            ]) +
+            pngRow([
+              ["frames/char_hero/idle_s.png", "idle_s"],
+              ["frames/char_hero/walk_s_0.png", "walk_s_0"],
+              ["frames/char_hero_sheet/s.png", "sheet S"],
+              ["frames/char_hero_sheet/e.png", "sheet E"],
+            ])
+        ),
+    },
+    {
+      id: "floors",
+      group: "Feel demo",
+      nav: "Пол / fog",
+      html: () =>
+        card(
+          "Пол и туман",
+          "Клетки play: <code>tile_floor_a/b</code>. Открытый fog — <code>tile_fog</code> (мягкий FoW поверх).",
+          pngRow([
+            ["frames/tile_floor_a.png", "floor_a"],
+            ["frames/tile_floor_b.png", "floor_b"],
+            ["frames/tile_fog.png", "fog"],
+          ])
+        ),
+    },
+    {
+      id: "walls",
+      group: "Feel demo",
+      nav: "Стены / окна",
+      html: () =>
+        card(
+          "Каркас · AI flush (без боковых гэпов)",
+          "Мастера: <code>refs/art/ai-wall-n-flush.png</code>, <code>ai-window-n-flush.png</code>. " +
+            "Сборка: <code>build_ai_wall_tiles.py</code>. Окно только на одинарной стене (50%). " +
+            "Угол карты при двух стенах — stub-квадрат.",
+          pngRow([
+            ["ai-wall-n-flush.png", "AI master wall", true, ART],
+            ["ai-window-n-flush.png", "AI master window", true, ART],
+            ["wall_ai_flush_preview.png", "preview sheet", true],
+          ]) +
+            pngRow([
+              ["frames/tile_wall_n.png", "wall N"],
+              ["frames/tile_wall_s.png", "wall S"],
+              ["frames/tile_wall_e.png", "wall E"],
+              ["frames/tile_wall_w.png", "wall W"],
+              ["frames/tile_window_n.png", "window N"],
+              ["frames/tile_window_e.png", "window E"],
+            ]) +
+            pngRow([
+              ["frames/tile_wall_nw.png", "L nw"],
+              ["frames/tile_wall_ne.png", "L ne"],
+              ["frames/tile_wall_sw.png", "L sw"],
+              ["frames/tile_wall_se.png", "L se"],
+              ["frames/tile_wall_stub_nw.png", "stub nw"],
+              ["frames/tile_wall_stub_ne.png", "stub ne"],
+            ]) +
+            pngRow([
+              ["frames/tile_wall_nwe.png", "U nwe"],
+              ["frames/tile_wall_nsw.png", "U nsw"],
+              ["frames/tile_wall_nse.png", "U nse"],
+              ["frames/tile_wall_swe.png", "U swe"],
+            ])
+        ),
+    },
+    {
+      id: "props",
+      group: "Feel demo",
+      nav: "Пропы",
+      html: () =>
+        card(
+          "Мебель и пропы play",
+          "Стол / растения / кулер / шкаф / принтер / урна. Стена+проп композиты — запас (пока не в placeFogDecor).",
+          pngRow([
+            ["frames/tile_desk.png", "desk"],
+            ["frames/tile_desk2.png", "desk2"],
+            ["frames/tile_plant.png", "plant"],
+            ["frames/tile_cooler.png", "cooler"],
+            ["frames/tile_cabinet.png", "cabinet"],
+            ["frames/tile_printer.png", "printer"],
+            ["frames/tile_trash.png", "trash"],
+          ]) +
+            pngRow([
+              ["frames/tile_wall_n_plant.png", "N+plant"],
+              ["frames/tile_wall_n_cooler.png", "N+cooler"],
+              ["frames/tile_wall_n_cabinet.png", "N+cabinet"],
+              ["frames/tile_wall_n_printer.png", "N+printer"],
+              ["frames/tile_wall_n_trash.png", "N+trash"],
+              ["border_wall_props_preview.png", "all edges×props", true],
+            ])
+        ),
+    },
+    {
+      id: "pickups",
+      group: "Feel demo",
+      nav: "Пикапы",
+      html: () =>
+        card(
+          "Пикапы",
+          "<code>pu_coin</code> · <code>pu_coffee</code> · <code>pu_badge</code>.",
+          pngRow([
+            ["frames/pu_coin.png", "coin"],
+            ["frames/pu_coffee.png", "coffee"],
+            ["frames/pu_badge.png", "badge"],
+          ])
+        ),
+    },
+    {
+      id: "vfx",
+      group: "Feel demo",
+      nav: "VFX",
+      html: () =>
+        card(
+          "VFX",
+          "Щит, пар, неуязвимость, near-miss, репорт, рывок, slam, конфетти.",
+          pngRow([
+            ["frames/vfx_shield.png", "shield"],
+            ["frames/vfx_steam.png", "steam"],
+            ["frames/vfx_invuln.png", "invuln"],
+            ["frames/vfx_near_miss.png", "near_miss"],
+            ["frames/vfx_report.png", "report"],
+            ["frames/vfx_dash.png", "dash"],
+            ["frames/vfx_slam.png", "slam"],
+            ["frames/vfx_confetti.png", "confetti"],
+          ])
+        ),
+    },
+    {
+      id: "npcs",
+      group: "Feel demo",
+      nav: "NPC / боссы",
+      html: () =>
+        card(
+          "NPC · в архиве pipeline reset",
+          "Feel всё ещё запрашивает <code>frames/boss_*_sheet</code> и colleague — файлы лежат в архиве. " +
+            "Пока показываем архивные sheets (не SoT для новых правок).",
+          pngRow(
+            [
+              ["alpha/boss_hr_sheet.png", "HR"],
+              ["alpha/boss_director_sheet.png", "Director"],
+              ["alpha/boss_guard_sheet.png", "Guard"],
+              ["alpha/boss_looker_sheet.png", "Looker"],
+              ["alpha/char_colleague_sheet.png", "Colleague"],
+              ["alpha/boss_intern_sheet.png", "Intern"],
+            ],
+            ARCH
+          ) +
+            pngRow(
+              [
+                ["alpha/boss_meeting_sheet.png", "Meeting"],
+                ["alpha/boss_account_sheet.png", "Account"],
+                ["alpha/boss_kpi_sheet.png", "KPI"],
+                ["alpha/boss_client_sheet.png", "Client"],
+                ["alpha/boss_it_sheet.png", "IT"],
+                ["alpha/boss_secretary_sheet.png", "Secretary"],
+                ["alpha/boss_urgent_sheet.png", "Urgent"],
+              ],
+              ARCH
+            )
+        ),
+    },
+    {
       id: "archive",
       group: "Pipeline",
       nav: "Архив",
@@ -291,7 +448,7 @@
         <div class="sp-card">
           <h3>Архив наработок</h3>
           <p class="sp-desc">
-            Всё, что не style-seed / ГГ carrier, перенесено в
+            Всё, что не style-seed / ГГ carrier / актуальный env, перенесено в
             <code>games/deadline-escape/archive/2026-07-18-pipeline-v1-reset/</code>
             (art, boss sheets, HR, концепты, chroma…). Не использовать как SoT.
           </p>
@@ -303,11 +460,11 @@
   function mount(root) {
     root.innerHTML = `
       <p class="sp-intro">
-        <strong>ART_STATUS = PIPELINE_V1</strong> · seed → strip → normalize → GIF QA.
-        Сейчас открыт только gate утверждения style-seed.
+        <strong>ART_STATUS = PIPELINE_V1</strong> · каталог = всё, что грузит feel-демо + gate.
+        Стены: AI flush <code>?v=${BUST}</code>.
       </p>
       <div class="sp-layout">
-        <nav class="sp-nav" aria-label="Pipeline"></nav>
+        <nav class="sp-nav" aria-label="Sprites"></nav>
         <div class="sp-panel"></div>
       </div>
     `;
