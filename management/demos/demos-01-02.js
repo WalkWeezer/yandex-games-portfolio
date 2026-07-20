@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
   /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250721m",
+  ART_BUST: "w250721n",
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
@@ -1265,10 +1265,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721m`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721n`));
     // стены — proof-геометрия без спрайтов (wall/window tiles не грузим)
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721m`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721n`));
     this._art = art;
     return art;
   },
@@ -1664,7 +1664,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
   },
   /**
    * Стены на рёбрах (без клеток угла карты) + углы карты.
-   * Цель: ≥70% проходных клеток на кольце границы (спавн-проходы).
+   * Цель: ≥70% проходных на кольце + целые сегменты (без дыр),
+   * чтобы wallGeomOf давал корректные 1/2/3 стороны и stub.
    * Окна временно отключены.
    */
   placeFogDecor(map, border, rnd) {
@@ -1677,6 +1678,34 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const b = border | 0;
       const onN = r === b - 1, onS = r === rows - b, onW = c === b - 1, onE = c === cols - b;
       return (onN || onS) && (onW || onE);
+    };
+
+    /** Сегменты единиц в marks[0..n): {lo,hi} включительно. */
+    const markSegs = (marks) => {
+      const segs = [];
+      for (let i = 0; i < marks.length; ) {
+        if (!marks[i]) { i++; continue; }
+        let j = i + 1;
+        while (j < marks.length && marks[j]) j++;
+        segs.push({ lo: i, hi: j - 1 });
+        i = j;
+      }
+      return segs;
+    };
+    /**
+     * Убрать одну стену с торца сегмента (или весь соло), без дыр посередине.
+     * Иначе wallGeomOf ломается: середина ряда → две U вместо L–mid–L.
+     */
+    const trimMarkEnd = (marks) => {
+      const segs = markSegs(marks);
+      if (!segs.length) return false;
+      const multi = segs.filter((s) => s.hi > s.lo);
+      const pick = multi.length ? multi : segs;
+      const s = pick[(rnd() * pick.length) | 0];
+      if (s.hi === s.lo) marks[s.lo] = 0;
+      else if (rnd() < 0.5) marks[s.lo] = 0;
+      else marks[s.hi] = 0;
+      return true;
     };
 
     // sparse walls on mid-edge (~22% бюджет), остальное — проходы
@@ -1707,16 +1736,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
           placed++;
         }
       }
-      // на ребре оставляем ≥55% открытых
+      // на ребре ≥55% открытых — только trim с торцов сегментов
       let open = marks.filter((m) => !m).length;
       const minOpenSide = Math.max(1, Math.ceil(idxs.length * 0.55));
-      while (open < minOpenSide) {
-        const blocked = [];
-        for (let i = 0; i < marks.length; i++) if (marks[i]) blocked.push(i);
-        if (!blocked.length) break;
-        marks[blocked[(rnd() * blocked.length) | 0]] = 0;
-        open++;
-      }
+      while (open < minOpenSide && trimMarkEnd(marks)) open++;
       for (let i = 0; i < idxs.length; i++) {
         if (!marks[i]) continue;
         const { c, r } = ring[idxs[i]];
@@ -1744,26 +1767,71 @@ window.FEEL_DEMOS["deadline-escape"] = {
       else if ((a || b2) && rnd() < 0.20) map[r][c] = 2;
     }
 
-    // жёсткий пол: ≥70% проходных на всём кольце
+    // жёсткий пол ≥70%: укорачиваем сегменты с торцов (не дырявим середину)
     const needOpen = Math.ceil(ring.length * 0.70);
-    const walls = [];
-    for (const { c, r } of ring) if (map[r][c] === 2) walls.push({ c, r });
-    let openCount = ring.length - walls.length;
-    for (let i = walls.length - 1; i > 0; i--) {
-      const j = (rnd() * (i + 1)) | 0;
-      const tmp = walls[i]; walls[i] = walls[j]; walls[j] = tmp;
-    }
-    for (const cell of walls) {
-      if (openCount >= needOpen) break;
+    const sideCells = { n: [], e: [], s: [], w: [] };
+    for (const cell of ring) {
       if (isRingCorner(cell.c, cell.r)) continue;
-      map[cell.r][cell.c] = 0;
+      if (sideCells[cell.edge]) sideCells[cell.edge].push(cell);
+    }
+    const countOpen = () => {
+      let n = 0;
+      for (const { c, r } of ring) if (map[r][c] !== 2) n++;
+      return n;
+    };
+    let openCount = countOpen();
+    let guard = 0;
+    while (openCount < needOpen && guard++ < 200) {
+      const cands = [];
+      for (const side of ["n", "e", "s", "w"]) {
+        const cells = sideCells[side];
+        if (!cells.length) continue;
+        const marks = cells.map(({ c, r }) => (map[r][c] === 2 ? 1 : 0));
+        const segs = markSegs(marks);
+        for (const seg of segs) {
+          cands.push({ c: cells[seg.lo].c, r: cells[seg.lo].r, len: seg.hi - seg.lo + 1 });
+          if (seg.hi !== seg.lo) {
+            cands.push({ c: cells[seg.hi].c, r: cells[seg.hi].r, len: seg.hi - seg.lo + 1 });
+          }
+        }
+      }
+      if (!cands.length) break;
+      // сначала торцы длинных сегментов, соло — в последнюю очередь
+      cands.sort((a, b) => b.len - a.len);
+      const topLen = cands[0].len;
+      const pool = cands.filter((c) => c.len === topLen);
+      const pick = pool[(rnd() * pool.length) | 0];
+      map[pick.r][pick.c] = 0;
       openCount++;
     }
-    for (const cell of walls) {
-      if (openCount >= needOpen) break;
-      if (map[cell.r][cell.c] !== 2) continue;
-      map[cell.r][cell.c] = 0;
-      openCount++;
+    // если всё ещё мало — снимаем углы (stub/1-arm), geom уже не про mid-сегменты
+    if (openCount < needOpen) {
+      const cornerWalls = [];
+      for (const { c, r } of corners) {
+        if (c < 0 || r < 0 || c >= cols || r >= rows) continue;
+        if (map[r][c] === 2) cornerWalls.push({ c, r });
+      }
+      for (let i = cornerWalls.length - 1; i > 0; i--) {
+        const j = (rnd() * (i + 1)) | 0;
+        const tmp = cornerWalls[i]; cornerWalls[i] = cornerWalls[j]; cornerWalls[j] = tmp;
+      }
+      for (const cell of cornerWalls) {
+        if (openCount >= needOpen) break;
+        map[cell.r][cell.c] = 0;
+        openCount++;
+      }
+    }
+    // после trim рук: угол без соседей убрать (пустой sides); stub только при 2 руках
+    for (const corner of corners) {
+      const { c, r, d1, d2 } = corner;
+      if (c < 0 || r < 0 || c >= cols || r >= rows) continue;
+      if (map[r][c] !== 2) continue;
+      const solid = (dc, dr) => {
+        const nc = c + dc, nr = r + dr;
+        return nr >= 0 && nc >= 0 && nr < rows && nc < cols && map[nr][nc] === 2;
+      };
+      const arms = (solid(d1[0], d1[1]) ? 1 : 0) + (solid(d2[0], d2[1]) ? 1 : 0);
+      if (arms === 0) map[r][c] = 0;
     }
     return wallDecor;
   },
