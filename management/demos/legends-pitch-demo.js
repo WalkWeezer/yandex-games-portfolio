@@ -1,13 +1,13 @@
 /**
  * Legends of the Pitch — feel demo ZONE 6v6
  *
- * Расстановка на СВОЕЙ половине → после свистка разбежка и пересечение.
- * Пас/удар: мяч летит. Моменты с паузой. Игроки с оффсетами в зоне.
+ * Вся сетка 3×5 доступна для позиционирования (ты и соперник).
+ * После свистка — короткий engage с мест расстановки. Мяч летит, моменты с паузой.
  */
 window.FEEL_DEMOS = window.FEEL_DEMOS || {};
 
 window.FEEL_DEMOS["legends-of-the-pitch"] = {
-  hint: "Своя половина → магазин → свисток: разбежка, пас/отбор/удар. Мяч летит, моменты читаемые.",
+  hint: "Вся сетка для расстановки (ты и соперник) → магазин → матч. Мяч летит, моменты читаемые.",
 
   COLS: 3,
   ROWS: 5, // 0 = их ворота, 4 = наши
@@ -84,25 +84,24 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
   ],
 
   /**
-   * home = своя половина (расстановка).
-   * push = позиции после свистка (команды пересекаются).
-   * ox/oy — пиксельный оффсет внутри клетки, чтобы не стакать в центре.
+   * Стартовые позы по всей сетке (можно двигать в любую клетку).
+   * ox/oy — чтобы не стакать в центре клетки.
    */
   US_SLOTS: [
-    { zone: "GK", home: { col: 1, row: 4, ox: 0, oy: 10 }, push: { col: 1, row: 4, ox: 0, oy: 10 } },
-    { zone: "DEF", home: { col: 0, row: 3, ox: -14, oy: 6 }, push: { col: 0, row: 3, ox: -16, oy: 0 } },
-    { zone: "DEF", home: { col: 2, row: 3, ox: 14, oy: 6 }, push: { col: 2, row: 3, ox: 16, oy: 0 } },
-    { zone: "MID", home: { col: 1, row: 3, ox: 0, oy: -18 }, push: { col: 1, row: 2, ox: 12, oy: 8 } },
-    { zone: "WING", home: { col: 0, row: 3, ox: -6, oy: -22 }, push: { col: 0, row: 1, ox: -12, oy: 6 } },
-    { zone: "FWD", home: { col: 1, row: 2, ox: 0, oy: 16 }, push: { col: 1, row: 1, ox: -10, oy: 4 } },
+    { zone: "GK", col: 1, row: 4, ox: 0, oy: 10 },
+    { zone: "DEF", col: 0, row: 3, ox: -12, oy: 4 },
+    { zone: "DEF", col: 2, row: 3, ox: 12, oy: 4 },
+    { zone: "MID", col: 1, row: 2, ox: 10, oy: 8 },
+    { zone: "WING", col: 0, row: 1, ox: -10, oy: 4 },
+    { zone: "FWD", col: 1, row: 1, ox: -8, oy: 2 },
   ],
   OPP_SLOTS: [
-    { zone: "GK", home: { col: 1, row: 0, ox: 0, oy: -10 }, push: { col: 1, row: 0, ox: 0, oy: -10 } },
-    { zone: "DEF", home: { col: 0, row: 1, ox: -14, oy: -6 }, push: { col: 0, row: 1, ox: -16, oy: 0 } },
-    { zone: "DEF", home: { col: 2, row: 1, ox: 14, oy: -6 }, push: { col: 2, row: 1, ox: 16, oy: 0 } },
-    { zone: "MID", home: { col: 1, row: 1, ox: 0, oy: 18 }, push: { col: 1, row: 2, ox: -12, oy: -8 } },
-    { zone: "WING", home: { col: 2, row: 1, ox: 6, oy: 22 }, push: { col: 2, row: 3, ox: 12, oy: -6 } },
-    { zone: "FWD", home: { col: 1, row: 2, ox: 0, oy: -16 }, push: { col: 1, row: 3, ox: 10, oy: -4 } },
+    { zone: "GK", col: 1, row: 0, ox: 0, oy: -10 },
+    { zone: "DEF", col: 0, row: 1, ox: -12, oy: -4 },
+    { zone: "DEF", col: 2, row: 1, ox: 12, oy: -4 },
+    { zone: "MID", col: 1, row: 2, ox: -10, oy: -8 },
+    { zone: "WING", col: 2, row: 3, ox: 10, oy: -4 },
+    { zone: "FWD", col: 1, row: 3, ox: 8, oy: -2 },
   ],
 
   create(api) {
@@ -186,21 +185,22 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     u.oy = pose.oy || 0;
   },
 
+  rememberHome(u) {
+    u.home = { col: u.col, row: u.row, ox: u.ox || 0, oy: u.oy || 0 };
+  },
+
   makeTeam(side, slots) {
-    return slots.map((s, i) => {
-      const home = s.home;
-      const push = s.push;
-      const p = this.slotWorld(home.col, home.row, home.ox, home.oy);
-      return {
+    return slots.map((slot, i) => {
+      const p = this.slotWorld(slot.col, slot.row, slot.ox, slot.oy);
+      const u = {
         side,
         index: i,
-        zone: s.zone,
-        home: { ...home },
-        push: { ...push },
-        col: home.col,
-        row: home.row,
-        ox: home.ox || 0,
-        oy: home.oy || 0,
+        zone: slot.zone,
+        col: slot.col,
+        row: slot.row,
+        ox: slot.ox || 0,
+        oy: slot.oy || 0,
+        home: { col: slot.col, row: slot.row, ox: slot.ox || 0, oy: slot.oy || 0 },
         card: null,
         px: p.x,
         py: p.y,
@@ -211,7 +211,43 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
         lungeX: 0,
         lungeY: 0,
       };
+      return u;
     });
+  },
+
+  cellFromTap(tap) {
+    const L = this.L;
+    if (!L) return null;
+    const c = Math.floor((tap.x - L.originX) / L.cellW);
+    const r = Math.floor((tap.y - L.originY) / L.cellH);
+    if (c < 0 || c >= this.COLS || r < 0 || r >= this.ROWS) return null;
+    return { col: c, row: r };
+  },
+
+  /** развести игроков внутри одной клетки (своя/чужая сторона) */
+  packCell(s, col, row) {
+    const here = [...s.ours, ...s.opp].filter((u) => u.col === col && u.row === row);
+    const us = here.filter((u) => u.side === "us");
+    const opp = here.filter((u) => u.side === "opp");
+    const place = (list, sideSign) => {
+      list.forEach((u, i) => {
+        const spread = list.length > 1 ? (i - (list.length - 1) / 2) * 14 : 0;
+        u.ox = sideSign * 10 + spread * 0.35;
+        u.oy = spread;
+        this.rememberHome(u);
+        if (u.card || s.phase === "lineup" || s.phase === "shop") this.snapUnit(u);
+      });
+    };
+    place(us, -1);
+    place(opp, 1);
+  },
+
+  moveUnitToCell(s, u, col, row) {
+    const prev = { col: u.col, row: u.row };
+    u.col = col;
+    u.row = row;
+    this.packCell(s, col, row);
+    if (prev.col !== col || prev.row !== row) this.packCell(s, prev.col, prev.row);
   },
 
   seedOpp(api, deck) {
@@ -259,7 +295,7 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       ball: { col: 1, row: 2, owner: null, flying: null, x: mid.x, y: mid.y },
       fx: [],
       log: [],
-      subline: "Своя половина · карта → слот (6/6)",
+      subline: "Вся сетка · карта → клетка (6/6)",
       banner: null,
       bannerT: 0,
       bannerColor: "#fff",
@@ -394,7 +430,7 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
 
   placeOn(u, card) {
     u.card = card;
-    this.applyPose(u, u.home);
+    this.rememberHome(u);
     this.snapUnit(u);
     u.act = null;
     u.actT = 0;
@@ -402,20 +438,23 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
 
   resetToHome(s) {
     for (const u of [...s.ours, ...s.opp]) {
-      this.applyPose(u, u.home);
+      if (u.home) this.applyPose(u, u.home);
       if (u.card) this.snapUnit(u);
     }
   },
 
   beginSpread(s) {
-    for (const u of this.units(s)) {
-      this.applyPose(u, u.push);
-      // px/py remain at home — update() lerps toward push
-    }
-    s.spreadT = 1.15;
-    s.beatT = 1.15;
-    s.ball.owner = null;
+    // играем с клеток расстановки (вся сетка уже могла пересечься)
     const mid = this.cellCenter(1, 2);
+    for (const u of this.units(s)) {
+      this.rememberHome(u);
+      this.faceToward(u, mid.x, mid.y);
+      u.lungeX = Math.cos(u.facing) * 8;
+      u.lungeY = Math.sin(u.facing) * 8;
+    }
+    s.spreadT = 0.95;
+    s.beatT = 0.95;
+    s.ball.owner = null;
     s.ball.x = mid.x;
     s.ball.y = mid.y;
     s.ball.col = 1;
@@ -423,7 +462,7 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     s.banner = "СВИСТОК";
     s.bannerColor = "#e2e8f0";
     s.bannerT = 0.9;
-    this.pushLog(s, "Свисток · разбежка, команды пересекаются");
+    this.pushLog(s, "Свисток · с ваших позиций");
   },
 
   finishKickoff(s) {
@@ -782,7 +821,7 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
   afterGoalRestart(s) {
     s.restartKick = 0;
     for (const u of this.units(s)) {
-      this.applyPose(u, u.push);
+      this.applyPose(u, u.home);
       this.snapUnit(u);
     }
     const kickSide = s.lastScorer === "us" ? "opp" : "us";
@@ -910,6 +949,128 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     return Math.hypot(tap.x - u.px, tap.y - u.py) < 30;
   },
 
+  /** карта/игрок → любая клетка сетки */
+  handleGridPlace(s, tap) {
+    const cell = this.cellFromTap(tap);
+    if (!cell) return false;
+
+    // попали в своего игрока — приоритет над клеткой
+    for (const u of s.ours) {
+      if (!this.hitUnit(u, tap)) continue;
+      if (s.selected?.from === "deck") {
+        const card = s.deck[s.selected.index];
+        if (!card) return true;
+        if (u.card) s.deck.push(u.card);
+        this.placeOn(u, card);
+        s.deck.splice(s.selected.index, 1);
+        s.selected = null;
+        s.note = u.zone + " ← " + u.card.name;
+        return true;
+      }
+      if (s.selected?.from === "bench") {
+        const card = s.bench[s.selected.index];
+        if (!card) return true;
+        if (u.card) {
+          const tmp = u.card;
+          this.placeOn(u, card);
+          s.bench[s.selected.index] = tmp;
+        } else {
+          this.placeOn(u, card);
+          s.bench.splice(s.selected.index, 1);
+        }
+        s.selected = null;
+        this.tryMerge(s);
+        s.note = "На " + u.zone;
+        return true;
+      }
+      if (s.selected?.from === "field") {
+        const a = s.ours[s.selected.index];
+        if (a === u) {
+          if (u.card && s.phase === "lineup") {
+            s.deck.push(u.card);
+            u.card = null;
+            s.note = "В колоду";
+          } else if (u.card && s.bench.length < this.BENCH_MAX) {
+            s.bench.push(u.card);
+            u.card = null;
+            s.note = "На скамейку";
+          }
+          s.selected = null;
+        } else {
+          const tmp = a.card;
+          a.card = u.card;
+          u.card = tmp;
+          if (a.card) this.snapUnit(a);
+          if (u.card) this.snapUnit(u);
+          s.note = "Свап";
+          s.selected = null;
+        }
+        return true;
+      }
+      if (u.card) {
+        s.selected = { from: "field", index: u.index };
+        s.note = u.card.name + " · тап клетку = сдвиг";
+        s.subline = u.card.amp + " · тап любую клетку сетки";
+        return true;
+      }
+    }
+
+    if (s.selected?.from === "deck") {
+      const card = s.deck[s.selected.index];
+      if (!card) return true;
+      let u = s.ours.find((x) => x.col === cell.col && x.row === cell.row && x.card);
+      if (!u) u = s.ours.find((x) => !x.card);
+      if (!u) {
+        s.note = "Уже 6/6 — выбери игрока и сдвинь";
+        return true;
+      }
+      if (u.card) s.deck.push(u.card);
+      this.moveUnitToCell(s, u, cell.col, cell.row);
+      this.placeOn(u, card);
+      s.deck.splice(s.selected.index, 1);
+      s.selected = null;
+      s.note = cell.col + "," + cell.row + " ← " + u.card.name;
+      return true;
+    }
+
+    if (s.selected?.from === "bench") {
+      const card = s.bench[s.selected.index];
+      if (!card) return true;
+      let u = s.ours.find((x) => x.col === cell.col && x.row === cell.row && x.card);
+      if (!u) u = s.ours.find((x) => !x.card);
+      if (!u) {
+        s.note = "Уже 6/6 — выбери кого заменить/сдвинуть";
+        return true;
+      }
+      if (u.card) {
+        const tmp = u.card;
+        this.moveUnitToCell(s, u, cell.col, cell.row);
+        this.placeOn(u, card);
+        s.bench[s.selected.index] = tmp;
+      } else {
+        this.moveUnitToCell(s, u, cell.col, cell.row);
+        this.placeOn(u, card);
+        s.bench.splice(s.selected.index, 1);
+      }
+      s.selected = null;
+      this.tryMerge(s);
+      s.note = "Клетка " + cell.col + "," + cell.row;
+      return true;
+    }
+
+    if (s.selected?.from === "field") {
+      const u = s.ours[s.selected.index];
+      if (!u) return true;
+      this.moveUnitToCell(s, u, cell.col, cell.row);
+      s.selected = null;
+      s.note = (u.card ? u.card.name : u.zone) + " → " + cell.col + "," + cell.row;
+      s.subline = "Позиция " + cell.col + "·" + cell.row;
+      return true;
+    }
+
+    return false;
+  },
+
   updateLineup(s, api) {
     s.reroll.x = -999;
     s.sell.x = -999;
@@ -926,32 +1087,11 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
         const r = this.deckRect(i, api);
         if (tap.x >= r.x && tap.x <= r.x + r.w && tap.y >= r.y && tap.y <= r.y + r.h) {
           s.selected = { from: "deck", index: i };
-          s.subline = s.deck[i].amp + " · " + this.TACTIC_RU[s.deck[i].tactic];
+          s.subline = s.deck[i].amp + " · тап любую клетку сетки";
           return;
         }
       }
-      for (const u of s.ours) {
-        if (!this.hitUnit(u, tap) && !(
-          tap.x >= u.px - this.L.cellW * 0.35 &&
-          tap.x <= u.px + this.L.cellW * 0.35 &&
-          tap.y >= u.py - this.L.cellH * 0.35 &&
-          tap.y <= u.py + this.L.cellH * 0.35
-        )) continue;
-        if (s.selected?.from === "deck") {
-          const card = s.deck[s.selected.index];
-          if (!card) break;
-          if (u.card) s.deck.push(u.card);
-          this.placeOn(u, card);
-          s.deck.splice(s.selected.index, 1);
-          s.selected = null;
-          s.note = u.zone + " ← " + u.card.name;
-        } else if (u.card) {
-          s.deck.push(u.card);
-          u.card = null;
-          s.selected = null;
-        }
-        return;
-      }
+      if (this.handleGridPlace(s, tap)) return;
     }
     if (s.start.clicked && n >= this.FIELD) {
       s.poolNames = [
@@ -969,12 +1109,12 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       s.reroll.x = 14;
       s.sell.x = api.w - 124;
       s.start.label = "В бой!";
-      s.note = "Покупки → скамейка → слот на своей половине";
+      s.note = "Скамейка → клетка на всей сетке";
       s.subline = "Магазин · ролл из колоды 18";
     }
     const tc = this.tacticCount(s.ours);
     api.setHud(
-      "Своя половина " +
+      "Сетка 3×5 · " +
         n +
         "/" +
         this.FIELD +
@@ -1001,7 +1141,7 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     s.bench.push(offer.card);
     s.shop[i] = null;
     const m = this.tryMerge(s);
-    s.note = m ? "MERGE " + m.name : "Купил " + offer.card.name + " → на слот";
+    s.note = m ? "MERGE " + m.name : "Купил " + offer.card.name + " → клетка";
   },
 
   updateShop(s, api) {
@@ -1053,55 +1193,11 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
         const r = this.benchRect(i, api);
         if (tap.x >= r.x && tap.x <= r.x + r.w && tap.y >= r.y && tap.y <= r.y + r.h) {
           s.selected = { from: "bench", index: i };
+          s.subline = s.bench[i].amp + " · тап любую клетку сетки";
           return;
         }
       }
-      for (let i = 0; i < s.ours.length; i++) {
-        const u = s.ours[i];
-        if (!this.hitUnit(u, tap)) continue;
-        if (s.selected?.from === "bench") {
-          const card = s.bench[s.selected.index];
-          if (!card) break;
-          if (u.card) {
-            const tmp = u.card;
-            this.placeOn(u, card);
-            s.bench[s.selected.index] = tmp;
-          } else {
-            this.placeOn(u, card);
-            s.bench.splice(s.selected.index, 1);
-          }
-          s.selected = null;
-          this.tryMerge(s);
-          s.note = "Поставил на " + u.zone;
-        } else if (s.selected?.from === "field") {
-          const a = s.ours[s.selected.index];
-          if (a === u) {
-            if (u.card && s.bench.length < this.BENCH_MAX) {
-              s.bench.push(u.card);
-              u.card = null;
-              s.note = "На скамейку";
-            }
-          } else {
-            const tmp = a.card;
-            a.card = u.card;
-            u.card = tmp;
-            if (a.card) {
-              this.applyPose(a, a.home);
-              this.snapUnit(a);
-            }
-            if (u.card) {
-              this.applyPose(u, u.home);
-              this.snapUnit(u);
-            }
-            s.note = "Свап слотов";
-          }
-          s.selected = null;
-        } else if (u.card) {
-          s.selected = { from: "field", index: i };
-          s.note = u.zone + ": свап / повтор = скамейка";
-        }
-        return;
-      }
+      if (this.handleGridPlace(s, tap)) return;
     }
 
     if (s.start.clicked) {
@@ -1115,7 +1211,7 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
         return;
       }
       if (this.filled(s.ours) < this.FIELD) {
-        s.note = "Нужно 6/6 на своей половине";
+        s.note = "Нужно 6/6 на сетке";
         return;
       }
       this.startFight(s, api);
@@ -1170,7 +1266,7 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     s.start.color = "#3dd68c";
     s.coins += 4 + Math.min(4, (s.coins / 10) | 0);
     this.refreshShop(s, api);
-    s.note = "Своя половина · скамейка → слот";
+    s.note = "Вся сетка · скамейка → клетка";
     this.resetToHome(s);
   },
 
@@ -1353,19 +1449,14 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       }
     }
 
-    // own-half tint during lineup/shop
-    if (s.phase !== "fight") {
-      ctx.fillStyle = "rgba(61, 214, 140, 0.10)";
-      ctx.fillRect(px, py + L.cellH * 2.5, pw, L.cellH * 2.5);
-      ctx.fillStyle = "rgba(248, 113, 113, 0.08)";
-      ctx.fillRect(px, py, pw, L.cellH * 2.5);
-      ctx.fillStyle = "#86efac";
-      ctx.font = "bold 12px 'Trebuchet MS', 'Segoe UI', sans-serif";
-      ctx.textAlign = "left";
-      ctx.fillText("ВАША ПОЛОВИНА", px + 8, py + ph - 10);
-      ctx.fillStyle = "#fca5a5";
-      ctx.textAlign = "right";
-      ctx.fillText("СОПЕРНИК", px + pw - 8, py + 16);
+    // вся сетка доступна — подсветка при выборе
+    if (s.phase !== "fight" && s.selected) {
+      for (let r = 0; r < this.ROWS; r++) {
+        for (let c = 0; c < this.COLS; c++) {
+          ctx.fillStyle = "rgba(253, 224, 71, 0.10)";
+          ctx.fillRect(px + c * L.cellW + 2, py + r * L.cellH + 2, L.cellW - 4, L.cellH - 4);
+        }
+      }
     }
 
     // lines
@@ -1408,19 +1499,25 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     ctx.strokeRect(px + L.cellW * 0.55, py, L.cellW * 0.9, L.cellH * 0.55);
     ctx.strokeRect(px + L.cellW * 0.55, py + ph - L.cellH * 0.55, L.cellW * 0.9, L.cellH * 0.55);
 
-    // empty slots
+    // пустые слоты + соперник виден на всей сетке
     if (s.phase !== "fight") {
       for (const u of s.ours) {
         if (u.card) continue;
         const p = this.unitTarget(u);
-        ctx.strokeStyle = "rgba(134,239,172,0.45)";
+        ctx.strokeStyle = "rgba(134,239,172,0.5)";
         ctx.lineWidth = 2;
         this.roundRect(ctx, p.x - 28, p.y - 20, 56, 40, 8);
         ctx.stroke();
-        ctx.fillStyle = "rgba(226,232,240,0.7)";
+        ctx.fillStyle = "rgba(226,232,240,0.75)";
         ctx.font = "bold 12px 'Trebuchet MS', sans-serif";
         ctx.textAlign = "center";
         ctx.fillText(u.zone, p.x, p.y + 4);
+      }
+      if (s.selected) {
+        ctx.fillStyle = "rgba(253,224,71,0.85)";
+        ctx.font = "bold 11px 'Trebuchet MS', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("тап клетку — позиция на всей сетке", px + pw / 2, py - 8);
       }
     }
   },
@@ -1651,7 +1748,7 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       ctx.fillStyle = "#fde68a";
       ctx.font = "bold 13px 'Trebuchet MS', sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText("Колода → слот на СВОЕЙ половине (6/6)", 12, L.uiTop + 18);
+      ctx.fillText("Колода → любая клетка сетки (6/6)", 12, L.uiTop + 18);
       s.deck.forEach((c, i) => {
         const r = this.deckRect(i, api);
         this.drawChip(ctx, r.x, r.y, r.w, r.h, c, s.selected?.from === "deck" && s.selected.index === i, null);
