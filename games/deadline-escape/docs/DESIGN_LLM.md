@@ -52,7 +52,7 @@ games/deadline-escape/
 | ID | Правило |
 |----|---------|
 | INV-DE-01 | Portrait 720×1280 logical; no landscape-only MVP |
-| INV-DE-02 | **Full office grid** dodge (base 6×8 play + fog edge enter/exit); NOT free-move chase; NOT hide/LOS MVP |
+| INV-DE-02 | **Full office grid** dodge (base 5×7 play + fog edge enter/exit); NOT free-move chase; NOT hide/LOS MVP |
 | INV-DE-03 | Win = survive clock **09:00→18:00** (`totalMin=540`); Fail = contact threat/zone without shield |
 | INV-DE-04 | Coffee = **world slow-mo** (scale 0.42, 3s); Badge = **1-hit shield** from floor drop |
 | INV-DE-05 | Hit = immediate **body overlap** (player `px/py` ↔ threat fractional pos, `HIT_BODY`); not shared grid cell |
@@ -130,7 +130,7 @@ Colleague = ally (slow, offer pause, mint ring) — not a threat mob.
 
 ### 2.5 FloorProgression
 
-- `gridSizeForFloor`: base 6×8 play; every 25 floors alternate +col/+row.
+- `gridSizeForFloor`: base 5×7 play; every 25 floors alternate +col/+row.
 - Layout seeded by floor; connected floors.
 - On win: `floor++`, new day layout.
 
@@ -146,7 +146,7 @@ Colleague = ally (slow, offer pause, mint ring) — not a threat mob.
 Cell codes: `0` floor · `1` desk 1×1 · `2` wall · `3` plant · `4` cooler · `5`/`6` desk 2×1 (W/E) · `7` window.
 
 ```
-play = interior walkable office (base 6×8 + growth)
+play = interior walkable office (base 5×7 + growth)
 fog  = 1 cell band each side (enter/exit only for mobs; not walk graph)
 # / W = decorative wall/window on fog band
 wallDecor = visual-only prop IN the same wall/window cell → draws tile_wall_{edge}_{prop}
