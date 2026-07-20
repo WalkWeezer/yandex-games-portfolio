@@ -3288,6 +3288,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
    * Сосед вдоль кольца solid → нет торца; пусто → торец.
    *
    * Полоса к ВНЕШНЕМУ краю клетки (layout-feel): N→n, S→s, W→w, E→e.
+   * Mid-текстура: CAP на северной стороне горизонтальной полосы
+   * (N — CAP снаружи; S — та же полоса снизу, CAP к play; не rot180).
    *  1 side  — mid
    *  2 sides — L
    *  3 sides — U
