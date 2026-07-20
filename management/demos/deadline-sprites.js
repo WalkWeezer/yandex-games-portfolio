@@ -11,7 +11,7 @@
   const APPROVED_FILE = "style-seed-hero.APPROVED.json";
   const REJECTED_FILE = "style-seed-hero.REJECTED.json";
   const LS_KEY = "deadline-escape.style-seed";
-  const BUST = "wallbreak1";
+  const BUST = "walllu1";
 
   const CHECKER = "background:repeating-conic-gradient(#2a3340 0% 25%, #1a222c 0% 50%) 50%/12px 12px";
 
@@ -311,15 +311,15 @@
       nav: "Стены / окна",
       html: () =>
         card(
-          "Каркас · только полосы + stub (без L/U)",
-          "Мастера: <code>refs/art/ai-set-wall-n.png</code>, <code>ai-set-window-n.png</code>, <code>ai-set-stub-nw.png</code>. " +
-            "Сборка: <code>build_wall_break_set.py</code>. L/U убраны (архив <code>2026-07-20-broken-lu-corners</code>). " +
-            "Окно только на одинарной стене (50%). Угол карты при двух стенах — stub-квадрат.",
+          "Каркас · полосы + цельные L/U (одна заливка)",
+          "Прямые: <code>build_wall_break_set.py</code>. Углы L/U: <code>build_solid_lu_tiles.py</code> — " +
+            "одна UV-заливка дерева + miter-кромка (без склейки двух полос → без «+»). " +
+            "Окно только на одинарной стене (50%).",
           pngRow([
             ["ai-set-wall-n.png", "AI master wall", true, ART],
             ["ai-set-window-n.png", "AI master window", true, ART],
-            ["ai-set-stub-nw.png", "AI master stub", true, ART],
-            ["wall_break_preview.png", "preview sheet", true],
+            ["ai-set-corner-nw.png", "L master", true, ART],
+            ["wall_lu_solid_preview.png", "L/U preview", true],
           ]) +
             pngRow([
               ["frames/tile_wall_n.png", "wall N"],
@@ -330,10 +330,10 @@
               ["frames/tile_window_e.png", "window E"],
             ]) +
             pngRow([
+              ["frames/tile_wall_nw.png", "угол nw"],
+              ["frames/tile_wall_ne.png", "угол ne"],
+              ["frames/tile_wall_nwe.png", "U nwe"],
               ["frames/tile_wall_stub_nw.png", "stub nw"],
-              ["frames/tile_wall_stub_ne.png", "stub ne"],
-              ["frames/tile_wall_stub_sw.png", "stub sw"],
-              ["frames/tile_wall_stub_se.png", "stub se"],
             ])
         ),
     },
@@ -450,7 +450,7 @@
     root.innerHTML = `
       <p class="sp-intro">
         <strong>ART_STATUS = PIPELINE_V1</strong> · каталог = всё, что грузит feel-демо + gate.
-        Стены: полосы+stub, без L/U <code>?v=${BUST}</code>.
+        Стены: полосы + цельные L/U <code>?v=${BUST}</code>.
       </p>
       <div class="sp-layout">
         <nav class="sp-nav" aria-label="Sprites"></nav>

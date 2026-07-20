@@ -1263,17 +1263,21 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallbreak1`));
-    // каркас: только прямые + stub-квадрат (без L/U — ломали вид «перекрестьями»)
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=walllu1`));
+    // каркас: полосы + цельные L/U (одна заливка, без склейки полос) + stub
     ["n", "s", "e", "w"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallbreak1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallbreak1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=walllu1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=walllu1`);
     });
     ["nw", "ne", "sw", "se"].forEach((d) => {
-      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=wallbreak1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=walllu1`);
+      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=walllu1`);
+    });
+    ["nwe", "nsw", "nse", "swe"].forEach((d) => {
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=walllu1`);
     });
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=wallbreak1`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=walllu1`));
     this._art = art;
     return art;
   },
@@ -1669,21 +1673,29 @@ window.FEEL_DEMOS["deadline-escape"] = {
   },
   /**
    * Ключ спрайта стены по wallGeomOf.
-   * Только полоса (1 сторона) или stub-квадрат. L/U не используем.
-   * Окно (tile_window_*) только при одинарной полосе.
+   * Полоса / цельный L / цельный U / stub. Окно только на одинарной полосе.
    */
   wallTileKey(s, col, row) {
     const geom = this.wallGeomOf(s, col, row);
     const single = !geom.square && geom.sides.length === 1;
     const wantWin = s.map[row][col] === 7 && single;
     const prefix = wantWin ? "tile_window_" : "tile_wall_";
-    // стороны геометрии → имена тайлов (ребро тумана): s→n, n→s, e→w, w→e
     const edgeOf = { s: "n", n: "s", e: "w", w: "e" };
     if (geom.square) {
       const stubOf = { se: "nw", sw: "ne", ne: "sw", nw: "se" };
       return "tile_wall_stub_" + (stubOf[geom.square] || "nw");
     }
-    if (geom.sides.length >= 1) return prefix + (edgeOf[geom.sides[0]] || "n");
+    if (geom.sides.length === 1) return prefix + (edgeOf[geom.sides[0]] || "n");
+    if (geom.sides.length === 2) {
+      const k = geom.sides.map((x) => edgeOf[x]).sort().join("");
+      const two = { en: "ne", es: "se", nw: "nw", sw: "sw" };
+      return "tile_wall_" + (two[k] || "nw");
+    }
+    if (geom.sides.length === 3) {
+      const k = geom.sides.map((x) => edgeOf[x]).sort().join("");
+      const three = { enw: "nwe", ens: "nse", esw: "swe", nsw: "nsw" };
+      return "tile_wall_" + (three[k] || "nwe");
+    }
     return prefix + "n";
   },
   /**
@@ -3229,7 +3241,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (corner === "nw") {
       const a = this.frameSolidAt(s, col + 1, row);
       const b = this.frameSolidAt(s, col, row + 1);
-      if (a && b) return { sides: [], square: "se" };
+      if (a && b) {
+        push("s");
+        push("e");
+        return { sides, square: null }; // цельный L, не stub
+      }
       if (a) push("s");
       if (b) push("e");
       return { sides, square: null };
@@ -3237,7 +3253,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (corner === "ne") {
       const a = this.frameSolidAt(s, col - 1, row);
       const b = this.frameSolidAt(s, col, row + 1);
-      if (a && b) return { sides: [], square: "sw" };
+      if (a && b) {
+        push("s");
+        push("w");
+        return { sides, square: null };
+      }
       if (a) push("s");
       if (b) push("w");
       return { sides, square: null };
@@ -3245,7 +3265,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (corner === "sw") {
       const a = this.frameSolidAt(s, col + 1, row);
       const b = this.frameSolidAt(s, col, row - 1);
-      if (a && b) return { sides: [], square: "ne" };
+      if (a && b) {
+        push("n");
+        push("e");
+        return { sides, square: null };
+      }
       if (a) push("n");
       if (b) push("e");
       return { sides, square: null };
@@ -3253,7 +3277,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (corner === "se") {
       const a = this.frameSolidAt(s, col - 1, row);
       const b = this.frameSolidAt(s, col, row - 1);
-      if (a && b) return { sides: [], square: "nw" };
+      if (a && b) {
+        push("n");
+        push("w");
+        return { sides, square: null };
+      }
       if (a) push("n");
       if (b) push("w");
       return { sides, square: null };
