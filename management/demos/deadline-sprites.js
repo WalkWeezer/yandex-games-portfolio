@@ -385,7 +385,8 @@
       html: () =>
         card(
           "VFX",
-          "Щит, пар, неуязвимость, near-miss, репорт, рывок, slam, конфетти.",
+          "Щит, пар, неуязвимость, near-miss, репорт, рывок, slam, конфетти. " +
+            "Нарезка с <code>vfx_sheet.png</code> сеткой 4×2 (не column-blobs).",
           pngRow([
             ["frames/vfx_shield.png", "shield"],
             ["frames/vfx_steam.png", "steam"],
@@ -395,7 +396,8 @@
             ["frames/vfx_dash.png", "dash"],
             ["frames/vfx_slam.png", "slam"],
             ["frames/vfx_confetti.png", "confetti"],
-          ])
+          ]) +
+            pngRow([["vfx_recut_preview.png", "4×2 preview", true]])
         ),
     },
     {
