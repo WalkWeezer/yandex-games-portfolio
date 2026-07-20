@@ -33,10 +33,13 @@ Top-down cartoon office moodboard: gray-blue carpet grid, desks and cubicle wall
 Top-down 3/4 or orthographic cartoon office employee hero, blue sweater, readable silhouette, slightly panicked comedy expression, single character design sheet on plain light background, game-ready concept, no text
 ```
 
-## JOB D — HR → `refs/art/boss-hr.png`
+## JOB D — HR → `refs/art/seed-hr.png` (**APPROVED** P2)
+
+SoT: `seed-hr.png` + `hr-turnaround.png` (idle empty hands, full body, 90° E/W).  
+Chroma: `#00FF00`. Walk strips must keep the same body — do not slim / re-identity.
 
 ```
-Top-down cartoon HR boss character, pink accent, clipboard or badge lanyard, exaggerated corporate caricature, readable at small size, plain background, no text
+Top-down cartoon HR boss character, hot-pink blazer, plus-size, badge lanyard, empty hands idle, readable at small size, pure green #00FF00 background, no text
 ```
 
 ## JOB E — Director → `refs/art/boss-director.png`

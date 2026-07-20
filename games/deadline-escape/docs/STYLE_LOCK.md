@@ -17,8 +17,8 @@
 |-----|-----|-------|
 | **Style / ГГ** | `refs/art/style-seed-hero.png` ← `frames/char_hero/idle_s.png` | **P1 — кнопка APPROVED на сайте (Спрайты)** |
 | ГГ sheets | `char_hero_idle_sheet.png` / walk (после QA под pipeline) | P1–P4 |
-| HR | concept `art/boss-hr.png` — пересобрать **от** style-seed, не legacy reart | очередь после ГГ |
-| ГЛЯД / ВСТР / KPI / IT | `refs/art/concept-boss-*.png` | после HR |
+| **HR** | `refs/art/seed-hr.png` + `hr-turnaround.png` · marker `seed-hr.APPROVED.json` | **P2 APPROVED** (idle 4-dir; next P3 walk) |
+| ГЛЯД / ВСТР / KPI / IT | `refs/art/concept-boss-*.png` | после HR walk |
 | Прочие боссы | текущие sheets до своего P1 | later |
 
 ### MVP art scope
@@ -82,9 +82,11 @@ Pass = быстрый подъём. W = mirror E.
    - Constant `target_body_h`; **bob_y = 0** (любой vertical bob = припрыжка)
 4. Chroma + feet baseline + torso X (`normalize_sprite_set`)
 
-HR look lock: concept `refs/art/boss-hr.png` + камера/пропорции как у ГГ idle.  
-Production: idle turnaround chroma → walk rows того же тела (не warp от idle).  
-Walk B: S/N = keep-upper / legs; W = mirror E. **Chroma:** только pure `#FF00FF`.
+HR look lock: `refs/art/seed-hr.png` + `hr-turnaround.png` (**APPROVED**).  
+Канон: полная (plus-size) фигура; idle **без клипборда** (пустые руки); E/W = полный 90° профиль.  
+Production: idle frames `frames/boss_hr/idle_{s,e,n,w}.png` → walk rows **того же тела** (не warp / не slim).  
+Walk B: S/N = keep-upper / legs; W = mirror E.  
+**Chroma HR:** pure `#00FF00` (зелёный) — розовый пиджак конфликтует с `#FF00FF`.
 
 ## Cut-up rig bake (ГГ · experiment REJECTED)
 
