@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
   /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250720k",
+  ART_BUST: "w250720j",
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
@@ -1265,21 +1265,21 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250720k`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250720j`));
     // каркас: полосы + цельные L/U (одна заливка, без склейки полос) + stub
     ["n", "s", "e", "w"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=w250720k`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=w250720k`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=w250720j`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=w250720j`);
     });
     ["nw", "ne", "sw", "se"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=w250720k`);
-      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=w250720k`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=w250720j`);
+      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=w250720j`);
     });
     ["nwe", "nsw", "nse", "swe"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=w250720k`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=w250720j`);
     });
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250720k`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250720j`));
     this._art = art;
     return art;
   },
@@ -1675,8 +1675,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   },
   /**
    * Ключ спрайта стены по wallGeomOf.
-   * Окно только на прямой полосе ребра (не угол карты).
-   * Угол карты: 2 соседа → stub-квадрат у play; 1 сосед → полоса.
+   * Окно только на прямой полосе ребра (не угол карты). Углы — L / stub / полоса.
    */
   wallTileKey(s, col, row) {
     const geom = this.wallGeomOf(s, col, row);
@@ -1691,11 +1690,14 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
     if (geom.sides.length === 1) return prefix + (edgeOf[geom.sides[0]] || "n");
     if (geom.sides.length === 2) {
-      // на ребре L не рисуем; на углу карты geom.square должен сработать выше
-      return prefix + (edgeOf[geom.sides[0]] || "n");
+      const k = geom.sides.map((x) => edgeOf[x]).sort().join("");
+      const two = { en: "ne", es: "se", nw: "nw", sw: "sw" };
+      return "tile_wall_" + (two[k] || "nw");
     }
     if (geom.sides.length === 3) {
-      return prefix + (edgeOf[geom.sides[0]] || "n");
+      const k = geom.sides.map((x) => edgeOf[x]).sort().join("");
+      const three = { enw: "nwe", ens: "nse", esw: "swe", nsw: "nsw" };
+      return "tile_wall_" + (three[k] || "nwe");
     }
     return prefix + "n";
   },
@@ -3239,9 +3241,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
    * { sides: n/s/w/e[], square: nw|ne|sw|se|null }
    *
    * Угол карты:
-   *   одна стена-сосед → одна полоса к play;
-   *   две стены-соседа → маленький квадрат у стыка к play (не L в туман).
-   * Ребро: только лицо к play.
+   *   одна стена-сосед → одна полоса;
+   *   две стены-соседа → маленький квадрат у стыка к play (не L в пустоту).
+   * Ребро: только лицо к play (без L/U-торцов — они выглядят как склейка).
    */
   wallGeomOf(s, col, row) {
     const sides = [];
@@ -3251,7 +3253,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (corner === "nw") {
       const a = this.frameSolidAt(s, col + 1, row);
       const b = this.frameSolidAt(s, col, row + 1);
-      if (a && b) return { sides: [], square: "se" }; // stub у play
+      if (a && b) {
+        push("s");
+        push("e");
+        return { sides, square: null }; // цельный L, не stub
+      }
       if (a) push("s");
       if (b) push("e");
       return { sides, square: null };
@@ -3259,7 +3265,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (corner === "ne") {
       const a = this.frameSolidAt(s, col - 1, row);
       const b = this.frameSolidAt(s, col, row + 1);
-      if (a && b) return { sides: [], square: "sw" };
+      if (a && b) {
+        push("s");
+        push("w");
+        return { sides, square: null };
+      }
       if (a) push("s");
       if (b) push("w");
       return { sides, square: null };
@@ -3267,7 +3277,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (corner === "sw") {
       const a = this.frameSolidAt(s, col + 1, row);
       const b = this.frameSolidAt(s, col, row - 1);
-      if (a && b) return { sides: [], square: "ne" };
+      if (a && b) {
+        push("n");
+        push("e");
+        return { sides, square: null };
+      }
       if (a) push("n");
       if (b) push("e");
       return { sides, square: null };
@@ -3275,7 +3289,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (corner === "se") {
       const a = this.frameSolidAt(s, col - 1, row);
       const b = this.frameSolidAt(s, col, row - 1);
-      if (a && b) return { sides: [], square: "nw" };
+      if (a && b) {
+        push("n");
+        push("w");
+        return { sides, square: null };
+      }
       if (a) push("n");
       if (b) push("w");
       return { sides, square: null };
@@ -3287,13 +3305,20 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (edge === "w") push("e");
     if (edge === "e") push("w");
 
+    // без торцов в открытый туман: иначе L/U выглядят как две склеенные стены.
+    // рёбра — одна бесшовная полоса к play; углы карты — stub-квадрат.
     return { sides, square: null };
   },
   /**
-   * Стены: только полоса/stub к play поверх тумана (без чёрной заливки всей клетки).
+   * Стены спрайтами по wallTileKey / wallGeomOf.
+   * Fallback — прямоугольники той же геометрии.
    */
   drawWallAt(ctx, s, col, row, x, y, w, h) {
+    // лёгкий overlap — гасит hairline между соседними клетками
     const dx = x - 1, dy = y - 1, dw = w + 2, dh = h + 2;
+    ctx.fillStyle = "#020308";
+    ctx.fillRect(dx, dy, dw, dh);
+
     const key = this.wallTileKey(s, col, row);
     if (this.drawTile(ctx, key, dx, dy, dw, dh)) return;
 
@@ -3381,8 +3406,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
     ctx.fillStyle = "#c9a66b"; ctx.fillRect(x + 3, y + 5, w - 6, 8);
   },
   /**
-   * Туман: хром вне сетки + градиент на кольце (в т.ч. под полосой стены).
-   * Вызывать ДО drawWallAt, иначе туман накроет стены.
+   * Туман войны: один линейный градиент на клетку края (внешний край → к play).
+   * Клетки стен/окон — без FoW (почти чёрная подложка + спрайт).
    */
   drawFogOfWar(ctx, s, api) {
     const { w, h } = api;
@@ -3406,19 +3431,23 @@ window.FEEL_DEMOS["deadline-escape"] = {
     };
 
     const paintCellFog = (c, r, edge) => {
-      const { x, y, w: cellW, h: cellH } = this.cellRect(s, c, r);
+      const x = gx + c * cw;
+      const y = gy + r * ch;
       let g;
-      if (edge === "n") g = ctx.createLinearGradient(0, y, 0, y + cellH);
-      else if (edge === "s") g = ctx.createLinearGradient(0, y + cellH, 0, y);
-      else if (edge === "w") g = ctx.createLinearGradient(x, 0, x + cellW, 0);
-      else g = ctx.createLinearGradient(x + cellW, 0, x, 0);
+      if (edge === "n") g = ctx.createLinearGradient(0, y, 0, y + ch);
+      else if (edge === "s") g = ctx.createLinearGradient(0, y + ch, 0, y);
+      else if (edge === "w") g = ctx.createLinearGradient(x, 0, x + cw, 0);
+      else g = ctx.createLinearGradient(x + cw, 0, x, 0);
       fogStops(g);
       ctx.fillStyle = g;
-      ctx.fillRect(x, y, cellW, cellH);
+      ctx.fillRect(x, y, cw, ch);
     };
 
     const ring = this.fogFrameRing(s.cols, s.rows, b);
-    for (const { c, r, edge } of ring) paintCellFog(c, r, edge);
+    for (const { c, r, edge } of ring) {
+      if (this.isFrameSolid(s.map[r][c])) continue;
+      paintCellFog(c, r, edge);
+    }
 
     if (fog && fog.complete && fog.naturalWidth) {
       ctx.globalAlpha = 0.28;
@@ -3449,11 +3478,16 @@ window.FEEL_DEMOS["deadline-escape"] = {
       ctx.fillRect(0, 0, w, h);
     }
 
-    // 1) пол только в play
+    // 1) пол целиком — иначе клетка 6 затирает правую половину стола 2×1
     for (let r = 0; r < s.rows; r++) {
       for (let c = 0; c < s.cols; c++) {
         const { x, y, w: cw, h: ch } = this.cellRect(s, c, r);
-        if (this.fogEdgeOf(s, c, r) || this.mapCornerOf(s, c, r)) continue;
+        // клетки стены/окна — почти чёрная подложка (не светлый пол)
+        if (this.isFrameSolid(s.map[r][c])) {
+          ctx.fillStyle = "#020308";
+          ctx.fillRect(x, y, cw, ch);
+          continue;
+        }
         const floorKey = (r + c) % 2 ? "tile_floor_a" : "tile_floor_b";
         if (!this.drawTile(ctx, floorKey, x, y, cw, ch)) {
           ctx.fillStyle = coffee
@@ -3463,9 +3497,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
         }
       }
     }
-    // 1b) туман кольца (под стенами)
-    this.drawFogOfWar(ctx, s, api);
-    // 2) пропы + стены/окна — только полоса/stub к play
+    // 2) пропы + декоративные стены/окна на полосе тумана (каркас; концы = углы)
     for (let r = 0; r < s.rows; r++) {
       for (let c = 0; c < s.cols; c++) {
         const { x, y, w: cw, h: ch } = this.cellRect(s, c, r);
@@ -3633,7 +3665,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (s.won) this.drawArt(ctx, "vfx_confetti", pp.x, pp.y - 20, unit * 1.4, 0.9);
     if (!s.alive) this.drawArt(ctx, "vfx_slam", pp.x, pp.y, unit * 1.2, 0.55);
 
-    // HUD поверх; туман уже нарисован до стен
+    // туман поклеточно на крае; стены без тумана (уже нарисованы ниже)
+    this.drawFogOfWar(ctx, s, api);
+
     ctx.fillStyle = "rgba(30,27,75,0.92)"; ctx.fillRect(10, 10, w - 20, 72);
     ctx.strokeStyle = coffee ? "#fbbf24" : shield ? "#38bdf8" : "#22d3a8"; ctx.strokeRect(10, 10, w - 20, 72);
     ctx.fillStyle = "#fffef9"; ctx.font = "bold 22px Segoe UI"; ctx.textAlign = "left";
