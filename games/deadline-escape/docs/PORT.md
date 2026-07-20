@@ -3,7 +3,8 @@
 > Цель: перенести в игру **только канон**, без багов/инструментов разработки.  
 > SoT геймплея: `management/demos/demos-01-02.js` → `FEEL_DEMOS["deadline-escape"]`  
 > Чистый вход билда: `games/deadline-escape/play/`  
-> `src/` (Phaser/Vite) — после формального `CONFIRMED`; этот пакет — **pre-src freeze**.
+> `src/` (Phaser/Vite) — G0 с **placeholder** art разрешён продюсером; feel CONFIRM по-прежнему human.  
+> SoT feel numbers не менять. Final art = swap texture keys, не новые id.
 
 ---
 
@@ -71,8 +72,9 @@ games/deadline-escape/play/
 1. Freeze feel numbers (уже в DESIGN)  
 2. Production-mode feel (без DEV) ✅ этот PR  
 3. `play/` вход для стора/модерации  
-4. Human CONFIRM → `src/` Phaser по CODE_AGENT_PROMPT  
-5. Подключить payments/leaderboard только после G4  
+4. G0 Phaser + placeholders ✅ (`npm run build` → `dist/`)  
+5. Swap art / deepen ThreatSystem → feel SoT  
+6. Human CONFIRM feel → payments/leaderboard после G4  
 
 ---
 

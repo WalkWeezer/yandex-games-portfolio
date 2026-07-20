@@ -72,23 +72,24 @@
           <ul class="checklist-static">
             <li><strong>Бета-тест</strong> — мок UI шелл (экраны)</li>
             <li><strong>Демка</strong> — feel (DEV только с <code>?dev=1</code>)</li>
-            <li><strong>Clean play</strong> — <code>games/deadline-escape/play/</code> · билд без читов</li>
+            <li><strong>Clean play</strong> — <code>games/deadline-escape/play/</code> · feel без читов</li>
+            <li><strong>Phaser G0</strong> — <code>games/deadline-escape/</code> · Vite+Phaser, графика-заглушки</li>
             <li><strong>Wireframe / Спрайты / SFX</strong> — сверка</li>
             <li>GDD / LLM / PORT.md — канон переноса</li>
           </ul>
           <h3>Правило</h3>
-          <p class="warn">Пока статус не <strong>Подтверждён</strong>, папку <code>src/</code> не создавать. CONFIRM только после playtest демки (F1→F2). См. <code>docs/METHODOLOGY.md</code>.</p>
+          <p class="warn">G0 с <strong>placeholder</strong>-артом разрешён. Feel CONFIRM — после playtest. Финальный арт = swap тех же texture keys. См. <code>docs/STATUS.md</code> · <code>docs/PORT.md</code>.</p>
         </div>
         <div class="panel">
           <h3>Файлы проекта</h3>
           <ul class="file-list">
-            <li><code>docs/STATUS.md</code> — статус <strong>REVIEW</strong></li>
+            <li><code>docs/STATUS.md</code> — G0 placeholders</li>
             <li><code>docs/DESIGN.md</code> / <code>DESIGN_LLM.md</code></li>
             <li><code>docs/REFS.md</code> · <code>GAP_VS_CHAS_PIK.md</code></li>
             <li><code>prompts/*.md</code> · <code>refs/**</code></li>
-            <li><code>archive/2026-07-17-pre-feel-sync/</code> — старый пакет</li>
+            <li><code>src/</code> — Phaser 3 + Vite (заглушки)</li>
             <li><code>docs/PORT.md</code> — ALLOW/DENY переноса</li>
-            <li><code>play/</code> — production вход без DEV</li>
+            <li><code>play/</code> — production feel без DEV</li>
             <li><code>management/demos/</code> — feel SoT + mock-ui</li>
           </ul>
           <div class="progress big"><i data-progress-for="deadline-escape"></i></div>
@@ -100,8 +101,8 @@
     <section class="tab-panel" id="tab-beta">
       <div class="panel">
         <h3>Бета-тест — UI shell</h3>
-        <p class="lead">Сверка экранов MVP. Игровой билд без читов: <a href="../../games/deadline-escape/play/index.html" target="_blank" rel="noopener"><code>games/deadline-escape/play/</code></a>. Порт: <code>docs/PORT.md</code>.</p>
-        <div class="lan-box">Play (production): открой <code>/games/deadline-escape/play/</code>. Демка с DEV: вкладка Демка + <code>?dev=1</code>.</div>
+        <p class="lead">Сверка экранов MVP. Phaser G0 (заглушки): <code>cd games/deadline-escape && npm run dev</code>. Feel без читов: <a href="../../games/deadline-escape/play/index.html" target="_blank" rel="noopener"><code>play/</code></a>. Порт: <code>docs/PORT.md</code>.</p>
+        <div class="lan-box">Phaser: <code>npm run dev</code> в <code>games/deadline-escape/</code>. Play feel: <code>/games/deadline-escape/play/</code>. Демка DEV: вкладка Демка + <code>?dev=1</code>.</div>
         <div id="mu-app"></div>
       </div>
     </section>
