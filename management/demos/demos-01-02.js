@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
 /** Меняй при выкладке стен — сбрасывает кэш ensureArt (не показывать игроку в prod) */
-  ART_BUST: "w250721w",
+  ART_BUST: "w250721x",
   /** Production = без DEV∞/эт±/GOD. play/ ставит DEADLINE_PROD=true; дашборд: ?dev=1 включает дев. */
   isProd() {
     if (window.DEADLINE_PROD === true) return true;
@@ -1276,7 +1276,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721w`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721x`));
     // стены layout-feel: mid / L / U / stub (+ window)
     [
       "wall_n", "wall_s", "wall_e", "wall_w",
@@ -1288,9 +1288,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
       "window_nwe", "window_nsw", "window_nse", "window_swe",
       "window_stub_nw", "window_stub_ne", "window_stub_sw", "window_stub_se",
       "wall", "window",
-    ].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721w`));
+    ].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721x`));
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721w`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721x`));
     this._art = art;
     return art;
   },
@@ -3287,52 +3287,52 @@ window.FEEL_DEMOS["deadline-escape"] = {
    * Геометрия стены из битмапа препятствий на границе (не из мебели арены).
    * Сосед вдоль кольца solid → нет торца; пусто → торец.
    *
-   * Полоса к ВНЕШНЕМУ краю клетки (layout-feel): N→n, S→s, W→w, E→e.
+   * Полоса к play (как в #83): N→s, S→n, W→e, E→w.
    *  1 side  — mid
    *  2 sides — L
    *  3 sides — U
-   *  square  — stub во внешнем углу карты
+   *  square  — stub (имя квадрата к play; wallTileKey зеркалит в geographic file)
    */
   wallGeomOf(s, col, row) {
     const sides = [];
     const push = (side) => { if (!sides.includes(side)) sides.push(side); };
     const corner = this.mapCornerOf(s, col, row);
 
-    // Угол арены: 2 руки → stub снаружи; 1 рука → полоса вдоль внешнего ребра
+    // Угол арены: 2 руки → stub; 1 рука → полоса-продолжение к play
     if (corner === "nw") {
       const a = this.frameSolidAt(s, col + 1, row);
       const b = this.frameSolidAt(s, col, row + 1);
-      if (a && b) return { sides: [], square: "nw" };
-      if (a) push("n");
-      if (b) push("w");
-      return { sides, square: null };
-    }
-    if (corner === "ne") {
-      const a = this.frameSolidAt(s, col - 1, row);
-      const b = this.frameSolidAt(s, col, row + 1);
-      if (a && b) return { sides: [], square: "ne" };
-      if (a) push("n");
-      if (b) push("e");
-      return { sides, square: null };
-    }
-    if (corner === "sw") {
-      const a = this.frameSolidAt(s, col + 1, row);
-      const b = this.frameSolidAt(s, col, row - 1);
-      if (a && b) return { sides: [], square: "sw" };
-      if (a) push("s");
-      if (b) push("w");
-      return { sides, square: null };
-    }
-    if (corner === "se") {
-      const a = this.frameSolidAt(s, col - 1, row);
-      const b = this.frameSolidAt(s, col, row - 1);
       if (a && b) return { sides: [], square: "se" };
       if (a) push("s");
       if (b) push("e");
       return { sides, square: null };
     }
+    if (corner === "ne") {
+      const a = this.frameSolidAt(s, col - 1, row);
+      const b = this.frameSolidAt(s, col, row + 1);
+      if (a && b) return { sides: [], square: "sw" };
+      if (a) push("s");
+      if (b) push("w");
+      return { sides, square: null };
+    }
+    if (corner === "sw") {
+      const a = this.frameSolidAt(s, col + 1, row);
+      const b = this.frameSolidAt(s, col, row - 1);
+      if (a && b) return { sides: [], square: "ne" };
+      if (a) push("n");
+      if (b) push("e");
+      return { sides, square: null };
+    }
+    if (corner === "se") {
+      const a = this.frameSolidAt(s, col - 1, row);
+      const b = this.frameSolidAt(s, col, row - 1);
+      if (a && b) return { sides: [], square: "nw" };
+      if (a) push("n");
+      if (b) push("w");
+      return { sides, square: null };
+    }
 
-    // Ребро: лицо наружу + торец только на разрыве mid-edge.
+    // Ребро: лицо к play + торец только на разрыве mid-edge.
     // Пустой угол карты — не разрыв (иначе ложный L у угла).
     const edge = this.fogEdgeOf(s, col, row);
     const endCap = (nc, nr) => {
@@ -3342,27 +3342,29 @@ window.FEEL_DEMOS["deadline-escape"] = {
       return true;
     };
     if (edge === "n") {
-      push("n");
-      if (endCap(col - 1, row)) push("w");
-      if (endCap(col + 1, row)) push("e");
-    } else if (edge === "s") {
       push("s");
       if (endCap(col - 1, row)) push("w");
       if (endCap(col + 1, row)) push("e");
+    } else if (edge === "s") {
+      push("n");
+      if (endCap(col - 1, row)) push("w");
+      if (endCap(col + 1, row)) push("e");
     } else if (edge === "w") {
-      push("w");
+      push("e");
       if (endCap(col, row - 1)) push("n");
       if (endCap(col, row + 1)) push("s");
     } else if (edge === "e") {
-      push("e");
+      push("w");
       if (endCap(col, row - 1)) push("n");
       if (endCap(col, row + 1)) push("s");
     }
     return { sides, square: null };
   },
   /**
-   * Ключ спрайта: tile_wall_{side} = полоса на этой стороне клетки.
-   * L/U/stub — географические имена (nw = верх+лево).
+   * Ключ спрайта стены из wallPictureOf (layout-feel tiles).
+   * sides = полосы в клетке (n/s/e/w географически: n=верх клетки).
+   * mid: face→ребро карты (s→tile_wall_n — полоса снизу к play).
+   * L/U: имя = набор faces (nw = верх+лево).
    */
   wallTileKey(s, col, row) {
     const pic = this.wallPictureOf(s, col, row);
@@ -3370,12 +3372,15 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (kind === "empty") return null;
     const win = s.map[row][col] === 7;
     const pref = win ? "tile_window_" : "tile_wall_";
+    const faceToEdge = { s: "n", n: "s", e: "w", w: "e" };
     if (kind === "stub" && square) {
-      return pref + "stub_" + square;
+      const bySq = { se: "nw", sw: "ne", ne: "sw", nw: "se" };
+      return pref + "stub_" + (bySq[square] || "nw");
     }
     if (kind === "mid" || kind === "face") {
       if (sides.length !== 1) return null;
-      return pref + sides[0];
+      const edge = faceToEdge[sides[0]];
+      return edge ? pref + edge : null;
     }
     if (kind === "L") {
       const set = new Set(sides);
