@@ -173,14 +173,15 @@ def blend_ai_n(ai_band: Image.Image) -> Image.Image:
 
 
 def orient(n_tile: Image.Image, edge: str) -> Image.Image:
+    """n_tile has band on TOP; derive other edges (PIL ROTATE_90 = CCW)."""
     if edge == "n":
         return n_tile
     if edge == "s":
         return n_tile.transpose(Image.Transpose.ROTATE_180)
     if edge == "e":
-        return n_tile.transpose(Image.Transpose.ROTATE_270)
+        return n_tile.transpose(Image.Transpose.ROTATE_270)  # CW → right
     if edge == "w":
-        return n_tile.transpose(Image.Transpose.ROTATE_90)
+        return n_tile.transpose(Image.Transpose.ROTATE_90)  # CCW → left
     return n_tile
 
 
@@ -202,46 +203,40 @@ def band_layer_color(t: float, band: int = BAND):
 
 
 def depth_l(ys, xs, corner: str):
-    """L arms by geographic corner name: nw = top+left, se = bottom+right."""
+    """L arms; depth from OUTER rim so CAP sits on the outside (layout-feel)."""
     if corner == "nw":
-        # top + left
-        d_h = (BAND - 1) - ys
-        d_v = (BAND - 1) - xs
+        # top + left; depth from top/left edges inward
         on_h = ys < BAND
         on_v = xs < BAND
         depth = np.full(ys.shape, -1, dtype=np.int32)
-        depth[on_h] = d_h[on_h]
-        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
+        depth[on_h] = ys[on_h]
+        depth[on_v] = np.where(depth[on_v] < 0, xs[on_v], np.minimum(depth[on_v], xs[on_v]))
         mask = on_h | on_v
     elif corner == "ne":
-        # top + right
-        d_h = (BAND - 1) - ys
-        d_v = xs - (SIDE - BAND)
         on_h = ys < BAND
         on_v = xs >= SIDE - BAND
         depth = np.full(ys.shape, -1, dtype=np.int32)
-        depth[on_h] = d_h[on_h]
-        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
+        depth[on_h] = ys[on_h]
+        depth[on_v] = np.where(
+            depth[on_v] < 0, (SIDE - 1) - xs[on_v], np.minimum(depth[on_v], (SIDE - 1) - xs[on_v])
+        )
         mask = on_h | on_v
     elif corner == "sw":
-        # bottom + left
-        d_h = ys - (SIDE - BAND)
-        d_v = (BAND - 1) - xs
         on_h = ys >= SIDE - BAND
         on_v = xs < BAND
         depth = np.full(ys.shape, -1, dtype=np.int32)
-        depth[on_h] = d_h[on_h]
-        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
+        depth[on_h] = (SIDE - 1) - ys[on_h]
+        depth[on_v] = np.where(depth[on_v] < 0, xs[on_v], np.minimum(depth[on_v], xs[on_v]))
         mask = on_h | on_v
     else:
-        # se = bottom + right
-        d_h = ys - (SIDE - BAND)
-        d_v = xs - (SIDE - BAND)
+        # se
         on_h = ys >= SIDE - BAND
         on_v = xs >= SIDE - BAND
         depth = np.full(ys.shape, -1, dtype=np.int32)
-        depth[on_h] = d_h[on_h]
-        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
+        depth[on_h] = (SIDE - 1) - ys[on_h]
+        depth[on_v] = np.where(
+            depth[on_v] < 0, (SIDE - 1) - xs[on_v], np.minimum(depth[on_v], (SIDE - 1) - xs[on_v])
+        )
         mask = on_h | on_v
     return mask, depth
 
@@ -282,44 +277,45 @@ def make_corner(corner: str, face_tex: Image.Image | None) -> Image.Image:
 
 
 def make_stub(corner: str, face_tex: Image.Image | None) -> Image.Image:
+    """Square post in the named geographic corner (outer map corner)."""
     ys, xs = np.indices((SIDE, SIDE))
     if corner == "nw":
-        mask = (ys >= SIDE - BAND) & (xs >= SIDE - BAND)
-        depth = np.minimum(ys - (SIDE - BAND), xs - (SIDE - BAND))
-    elif corner == "ne":
-        mask = (ys >= SIDE - BAND) & (xs < BAND)
-        depth = np.minimum(ys - (SIDE - BAND), (BAND - 1) - xs)
-    elif corner == "sw":
-        mask = (ys < BAND) & (xs >= SIDE - BAND)
-        depth = np.minimum((BAND - 1) - ys, xs - (SIDE - BAND))
-    else:
         mask = (ys < BAND) & (xs < BAND)
-        depth = np.minimum((BAND - 1) - ys, (BAND - 1) - xs)
+        depth = np.minimum(ys, xs)
+    elif corner == "ne":
+        mask = (ys < BAND) & (xs >= SIDE - BAND)
+        depth = np.minimum(ys, (SIDE - 1) - xs)
+    elif corner == "sw":
+        mask = (ys >= SIDE - BAND) & (xs < BAND)
+        depth = np.minimum((SIDE - 1) - ys, xs)
+    else:
+        mask = (ys >= SIDE - BAND) & (xs >= SIDE - BAND)
+        depth = np.minimum((SIDE - 1) - ys, (SIDE - 1) - xs)
     depth = np.where(mask, depth, -1)
     return paint_by_depth(mask, depth, face_tex)
 
 
 def make_u(key: str, face_tex: Image.Image | None) -> Image.Image:
-    """U by geographic face letters: n=top, s=bottom, e=right, w=left."""
+    """U by geographic face letters; depth from OUTER rim (CAP outside)."""
     ys, xs = np.indices((SIDE, SIDE))
     depth = np.full((SIDE, SIDE), 10**9, dtype=np.int32)
     mask = np.zeros((SIDE, SIDE), dtype=bool)
     if "n" in key:
         m = ys < BAND
         mask |= m
-        depth = np.where(m, np.minimum(depth, (BAND - 1) - ys), depth)
+        depth = np.where(m, np.minimum(depth, ys), depth)
     if "s" in key:
         m = ys >= SIDE - BAND
         mask |= m
-        depth = np.where(m, np.minimum(depth, ys - (SIDE - BAND)), depth)
+        depth = np.where(m, np.minimum(depth, (SIDE - 1) - ys), depth)
     if "e" in key:
         m = xs >= SIDE - BAND
         mask |= m
-        depth = np.where(m, np.minimum(depth, xs - (SIDE - BAND)), depth)
+        depth = np.where(m, np.minimum(depth, (SIDE - 1) - xs), depth)
     if "w" in key:
         m = xs < BAND
         mask |= m
-        depth = np.where(m, np.minimum(depth, (BAND - 1) - xs), depth)
+        depth = np.where(m, np.minimum(depth, xs), depth)
     depth = np.where(mask, depth, -1)
     return paint_by_depth(mask, depth, face_tex)
 
@@ -352,11 +348,13 @@ def main() -> None:
         band = extract_n_band(raw)
         band.save(ART / "ai-set-wall-n.png")
         n = blend_ai_n(band)
-        face_tex = band
+        # outer-edge canon: band on TOP of N tile (CAP outward)
+        n = n.transpose(Image.Transpose.ROTATE_180)
+        face_tex = n.crop((0, 0, SIDE, BAND))
     else:
         print("no AI wall master — procedural layout-feel")
-        n = paint_procedural_n(False)
-        face_tex = n.crop((0, SIDE - BAND, SIDE, SIDE))
+        n = paint_procedural_n(False).transpose(Image.Transpose.ROTATE_180)
+        face_tex = n.crop((0, 0, SIDE, BAND))
 
     if win_src:
         print("master window:", win_src)
@@ -365,17 +363,16 @@ def main() -> None:
         try:
             wband = extract_n_band(wraw)
             wband.save(ART / "ai-set-window-n.png")
-            win_n = place_band_bottom(wband)
-            # reinforce dark under
+            win_n = place_band_bottom(wband).transpose(Image.Transpose.ROTATE_180)
             wa = np.array(win_n, copy=True)
             lum = wa[..., :3].astype(np.int16).sum(-1)
             wa[lum < 40] = UNDER
             win_n = Image.fromarray(wa)
         except Exception as e:
             print("window extract failed, procedural:", e)
-            win_n = paint_procedural_n(True)
+            win_n = paint_procedural_n(True).transpose(Image.Transpose.ROTATE_180)
     else:
-        win_n = paint_procedural_n(True)
+        win_n = paint_procedural_n(True).transpose(Image.Transpose.ROTATE_180)
 
     walls = {e: orient(n, e) for e in "nsew"}
     wins = {e: orient(win_n, e) for e in "nsew"}
