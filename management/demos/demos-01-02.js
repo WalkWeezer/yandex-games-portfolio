@@ -3149,9 +3149,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
     ctx.fillStyle = "#c9a66b"; ctx.fillRect(x + 3, y + 5, w - 6, 8);
   },
   /**
-   * Туман войны на полосе 1–2 клеток с каждой стороны:
+   * Туман войны на полосе 1 клетки с каждой стороны:
    * снаружи почти чёрный → к play-зоне alpha 0.
-   * Рисуется ПОВЕРХ мобов: спавн читается силуэтом, ходить сюда нельзя.
+   * Рисуется ПОВЕРХ мобов на открытых клетках тумана (силуэты спавна).
+   * Клетки со стеной/окном (2/7) — без градиента: стены перерисовываются поверх.
    */
   drawFogOfWar(ctx, s, api) {
     const { w, h } = api;
@@ -3176,32 +3177,67 @@ window.FEEL_DEMOS["deadline-escape"] = {
       g.addColorStop(1, "rgba(8,10,20,0)");
     };
 
+    // полосы тумана только по открытым клеткам (не стена/окно)
+    const paintOpenBand = (fillRectCell) => {
+      for (let r = 0; r < s.rows; r++) {
+        for (let c = 0; c < s.cols; c++) {
+          if (this.isFrameSolid(s.map[r][c])) continue;
+          fillRectCell(c, r);
+        }
+      }
+    };
+
     // верх
     const gT = ctx.createLinearGradient(0, gy, 0, gy + bandY);
     fogStop(gT);
     ctx.fillStyle = gT;
-    ctx.fillRect(gx, gy, gw, bandY);
+    paintOpenBand((c, r) => {
+      if (r >= b) return;
+      ctx.fillRect(gx + c * cw, gy + r * ch, cw, ch);
+    });
     // низ
     const gB = ctx.createLinearGradient(0, gy + gh, 0, gy + gh - bandY);
     fogStop(gB);
     ctx.fillStyle = gB;
-    ctx.fillRect(gx, gy + gh - bandY, gw, bandY);
-    // лево
+    paintOpenBand((c, r) => {
+      if (r < s.rows - b) return;
+      ctx.fillRect(gx + c * cw, gy + r * ch, cw, ch);
+    });
+    // лево (углы уже покрыты верхом/низом — ок, двойной туман только на открытых углах)
     const gL = ctx.createLinearGradient(gx, 0, gx + bandX, 0);
     fogStop(gL);
     ctx.fillStyle = gL;
-    ctx.fillRect(gx, gy, bandX, gh);
+    paintOpenBand((c, r) => {
+      if (c >= b) return;
+      if (r < b || r >= s.rows - b) return; // углы уже с вертикальным градиентом N/S
+      ctx.fillRect(gx + c * cw, gy + r * ch, cw, ch);
+    });
     // право
     const gR = ctx.createLinearGradient(gx + gw, 0, gx + gw - bandX, 0);
     fogStop(gR);
     ctx.fillStyle = gR;
-    ctx.fillRect(gx + gw - bandX, gy, bandX, gh);
+    paintOpenBand((c, r) => {
+      if (c < s.cols - b) return;
+      if (r < b || r >= s.rows - b) return;
+      ctx.fillRect(gx + c * cw, gy + r * ch, cw, ch);
+    });
 
     if (fog && fog.complete && fog.naturalWidth) {
       ctx.globalAlpha = 0.28;
       ctx.drawImage(fog, 0, 0, w, gy);
       ctx.drawImage(fog, 0, gy + gh, w, h - (gy + gh));
       ctx.globalAlpha = 1;
+    }
+  },
+  /** Стены/окна поверх FoW — без туманного градиента на этих клетках. */
+  drawFogFrameWalls(ctx, s) {
+    for (let r = 0; r < s.rows; r++) {
+      for (let c = 0; c < s.cols; c++) {
+        const cell = s.map[r][c];
+        if (cell !== 2 && cell !== 7) continue;
+        const x = s.padX + c * s.cellW, y = s.padT + r * s.cellH;
+        this.drawWallAt(ctx, s, c, r, x, y, s.cellW, s.cellH);
+      }
     }
   },
   draw(s, api) {
@@ -3407,8 +3443,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (s.won) this.drawArt(ctx, "vfx_confetti", pp.x, pp.y - 20, unit * 1.4, 0.9);
     if (!s.alive) this.drawArt(ctx, "vfx_slam", pp.x, pp.y, unit * 1.2, 0.55);
 
-    // туман поверх сущностей: полоса 1–2 клеток — силуэты спавна видны, ходить нельзя
+    // туман поверх сущностей на открытых клетках полосы; стены — без градиента
     this.drawFogOfWar(ctx, s, api);
+    this.drawFogFrameWalls(ctx, s);
 
     ctx.fillStyle = "rgba(30,27,75,0.92)"; ctx.fillRect(10, 10, w - 20, 72);
     ctx.strokeStyle = coffee ? "#fbbf24" : shield ? "#38bdf8" : "#22d3a8"; ctx.strokeRect(10, 10, w - 20, 72);
