@@ -354,44 +354,38 @@
   border: 2px solid var(--mu-cta-ink);
   box-sizing: border-box;
 }
-.mu-tut {
+.mu-tip {
   position: absolute;
-  left: 8px;
-  right: 8px;
-  top: 8px;
-  background: rgba(247, 250, 252, 0.94);
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 4;
+  background: rgba(247, 250, 252, 0.97);
   border: 1px solid var(--mu-line);
-  border-radius: 12px;
-  padding: 8px 10px;
-  font-size: 0.72rem;
-  color: var(--mu-ink);
-  text-align: center;
-  font-weight: 700;
-  line-height: 1.35;
+  border-radius: 16px;
+  padding: 12px;
   box-shadow: var(--mu-shadow);
-  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
 }
-.mu-stick {
-  position: absolute;
-  right: 14px;
-  bottom: 14px;
-  width: 74px;
-  height: 74px;
-  border-radius: 50%;
-  background: rgba(247, 250, 252, 0.55);
-  border: 2px solid rgba(91, 107, 130, 0.35);
-  pointer-events: none;
+.mu-tip[hidden] { display: none !important; }
+.mu-tip-rules {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--mu-ink);
+  line-height: 1.35;
 }
-.mu-stick::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 30px;
-  height: 30px;
-  margin: -15px 0 0 -15px;
-  border-radius: 50%;
-  background: rgba(29, 53, 87, 0.35);
+.mu-tip-controls {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--mu-muted);
+  line-height: 1.35;
+  margin-bottom: 4px;
+}
+.mu-screen[data-id="run"] {
+  position: relative;
 }
 
 .mu-modal-dim {
