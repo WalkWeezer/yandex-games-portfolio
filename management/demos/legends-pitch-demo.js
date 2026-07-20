@@ -1,17 +1,16 @@
 /**
- * Legends of the Pitch — feel demo ZONE 6v6 (from scratch)
+ * Legends of the Pitch — feel demo ZONE 6v6
  *
- * Сетка · расстановка · команды пересекаются · каждый действует в своей зоне
- * Действия: пас / навес / отбор / перехват / удар / сейв
- * Колода 18 · витрина 3 · скамейка 7 · 3→★ · ролл равномерно (без bias)
+ * Расстановка на СВОЕЙ половине → после свистка разбежка и пересечение.
+ * Пас/удар: мяч летит. Моменты с паузой. Игроки с оффсетами в зоне.
  */
 window.FEEL_DEMOS = window.FEEL_DEMOS || {};
 
 window.FEEL_DEMOS["legends-of-the-pitch"] = {
-  hint: "6v6 на сетке: расставь → магазин → матч. Пас / отбор / перехват / удар в своей зоне.",
+  hint: "Своя половина → магазин → свисток: разбежка, пас/отбор/удар. Мяч летит, моменты читаемые.",
 
   COLS: 3,
-  ROWS: 5, // 0 = их ворота (верх), 4 = наши (низ)
+  ROWS: 5, // 0 = их ворота, 4 = наши
   DECK_SIZE: 18,
   SHOP_SIZE: 3,
   BENCH_MAX: 7,
@@ -38,7 +37,6 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
   },
   ROLE_COLOR: { GK: "#c4b5fd", DEF: "#60a5fa", MID: "#fbbf24", WING: "#86efac", FWD: "#f87171" },
 
-  /** amp → веса действий (сумма не важна, нормализуем) */
   AMP_ACT: {
     ShotStop: { save: 5, clear: 2, pass: 1 },
     SweeperGK: { save: 3, clear: 2, pass: 3 },
@@ -85,22 +83,26 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     { name: "Мира", amp: "Playmaker", tactic: "RouteOne", role: "MID", cost: 4, pac: 5, sht: 4, pas: 8, def: 4, wor: 6 },
   ],
 
-  // слоты расстановки (наши): col,row на сетке
+  /**
+   * home = своя половина (расстановка).
+   * push = позиции после свистка (команды пересекаются).
+   * ox/oy — пиксельный оффсет внутри клетки, чтобы не стакать в центре.
+   */
   US_SLOTS: [
-    { zone: "GK", col: 1, row: 4 },
-    { zone: "DEF", col: 0, row: 3 },
-    { zone: "DEF", col: 2, row: 3 },
-    { zone: "MID", col: 1, row: 2 },
-    { zone: "WING", col: 0, row: 2 },
-    { zone: "FWD", col: 1, row: 1 },
+    { zone: "GK", home: { col: 1, row: 4, ox: 0, oy: 10 }, push: { col: 1, row: 4, ox: 0, oy: 10 } },
+    { zone: "DEF", home: { col: 0, row: 3, ox: -14, oy: 6 }, push: { col: 0, row: 3, ox: -16, oy: 0 } },
+    { zone: "DEF", home: { col: 2, row: 3, ox: 14, oy: 6 }, push: { col: 2, row: 3, ox: 16, oy: 0 } },
+    { zone: "MID", home: { col: 1, row: 3, ox: 0, oy: -18 }, push: { col: 1, row: 2, ox: 12, oy: 8 } },
+    { zone: "WING", home: { col: 0, row: 3, ox: -6, oy: -22 }, push: { col: 0, row: 1, ox: -12, oy: 6 } },
+    { zone: "FWD", home: { col: 1, row: 2, ox: 0, oy: 16 }, push: { col: 1, row: 1, ox: -10, oy: 4 } },
   ],
   OPP_SLOTS: [
-    { zone: "GK", col: 1, row: 0 },
-    { zone: "DEF", col: 0, row: 1 },
-    { zone: "DEF", col: 2, row: 1 },
-    { zone: "MID", col: 1, row: 2 },
-    { zone: "WING", col: 2, row: 2 },
-    { zone: "FWD", col: 1, row: 3 },
+    { zone: "GK", home: { col: 1, row: 0, ox: 0, oy: -10 }, push: { col: 1, row: 0, ox: 0, oy: -10 } },
+    { zone: "DEF", home: { col: 0, row: 1, ox: -14, oy: -6 }, push: { col: 0, row: 1, ox: -16, oy: 0 } },
+    { zone: "DEF", home: { col: 2, row: 1, ox: 14, oy: -6 }, push: { col: 2, row: 1, ox: 16, oy: 0 } },
+    { zone: "MID", home: { col: 1, row: 1, ox: 0, oy: 18 }, push: { col: 1, row: 2, ox: -12, oy: -8 } },
+    { zone: "WING", home: { col: 2, row: 1, ox: 6, oy: 22 }, push: { col: 2, row: 3, ox: 12, oy: -6 } },
+    { zone: "FWD", home: { col: 1, row: 2, ox: 0, oy: -16 }, push: { col: 1, row: 3, ox: 10, oy: -4 } },
   ],
 
   create(api) {
@@ -117,16 +119,16 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
   syncLayout(api) {
     const W = api.w;
     const H = api.h;
-    const pitchBottom = Math.floor(H * 0.58);
-    const padX = 28;
-    const padY = 56;
+    const pitchBottom = Math.floor(H * 0.56);
+    const padX = 22;
+    const padY = 52;
     const gw = W - padX * 2;
-    const gh = pitchBottom - padY - 8;
+    const gh = pitchBottom - padY - 10;
     this.L = {
       W,
       H,
       pitchBottom,
-      uiTop: pitchBottom + 6,
+      uiTop: pitchBottom + 4,
       originX: padX,
       originY: padY,
       cellW: gw / this.COLS,
@@ -143,6 +145,11 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     };
   },
 
+  slotWorld(col, row, ox, oy) {
+    const p = this.cellCenter(col, row);
+    return { x: p.x + (ox || 0), y: p.y + (oy || 0) };
+  },
+
   mint(base, stars) {
     return { ...base, uid: base.name + "_" + Math.random().toString(36).slice(2, 6), stars: stars || 1 };
   },
@@ -156,7 +163,6 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       const j = (Math.random() * (i + 1)) | 0;
       [pool[i], pool[j]] = [pool[j], pool[i]];
     }
-    // гарантируем ≥4 тактики
     const picked = [];
     const tactics = new Set();
     for (const c of pool) {
@@ -173,17 +179,28 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     return picked;
   },
 
+  applyPose(u, pose) {
+    u.col = pose.col;
+    u.row = pose.row;
+    u.ox = pose.ox || 0;
+    u.oy = pose.oy || 0;
+  },
+
   makeTeam(side, slots) {
     return slots.map((s, i) => {
-      const p = this.cellCenter(s.col, s.row);
+      const home = s.home;
+      const push = s.push;
+      const p = this.slotWorld(home.col, home.row, home.ox, home.oy);
       return {
         side,
         index: i,
         zone: s.zone,
-        col: s.col,
-        row: s.row,
-        homeCol: s.col,
-        homeRow: s.row,
+        home: { ...home },
+        push: { ...push },
+        col: home.col,
+        row: home.row,
+        ox: home.ox || 0,
+        oy: home.oy || 0,
         card: null,
         px: p.x,
         py: p.y,
@@ -191,6 +208,8 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
         arm: Math.random() * 6,
         act: null,
         actT: 0,
+        lungeX: 0,
+        lungeY: 0,
       };
     });
   },
@@ -217,6 +236,7 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     btns.reroll.x = -999;
     btns.sell.x = -999;
     btns.speed.x = -999;
+    const mid = this.cellCenter(1, 2);
     return {
       start: btns.start,
       reroll: btns.reroll,
@@ -236,15 +256,17 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       minute: 0,
       myGoals: 0,
       oppGoals: 0,
-      ball: { col: 1, row: 2, owner: null, flying: null, x: 0, y: 0 },
+      ball: { col: 1, row: 2, owner: null, flying: null, x: mid.x, y: mid.y },
       fx: [],
       log: [],
-      subline: "Тап карту колоды → слот на сетке (6/6)",
+      subline: "Своя половина · карта → слот (6/6)",
       banner: null,
       bannerT: 0,
       bannerColor: "#fff",
       pulse: 0,
       thinkT: 0,
+      beatT: 0,
+      spreadT: 0,
       segmentT: 0,
       timeScale: 1,
       note: "6v6 · колода 18 · витрина 3 · скамейка 7",
@@ -252,11 +274,11 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       lastPassFrom: null,
       lastPassTo: null,
       passStreak: 0,
+      pendingShot: null,
     };
   },
 
   makeBag(deck) {
-    // по 3 копии каждого имени колоды
     const bag = [];
     const names = [...new Set(deck.map((c) => c.name))];
     for (const n of names) {
@@ -295,7 +317,6 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
   },
 
   shopOffer(s, api) {
-    // равномерно из мешка (без owned-bias)
     if (!s.bag.length) s.bag = this.makeBag(s.deck.length ? s.deck : s.poolNames.map((n) => ({ name: n })));
     const name = api.pick(s.bag);
     const base = this.CATALOG.find((c) => c.name === name);
@@ -335,7 +356,6 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
           if (take.length >= this.MERGE_NEED) break;
           if (p !== keep) take.push(p);
         }
-        // remove higher indices first
         take
           .slice()
           .sort((a, b) => b.i - a.i)
@@ -352,7 +372,7 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
         did = true;
         s.banner = "MERGE ★";
         s.bannerColor = "#fbbf24";
-        s.bannerT = 0.8;
+        s.bannerT = 0.9;
         s.subline = up.name + " · " + up.amp;
       }
       if (!did) break;
@@ -360,31 +380,76 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     return merged;
   },
 
+  unitTarget(u) {
+    return this.slotWorld(u.col, u.row, u.ox, u.oy);
+  },
+
   snapUnit(u) {
-    const p = this.cellCenter(u.col, u.row);
+    const p = this.unitTarget(u);
     u.px = p.x;
     u.py = p.y;
+    u.lungeX = 0;
+    u.lungeY = 0;
   },
 
   placeOn(u, card) {
     u.card = card;
+    this.applyPose(u, u.home);
     this.snapUnit(u);
     u.act = null;
     u.actT = 0;
   },
 
-  // ——— FX ———
+  resetToHome(s) {
+    for (const u of [...s.ours, ...s.opp]) {
+      this.applyPose(u, u.home);
+      if (u.card) this.snapUnit(u);
+    }
+  },
+
+  beginSpread(s) {
+    for (const u of this.units(s)) {
+      this.applyPose(u, u.push);
+      // px/py remain at home — update() lerps toward push
+    }
+    s.spreadT = 1.15;
+    s.beatT = 1.15;
+    s.ball.owner = null;
+    const mid = this.cellCenter(1, 2);
+    s.ball.x = mid.x;
+    s.ball.y = mid.y;
+    s.ball.col = 1;
+    s.ball.row = 2;
+    s.banner = "СВИСТОК";
+    s.bannerColor = "#e2e8f0";
+    s.bannerT = 0.9;
+    this.pushLog(s, "Свисток · разбежка, команды пересекаются");
+  },
+
+  finishKickoff(s) {
+    const mid = s.ours.find((u) => u.card && u.zone === "MID") || s.ours.find((u) => u.card);
+    if (mid) {
+      this.giveBall(s, mid, true);
+      this.pushLog(s, "Мяч · " + mid.card.name);
+    }
+    s.beatT = 0.55;
+    s.thinkT = 0.55;
+  },
+
   spawnFx(s, kind, x, y, extra) {
-    const life = { pass: 0.45, cross: 0.55, tackle: 0.5, intercept: 0.5, shot: 0.55, save: 0.5, goal: 0.85 }[kind] || 0.4;
+    const life =
+      { pass: 0.55, cross: 0.7, tackle: 0.65, intercept: 0.65, shot: 0.7, save: 0.7, goal: 1.1, mark: 0.5 }[kind] || 0.45;
     s.fx.push(Object.assign({ kind, x, y, t: life, life }, extra || {}));
   },
   pushLog(s, text) {
     s.log.unshift(text);
-    if (s.log.length > 5) s.log.pop();
+    if (s.log.length > 6) s.log.pop();
     s.subline = text;
   },
+  beat(s, t) {
+    s.beatT = Math.max(s.beatT || 0, t);
+  },
 
-  // ——— SIM ———
   neighbors(col, row) {
     const out = [];
     for (let dc = -1; dc <= 1; dc++) {
@@ -399,15 +464,13 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
   },
 
   pathCells(a, b) {
-    // клетки «на линии» паса (упрощённо — промежуточные по manhattan)
     const cells = [];
-    let c = a.col;
-    let r = a.row;
     const steps = Math.max(Math.abs(b.col - a.col), Math.abs(b.row - a.row));
     for (let i = 1; i < steps; i++) {
-      c = a.col + Math.round(((b.col - a.col) * i) / steps);
-      r = a.row + Math.round(((b.row - a.row) * i) / steps);
-      cells.push({ col: c, row: r });
+      cells.push({
+        col: a.col + Math.round(((b.col - a.col) * i) / steps),
+        row: a.row + Math.round(((b.row - a.row) * i) / steps),
+      });
     }
     return cells;
   },
@@ -438,11 +501,9 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
         base.shoot = (base.shoot || 0) + 1;
       }
     }
-    // зона: удар из середины и чужой трети; ближе к воротам — чаще
-    const attackDepth = u.side === "us" ? 2 - u.row : u.row - 2; // ≥0 в атакующей половине
+    const attackDepth = u.side === "us" ? 2 - u.row : u.row - 2;
     if (attackDepth < 0) base.shoot = 0;
     else base.shoot = (base.shoot || 0) + 1 + attackDepth * 2;
-    // застой владения → давим на удар / вынос, режем боковой пас
     const stagn = s.passStreak || 0;
     if (stagn >= 2) {
       base.shoot = (base.shoot || 0) + stagn;
@@ -474,25 +535,22 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     return "hold";
   },
 
-  /** прогресс паса: + вперёд, 0 бок, − назад */
   passProgress(owner, target) {
     if (owner.side === "us") return owner.row - target.row;
     return target.row - owner.row;
   },
 
-  /** цели паса в зоне (соседние клетки); long = вся своя половина вперёд */
   passTargets(s, owner, { cross = false, clear = false } = {}) {
     const mates = this.teammates(s, owner.side).filter((u) => u !== owner && u.card);
     const last = s.lastPassFrom;
     const banned = new Set();
     if (last) banned.add(last);
-    // не гоняем один и тот же дуэт
     if (s.lastPassTo && s.lastPassFrom === owner) banned.add(s.lastPassTo);
 
     const inReach = (m) => {
       const dc = Math.abs(m.col - owner.col);
       const dr = Math.abs(m.row - owner.row);
-      if (clear || cross) return dc + dr <= 3 && (cross || clear ? this.passProgress(owner, m) >= 0 : true);
+      if (clear || cross) return dc + dr <= 3 && this.passProgress(owner, m) >= 0;
       return dc <= 1 && dr <= 1 && !(dc === 0 && dr === 0);
     };
 
@@ -501,16 +559,12 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       const air = mates.filter((m) => this.passProgress(owner, m) >= 0 && !banned.has(m));
       if (air.length) targets = air;
     }
-    // без fallback на всю команду — иначе пинг-понг через поле
-    if (!targets.length) {
-      targets = mates.filter((m) => inReach(m) && m !== last);
-    }
+    if (!targets.length) targets = mates.filter((m) => inReach(m) && m !== last);
     targets.sort((a, b) => {
       const pa = this.passProgress(owner, a);
       const pb = this.passProgress(owner, b);
       let sa = a.card.pas + pa * 3 + (a.zone === "FWD" ? 2 : 0) + (cross && a.zone === "FWD" ? 3 : 0);
       let sb = b.card.pas + pb * 3 + (b.zone === "FWD" ? 2 : 0) + (cross && b.zone === "FWD" ? 3 : 0);
-      // при застое режем боковые/назад
       if ((s.passStreak || 0) >= 2) {
         if (pa <= 0) sa -= 4;
         if (pb <= 0) sb -= 4;
@@ -524,30 +578,36 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     return targets;
   },
 
-  giveBall(s, unit) {
+  giveBall(s, unit, snap) {
     s.ball.owner = unit;
     s.ball.col = unit.col;
     s.ball.row = unit.row;
     s.ball.flying = null;
-    const p = this.cellCenter(unit.col, unit.row);
-    s.ball.x = p.x;
-    s.ball.y = p.y;
+    if (snap) {
+      s.ball.x = unit.px;
+      s.ball.y = unit.py - 14;
+    }
   },
 
-  startKickoff(s) {
-    // команды уже на слотах — пересекаются в центре (оба имеют row2)
-    for (const u of this.units(s)) this.snapUnit(u);
-    const mid = s.ours.find((u) => u.card && u.zone === "MID") || s.ours.find((u) => u.card);
-    if (mid) this.giveBall(s, mid);
-    else {
-      s.ball.col = 1;
-      s.ball.row = 2;
-      const p = this.cellCenter(1, 2);
-      s.ball.x = p.x;
-      s.ball.y = p.y;
-      s.ball.owner = null;
-    }
-    this.pushLog(s, "Свисток · мяч в центре");
+  launchBall(s, x1, y1, dur, meta) {
+    s.ball.owner = null;
+    s.ball.flying = Object.assign(
+      {
+        x0: s.ball.x,
+        y0: s.ball.y,
+        x1,
+        y1,
+        t: dur,
+        life: dur,
+        arc: 0,
+        checked: false,
+      },
+      meta || {}
+    );
+  },
+
+  faceToward(u, x, y) {
+    u.facing = Math.atan2(y - u.py, x - u.px);
   },
 
   tryTackle(s, defender, owner, adjacent) {
@@ -555,89 +615,96 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     if (!same && !adjacent) return false;
     const w = this.weightsFor(defender, s);
     if ((w.tackle || 0) < 1) return false;
-    // соседний прессинг слабее и растёт только при застое владения
     let chance =
-      (same ? 0.36 : 0.05 + Math.min(0.12, (s.passStreak || 0) * 0.03)) +
+      (same ? 0.34 : 0.05 + Math.min(0.1, (s.passStreak || 0) * 0.03)) +
       defender.card.def * 0.03 +
       ((defender.card.stars || 1) - 1) * 0.05 -
       owner.card.pac * 0.02;
     if (adjacent && (w.tackle || 0) < 2 && (s.passStreak || 0) < 2) return false;
-    if (Math.random() > Math.min(same ? 0.7 : 0.35, chance)) return false;
+    if (Math.random() > Math.min(same ? 0.68 : 0.32, chance)) return false;
+
     defender.act = "tackle";
-    defender.actT = 0.4;
-    this.spawnFx(s, "tackle", defender.px, defender.py, { color: this.TACTIC_COLOR[defender.card.tactic] });
-    this.giveBall(s, defender);
+    defender.actT = 0.55;
+    this.faceToward(defender, owner.px, owner.py);
+    defender.lungeX = (owner.px - defender.px) * 0.35;
+    defender.lungeY = (owner.py - defender.py) * 0.35;
+    owner.act = "stumble";
+    owner.actT = 0.45;
+    this.spawnFx(s, "tackle", (defender.px + owner.px) / 2, (defender.py + owner.py) / 2, {
+      color: this.TACTIC_COLOR[defender.card.tactic],
+    });
+    this.giveBall(s, defender, false);
     s.lastPassFrom = null;
     s.lastPassTo = null;
     s.passStreak = 0;
     this.pushLog(s, "Отбор · " + defender.card.name + " (" + defender.card.amp + ")");
+    this.beat(s, 0.85);
     return true;
   },
 
-  tryIntercept(s, from, to, passerSide) {
-    // перехват только на линии паса / в клетке приёма (не «магия» из соседних зон)
+  pickInterceptor(s, from, to, passerSide) {
     const path = this.pathCells(from, to);
     path.push({ col: to.col, row: to.row });
     const seen = new Set();
+    const cand = [];
     for (const cell of path) {
       const key = cell.col + "," + cell.row;
       if (seen.has(key)) continue;
       seen.add(key);
-      const foes = this.atCell(s, cell.col, cell.row).filter((u) => u.side !== passerSide && u.card);
-      for (const f of foes) {
+      for (const f of this.atCell(s, cell.col, cell.row).filter((u) => u.side !== passerSide && u.card)) {
         const w = this.weightsFor(f, s);
         const atRecv = f.col === to.col && f.row === to.row;
-        const chance =
-          (atRecv ? 0.16 : 0.1) + f.card.def * 0.02 + (w.intercept || 0) * 0.04;
-        if (Math.random() < Math.min(0.4, chance)) {
-          f.act = "intercept";
-          f.actT = 0.4;
-          this.spawnFx(s, "intercept", f.px, f.py, { color: "#38bdf8" });
-          this.giveBall(s, f);
-          s.lastPassFrom = null;
-          s.lastPassTo = null;
-          s.passStreak = 0;
-          this.pushLog(s, "Перехват · " + f.card.name);
-          return true;
-        }
+        const chance = (atRecv ? 0.15 : 0.09) + f.card.def * 0.02 + (w.intercept || 0) * 0.04;
+        if (Math.random() < Math.min(0.38, chance)) cand.push(f);
       }
     }
-    return false;
+    return cand[0] || null;
   },
 
   doPass(s, owner, cross, clear) {
     const targets = this.passTargets(s, owner, { cross: !!cross, clear: !!clear });
     if (!targets.length) return false;
     const target = targets[0];
-    const kind = cross ? "cross" : "pass";
-    owner.act = kind;
-    owner.actT = 0.35;
-    this.spawnFx(s, kind, owner.px, owner.py, { x2: target.px, y2: target.py });
+    const kind = cross ? "cross" : clear ? "clear" : "pass";
+    owner.act = kind === "clear" ? "pass" : kind;
+    owner.actT = 0.4;
+    this.faceToward(owner, target.px, target.py);
+    owner.lungeX = Math.cos(owner.facing) * 6;
+    owner.lungeY = Math.sin(owner.facing) * 6;
+    this.spawnFx(s, cross ? "cross" : "pass", owner.px, owner.py, { x2: target.px, y2: target.py });
+
     const prog = this.passProgress(owner, target);
     s.lastPassFrom = owner;
     s.lastPassTo = target;
     if (prog > 0) s.passStreak = 0;
     else s.passStreak = (s.passStreak || 0) + 1;
-    if (this.tryIntercept(s, owner, target, owner.side)) return true;
-    this.giveBall(s, target);
-    this.pushLog(
-      s,
-      (cross ? "Навес · " : clear ? "Вынос · " : "Пас · ") + owner.card.name + " → " + target.card.name
-    );
+
+    const dist = Math.hypot(target.px - owner.px, target.py - owner.py);
+    const dur = Math.max(0.35, Math.min(0.85, dist / 220)) * (cross ? 1.25 : 1);
+    const label = (cross ? "Навес · " : clear ? "Вынос · " : "Пас · ") + owner.card.name + " → " + target.card.name;
+    this.pushLog(s, label);
+    this.beat(s, dur + 0.35);
+
+    const thief = this.pickInterceptor(s, owner, target, owner.side);
+    this.launchBall(s, target.px, target.py - 12, dur, {
+      arc: cross ? 28 : clear ? 18 : 8,
+      to: target,
+      thief,
+      label,
+      kind,
+    });
     return true;
   },
 
   doShoot(s, owner) {
     owner.act = "shot";
-    owner.actT = 0.45;
+    owner.actT = 0.5;
     const goalRow = owner.side === "us" ? 0 : 4;
     const goal = this.cellCenter(1, goalRow);
+    this.faceToward(owner, goal.x, goal.y);
+    owner.lungeX = Math.cos(owner.facing) * 10;
+    owner.lungeY = Math.sin(owner.facing) * 10;
     this.spawnFx(s, "shot", owner.px, owner.py, { x2: goal.x, y2: goal.y, color: "#fde68a" });
-    s.ball.owner = null;
-    s.ball.flying = { x: goal.x, y: goal.y, t: 0.35, shot: true, side: owner.side, shooter: owner };
-    s.lastPassFrom = null;
-    s.lastPassTo = null;
-    s.passStreak = 0;
 
     const depth = owner.side === "us" ? 2 - owner.row : owner.row - 2;
     const chance =
@@ -647,7 +714,13 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       Math.max(0, depth) * 0.06 +
       (owner.card.amp === "Poacher" ? 0.08 : 0);
     s.pendingShot = { who: owner.side, chance: Math.min(0.68, chance), shooter: owner.card };
+    s.lastPassFrom = null;
+    s.lastPassTo = null;
+    s.passStreak = 0;
     this.pushLog(s, "Удар · " + owner.card.name + " (" + owner.card.amp + ")");
+    const dur = 0.55;
+    this.beat(s, dur + 0.2);
+    this.launchBall(s, goal.x, goal.y, dur, { arc: 22, shot: true, side: owner.side });
     return true;
   },
 
@@ -657,49 +730,73 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     s.pendingShot = null;
     const gkSide = p.who === "us" ? "opp" : "us";
     const gk = this.teammates(s, gkSide).find((u) => u.zone === "GK");
-    // блок в клетке ворот
     const box = this.atCell(s, 1, p.who === "us" ? 0 : 4).filter((u) => u.side !== p.who);
-    if (box.length && Math.random() < 0.25) {
+
+    if (box.length && Math.random() < 0.22) {
       const b = box[0];
+      b.act = "tackle";
+      b.actT = 0.5;
       this.spawnFx(s, "tackle", b.px, b.py, { color: "#a78bfa" });
-      this.giveBall(s, b);
+      this.giveBall(s, b, false);
       this.pushLog(s, "Блок · " + b.card.name);
       s.banner = "БЛОК";
       s.bannerColor = "#a78bfa";
-      s.bannerT = 0.7;
+      s.bannerT = 1.0;
+      this.beat(s, 1.0);
       return;
     }
     if (Math.random() < p.chance) {
       if (p.who === "us") s.myGoals += 1;
       else s.oppGoals += 1;
+      s.lastScorer = p.who;
       s.banner = "ГОООЛ!";
       s.bannerColor = "#fbbf24";
-      s.bannerT = 1.1;
-      this.spawnFx(s, "goal", this.cellCenter(1, p.who === "us" ? 0 : 4).x, this.cellCenter(1, p.who === "us" ? 0 : 4).y);
+      s.bannerT = 1.6;
+      const g = this.cellCenter(1, p.who === "us" ? 0 : 4);
+      this.spawnFx(s, "goal", g.x, g.y);
       this.pushLog(s, "Гол · " + p.shooter.name);
-      // kickoff reverse
-      const mid = this.teammates(s, p.who === "us" ? "opp" : "us").find((u) => u.zone === "MID");
-      if (mid) this.giveBall(s, mid);
+      this.beat(s, 1.5);
+      s.restartKick = 1.4;
     } else if (gk && Math.random() < 0.6) {
       gk.act = "save";
-      gk.actT = 0.45;
+      gk.actT = 0.65;
+      gk.lungeX = (s.ball.x - gk.px) * 0.2;
+      gk.lungeY = (s.ball.y - gk.py) * 0.2;
       this.spawnFx(s, "save", gk.px, gk.py, { color: "#c4b5fd" });
-      this.giveBall(s, gk);
+      this.giveBall(s, gk, false);
       s.banner = "СЕЙВ";
       s.bannerColor = "#c4b5fd";
-      s.bannerT = 0.75;
+      s.bannerT = 1.15;
       this.pushLog(s, "Сейв · " + gk.card.name);
+      this.beat(s, 1.15);
     } else {
       s.banner = Math.random() < 0.5 ? "МИМО" : "ШТАНГА";
       s.bannerColor = "#94a3b8";
-      s.bannerT = 0.7;
-      if (gk) this.giveBall(s, gk);
+      s.bannerT = 1.0;
+      if (gk) this.giveBall(s, gk, false);
       this.pushLog(s, s.banner);
+      this.beat(s, 1.0);
     }
   },
 
+  afterGoalRestart(s) {
+    s.restartKick = 0;
+    for (const u of this.units(s)) {
+      this.applyPose(u, u.push);
+      this.snapUnit(u);
+    }
+    const kickSide = s.lastScorer === "us" ? "opp" : "us";
+    const m =
+      this.teammates(s, kickSide).find((u) => u.zone === "MID") || this.teammates(s, kickSide)[0];
+    const center = this.cellCenter(1, 2);
+    s.ball.x = center.x;
+    s.ball.y = center.y;
+    if (m) this.giveBall(s, m, true);
+    this.pushLog(s, "Центр · снова в игре");
+    this.beat(s, 0.7);
+  },
+
   simTick(s) {
-    // отбор: та же клетка, иначе давление из соседней зоны
     if (s.ball.owner) {
       const owner = s.ball.owner;
       if (!owner.card) {
@@ -730,7 +827,6 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
         hold: w.hold || 0,
         clear: w.clear || 0,
       };
-      // нет целей паса → не крутим pass в весах
       const hasPass = this.passTargets(s, owner, {}).length > 0;
       const hasCross = this.passTargets(s, owner, { cross: true }).length > 0;
       const hasClear = this.passTargets(s, owner, { clear: true }).length > 0;
@@ -755,41 +851,44 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       if (act === "clear") {
         if (!this.doPass(s, owner, false, true)) {
           owner.act = "dribble";
-          owner.actT = 0.25;
+          owner.actT = 0.4;
           this.pushLog(s, "Контроль · " + owner.card.name);
+          this.beat(s, 0.45);
         }
         return;
       }
       if (act === "dribble" || act === "hold") {
         owner.act = "dribble";
-        owner.actT = 0.3;
-        // дриблинг под прессингом чуть повышает шанс следующего отбора
+        owner.actT = 0.45;
+        owner.lungeX = Math.cos(owner.facing) * 4;
+        owner.lungeY = Math.sin(owner.facing) * 4;
         s.passStreak = (s.passStreak || 0) + 1;
         this.pushLog(s, "Контроль · " + owner.card.name);
+        this.beat(s, 0.5);
         return;
       }
       if (!this.doPass(s, owner, false, false)) {
         if (attackDepth >= 0) this.doShoot(s, owner);
         else if (!this.doPass(s, owner, false, true)) {
           owner.act = "dribble";
-          owner.actT = 0.25;
+          owner.actT = 0.4;
           this.pushLog(s, "Контроль · " + owner.card.name);
+          this.beat(s, 0.45);
         }
       }
       return;
     }
 
-    // ничейный мяч в клетке
     const here = this.atCell(s, s.ball.col, s.ball.row).filter((u) => u.card);
     if (here.length) {
       here.sort((a, b) => b.card.pac - a.card.pac);
-      this.giveBall(s, here[0]);
+      this.giveBall(s, here[0], false);
       s.passStreak = 0;
       this.pushLog(s, "Подбор · " + here[0].card.name);
+      this.beat(s, 0.4);
     }
   },
 
-  // ——— UI rects ———
   deckRect(i, api) {
     const col = i % 6;
     const row = (i / 6) | 0;
@@ -807,7 +906,10 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     return { x: 10 + col * (w + 3), y: this.L.uiTop + 24 + row * 46, w, h: 40 };
   },
 
-  // ——— PHASES ———
+  hitUnit(u, tap) {
+    return Math.hypot(tap.x - u.px, tap.y - u.py) < 30;
+  },
+
   updateLineup(s, api) {
     s.reroll.x = -999;
     s.sell.x = -999;
@@ -829,13 +931,12 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
         }
       }
       for (const u of s.ours) {
-        const p = this.cellCenter(u.col, u.row);
-        const hit = Math.hypot(tap.x - p.x, tap.y - p.y) < 28 ||
-          (tap.x >= p.x - this.L.cellW * 0.4 &&
-            tap.x <= p.x + this.L.cellW * 0.4 &&
-            tap.y >= p.y - this.L.cellH * 0.4 &&
-            tap.y <= p.y + this.L.cellH * 0.4);
-        if (!hit) continue;
+        if (!this.hitUnit(u, tap) && !(
+          tap.x >= u.px - this.L.cellW * 0.35 &&
+          tap.x <= u.px + this.L.cellW * 0.35 &&
+          tap.y >= u.py - this.L.cellH * 0.35 &&
+          tap.y <= u.py + this.L.cellH * 0.35
+        )) continue;
         if (s.selected?.from === "deck") {
           const card = s.deck[s.selected.index];
           if (!card) break;
@@ -860,7 +961,6 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
         const extra = api.pick(this.CATALOG).name;
         if (!s.poolNames.includes(extra)) s.poolNames.push(extra);
       }
-      // колода для мешка = имена poolNames
       s.deck = s.poolNames.map((name) => this.mint(this.CATALOG.find((c) => c.name === name), 1));
       s.bag = this.makeBag(s.deck);
       s.coins = 10;
@@ -869,14 +969,19 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       s.reroll.x = 14;
       s.sell.x = api.w - 124;
       s.start.label = "В бой!";
-      s.note = "Покупки → скамейка → поставь на слот сам";
+      s.note = "Покупки → скамейка → слот на своей половине";
       s.subline = "Магазин · ролл из колоды 18";
     }
     const tc = this.tacticCount(s.ours);
     api.setHud(
-      "Расстановка " + n + "/" + this.FIELD + " · " +
+      "Своя половина " +
+        n +
+        "/" +
+        this.FIELD +
+        " · " +
         (tc.map((t) => t.id.slice(0, 4) + "×" + t.n).join(" ") || "нет×2") +
-        " · " + s.note
+        " · " +
+        s.note
     );
   },
 
@@ -953,8 +1058,7 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       }
       for (let i = 0; i < s.ours.length; i++) {
         const u = s.ours[i];
-        const p = this.cellCenter(u.col, u.row);
-        if (Math.hypot(tap.x - p.x, tap.y - p.y) > 32) continue;
+        if (!this.hitUnit(u, tap)) continue;
         if (s.selected?.from === "bench") {
           const card = s.bench[s.selected.index];
           if (!card) break;
@@ -981,8 +1085,14 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
             const tmp = a.card;
             a.card = u.card;
             u.card = tmp;
-            if (a.card) this.snapUnit(a);
-            if (u.card) this.snapUnit(u);
+            if (a.card) {
+              this.applyPose(a, a.home);
+              this.snapUnit(a);
+            }
+            if (u.card) {
+              this.applyPose(u, u.home);
+              this.snapUnit(u);
+            }
             s.note = "Свап слотов";
           }
           s.selected = null;
@@ -1005,15 +1115,23 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
         return;
       }
       if (this.filled(s.ours) < this.FIELD) {
-        s.note = "Нужно 6/6 на сетке";
+        s.note = "Нужно 6/6 на своей половине";
         return;
       }
       this.startFight(s, api);
     }
     const tc = this.tacticCount(s.ours);
     api.setHud(
-      "🪙" + s.coins + " · 6v6 · скамейка " + s.bench.length + "/" + this.BENCH_MAX + " · [" +
-        (tc.map((t) => this.TACTIC_RU[t.id] + "×" + t.n).join(", ") || "нет×2") + "] · " + s.note
+      "🪙" +
+        s.coins +
+        " · скамейка " +
+        s.bench.length +
+        "/" +
+        this.BENCH_MAX +
+        " · [" +
+        (tc.map((t) => this.TACTIC_RU[t.id] + "×" + t.n).join(", ") || "нет×2") +
+        "] · " +
+        s.note
     );
   },
 
@@ -1026,17 +1144,14 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     s.speed.y = 10;
     s.start.label = "…";
     s.start.color = "#334155";
-    s.segmentT = 20;
-    s.thinkT = 0.7;
+    s.segmentT = 28;
+    s.thinkT = 99;
     s.pendingShot = null;
-    this.startKickoff(s);
-    const tc = this.tacticCount(s.ours);
-    s.banner = (s.minute || 0) + "'";
-    s.bannerColor = "#e2e8f0";
-    s.bannerT = 0.5;
-    s.subline =
-      "Зональный матч · " +
-      (tc.map((t) => this.TACTIC_RU[t.id] + "×" + t.n).join(" · ") || "без тактики ×2");
+    s.restartKick = 0;
+    s.lastScorer = null;
+    // вернуть визуально на home, затем разбежка на push
+    this.resetToHome(s);
+    this.beginSpread(s);
   },
 
   enterShop(s, api) {
@@ -1045,6 +1160,9 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     s.ball.flying = null;
     s.pendingShot = null;
     s.selected = null;
+    s.spreadT = 0;
+    s.beatT = 0;
+    s.restartKick = 0;
     s.speed.x = -999;
     s.reroll.x = 14;
     s.sell.x = api.w - 124;
@@ -1052,11 +1170,51 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     s.start.color = "#3dd68c";
     s.coins += 4 + Math.min(4, (s.coins / 10) | 0);
     this.refreshShop(s, api);
-    s.note = "Расставь сам · скамейка → слот";
-    for (const u of this.units(s)) {
-      u.col = u.homeCol;
-      u.row = u.homeRow;
-      this.snapUnit(u);
+    s.note = "Своя половина · скамейка → слот";
+    this.resetToHome(s);
+  },
+
+  updateBallFlight(s, dts) {
+    const f = s.ball.flying;
+    if (!f) return;
+    f.t -= dts;
+    const u = 1 - Math.max(0, f.t) / f.life;
+    const e = u * u * (3 - 2 * u);
+    s.ball.x = f.x0 + (f.x1 - f.x0) * e;
+    s.ball.y = f.y0 + (f.y1 - f.y0) * e - Math.sin(u * Math.PI) * (f.arc || 0);
+
+    // перехват на середине полёта
+    if (!f.checked && u >= 0.45 && f.thief) {
+      f.checked = true;
+      const th = f.thief;
+      th.act = "intercept";
+      th.actT = 0.55;
+      th.lungeX = (s.ball.x - th.px) * 0.4;
+      th.lungeY = (s.ball.y - th.py) * 0.4;
+      this.spawnFx(s, "intercept", th.px, th.py, { color: "#38bdf8" });
+      this.launchBall(s, th.px, th.py - 12, 0.28, { arc: 4, to: th, steal: true });
+      s.lastPassFrom = null;
+      s.lastPassTo = null;
+      s.passStreak = 0;
+      this.pushLog(s, "Перехват · " + th.card.name);
+      this.beat(s, 0.9);
+      return;
+    }
+
+    if (f.t > 0) return;
+
+    s.ball.flying = null;
+    s.ball.x = f.x1;
+    s.ball.y = f.y1;
+    if (f.shot) {
+      this.resolveShot(s);
+      if (s.banner === "ГОООЛ!") s.lastScorer = f.side;
+      return;
+    }
+    if (f.to && f.to.card) {
+      this.giveBall(s, f.to, false);
+      if (f.steal) this.beat(s, 0.55);
+      else this.beat(s, 0.4);
     }
   },
 
@@ -1065,32 +1223,38 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     const dts = dt * (s.phase === "fight" ? s.timeScale : 1);
     s.pulse += dts;
     if (s.bannerT > 0) s.bannerT -= dts;
+    if (s.beatT > 0) s.beatT -= dts;
     for (const f of s.fx) f.t -= dts;
     s.fx = s.fx.filter((f) => f.t > 0);
+
     for (const u of this.units(s)) {
-      u.arm += dts * 10;
+      u.arm += dts * (u.act ? 14 : 7);
       if (u.actT > 0) u.actT -= dts;
-      else u.act = null;
-      // лёгкое дыхание к центру клетки
-      const p = this.cellCenter(u.col, u.row);
-      u.px += (p.x - u.px) * Math.min(1, 6 * dts);
-      u.py += (p.y - u.py) * Math.min(1, 6 * dts);
+      else {
+        u.act = null;
+        u.lungeX *= Math.max(0, 1 - dts * 8);
+        u.lungeY *= Math.max(0, 1 - dts * 8);
+      }
+      const p = this.unitTarget(u);
+      const idleX = s.phase === "fight" ? Math.sin(s.pulse * 2.1 + u.arm) * 2.2 : 0;
+      const idleY = s.phase === "fight" ? Math.cos(s.pulse * 1.7 + u.index) * 1.6 : 0;
+      const tx = p.x + idleX + (u.lungeX || 0);
+      const ty = p.y + idleY + (u.lungeY || 0);
+      const k = Math.min(1, (s.spreadT > 0 ? 3.2 : 5.5) * dts);
+      u.px += (tx - u.px) * k;
+      u.py += (ty - u.py) * k;
+      if (s.phase === "fight" && !u.act) {
+        u.facing = u.side === "us" ? -Math.PI / 2 : Math.PI / 2;
+      }
     }
 
-    if (s.ball.flying) {
-      const f = s.ball.flying;
-      f.t -= dts;
-      s.ball.x += (f.x - s.ball.x) * Math.min(1, dts * 10);
-      s.ball.y += (f.y - s.ball.y) * Math.min(1, dts * 10);
-      if (f.t <= 0) {
-        s.ball.flying = null;
-        if (f.shot) this.resolveShot(s);
-      }
-    } else if (s.ball.owner) {
-      s.ball.x += (s.ball.owner.px - s.ball.x) * Math.min(1, dts * 10);
-      s.ball.y += (s.ball.owner.py - 12 - s.ball.y) * Math.min(1, dts * 10);
-      s.ball.col = s.ball.owner.col;
-      s.ball.row = s.ball.owner.row;
+    if (s.ball.flying) this.updateBallFlight(s, dts);
+    else if (s.ball.owner) {
+      const o = s.ball.owner;
+      s.ball.x += (o.px - s.ball.x) * Math.min(1, dts * 8);
+      s.ball.y += (o.py - 14 - s.ball.y) * Math.min(1, dts * 8);
+      s.ball.col = o.col;
+      s.ball.row = o.row;
     }
 
     if (s.phase === "done") {
@@ -1117,11 +1281,28 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     s.speed.label = s.timeScale > 1 ? "×1" : "×2";
     if (s.speed.clicked) s.timeScale = s.timeScale > 1 ? 1 : 2;
 
+    if (s.spreadT > 0) {
+      s.spreadT -= dts;
+      if (s.spreadT <= 0) {
+        s.spreadT = 0;
+        this.finishKickoff(s);
+      }
+      api.setHud(s.myGoals + ":" + s.oppGoals + " · разбежка…");
+      return;
+    }
+
+    if (s.restartKick > 0) {
+      s.restartKick -= dts;
+      if (s.restartKick <= 0) this.afterGoalRestart(s);
+      api.setHud(s.myGoals + ":" + s.oppGoals + " · " + s.minute + "'");
+      return;
+    }
+
     s.segmentT -= dts;
     s.thinkT -= dts;
-    if (s.thinkT <= 0 && !s.ball.flying && !s.pendingShot) {
+    if (s.thinkT <= 0 && s.beatT <= 0 && !s.ball.flying && !s.pendingShot) {
       this.simTick(s);
-      s.thinkT = 0.65 + Math.random() * 0.35;
+      s.thinkT = 0.85 + Math.random() * 0.45;
     }
     if (s.segmentT <= 0) {
       s.round += 1;
@@ -1136,54 +1317,109 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
   },
 
   // ——— DRAW ———
+  roundRect(ctx, x, y, w, h, r) {
+    const rr = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+  },
+
   drawPitch(ctx, s) {
     const L = this.L;
-    ctx.fillStyle = "#0b1620";
+    // atmosphere
+    const g = ctx.createLinearGradient(0, 0, 0, L.H);
+    g.addColorStop(0, "#0a1520");
+    g.addColorStop(0.45, "#0d1f18");
+    g.addColorStop(1, "#081018");
+    ctx.fillStyle = g;
     ctx.fillRect(0, 0, L.W, L.H);
-    // grass
+
+    const px = L.originX;
+    const py = L.originY;
+    const pw = L.cellW * this.COLS;
+    const ph = L.cellH * this.ROWS;
+
+    // pitch body
     for (let r = 0; r < this.ROWS; r++) {
       for (let c = 0; c < this.COLS; c++) {
-        ctx.fillStyle = (r + c) % 2 ? "#1a4d30" : "#163f28";
-        ctx.fillRect(L.originX + c * L.cellW, L.originY + r * L.cellH, L.cellW + 0.5, L.cellH + 0.5);
+        const x = px + c * L.cellW;
+        const y = py + r * L.cellH;
+        const stripe = (r + c) % 2;
+        ctx.fillStyle = stripe ? "#1b5a36" : "#174e2f";
+        ctx.fillRect(x, y, L.cellW + 0.5, L.cellH + 0.5);
       }
     }
-    ctx.strokeStyle = "#ffffff55";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(L.originX, L.originY, L.cellW * this.COLS, L.cellH * this.ROWS);
-    // grid
-    ctx.strokeStyle = "#ffffff22";
+
+    // own-half tint during lineup/shop
+    if (s.phase !== "fight") {
+      ctx.fillStyle = "rgba(61, 214, 140, 0.10)";
+      ctx.fillRect(px, py + L.cellH * 2.5, pw, L.cellH * 2.5);
+      ctx.fillStyle = "rgba(248, 113, 113, 0.08)";
+      ctx.fillRect(px, py, pw, L.cellH * 2.5);
+      ctx.fillStyle = "#86efac";
+      ctx.font = "bold 12px 'Trebuchet MS', 'Segoe UI', sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("ВАША ПОЛОВИНА", px + 8, py + ph - 10);
+      ctx.fillStyle = "#fca5a5";
+      ctx.textAlign = "right";
+      ctx.fillText("СОПЕРНИК", px + pw - 8, py + 16);
+    }
+
+    // lines
+    ctx.strokeStyle = "rgba(255,255,255,0.55)";
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(px, py, pw, ph);
+
+    ctx.strokeStyle = "rgba(255,255,255,0.16)";
     ctx.lineWidth = 1;
     for (let c = 1; c < this.COLS; c++) {
       ctx.beginPath();
-      ctx.moveTo(L.originX + c * L.cellW, L.originY);
-      ctx.lineTo(L.originX + c * L.cellW, L.originY + L.cellH * this.ROWS);
+      ctx.moveTo(px + c * L.cellW, py);
+      ctx.lineTo(px + c * L.cellW, py + ph);
       ctx.stroke();
     }
     for (let r = 1; r < this.ROWS; r++) {
       ctx.beginPath();
-      ctx.moveTo(L.originX, L.originY + r * L.cellH);
-      ctx.lineTo(L.originX + L.cellW * this.COLS, L.originY + r * L.cellH);
+      ctx.moveTo(px, py + r * L.cellH);
+      ctx.lineTo(px + pw, py + r * L.cellH);
       ctx.stroke();
     }
-    // mid line
-    ctx.strokeStyle = "#ffffff44";
+
+    // halfway
+    const midY = py + 2.5 * L.cellH;
+    ctx.strokeStyle = "rgba(255,255,255,0.65)";
     ctx.lineWidth = 2;
-    const midY = L.originY + 2.5 * L.cellH;
     ctx.beginPath();
-    ctx.moveTo(L.originX, midY);
-    ctx.lineTo(L.originX + L.cellW * this.COLS, midY);
+    ctx.moveTo(px, midY);
+    ctx.lineTo(px + pw, midY);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(px + pw / 2, midY, Math.min(28, L.cellW * 0.28), 0, Math.PI * 2);
     ctx.stroke();
 
-    // empty slot hints in lineup/shop
+    // goals
+    ctx.fillStyle = "rgba(226,232,240,0.2)";
+    ctx.fillRect(px + L.cellW * 0.7, py - 6, L.cellW * 0.6, 8);
+    ctx.fillRect(px + L.cellW * 0.7, py + ph - 2, L.cellW * 0.6, 8);
+    ctx.strokeStyle = "rgba(255,255,255,0.45)";
+    ctx.strokeRect(px + L.cellW * 0.55, py, L.cellW * 0.9, L.cellH * 0.55);
+    ctx.strokeRect(px + L.cellW * 0.55, py + ph - L.cellH * 0.55, L.cellW * 0.9, L.cellH * 0.55);
+
+    // empty slots
     if (s.phase !== "fight") {
       for (const u of s.ours) {
         if (u.card) continue;
-        const p = this.cellCenter(u.col, u.row);
-        ctx.strokeStyle = "#ffffff33";
+        const p = this.unitTarget(u);
+        ctx.strokeStyle = "rgba(134,239,172,0.45)";
         ctx.lineWidth = 2;
-        ctx.strokeRect(p.x - 26, p.y - 18, 52, 36);
-        ctx.fillStyle = "#ffffff55";
-        ctx.font = "bold 12px Segoe UI, sans-serif";
+        this.roundRect(ctx, p.x - 28, p.y - 20, 56, 40, 8);
+        ctx.stroke();
+        ctx.fillStyle = "rgba(226,232,240,0.7)";
+        ctx.font = "bold 12px 'Trebuchet MS', sans-serif";
         ctx.textAlign = "center";
         ctx.fillText(u.zone, p.x, p.y + 4);
       }
@@ -1194,47 +1430,71 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     if (!u.card) return;
     const c = u.card;
     const isOpp = u.side === "opp";
-    const r = 13 + ((c.stars || 1) - 1) * 2;
-    const bob = Math.sin(pulse * 9 + u.arm) * 1.2;
+    const r = 14 + ((c.stars || 1) - 1) * 2;
+    const bob = Math.sin(pulse * 8 + u.arm) * (u.act ? 0.4 : 1.4);
     const x = u.px;
     const y = u.py + bob;
     const ang = u.facing;
+    const tac = this.TACTIC_COLOR[c.tactic];
 
-    ctx.fillStyle = "rgba(0,0,0,0.28)";
+    // shadow
+    ctx.fillStyle = "rgba(0,0,0,0.32)";
     ctx.beginPath();
-    ctx.ellipse(x, y + r * 0.75, r * 0.8, 3.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(x, y + r * 0.85, r * 0.85, 3.8, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    const swing = Math.sin(u.arm) * (u.act === "tackle" ? 0.9 : 0.45);
+    // limbs
+    const swing = Math.sin(u.arm) * (u.act === "tackle" || u.act === "shot" ? 1.1 : 0.4);
     ctx.strokeStyle = isOpp ? "#fecaca" : "#bbf7d0";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3.2;
     ctx.lineCap = "round";
     for (const side of [-1, 1]) {
-      const a = ang + side * (0.85 + swing * side);
+      const a = ang + side * (0.9 + swing * 0.5);
       ctx.beginPath();
       ctx.moveTo(x, y);
-      ctx.lineTo(x + Math.cos(a) * (r + 6), y + Math.sin(a) * (r + 6));
+      ctx.lineTo(x + Math.cos(a) * (r + 7), y + Math.sin(a) * (r + 7));
       ctx.stroke();
     }
 
+    // body
+    const body = ctx.createRadialGradient(x - 3, y - 4, 2, x, y, r);
+    body.addColorStop(0, isOpp ? "#ef4444" : "#22c55e");
+    body.addColorStop(1, isOpp ? "#991b1b" : "#166534");
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = isOpp ? "#b91c1c" : "#15803d";
+    ctx.fillStyle = body;
     ctx.fill();
-    ctx.strokeStyle = hot ? "#fff" : this.TACTIC_COLOR[c.tactic];
-    ctx.lineWidth = hot ? 3 : 2;
+    ctx.strokeStyle = hot ? "#fff" : tac;
+    ctx.lineWidth = hot ? 3.2 : 2.2;
     ctx.stroke();
 
+    // head
+    ctx.beginPath();
+    ctx.arc(x + Math.cos(ang) * 2, y + Math.sin(ang) * 2 - r * 0.15, r * 0.42, 0, Math.PI * 2);
+    ctx.fillStyle = "#f5d0a9";
+    ctx.fill();
+
+    // action ring
+    if (u.act && u.actT > 0) {
+      ctx.strokeStyle = tac;
+      ctx.globalAlpha = Math.min(1, u.actT * 2);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, r + 6 + (0.5 - u.actT) * 10, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
     ctx.fillStyle = "#fff";
-    ctx.font = "bold 11px Segoe UI, sans-serif";
+    ctx.font = "bold 12px 'Trebuchet MS', 'Segoe UI', sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(c.name, x, y - r - 6);
-    ctx.fillStyle = this.TACTIC_COLOR[c.tactic];
-    ctx.font = "bold 10px Segoe UI, sans-serif";
-    ctx.fillText(c.amp, x, y + r + 12);
+    ctx.fillText(c.name, x, y - r - 8);
+    ctx.fillStyle = tac;
+    ctx.font = "bold 10px 'Trebuchet MS', sans-serif";
+    ctx.fillText(c.amp, x, y + r + 13);
     if ((c.stars || 1) > 1) {
       ctx.fillStyle = "#fde68a";
-      ctx.fillText(this.starLabel(c), x, y + r + 24);
+      ctx.fillText(this.starLabel(c), x, y + r + 25);
     }
   },
 
@@ -1244,9 +1504,9 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     ctx.save();
     ctx.globalAlpha = a;
     if (fx.kind === "pass" || fx.kind === "cross") {
-      ctx.strokeStyle = fx.kind === "cross" ? "#86efac" : "#fff";
-      ctx.setLineDash(fx.kind === "cross" ? [2, 6] : [5, 4]);
-      ctx.lineWidth = fx.kind === "cross" ? 3 : 2;
+      ctx.strokeStyle = fx.kind === "cross" ? "#86efac" : "rgba(255,255,255,0.9)";
+      ctx.setLineDash(fx.kind === "cross" ? [3, 7] : [6, 5]);
+      ctx.lineWidth = fx.kind === "cross" ? 3 : 2.2;
       ctx.beginPath();
       ctx.moveTo(fx.x, fx.y);
       ctx.lineTo(fx.x2, fx.y2);
@@ -1254,65 +1514,69 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
       ctx.setLineDash([]);
     } else if (fx.kind === "tackle") {
       ctx.strokeStyle = fx.color || "#f97316";
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 3.5;
       ctx.beginPath();
-      ctx.arc(fx.x, fx.y, 8 + k * 16, -0.8, 0.8);
+      ctx.arc(fx.x, fx.y, 10 + k * 18, -1, 1);
       ctx.stroke();
     } else if (fx.kind === "intercept") {
       ctx.strokeStyle = "#38bdf8";
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(fx.x - 12, fx.y);
-      ctx.lineTo(fx.x + 12, fx.y);
-      ctx.moveTo(fx.x, fx.y - 12);
-      ctx.lineTo(fx.x, fx.y + 12);
+      ctx.moveTo(fx.x - 14, fx.y);
+      ctx.lineTo(fx.x + 14, fx.y);
+      ctx.moveTo(fx.x, fx.y - 14);
+      ctx.lineTo(fx.x, fx.y + 14);
       ctx.stroke();
     } else if (fx.kind === "shot") {
       ctx.strokeStyle = fx.color || "#fde68a";
       ctx.lineWidth = 4;
+      const t = Math.min(1, k * 1.4);
       ctx.beginPath();
       ctx.moveTo(fx.x, fx.y);
-      ctx.lineTo(fx.x + (fx.x2 - fx.x) * Math.min(1, k * 1.5), fx.y + (fx.y2 - fx.y) * Math.min(1, k * 1.5));
+      ctx.lineTo(fx.x + (fx.x2 - fx.x) * t, fx.y + (fx.y2 - fx.y) * t);
       ctx.stroke();
     } else if (fx.kind === "save") {
       ctx.strokeStyle = "#c4b5fd";
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.arc(fx.x, fx.y, 10 + k * 18, 0, Math.PI * 2);
+      ctx.arc(fx.x, fx.y, 12 + k * 20, 0, Math.PI * 2);
       ctx.stroke();
     } else if (fx.kind === "goal") {
       ctx.fillStyle = "#fde68a";
-      ctx.font = "bold 20px Segoe UI, sans-serif";
+      ctx.font = "bold 22px 'Trebuchet MS', sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("⚽", fx.x, fx.y - k * 20);
+      ctx.fillText("ГОЛ", fx.x, fx.y - k * 24);
     }
     ctx.restore();
   },
 
   drawChip(ctx, x, y, w, h, card, selected, price) {
-    ctx.fillStyle = selected ? "#1d4ed8" : "#14532d";
-    ctx.fillRect(x, y, w, h);
+    ctx.save();
+    this.roundRect(ctx, x, y, w, h, 8);
+    ctx.fillStyle = selected ? "#1e3a8a" : "#123524";
+    ctx.fill();
     ctx.strokeStyle = selected ? "#fff" : this.TACTIC_COLOR[card.tactic];
-    ctx.lineWidth = selected ? 2.5 : 1.5;
-    ctx.strokeRect(x, y, w, h);
+    ctx.lineWidth = selected ? 2.4 : 1.6;
+    ctx.stroke();
     ctx.fillStyle = this.ROLE_COLOR[card.role];
-    ctx.fillRect(x + 2, y + 2, w - 4, 6);
+    ctx.fillRect(x + 3, y + 3, w - 6, 5);
     ctx.fillStyle = "#fff";
-    ctx.font = "bold 11px Segoe UI, sans-serif";
+    ctx.font = "bold 11px 'Trebuchet MS', sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(card.name, x + w / 2, y + 22);
     ctx.fillStyle = "#cbd5e1";
-    ctx.font = "9px Segoe UI, sans-serif";
+    ctx.font = "9px 'Trebuchet MS', sans-serif";
     ctx.fillText(card.amp, x + w / 2, y + 34);
     ctx.fillStyle = this.TACTIC_COLOR[card.tactic];
-    ctx.font = "bold 9px Segoe UI, sans-serif";
+    ctx.font = "bold 9px 'Trebuchet MS', sans-serif";
     const tn = this.TACTIC_RU[card.tactic];
     ctx.fillText(tn.length > 10 ? tn.slice(0, 9) + "…" : tn, x + w / 2, y + h - 8);
     if (price != null) {
       ctx.fillStyle = "#fde68a";
-      ctx.font = "bold 12px Segoe UI, sans-serif";
+      ctx.font = "bold 12px 'Trebuchet MS', sans-serif";
       ctx.fillText(price + "🪙", x + w / 2, y + h - 20);
     }
+    ctx.restore();
   },
 
   draw(s, api) {
@@ -1322,67 +1586,73 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     this.drawPitch(ctx, s);
 
     // scoreboard
-    ctx.fillStyle = "rgba(0,0,0,0.6)";
-    ctx.fillRect(L.W / 2 - 100, 6, 200, 42);
+    this.roundRect(ctx, L.W / 2 - 108, 6, 216, 40, 10);
+    ctx.fillStyle = "rgba(0,0,0,0.62)";
+    ctx.fill();
     ctx.fillStyle = "#fff";
-    ctx.font = "bold 20px Segoe UI, sans-serif";
+    ctx.font = "bold 18px 'Trebuchet MS', 'Segoe UI', sans-serif";
     ctx.textAlign = "center";
     const title =
       s.phase === "lineup" ? "РАССТАНОВКА" : s.phase === "shop" ? "МАГАЗИН" : s.myGoals + " : " + s.oppGoals;
-    ctx.fillText(title, L.W / 2, 26);
+    ctx.fillText(title, L.W / 2, 24);
     ctx.fillStyle = "#fde68a";
-    ctx.font = "bold 13px Segoe UI, sans-serif";
-    ctx.fillText(s.phase === "fight" ? s.minute + "'" : "🪙" + s.coins, L.W / 2, 42);
+    ctx.font = "bold 12px 'Trebuchet MS', sans-serif";
+    ctx.fillText(s.phase === "fight" ? s.minute + "'" : "🪙" + s.coins, L.W / 2, 40);
 
-    // tactic chips
     const tc = this.tacticCount(s.ours);
     let cx = 10;
     for (const t of tc.slice(0, 3)) {
       const label = this.TACTIC_RU[t.id] + "×" + t.n;
-      const tw = 14 + label.length * 6.5;
+      const tw = 16 + label.length * 6.2;
+      this.roundRect(ctx, cx, L.pitchBottom - 18, tw, 15, 4);
       ctx.fillStyle = "rgba(0,0,0,0.55)";
-      ctx.fillRect(cx, L.pitchBottom - 20, tw, 16);
+      ctx.fill();
       ctx.strokeStyle = this.TACTIC_COLOR[t.id];
-      ctx.strokeRect(cx, L.pitchBottom - 20, tw, 16);
+      ctx.stroke();
       ctx.fillStyle = this.TACTIC_COLOR[t.id];
-      ctx.font = "bold 11px Segoe UI, sans-serif";
-      ctx.fillText(label, cx + tw / 2, L.pitchBottom - 7);
+      ctx.font = "bold 10px 'Trebuchet MS', sans-serif";
+      ctx.fillText(label, cx + tw / 2, L.pitchBottom - 6);
       cx += tw + 4;
     }
 
     const list = this.units(s).sort((a, b) => a.py - b.py);
-    for (const u of list) {
-      const hot = s.ball.owner === u;
-      this.drawPlayer(ctx, u, hot, s.pulse);
-    }
+    for (const u of list) this.drawPlayer(ctx, u, s.ball.owner === u, s.pulse);
 
-    // ball
+    // ball with soft shadow
     if (s.phase === "fight" || s.ball.owner || s.ball.flying) {
+      const bx = s.ball.x || L.W / 2;
+      const by = s.ball.y || L.originY + L.cellH * 2.5;
+      ctx.fillStyle = "rgba(0,0,0,0.25)";
+      ctx.beginPath();
+      ctx.ellipse(bx, by + 5, 7, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
       ctx.fillStyle = "#fffef2";
       ctx.beginPath();
-      ctx.arc(s.ball.x || L.W / 2, s.ball.y || L.originY + L.cellH * 2.5, 6, 0, Math.PI * 2);
+      ctx.arc(bx, by, 6.5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = "#333";
+      ctx.strokeStyle = "#334155";
+      ctx.lineWidth = 1.2;
       ctx.stroke();
     }
     for (const f of s.fx) this.drawFx(ctx, f);
 
     if (s.subline) {
-      ctx.fillStyle = "rgba(0,0,0,0.55)";
-      ctx.fillRect(12, L.pitchBottom + 2, L.W - 24, 22);
+      this.roundRect(ctx, 12, L.pitchBottom + 2, L.W - 24, 22, 6);
+      ctx.fillStyle = "rgba(0,0,0,0.58)";
+      ctx.fill();
       ctx.fillStyle = "#f1f5f9";
-      ctx.font = "13px Segoe UI, sans-serif";
+      ctx.font = "13px 'Trebuchet MS', sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(s.subline, L.W / 2, L.pitchBottom + 17);
     }
 
     if (s.phase === "lineup") {
-      ctx.fillStyle = "rgba(0,0,0,0.62)";
+      ctx.fillStyle = "rgba(0,0,0,0.66)";
       ctx.fillRect(0, L.uiTop, L.W, L.H - L.uiTop);
       ctx.fillStyle = "#fde68a";
-      ctx.font = "bold 13px Segoe UI, sans-serif";
+      ctx.font = "bold 13px 'Trebuchet MS', sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText("Колода → тап слот на сетке (6/6)", 12, L.uiTop + 18);
+      ctx.fillText("Колода → слот на СВОЕЙ половине (6/6)", 12, L.uiTop + 18);
       s.deck.forEach((c, i) => {
         const r = this.deckRect(i, api);
         this.drawChip(ctx, r.x, r.y, r.w, r.h, c, s.selected?.from === "deck" && s.selected.index === i, null);
@@ -1390,10 +1660,10 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     }
 
     if (s.phase === "shop") {
-      ctx.fillStyle = "rgba(0,0,0,0.62)";
+      ctx.fillStyle = "rgba(0,0,0,0.66)";
       ctx.fillRect(0, L.uiTop, L.W, L.H - L.uiTop);
       ctx.fillStyle = "#e2e8f0";
-      ctx.font = "bold 12px Segoe UI, sans-serif";
+      ctx.font = "bold 12px 'Trebuchet MS', sans-serif";
       ctx.textAlign = "left";
       ctx.fillText("Скамейка " + s.bench.length + "/" + this.BENCH_MAX, 12, L.uiTop + 16);
       s.bench.forEach((c, i) => {
@@ -1401,25 +1671,27 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
         this.drawChip(ctx, r.x, r.y, r.w, r.h, c, s.selected?.from === "bench" && s.selected.index === i, null);
       });
       ctx.fillStyle = "#fde68a";
-      ctx.font = "bold 13px Segoe UI, sans-serif";
+      ctx.font = "bold 13px 'Trebuchet MS', sans-serif";
       ctx.fillText("Витрина (равномерно из колоды)", 12, L.uiTop + 116);
       for (let i = 0; i < this.SHOP_SIZE; i++) {
         const r = this.shopRect(i, api);
         if (s.shop[i]) this.drawChip(ctx, r.x, r.y, r.w, r.h, s.shop[i].card, false, s.shop[i].price);
         else {
+          this.roundRect(ctx, r.x, r.y, r.w, r.h, 8);
           ctx.fillStyle = "#334155";
-          ctx.fillRect(r.x, r.y, r.w, r.h);
+          ctx.fill();
         }
       }
     }
 
     if (s.bannerT > 0 && s.banner) {
-      ctx.fillStyle = "rgba(0,0,0,0.5)";
-      ctx.fillRect(40, L.originY + L.cellH * 2 - 30, L.W - 80, 50);
+      this.roundRect(ctx, 36, L.originY + L.cellH * 2 - 28, L.W - 72, 52, 12);
+      ctx.fillStyle = "rgba(0,0,0,0.55)";
+      ctx.fill();
       ctx.fillStyle = s.bannerColor;
-      ctx.font = "bold 26px Segoe UI, sans-serif";
+      ctx.font = "bold 28px 'Trebuchet MS', sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(s.banner, L.W / 2, L.originY + L.cellH * 2);
+      ctx.fillText(s.banner, L.W / 2, L.originY + L.cellH * 2 + 6);
     }
 
     if (s.phase === "done") {
@@ -1429,3 +1701,4 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     }
   },
 };
+   
