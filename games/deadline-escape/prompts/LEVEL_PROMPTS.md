@@ -7,13 +7,13 @@
 
 ```
 Cell: 0 floor · 1 desk · 2 wall · 3 plant · 4 cooler · 5/6 desk2×1 · 7 window
-Base grid: 7 cols × 9 rows
-Growth: every 25 floors alternate +1 col or +1 row
-Border: ~80% passages (floor), ~20% wall/window segments — seeded per floor like furniture
-Interior: desks/props block player; aisles must stay connected
-Spawn: threats start OFF map and enter ONLY from passage edge cells (not walls/windows)
+Play grid: 7×9 (+growth every 25 floors)
+Fog band: +1 or +2 cells each side (player cannot walk; FoW gradient outer→black)
+Decor: wall/window segments on fog frame (beauty obstacles, seeded like furniture)
+Interior: desks/props in play only; aisles connected
+Spawn: from open fog-band edge cells; visible under FoW
 Hit: body overlap (px/py), not shared cell
-Fairness: hasEscape — player must have a walkable path away from new threat entry
+Fairness: hasEscape on play floor
 ```
 
 ## JOB A — Floor card template
@@ -35,19 +35,20 @@ notes: no hide zones; no soft-lock pockets
 ## JOB B — ASCII sketch (example floor 1)
 
 ```
-2.7.2.2
-.......
+(fog band 1 — example; walls frame play)
+.2.7.2.
+2.....2
 ..1.1..
 .......
 ..1.3..
 .......
 ..1.1..
 ...4...
-.......
-2...7.2
+2.....2
+.2...7.
 ```
 
-(~80% edge = `.` passages; walls/`7` windows are short segments. Adjust to seeded generator; keep connectivity + ≥1 passage per side.)
+(Outer `.` = fog floor for spawn silhouettes; `2`/`7` = decor. Play aisles stay connected.)
 
 ## JOB C — Encounter recipes (not tint-only)
 
