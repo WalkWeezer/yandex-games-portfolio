@@ -59,10 +59,10 @@ def make_n_band(master: Image.Image) -> Image.Image:
     m = sa[..., 3] > 20
     y0 = SIDE - BAND
     oa[y0:SIDE, :, :][m] = sa[m]
-    # seamless tile: both outer columns == same interior column (no seam when joined)
-    src = oa[y0:SIDE, 3].copy()
-    for x in (0, 1, 2, SIDE - 3, SIDE - 2, SIDE - 1):
-        oa[y0:SIDE, x] = src
+    # seamless tile: left edge == right edge (1px), keep interior texture
+    edge = oa[y0:SIDE, 4].copy()
+    oa[y0:SIDE, 0] = edge
+    oa[y0:SIDE, SIDE - 1] = edge
     return Image.fromarray(oa)
 
 
