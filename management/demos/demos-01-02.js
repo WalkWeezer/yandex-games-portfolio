@@ -1212,12 +1212,23 @@ window.FEEL_DEMOS["deadline-escape"] = {
   hint: "BETA спрайты · тап — шаг · кофе/бейдж · день ≈60с",
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
-  /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250721r",
+  /** Меняй при выкладке стен — сбрасывает кэш ensureArt (не показывать игроку в prod) */
+  ART_BUST: "w250721s",
+  /** Production = без DEV∞/эт±/GOD. play/ ставит DEADLINE_PROD=true; дашборд: ?dev=1 включает дев. */
+  isProd() {
+    if (window.DEADLINE_PROD === true) return true;
+    if (window.DEADLINE_PROD === false) return false;
+    try {
+      return !/[?&]dev=1(?:&|$)/.test(String(location.search || ""));
+    } catch (_) {
+      return true;
+    }
+  },
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
     "../games/deadline-escape/refs/sprites/",
+    "../refs/sprites/",
   ],
   ensureArt() {
     if (this._art && this._art.bust === this.ART_BUST) return this._art;
@@ -1432,8 +1443,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
         api.input.tapButtons.splice(i, 1);
       }
     }
-    const dev = this.ensureDev();
-    const floor = Math.max(1, dev.startFloor | 0);
+    const prod = this.isProd();
+    const floor = 1;
     const grid = this.gridSizeForFloor(floor);
     const { cols, rows, border, playCols, playRows } = grid;
     const padT = 96, padB = 125, padX = 14;
@@ -1441,10 +1452,16 @@ window.FEEL_DEMOS["deadline-escape"] = {
     const map = built.map;
     const wallDecor = built.wallDecor;
     const start = this.findStart(map, border);
-    const yDev = 86;
-    const bGod = api.input.addButton({ x: api.w - 72, y: yDev, w: 58, h: 36, label: "DEV∞", color: dev.immortal ? "#22c55e" : "#64748b" });
-    const bFloorDown = api.input.addButton({ x: api.w - 148, y: yDev, w: 36, h: 36, label: "эт−", color: "#475569" });
-    const bFloorUp = api.input.addButton({ x: api.w - 108, y: yDev, w: 36, h: 36, label: "эт+", color: "#475569" });
+    let bGod = null, bFloorDown = null, bFloorUp = null;
+    if (!prod) {
+      const yDev = 86;
+      const dev = this.ensureDev();
+      bGod = api.input.addButton({ x: api.w - 72, y: yDev, w: 58, h: 36, label: "DEV∞", color: dev.immortal ? "#22c55e" : "#64748b" });
+      bFloorDown = api.input.addButton({ x: api.w - 148, y: yDev, w: 36, h: 36, label: "эт−", color: "#475569" });
+      bFloorUp = api.input.addButton({ x: api.w - 108, y: yDev, w: 36, h: 36, label: "эт+", color: "#475569" });
+    } else {
+      this.ensureArt();
+    }
     return {
       cols, rows, border, playCols, playRows, padT, padB, padX, map, wallDecor,
       cellW: (api.w - padX * 2) / cols,
@@ -1462,6 +1479,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       facing: "down",
       _axisLatch: false, _keyLatch: false,
       bGod, bFloorDown, bFloorUp,
+      prod,
     };
   },
   ensureDev() {
@@ -1479,6 +1497,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return this._dev;
   },
   registerGhostDeath(s) {
+    if (s.prod || this.isProd()) return;
     const d = this.ensureDev();
     d.deaths += 1;
     const f = s.floor | 0;
@@ -1487,6 +1506,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     d.lastClock = this.clock(s.gameMin);
   },
   applyStartFloor(s, api, floor) {
+    if (s.prod || this.isProd()) return;
     const d = this.ensureDev();
     d.startFloor = Math.max(1, floor | 0);
     this.resetDay(s, api, {
@@ -1497,6 +1517,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     });
   },
   handleDevButtons(s, api) {
+    if (s.prod || this.isProd()) return;
     const d = this.ensureDev();
     if (s.bGod && s.bGod.clicked) {
       d.immortal = !d.immortal;
@@ -1505,7 +1526,13 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (s.bFloorDown && s.bFloorDown.clicked) this.applyStartFloor(s, api, d.startFloor - 1);
     if (s.bFloorUp && s.bFloorUp.clicked) this.applyStartFloor(s, api, d.startFloor + 1);
   },
+  /** Immortal only in dashboard ?dev=1 — never in play/ production. */
+  isImmortal(s) {
+    if ((s && s.prod) || this.isProd()) return false;
+    return !!this.ensureDev().immortal;
+  },
   ghostDeathSummary() {
+    if (this.isProd()) return "";
     const d = this.ensureDev();
     if (!d.deaths) return "💀0";
     const parts = Object.keys(d.byFloor)
@@ -3065,7 +3092,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (!s.alive || s.won) {
       this.syncBgm(s);
       if (api.input.consumeTap() || api.input.keys.KeyR || api.input.keys.Space) {
-        const startF = this.ensureDev().startFloor;
+        const startF = (s.prod || this.isProd()) ? 1 : this.ensureDev().startFloor;
         // смерть → обратно на стартовый этаж (по умолчанию 1); победа уже подняла s.floor
         const floor = s.won ? s.floor : startF;
         this.resetDay(s, api, {
@@ -3136,7 +3163,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
           continue;
         }
         t._dead = true;
-        if (this.ensureDev().immortal) {
+        if (this.isImmortal(s)) {
           this.registerGhostDeath(s);
           s.invuln = 0.7;
           s.nearMiss = 0.4;
@@ -3167,7 +3194,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
           s.invuln = 0.55;
           z.life = 0;
           this.sfx("shield_break");
-        } else if (this.ensureDev().immortal) {
+        } else if (this.isImmortal(s)) {
           this.registerGhostDeath(s);
           s.invuln = 0.7;
           z.life = 0;
@@ -3214,13 +3241,15 @@ window.FEEL_DEMOS["deadline-escape"] = {
       s.coffeeBoost > 0 ? "КОФЕ" : "",
       s.shield ? "ЩИТ" : "",
     ].filter(Boolean).join("+");
-    const d = this.ensureDev();
-    const god = d.immortal ? ` · ${this.ghostDeathSummary()}` : "";
-    const startTip = d.startFloor !== 1 ? ` · старт эт.${d.startFloor}` : "";
+    const prod = s.prod || this.isProd();
+    const d = prod ? null : this.ensureDev();
+    const god = (!prod && d && d.immortal) ? ` · ${this.ghostDeathSummary()}` : "";
+    const startTip = (!prod && d && d.startFloor !== 1) ? ` · старт эт.${d.startFloor}` : "";
+    const bust = prod ? "" : ` · ${this.ART_BUST}`;
     if (s.allyFlash > 0 && s.allyFlashText) {
       api.setHud(s.allyFlashText);
     } else {
-      api.setHud(`${this.clock(s.gameMin)} · ${ph.label} · эт.${s.floor} · 🪙${s.coins}${buff ? " · " + buff : ""}${god}${startTip}${s.nearMiss > 0 ? " · near!" : ""}${tip} · ${this.ART_BUST}`);
+      api.setHud(`${this.clock(s.gameMin)} · ${ph.label} · эт.${s.floor} · 🪙${s.coins}${buff ? " · " + buff : ""}${god}${startTip}${s.nearMiss > 0 ? " · near!" : ""}${tip}${bust}`);
     }
   },
   /** Пиксельные границы клетки — без субпиксельных щелей между спрайтами. */
@@ -3739,10 +3768,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
       && !this.drawArt(ctx, "hero_idle_" + this.dirKey(s.facing || "down"), pp.x, pp.y, unit * 1.1, heroAlpha)
       && !this.drawArt(ctx, heroFallback, pp.x, pp.y, unit * 1.1, heroAlpha)) {
       ctx.beginPath(); ctx.arc(pp.x, pp.y, 14, 0, Math.PI * 2);
-      ctx.fillStyle = coffee ? "#fde68a" : shield ? "#7dd3fc" : this.ensureDev().immortal ? "#fbbf24" : s.invuln > 0 ? "#a7f3d0" : "#22d3a8";
+      ctx.fillStyle = coffee ? "#fde68a" : shield ? "#7dd3fc" : this.isImmortal(s) ? "#fbbf24" : s.invuln > 0 ? "#a7f3d0" : "#22d3a8";
       ctx.fill();
       ctx.beginPath(); ctx.arc(pp.x, pp.y, 18, 0, Math.PI * 2);
-      ctx.strokeStyle = coffee ? "#fbbf24" : shield ? "#38bdf8" : this.ensureDev().immortal ? "#eab308" : "#67e8f9"; ctx.lineWidth = 3; ctx.stroke();
+      ctx.strokeStyle = coffee ? "#fbbf24" : shield ? "#38bdf8" : this.isImmortal(s) ? "#eab308" : "#67e8f9"; ctx.lineWidth = 3; ctx.stroke();
     }
     if (s.won) this.drawArt(ctx, "vfx_confetti", pp.x, pp.y - 20, unit * 1.4, 0.9);
     if (!s.alive) this.drawArt(ctx, "vfx_slam", pp.x, pp.y, unit * 1.2, 0.55);
@@ -3758,7 +3787,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     let status = `${ph.label} · этаж ${s.floor}`;
     if (coffee) status = `${ph.label} · КОФЕ · мир тормозит`;
     else if (shield) status = `${ph.label} · ЩИТ · 1 удар`;
-    else if (this.ensureDev().immortal) {
+    else if (this.isImmortal(s)) {
       const d = this.ensureDev();
       status = `${ph.label} · GOD · 💀${d.deaths}` + (d.lastFloor ? ` · посл.э${d.lastFloor}` : "");
     }

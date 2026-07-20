@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="orientation" content="portrait"/>
+<title>Работник месяца</title>
+<link rel="stylesheet" href="css/play.css"/>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">РАБОТНИК МЕСЯЦА<small>Yandex Games · production play</small></div>
+  <div class="stage">
+    <canvas id="feel-demo" width="360" height="640" aria-label="Работник месяца"></canvas>
+    <div id="hud" aria-live="polite"></div>
+    <div class="boot" id="boot">
+      <div class="brand" style="color:#1d3557">РАБОТНИК МЕСЯЦА<small style="color:#5b6b82">LoadingAPI</small></div>
+      <div id="boot-msg" style="font-size:0.85rem;font-weight:700;color:#5b6b82">Инициализация…</div>
+      <div class="bar"><i id="boot-bar"></i></div>
+      <button type="button" class="btn" id="btn-play" hidden>Играть</button>
+    </div>
+  </div>
+  <p class="tip">Ходи по светлым · избегай боссов · доживи до 18:00.<br/>Тап / WASD · без DEV-читов (см. docs/PORT.md).</p>
+  <div class="actions">
+    <button type="button" class="btn ghost" id="btn-restart">Рестарт дня</button>
+  </div>
+  <p class="tip" id="sdk-log">SDK…</p>
+</div>
+<script>window.DEADLINE_PROD = true;</script>
+<script src="../../../management/demos/deadline-sfx-lib.js"></script>
+<script src="../../../management/demos/demo-engine.js"></script>
+<script src="../../../management/demos/demos-01-02.js"></script>
+<script src="js/boot.js"></script>
+</body>
+</html>
