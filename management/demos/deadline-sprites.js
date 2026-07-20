@@ -210,16 +210,13 @@
       <div class="sp-card">
         <h3>Необходимые env-спрайты · каркас</h3>
         <p class="sp-desc">
-          Полоса тумана. <strong>Конец сегмента стены = угол</strong> (<code>tile_wall_end_*</code>).
-          Список: <code>DESIGN.md</code> §8 · сборка <code>build_border_tiles.py</code>.
+          Полоса тумана. Пока <strong>только прямые</strong> <code>tile_wall</code> / <code>tile_window</code> (без углов).
+          Сборка: <code>build_border_tiles.py</code> · список в <code>DESIGN.md</code> §8.
         </p>
         ${pngRow([
-          ["frames/tile_wall_n.png", "wall N"],
-          ["frames/tile_window_n.png", "window N"],
-          ["frames/tile_wall_end_n_l.png", "end/угол L"],
-          ["frames/tile_wall_end_n_r.png", "end/угол R"],
-          ["frames/tile_corner_nw.png", "corner NW"],
-          ["border_wall_preview.png", "preview set", true],
+          ["frames/tile_wall.png", "tile_wall"],
+          ["frames/tile_window.png", "tile_window"],
+          ["border_wall_preview.png", "preview", true],
         ], SP)}
       </div>
     `;
