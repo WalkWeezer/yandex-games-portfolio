@@ -2,7 +2,11 @@
 """Build fog-frame wall tiles from layout-feel AI masters + geometry canon.
 
 SoT look: refs/levels/layout-feel.png + generated ai-*-layoutfeel.png
-SoT geom: wallGeomOf bands (~42% toward play), black under #020308.
+SoT geom: wallGeomOf bands (~42% toward outer rim), black under #020308.
+
+Mid orientation (layout-feel): CAP on the screen-north side of every
+horizontal strip — N band on top (CAP outer), S = same strip moved to
+bottom (CAP toward play), not rot180. E/W = 90° of N.
 
 Outputs frames/tile_wall_{n,s,e,w,nw,...}, stubs, U, windows + art masters.
 """
@@ -173,11 +177,21 @@ def blend_ai_n(ai_band: Image.Image) -> Image.Image:
 
 
 def orient(n_tile: Image.Image, edge: str) -> Image.Image:
-    """n_tile has band on TOP; derive other edges (PIL ROTATE_90 = CCW)."""
+    """n_tile: band on TOP, CAP on north side of the strip (layout-feel).
+
+    S is the same strip translated to the bottom — NOT rot180.
+    layout-feel keeps CAP on the screen-north side of every horizontal band
+    (N: CAP outer; S: CAP toward play). E/W are 90° spins of N (CAP outer).
+    """
     if edge == "n":
         return n_tile
     if edge == "s":
-        return n_tile.transpose(Image.Transpose.ROTATE_180)
+        a = np.asarray(n_tile.convert("RGBA"))
+        band = a[:BAND].copy()
+        out = np.array(under(), copy=True)
+        out[SIDE - BAND :] = band
+        out[:, SIDE - 1] = out[:, 0]
+        return Image.fromarray(out)
     if edge == "e":
         return n_tile.transpose(Image.Transpose.ROTATE_270)  # CW → right
     if edge == "w":
@@ -203,9 +217,12 @@ def band_layer_color(t: float, band: int = BAND):
 
 
 def depth_l(ys, xs, corner: str):
-    """L arms; depth from OUTER rim so CAP sits on the outside (layout-feel)."""
+    """L arms; CAP on screen-north of H bands and screen-west of V bands.
+
+    Matches mid tiles (N/S share CAP-on-north strip; W/E from 90° of N).
+    """
     if corner == "nw":
-        # top + left; depth from top/left edges inward
+        # top + left; depth from top / left (== outer here)
         on_h = ys < BAND
         on_v = xs < BAND
         depth = np.full(ys.shape, -1, dtype=np.int32)
@@ -213,30 +230,32 @@ def depth_l(ys, xs, corner: str):
         depth[on_v] = np.where(depth[on_v] < 0, xs[on_v], np.minimum(depth[on_v], xs[on_v]))
         mask = on_h | on_v
     elif corner == "ne":
+        # top + right; H from top, V from left edge of right band
         on_h = ys < BAND
         on_v = xs >= SIDE - BAND
         depth = np.full(ys.shape, -1, dtype=np.int32)
         depth[on_h] = ys[on_h]
-        depth[on_v] = np.where(
-            depth[on_v] < 0, (SIDE - 1) - xs[on_v], np.minimum(depth[on_v], (SIDE - 1) - xs[on_v])
-        )
+        vdepth = xs - (SIDE - BAND)
+        depth[on_v] = np.where(depth[on_v] < 0, vdepth[on_v], np.minimum(depth[on_v], vdepth[on_v]))
         mask = on_h | on_v
     elif corner == "sw":
+        # bottom + left; H from top of bottom band, V from left
         on_h = ys >= SIDE - BAND
         on_v = xs < BAND
         depth = np.full(ys.shape, -1, dtype=np.int32)
-        depth[on_h] = (SIDE - 1) - ys[on_h]
+        hdepth = ys - (SIDE - BAND)
+        depth[on_h] = hdepth[on_h]
         depth[on_v] = np.where(depth[on_v] < 0, xs[on_v], np.minimum(depth[on_v], xs[on_v]))
         mask = on_h | on_v
     else:
-        # se
+        # se: bottom + right; H from top of bottom band, V from left of right band
         on_h = ys >= SIDE - BAND
         on_v = xs >= SIDE - BAND
         depth = np.full(ys.shape, -1, dtype=np.int32)
-        depth[on_h] = (SIDE - 1) - ys[on_h]
-        depth[on_v] = np.where(
-            depth[on_v] < 0, (SIDE - 1) - xs[on_v], np.minimum(depth[on_v], (SIDE - 1) - xs[on_v])
-        )
+        hdepth = ys - (SIDE - BAND)
+        vdepth = xs - (SIDE - BAND)
+        depth[on_h] = hdepth[on_h]
+        depth[on_v] = np.where(depth[on_v] < 0, vdepth[on_v], np.minimum(depth[on_v], vdepth[on_v]))
         mask = on_h | on_v
     return mask, depth
 
@@ -277,26 +296,26 @@ def make_corner(corner: str, face_tex: Image.Image | None) -> Image.Image:
 
 
 def make_stub(corner: str, face_tex: Image.Image | None) -> Image.Image:
-    """Square post in the named geographic corner (outer map corner)."""
+    """Square post; CAP from screen-north / screen-west of the block."""
     ys, xs = np.indices((SIDE, SIDE))
     if corner == "nw":
         mask = (ys < BAND) & (xs < BAND)
         depth = np.minimum(ys, xs)
     elif corner == "ne":
         mask = (ys < BAND) & (xs >= SIDE - BAND)
-        depth = np.minimum(ys, (SIDE - 1) - xs)
+        depth = np.minimum(ys, xs - (SIDE - BAND))
     elif corner == "sw":
         mask = (ys >= SIDE - BAND) & (xs < BAND)
-        depth = np.minimum((SIDE - 1) - ys, xs)
+        depth = np.minimum(ys - (SIDE - BAND), xs)
     else:
         mask = (ys >= SIDE - BAND) & (xs >= SIDE - BAND)
-        depth = np.minimum((SIDE - 1) - ys, (SIDE - 1) - xs)
+        depth = np.minimum(ys - (SIDE - BAND), xs - (SIDE - BAND))
     depth = np.where(mask, depth, -1)
     return paint_by_depth(mask, depth, face_tex)
 
 
 def make_u(key: str, face_tex: Image.Image | None) -> Image.Image:
-    """U by geographic face letters; depth from OUTER rim (CAP outside)."""
+    """U by geographic face letters; CAP from screen-north / screen-west of each arm."""
     ys, xs = np.indices((SIDE, SIDE))
     depth = np.full((SIDE, SIDE), 10**9, dtype=np.int32)
     mask = np.zeros((SIDE, SIDE), dtype=bool)
@@ -307,11 +326,11 @@ def make_u(key: str, face_tex: Image.Image | None) -> Image.Image:
     if "s" in key:
         m = ys >= SIDE - BAND
         mask |= m
-        depth = np.where(m, np.minimum(depth, (SIDE - 1) - ys), depth)
+        depth = np.where(m, np.minimum(depth, ys - (SIDE - BAND)), depth)
     if "e" in key:
         m = xs >= SIDE - BAND
         mask |= m
-        depth = np.where(m, np.minimum(depth, (SIDE - 1) - xs), depth)
+        depth = np.where(m, np.minimum(depth, xs - (SIDE - BAND)), depth)
     if "w" in key:
         m = xs < BAND
         mask |= m
@@ -348,12 +367,18 @@ def main() -> None:
         band = extract_n_band(raw)
         band.save(ART / "ai-set-wall-n.png")
         n = blend_ai_n(band)
-        # outer-edge canon: band on TOP of N tile (CAP outward)
+        # outer-edge N: band on TOP; flip strip so CAP stays on north side
         n = n.transpose(Image.Transpose.ROTATE_180)
+        na = np.array(n, copy=True)
+        na[:BAND] = np.flipud(na[:BAND])
+        n = Image.fromarray(na)
         face_tex = n.crop((0, 0, SIDE, BAND))
     else:
         print("no AI wall master — procedural layout-feel")
         n = paint_procedural_n(False).transpose(Image.Transpose.ROTATE_180)
+        na = np.array(n, copy=True)
+        na[:BAND] = np.flipud(na[:BAND])
+        n = Image.fromarray(na)
         face_tex = n.crop((0, 0, SIDE, BAND))
 
     if win_src:
@@ -365,14 +390,21 @@ def main() -> None:
             wband.save(ART / "ai-set-window-n.png")
             win_n = place_band_bottom(wband).transpose(Image.Transpose.ROTATE_180)
             wa = np.array(win_n, copy=True)
+            wa[:BAND] = np.flipud(wa[:BAND])
             lum = wa[..., :3].astype(np.int16).sum(-1)
             wa[lum < 40] = UNDER
             win_n = Image.fromarray(wa)
         except Exception as e:
             print("window extract failed, procedural:", e)
             win_n = paint_procedural_n(True).transpose(Image.Transpose.ROTATE_180)
+            wa = np.array(win_n, copy=True)
+            wa[:BAND] = np.flipud(wa[:BAND])
+            win_n = Image.fromarray(wa)
     else:
         win_n = paint_procedural_n(True).transpose(Image.Transpose.ROTATE_180)
+        wa = np.array(win_n, copy=True)
+        wa[:BAND] = np.flipud(wa[:BAND])
+        win_n = Image.fromarray(wa)
 
     walls = {e: orient(n, e) for e in "nsew"}
     wins = {e: orient(win_n, e) for e in "nsew"}
