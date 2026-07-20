@@ -11,7 +11,7 @@
   const APPROVED_FILE = "style-seed-hero.APPROVED.json";
   const REJECTED_FILE = "style-seed-hero.REJECTED.json";
   const LS_KEY = "deadline-escape.style-seed";
-  const BUST = "vfxcut1";
+  const BUST = "wallsoft1";
 
   const CHECKER = "background:repeating-conic-gradient(#2a3340 0% 25%, #1a222c 0% 50%) 50%/12px 12px";
 
@@ -329,18 +329,16 @@
               ["frames/tile_window_e.png", "window E"],
             ]) +
             pngRow([
-              ["frames/tile_wall_nw.png", "L nw"],
-              ["frames/tile_wall_ne.png", "L ne"],
-              ["frames/tile_wall_sw.png", "L sw"],
-              ["frames/tile_wall_se.png", "L se"],
               ["frames/tile_wall_stub_nw.png", "stub nw"],
               ["frames/tile_wall_stub_ne.png", "stub ne"],
+              ["frames/tile_wall_stub_sw.png", "stub sw"],
+              ["frames/tile_wall_stub_se.png", "stub se"],
             ]) +
             pngRow([
+              ["frames/tile_wall_nw.png", "угол nw"],
+              ["frames/tile_wall_ne.png", "угол ne"],
               ["frames/tile_wall_nwe.png", "U nwe"],
-              ["frames/tile_wall_nsw.png", "U nsw"],
-              ["frames/tile_wall_nse.png", "U nse"],
-              ["frames/tile_wall_swe.png", "U swe"],
+              ["wall_seamless_preview.png", "preview", true],
             ])
         ),
     },

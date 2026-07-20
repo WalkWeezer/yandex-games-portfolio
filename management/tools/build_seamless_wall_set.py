@@ -84,60 +84,49 @@ def fill_face(d: ImageDraw.ImageDraw, box: tuple[int, int, int, int], im: Image.
 
 
 def paint_h_band(im: Image.Image, y0: int, y1: int, with_window: bool = False) -> None:
-    """Horizontal partition from y0..y1-1, FULL width 0..SIDE (seamless)."""
+    """Horizontal partition — soft office look (3 layers, not striped tablecloth)."""
     d = ImageDraw.Draw(im)
     h = y1 - y0
-    # proportions matching thick top-down partition
-    cap_h = max(10, int(h * 0.22))
-    rail_h = max(8, int(h * 0.14))
-    base_h = max(12, int(h * 0.20))
-    face_y0 = y0 + cap_h
-    face_y1 = y1 - base_h
-    rail_y0 = face_y0
-    rail_y1 = face_y0 + rail_h
-    body_y0 = rail_y1
-    body_y1 = face_y1
+    cap_h = max(14, int(h * 0.28))
+    base_h = max(16, int(h * 0.22))
+    body_y0 = y0 + cap_h
+    body_y1 = y1 - base_h
 
-    # soft contact shadow above cap (toward void)
     sh = Image.new("RGBA", (SIDE, SIDE), (0, 0, 0, 0))
     sd = ImageDraw.Draw(sh)
-    sd.rectangle((0, y0 - 10, SIDE - 1, y0 + 2), fill=(0, 0, 0, 70))
-    sh = sh.filter(ImageFilter.GaussianBlur(4))
+    sd.rectangle((0, y0 - 12, SIDE - 1, y0 + 3), fill=(0, 0, 0, 55))
+    sh = sh.filter(ImageFilter.GaussianBlur(5))
     im.alpha_composite(sh)
     d = ImageDraw.Draw(im)
 
-    # top cap (thickness toward play / void depending on edge)
-    d.rectangle((0, y0, SIDE - 1, y0 + cap_h - 1), fill=CAP)
+    d.rectangle((0, y0, SIDE - 1, body_y0 - 1), fill=CAP)
     d.line((0, y0 + 2, SIDE - 1, y0 + 2), fill=CAP_HI, width=2)
-    d.line((0, y0 + cap_h - 2, SIDE - 1, y0 + cap_h - 2), fill=FACE_DK, width=2)
+    d.line((0, body_y0 - 2, SIDE - 1, body_y0 - 2), fill=FACE_DK, width=2)
 
-    # wood rail
-    d.rectangle((0, rail_y0, SIDE - 1, rail_y1 - 1), fill=WOOD)
-    d.line((0, rail_y0 + 2, SIDE - 1, rail_y0 + 2), fill=WOOD_HI, width=2)
-    d.line((0, rail_y1 - 3, SIDE - 1, rail_y1 - 3), fill=WOOD_DK, width=2)
-
-    # face body — continuous, NO panel posts (posts create seams when tiled)
-    fill_face(d, (0, body_y0, SIDE - 1, body_y1 - 1), im)
+    d.rectangle((0, body_y0, SIDE - 1, body_y1 - 1), fill=FACE)
+    # soft vertical shade only (no row noise — that read as tablecloth stripes)
+    a = np.array(im, copy=True)
+    for i, y in enumerate(range(body_y0, body_y1)):
+        tt = i / max(1, body_y1 - body_y0 - 1)
+        a[y, :, :3] = np.clip(a[y, :, :3].astype(np.int16) - int(10 * tt), 0, 255).astype(np.uint8)
+    im.paste(Image.fromarray(a))
     d = ImageDraw.Draw(im)
 
-    # baseboard
-    d.rectangle((0, y1 - base_h, SIDE - 1, y1 - 1), fill=WOOD_DK)
-    d.line((0, y1 - base_h + 3, SIDE - 1, y1 - base_h + 3), fill=WOOD_HI, width=2)
+    d.rectangle((0, body_y1, SIDE - 1, y1 - 1), fill=WOOD_DK)
+    d.line((0, body_y1 + 2, SIDE - 1, body_y1 + 2), fill=WOOD_HI, width=2)
     d.line((0, y1 - 2, SIDE - 1, y1 - 2), fill=OUT, width=2)
 
     if with_window:
-        gx0, gx1 = int(SIDE * 0.18), int(SIDE * 0.82)
-        gy0, gy1 = body_y0 + 4, body_y1 - 4
-        d.rounded_rectangle((gx0, gy0, gx1, gy1), radius=3, fill=FRAME)
-        d.rounded_rectangle((gx0 + 4, gy0 + 4, gx1 - 4, gy1 - 4), radius=2, fill=GLASS)
+        gx0, gx1 = int(SIDE * 0.20), int(SIDE * 0.80)
+        gy0, gy1 = body_y0 + 6, body_y1 - 6
+        d.rounded_rectangle((gx0, gy0, gx1, gy1), radius=4, fill=FRAME)
+        d.rounded_rectangle((gx0 + 5, gy0 + 5, gx1 - 5, gy1 - 5), radius=3, fill=GLASS)
         cx = (gx0 + gx1) // 2
         cy = (gy0 + gy1) // 2
-        d.line((cx, gy0 + 6, cx, gy1 - 6), fill=GLASS_HI, width=2)
-        d.line((gx0 + 8, cy, gx1 - 8, cy), fill=GLASS_HI, width=2)
-        # sill
-        d.rectangle((gx0 - 2, gy1 - 2, gx1 + 2, gy1 + 5), fill=WOOD)
+        d.line((cx, gy0 + 8, cx, gy1 - 8), fill=GLASS_HI, width=2)
+        d.line((gx0 + 10, cy, gx1 - 10, cy), fill=GLASS_HI, width=2)
+        d.rectangle((gx0 - 2, gy1 - 1, gx1 + 2, min(y1 - 2, gy1 + 6)), fill=WOOD)
 
-    # force wrap-seamless: left edge == right edge
     a = np.array(im, copy=True)
     a[:, SIDE - 1] = a[:, 0]
     im.paste(Image.fromarray(a))
@@ -161,114 +150,85 @@ def orient(n_tile: Image.Image, edge: str) -> Image.Image:
     return n_tile
 
 
-def paint_l_corner(im: Image.Image, corner: str) -> None:
-    """Continuous L as one top-down partition (cap wraps elbow; no dual-strip glue)."""
+
+
+def band_layer_color(t: float, band: int = BAND):
+    """Match paint_h_band: cap → face → base (no mid rail)."""
+    cap_h = max(14, int(band * 0.28))
+    base_h = max(16, int(band * 0.22))
+    if t < 2:
+        return CAP_HI
+    if t < cap_h:
+        return CAP
+    if t < band - base_h:
+        return FACE
+    return WOOD_DK
+
+
+def depth_l(ys, xs, corner: str):
+    """Depth from inner rim into wall body for L masks."""
+    if corner == "nw":
+        # inner rim at y=SIDE-BAND (bottom arm) and x=SIDE-BAND (right arm)
+        d_h = ys - (SIDE - BAND)  # depth on bottom arm
+        d_v = xs - (SIDE - BAND)  # depth on right arm
+        on_h = ys >= SIDE - BAND
+        on_v = xs >= SIDE - BAND
+        depth = np.full(ys.shape, -1, dtype=np.int32)
+        depth[on_h] = d_h[on_h]
+        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
+        mask = on_h | on_v
+    elif corner == "ne":
+        d_h = ys - (SIDE - BAND)
+        d_v = (BAND - 1) - xs
+        on_h = ys >= SIDE - BAND
+        on_v = xs < BAND
+        depth = np.full(ys.shape, -1, dtype=np.int32)
+        depth[on_h] = d_h[on_h]
+        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
+        mask = on_h | on_v
+    elif corner == "sw":
+        d_h = (BAND - 1) - ys
+        d_v = xs - (SIDE - BAND)
+        on_h = ys < BAND
+        on_v = xs >= SIDE - BAND
+        depth = np.full(ys.shape, -1, dtype=np.int32)
+        depth[on_h] = d_h[on_h]
+        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
+        mask = on_h | on_v
+    else:
+        d_h = (BAND - 1) - ys
+        d_v = (BAND - 1) - xs
+        on_h = ys < BAND
+        on_v = xs < BAND
+        depth = np.full(ys.shape, -1, dtype=np.int32)
+        depth[on_h] = d_h[on_h]
+        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
+        mask = on_h | on_v
+    return mask, depth
+
+
+def paint_by_depth(im: Image.Image, mask: np.ndarray, depth: np.ndarray) -> None:
     a = np.array(under(), copy=True)
-    ys, xs = np.indices((SIDE, SIDE))
-    cap_t, rail_t, base_t = 18, 16, 16
-
-    if corner == "nw":
-        mask = (ys >= SIDE - BAND) | (xs >= SIDE - BAND)
-        base = mask & ((ys >= SIDE - base_t) | (xs >= SIDE - base_t))
-        cap = mask & (
-            ((ys >= SIDE - BAND) & (ys < SIDE - BAND + cap_t) & (xs < SIDE - base_t))
-            | ((xs >= SIDE - BAND) & (xs < SIDE - BAND + cap_t) & (ys < SIDE - base_t))
-        )
-        rail = mask & (
-            ((ys >= SIDE - BAND + cap_t) & (ys < SIDE - BAND + cap_t + rail_t) & (xs < SIDE - base_t))
-            | ((xs >= SIDE - BAND + cap_t) & (xs < SIDE - BAND + cap_t + rail_t) & (ys < SIDE - base_t))
-        )
-        void = (slice(0, SIDE - BAND), slice(0, SIDE - BAND))
-        arc_box = (SIDE - BAND - 2, SIDE - BAND - 2, SIDE - BAND + cap_t + 6, SIDE - BAND + cap_t + 6)
-        arc_angles = (180, 270)
-        rim = [
-            (0, SIDE - BAND + 3, SIDE - BAND + 6, SIDE - BAND + 3),
-            (SIDE - BAND + 3, SIDE - BAND + 6, SIDE - BAND + 3, SIDE - 1),
-        ]
-    elif corner == "ne":
-        mask = (ys >= SIDE - BAND) | (xs < BAND)
-        base = mask & ((ys >= SIDE - base_t) | (xs < base_t))
-        cap = mask & (
-            ((ys >= SIDE - BAND) & (ys < SIDE - BAND + cap_t) & (xs >= base_t))
-            | ((xs < BAND) & (xs >= BAND - cap_t) & (ys < SIDE - base_t))
-        )
-        rail = mask & (
-            ((ys >= SIDE - BAND + cap_t) & (ys < SIDE - BAND + cap_t + rail_t) & (xs >= base_t))
-            | ((xs < BAND - cap_t) & (xs >= BAND - cap_t - rail_t) & (ys < SIDE - base_t))
-        )
-        void = (slice(0, SIDE - BAND), slice(BAND, SIDE))
-        arc_box = (BAND - cap_t - 6, SIDE - BAND - 2, BAND + 2, SIDE - BAND + cap_t + 6)
-        arc_angles = (270, 360)
-        rim = [
-            (BAND - 6, SIDE - BAND + 3, SIDE - 1, SIDE - BAND + 3),
-            (BAND - 3, SIDE - BAND + 6, BAND - 3, SIDE - 1),
-        ]
-    elif corner == "sw":
-        mask = (ys < BAND) | (xs >= SIDE - BAND)
-        base = mask & ((ys < base_t) | (xs >= SIDE - base_t))
-        cap = mask & (
-            ((ys < BAND) & (ys >= BAND - cap_t) & (xs < SIDE - base_t))
-            | ((xs >= SIDE - BAND) & (xs < SIDE - BAND + cap_t) & (ys >= base_t))
-        )
-        rail = mask & (
-            ((ys < BAND - cap_t) & (ys >= BAND - cap_t - rail_t) & (xs < SIDE - base_t))
-            | ((xs >= SIDE - BAND + cap_t) & (xs < SIDE - BAND + cap_t + rail_t) & (ys >= base_t))
-        )
-        void = (slice(BAND, SIDE), slice(0, SIDE - BAND))
-        arc_box = (SIDE - BAND - 2, BAND - cap_t - 6, SIDE - BAND + cap_t + 6, BAND + 2)
-        arc_angles = (90, 180)
-        rim = [
-            (0, BAND - 3, SIDE - BAND + 6, BAND - 3),
-            (SIDE - BAND + 3, 0, SIDE - BAND + 3, BAND - 6),
-        ]
-    else:
-        mask = (ys < BAND) | (xs < BAND)
-        base = mask & ((ys < base_t) | (xs < base_t))
-        cap = mask & (
-            ((ys < BAND) & (ys >= BAND - cap_t) & (xs >= base_t))
-            | ((xs < BAND) & (xs >= BAND - cap_t) & (ys >= base_t))
-        )
-        rail = mask & (
-            ((ys < BAND - cap_t) & (ys >= BAND - cap_t - rail_t) & (xs >= base_t))
-            | ((xs < BAND - cap_t) & (xs >= BAND - cap_t - rail_t) & (ys >= base_t))
-        )
-        void = (slice(BAND, SIDE), slice(BAND, SIDE))
-        arc_box = (BAND - cap_t - 6, BAND - cap_t - 6, BAND + 2, BAND + 2)
-        arc_angles = (0, 90)
-        rim = [
-            (BAND - 6, BAND - 3, SIDE - 1, BAND - 3),
-            (BAND - 3, 0, BAND - 3, BAND - 6),
-        ]
-
-    face = mask & ~base & ~cap & ~rail
-    a[mask] = (*FACE[:3], 255)
-    if FACE_TEX is not None:
-        tex = np.asarray(FACE_TEX.resize((SIDE, SIDE), Image.Resampling.BILINEAR)).astype(np.float32)
-        base_c = np.array(FACE[:3], dtype=np.float32)
-        mix = (tex[..., :3] * 0.35 + base_c * 0.65).clip(0, 255).astype(np.uint8)
-        a[face, :3] = mix[face]
-        a[face, 3] = 255
-    a[rail] = (*WOOD[:3], 255)
-    a[cap] = (*CAP[:3], 255)
-    a[base] = (*WOOD_DK[:3], 255)
-    a[void] = UNDER
-
-    # soft elbow: fill inner corner square with CAP so arms share one top plate
-    if corner == "nw":
-        a[SIDE - BAND : SIDE - BAND + cap_t, SIDE - BAND : SIDE - BAND + cap_t] = (*CAP[:3], 255)
-    elif corner == "ne":
-        a[SIDE - BAND : SIDE - BAND + cap_t, BAND - cap_t : BAND] = (*CAP[:3], 255)
-    elif corner == "sw":
-        a[BAND - cap_t : BAND, SIDE - BAND : SIDE - BAND + cap_t] = (*CAP[:3], 255)
-    else:
-        a[BAND - cap_t : BAND, BAND - cap_t : BAND] = (*CAP[:3], 255)
-
+    ys, xs = np.where(mask & (depth >= 0))
+    for y, x in zip(ys, xs):
+        t = int(depth[y, x])
+        if t < 0 or t >= BAND:
+            continue
+        col = band_layer_color(t)
+        a[y, x] = col
     im.paste(Image.fromarray(a))
+    # soft highlight on innermost pixels
     d = ImageDraw.Draw(im)
-    d.pieslice(arc_box, arc_angles[0], arc_angles[1], fill=CAP)
-    d.arc(arc_box, arc_angles[0], arc_angles[1], fill=CAP_HI, width=2)
-    for x0, y0, x1, y1 in rim:
-        d.line((x0, y0, x1, y1), fill=CAP_HI, width=2)
+    inner = mask & (depth >= 0) & (depth <= 2)
+    aa = np.array(im, copy=True)
+    aa[inner] = (*CAP_HI[:3], 255)
+    im.paste(Image.fromarray(aa))
+
+
+def paint_l_corner(im: Image.Image, corner: str) -> None:
+    ys, xs = np.indices((SIDE, SIDE))
+    mask, depth = depth_l(ys, xs, corner)
+    paint_by_depth(im, mask, depth)
 
 
 def make_corner(corner: str) -> Image.Image:
@@ -278,40 +238,51 @@ def make_corner(corner: str) -> Image.Image:
 
 
 def make_stub(corner: str) -> Image.Image:
-    """Small continuous square post at play-facing corner."""
+    """Square post: depth from inner corner (toward void) outward."""
     im = under()
-    d = ImageDraw.Draw(im)
+    ys, xs = np.indices((SIDE, SIDE))
     if corner == "nw":
-        x0, y0 = SIDE - BAND, SIDE - BAND
+        mask = (ys >= SIDE - BAND) & (xs >= SIDE - BAND)
+        depth = np.minimum(ys - (SIDE - BAND), xs - (SIDE - BAND))
     elif corner == "ne":
-        x0, y0 = 0, SIDE - BAND
+        mask = (ys >= SIDE - BAND) & (xs < BAND)
+        depth = np.minimum(ys - (SIDE - BAND), (BAND - 1) - xs)
     elif corner == "sw":
-        x0, y0 = SIDE - BAND, 0
+        mask = (ys < BAND) & (xs >= SIDE - BAND)
+        depth = np.minimum((BAND - 1) - ys, xs - (SIDE - BAND))
     else:
-        x0, y0 = 0, 0
-    x1, y1 = x0 + BAND, y0 + BAND
+        mask = (ys < BAND) & (xs < BAND)
+        depth = np.minimum((BAND - 1) - ys, (BAND - 1) - xs)
+    depth = np.where(mask, depth, -1)
+    paint_by_depth(im, mask, depth)
+    return im
 
-    # soft shadow toward void (opposite of play flush edges)
-    sh = Image.new("RGBA", (SIDE, SIDE), (0, 0, 0, 0))
-    sd = ImageDraw.Draw(sh)
-    sd.rectangle((x0 - 6, y0 - 6, x1 + 2, y1 + 2), fill=(0, 0, 0, 50))
-    sh = sh.filter(ImageFilter.GaussianBlur(3))
-    im.alpha_composite(sh)
-    d = ImageDraw.Draw(im)
 
-    # body square — continuous top
-    d.rectangle((x0, y0, x1 - 1, y1 - 1), fill=CAP)
-    d.rectangle((x0 + 6, y0 + 6, x1 - 7, y1 - 7), fill=FACE)
-    if FACE_TEX is not None:
-        tex = FACE_TEX.resize((BAND - 14, BAND - 14), Image.Resampling.BILINEAR)
-        im.paste(tex, (x0 + 7, y0 + 7), tex if tex.mode == "RGBA" else None)
-    d = ImageDraw.Draw(im)
-    # wood rim on outer edges (toward void for nw: top+left of square = toward void)
-    # play-facing edges for nw stub are bottom+right of cell (= bottom+right of square)
-    d.rectangle((x0, y1 - 14, x1 - 1, y1 - 1), fill=WOOD_DK)  # outer base toward S
-    d.rectangle((x1 - 14, y0, x1 - 1, y1 - 1), fill=WOOD_DK)  # outer base toward E
-    d.line((x0 + 2, y0 + 3, x1 - 15, y0 + 3), fill=CAP_HI, width=2)
-    d.line((x0 + 3, y0 + 2, x0 + 3, y1 - 15), fill=CAP_HI, width=2)
+def make_u(key: str) -> Image.Image:
+    """U as depth-from-inner-channel (same layers as straight walls, no plaid)."""
+    ys, xs = np.indices((SIDE, SIDE))
+    # present edges → bands; depth = min depth into any present band from its inner rim
+    depth = np.full((SIDE, SIDE), 10**9, dtype=np.int32)
+    mask = np.zeros((SIDE, SIDE), dtype=bool)
+    if "n" in key:
+        m = ys >= SIDE - BAND
+        mask |= m
+        depth = np.where(m, np.minimum(depth, ys - (SIDE - BAND)), depth)
+    if "s" in key:
+        m = ys < BAND
+        mask |= m
+        depth = np.where(m, np.minimum(depth, (BAND - 1) - ys), depth)
+    if "e" in key:
+        m = xs < BAND
+        mask |= m
+        depth = np.where(m, np.minimum(depth, (BAND - 1) - xs), depth)
+    if "w" in key:
+        m = xs >= SIDE - BAND
+        mask |= m
+        depth = np.where(m, np.minimum(depth, xs - (SIDE - BAND)), depth)
+    depth = np.where(mask, depth, -1)
+    im = under()
+    paint_by_depth(im, mask, depth)
     return im
 
 
@@ -342,32 +313,10 @@ def main() -> None:
         save(f"tile_wall_stub_{c}.png", stub)
         save(f"tile_window_stub_{c}.png", stub)
 
-    # U shapes: continuous triple — paint face + two endcaps via oriented bands, blend overlaps
-    for key, edges in {
-        "nwe": ("n", "w", "e"),
-        "nsw": ("n", "s", "w"),
-        "nse": ("n", "s", "e"),
-        "swe": ("s", "w", "e"),
-    }.items():
-        out = np.array(under(), copy=True)
-        acc = []
-        for e in edges:
-            acc.append(np.asarray(walls[e]))
-        for a in acc:
-            m = a[..., :3].astype(np.int16).sum(-1) > 60
-            out[m] = a[m]
-        # blend multi-overlaps
-        for i in range(len(acc)):
-            for j in range(i + 1, len(acc)):
-                mi = acc[i][..., :3].astype(np.int16).sum(-1) > 60
-                mj = acc[j][..., :3].astype(np.int16).sum(-1) > 60
-                both = mi & mj
-                if both.any():
-                    blend = ((acc[i].astype(np.float32) + acc[j].astype(np.float32)) / 2).astype(np.uint8)
-                    out[both] = blend[both]
-        im = Image.fromarray(out)
-        save(f"tile_wall_{key}.png", im)
-        save(f"tile_window_{key}.png", im)
+    for key in ("nwe", "nsw", "nse", "swe"):
+        u = make_u(key)
+        save(f"tile_wall_{key}.png", u)
+        save(f"tile_window_{key}.png", u)
 
     # copy AI refs used for texture into refs/art
     ART_REF.mkdir(parents=True, exist_ok=True)
