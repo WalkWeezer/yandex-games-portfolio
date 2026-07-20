@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
   /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250720j",
+  ART_BUST: "w250720m",
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
@@ -1265,21 +1265,21 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250720j`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250720m`));
     // каркас: полосы + цельные L/U (одна заливка, без склейки полос) + stub
     ["n", "s", "e", "w"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=w250720j`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=w250720j`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=w250720m`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=w250720m`);
     });
     ["nw", "ne", "sw", "se"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=w250720j`);
-      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=w250720j`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=w250720m`);
+      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=w250720m`);
     });
     ["nwe", "nsw", "nse", "swe"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=w250720j`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=w250720m`);
     });
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250720j`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250720m`));
     this._art = art;
     return art;
   },
