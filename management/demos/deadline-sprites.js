@@ -11,7 +11,7 @@
   const APPROVED_FILE = "style-seed-hero.APPROVED.json";
   const REJECTED_FILE = "style-seed-hero.REJECTED.json";
   const LS_KEY = "deadline-escape.style-seed";
-  const BUST = "walllu1";
+  const BUST = "wallfix1";
 
   const CHECKER = "background:repeating-conic-gradient(#2a3340 0% 25%, #1a222c 0% 50%) 50%/12px 12px";
 
@@ -313,8 +313,7 @@
         card(
           "Каркас · полосы + цельные L/U (одна заливка)",
           "Прямые: <code>build_wall_break_set.py</code>. Углы L/U: <code>build_solid_lu_tiles.py</code> — " +
-            "одна UV-заливка дерева + miter-кромка (без склейки двух полос → без «+»). " +
-            "Окно только на одинарной стене (50%).",
+            "руки из прямых полос (стык без щели). Окно только на прямой стене ребра (50%), не на углах.",
           pngRow([
             ["ai-set-wall-n.png", "AI master wall", true, ART],
             ["ai-set-window-n.png", "AI master window", true, ART],
