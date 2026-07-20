@@ -147,7 +147,7 @@ boot → menu → hub → (daily) → run HUD ↔ pause
 | Scope | Содержание |
 |-------|------------|
 | ГГ | idle + walk 6f + caught |
-| HR | idle 4-dir + walk 6×4, **без special** (reart: `boss-hr.png` + камера ГГ) |
+| HR | idle 4-dir + walk 6×4, **без special** (SoT: `seed-hr` + turnaround **APPROVED**; next walk) |
 | 11 боссов | **4-dir only** до отдельного OK |
 | Коллега | 4-dir turnaround |
 | Пикапы | `pu_coin`, `pu_coffee`, `pu_badge` |
