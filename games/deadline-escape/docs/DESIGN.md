@@ -165,14 +165,15 @@ boot → menu → hub → (daily) → run HUD ↔ pause
 | `frames/tile_fog.png` | туман / FoW текстура | scaffolding |
 | `frames/tile_wall_{n,s,e,w}.png` | `2` стена: на всю ширину/высоту, **вплотную к внешнему краю** | **есть** |
 | `frames/tile_window_{n,s,e,w}.png` | `7` окно, та же геометрия | **есть** |
-| `frames/tile_cabinet.png` | визуальный оверлей у стены (шкаф) | **есть** |
-| `frames/tile_printer.png` | визуальный оверлей у стены (принтер) | **есть** |
-| `frames/tile_trash.png` | визуальный оверлей у стены (урна) | **есть** |
+| `frames/tile_cabinet.png` · `tile_printer.png` · `tile_trash.png` | пропы (AI) | **есть** |
+| `frames/tile_wall_{n,s,e,w}_{prop}.png` | композит стена+проп в одной клетке | **есть** |
+| `frames/tile_window_{n,s,e,w}_{prop}.png` | композит окно+проп | **есть** |
 
 - `n`/`s` — горизонтальная полоса (юг = вплотную **снизу** клетки)  
 - `w`/`e` — **боковые** спрайты (вплотную слева/справа)  
-- Пропы у стен — **только рисунок в той же клетке** `2`/`7` (`wallDecor`), без отдельной клетки и без влияния на спавн/коллизию  
-- Пока **без углов**. Сборка: `python management/tools/build_border_tiles.py` · `build_border_props.py`  
+- Пропы у стен — **готовые композиты** в той же клетке `2`/`7` (`wallDecor`); map/спавн не меняются  
+- `prop` ∈ `plant|cooler|cabinet|printer|trash`  
+- Пока **без углов**. Сборка: `python management/tools/build_wall_prop_tiles.py`  
 Концепт-якорь: `refs/levels/layout-feel.png`.
 
 **CONFIRM дизайна** = human playtest feel на телефоне, не идеальный roster арта.
