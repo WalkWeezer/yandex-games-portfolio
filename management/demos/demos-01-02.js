@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
   /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250720n",
+  ART_BUST: "w250720p",
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
@@ -1265,10 +1265,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250720n`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250720p`));
     // стены — proof-геометрия без спрайтов (wall/window tiles не грузим)
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250720n`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250720p`));
     this._art = art;
     return art;
   },
@@ -1663,8 +1663,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return this.isFrameSolid(s.map[row][col]);
   },
   /**
-   * Стены на рёбрах (без клеток угла карты). Углы — стена (stub / полоса).
-   * Окна временно отключены.
+   * Каркас офиса на кольце тумана: сплошные стены к play + проходы для спавна.
+   * Углы: stub при двух соседях, полоса при одном. Окон нет.
    */
   placeFogDecor(map, border, rnd) {
     const rows = map.length, cols = map[0].length;
@@ -1685,37 +1685,18 @@ window.FEEL_DEMOS["deadline-escape"] = {
         if (isRingCorner(ring[i].c, ring[i].r)) continue;
         idxs.push(i);
       }
-      if (idxs.length < 2) continue;
-      const marks = Array(idxs.length).fill(0);
-      const budget = Math.max(2, Math.round(idxs.length * 0.48));
-      let placed = 0, guard = 0;
-      while (placed < budget && guard < 100) {
-        guard++;
-        const start = (rnd() * idxs.length) | 0;
-        const len = 2 + ((rnd() * Math.min(4, idxs.length - start)) | 0);
-        if (start + len > idxs.length) continue;
-        let ok = true;
-        for (let k = 0; k < len; k++) if (marks[start + k]) { ok = false; break; }
-        if (start > 0 && marks[start - 1]) ok = false;
-        if (start + len < idxs.length && marks[start + len]) ok = false;
-        if (!ok) continue;
-        for (let k = 0; k < len && placed < budget; k++) {
-          marks[start + k] = 1;
-          placed++;
-        }
-      }
-      let open = marks.filter((m) => !m).length;
-      while (open < Math.min(2, idxs.length)) {
-        const blocked = [];
-        for (let i = 0; i < marks.length; i++) if (marks[i]) blocked.push(i);
-        if (!blocked.length) break;
-        marks[blocked[(rnd() * blocked.length) | 0]] = 0;
-        open++;
-      }
-      for (let i = 0; i < idxs.length; i++) {
-        if (!marks[i]) continue;
-        const { c, r } = ring[idxs[i]];
+      for (const i of idxs) {
+        const { c, r } = ring[i];
         map[r][c] = 2;
+      }
+      // один проход на сторону (1–2 клетки), ближе к середине
+      if (idxs.length < 3) continue;
+      const passLen = idxs.length >= 5 ? 2 : 1;
+      const maxStart = idxs.length - passLen;
+      const start = 1 + ((rnd() * Math.max(1, maxStart - 1)) | 0);
+      for (let k = 0; k < passLen; k++) {
+        const { c, r } = ring[idxs[Math.min(start + k, idxs.length - 1)]];
+        map[r][c] = 0;
       }
     }
 
@@ -1735,6 +1716,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
       };
       if (solid(corner.d1[0], corner.d1[1]) || solid(corner.d2[0], corner.d2[1])) {
         map[r][c] = 2;
+      } else {
+        map[r][c] = 0;
       }
     }
     return wallDecor;
@@ -3236,12 +3219,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return { sides, square: null };
   },
   /**
-   * Стены — только proof-прямоугольники по wallGeomOf (спрайты отключены).
+   * Стены — только полосы/stub к play (без спрайтов, без заливки всей клетки).
    */
   drawWallAt(ctx, s, col, row, x, y, w, h) {
-    ctx.fillStyle = "#020308";
-    ctx.fillRect(x, y, w, h);
-
     const { sides, square } = this.wallGeomOf(s, col, row);
     const band = Math.max(10, Math.round(Math.min(w, h) * 0.42));
     const body = "#c4a882";
@@ -3325,8 +3305,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     ctx.fillStyle = "#c9a66b"; ctx.fillRect(x + 3, y + 5, w - 6, 8);
   },
   /**
-   * Туман войны: один линейный градиент на клетку края (внешний край → к play).
-   * Клетки стен/окон — без FoW (почти чёрная подложка + спрайт).
+   * Туман на всём кольце (под полосами стен). Вызывать до drawWallAt.
    */
   drawFogOfWar(ctx, s, api) {
     const { w, h } = api;
@@ -3350,23 +3329,19 @@ window.FEEL_DEMOS["deadline-escape"] = {
     };
 
     const paintCellFog = (c, r, edge) => {
-      const x = gx + c * cw;
-      const y = gy + r * ch;
+      const { x, y, w: cellW, h: cellH } = this.cellRect(s, c, r);
       let g;
-      if (edge === "n") g = ctx.createLinearGradient(0, y, 0, y + ch);
-      else if (edge === "s") g = ctx.createLinearGradient(0, y + ch, 0, y);
-      else if (edge === "w") g = ctx.createLinearGradient(x, 0, x + cw, 0);
-      else g = ctx.createLinearGradient(x + cw, 0, x, 0);
+      if (edge === "n") g = ctx.createLinearGradient(0, y, 0, y + cellH);
+      else if (edge === "s") g = ctx.createLinearGradient(0, y + cellH, 0, y);
+      else if (edge === "w") g = ctx.createLinearGradient(x, 0, x + cellW, 0);
+      else g = ctx.createLinearGradient(x + cellW, 0, x, 0);
       fogStops(g);
       ctx.fillStyle = g;
-      ctx.fillRect(x, y, cw, ch);
+      ctx.fillRect(x, y, cellW, cellH);
     };
 
     const ring = this.fogFrameRing(s.cols, s.rows, b);
-    for (const { c, r, edge } of ring) {
-      if (this.isFrameSolid(s.map[r][c])) continue;
-      paintCellFog(c, r, edge);
-    }
+    for (const { c, r, edge } of ring) paintCellFog(c, r, edge);
 
     if (fog && fog.complete && fog.naturalWidth) {
       ctx.globalAlpha = 0.28;
@@ -3397,16 +3372,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
       ctx.fillRect(0, 0, w, h);
     }
 
-    // 1) пол целиком — иначе клетка 6 затирает правую половину стола 2×1
+    // 1) пол только в play
     for (let r = 0; r < s.rows; r++) {
       for (let c = 0; c < s.cols; c++) {
+        if (this.fogEdgeOf(s, c, r) || this.mapCornerOf(s, c, r)) continue;
         const { x, y, w: cw, h: ch } = this.cellRect(s, c, r);
-        // клетки стены/окна — почти чёрная подложка (не светлый пол)
-        if (this.isFrameSolid(s.map[r][c])) {
-          ctx.fillStyle = "#020308";
-          ctx.fillRect(x, y, cw, ch);
-          continue;
-        }
         const floorKey = (r + c) % 2 ? "tile_floor_a" : "tile_floor_b";
         if (!this.drawTile(ctx, floorKey, x, y, cw, ch)) {
           ctx.fillStyle = coffee
@@ -3416,7 +3386,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
         }
       }
     }
-    // 2) пропы + декоративные стены/окна на полосе тумана (каркас; концы = углы)
+    // 1b) туман кольца под стенами
+    this.drawFogOfWar(ctx, s, api);
+    // 2) пропы + полосы стен поверх тумана
     for (let r = 0; r < s.rows; r++) {
       for (let c = 0; c < s.cols; c++) {
         const { x, y, w: cw, h: ch } = this.cellRect(s, c, r);
@@ -3584,8 +3556,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (s.won) this.drawArt(ctx, "vfx_confetti", pp.x, pp.y - 20, unit * 1.4, 0.9);
     if (!s.alive) this.drawArt(ctx, "vfx_slam", pp.x, pp.y, unit * 1.2, 0.55);
 
-    // туман поклеточно на крае; стены без тумана (уже нарисованы ниже)
-    this.drawFogOfWar(ctx, s, api);
+    // туман уже нарисован до стен
 
     ctx.fillStyle = "rgba(30,27,75,0.92)"; ctx.fillRect(10, 10, w - 20, 72);
     ctx.strokeStyle = coffee ? "#fbbf24" : shield ? "#38bdf8" : "#22d3a8"; ctx.strokeRect(10, 10, w - 20, 72);
