@@ -202,25 +202,19 @@ def band_layer_color(t: float, band: int = BAND):
 
 
 def depth_l(ys, xs, corner: str):
+    """L arms by geographic corner name: nw = top+left, se = bottom+right."""
     if corner == "nw":
-        d_h = ys - (SIDE - BAND)
-        d_v = xs - (SIDE - BAND)
-        on_h = ys >= SIDE - BAND
-        on_v = xs >= SIDE - BAND
+        # top + left
+        d_h = (BAND - 1) - ys
+        d_v = (BAND - 1) - xs
+        on_h = ys < BAND
+        on_v = xs < BAND
         depth = np.full(ys.shape, -1, dtype=np.int32)
         depth[on_h] = d_h[on_h]
         depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
         mask = on_h | on_v
     elif corner == "ne":
-        d_h = ys - (SIDE - BAND)
-        d_v = (BAND - 1) - xs
-        on_h = ys >= SIDE - BAND
-        on_v = xs < BAND
-        depth = np.full(ys.shape, -1, dtype=np.int32)
-        depth[on_h] = d_h[on_h]
-        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
-        mask = on_h | on_v
-    elif corner == "sw":
+        # top + right
         d_h = (BAND - 1) - ys
         d_v = xs - (SIDE - BAND)
         on_h = ys < BAND
@@ -229,11 +223,22 @@ def depth_l(ys, xs, corner: str):
         depth[on_h] = d_h[on_h]
         depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
         mask = on_h | on_v
-    else:
-        d_h = (BAND - 1) - ys
+    elif corner == "sw":
+        # bottom + left
+        d_h = ys - (SIDE - BAND)
         d_v = (BAND - 1) - xs
-        on_h = ys < BAND
+        on_h = ys >= SIDE - BAND
         on_v = xs < BAND
+        depth = np.full(ys.shape, -1, dtype=np.int32)
+        depth[on_h] = d_h[on_h]
+        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
+        mask = on_h | on_v
+    else:
+        # se = bottom + right
+        d_h = ys - (SIDE - BAND)
+        d_v = xs - (SIDE - BAND)
+        on_h = ys >= SIDE - BAND
+        on_v = xs >= SIDE - BAND
         depth = np.full(ys.shape, -1, dtype=np.int32)
         depth[on_h] = d_h[on_h]
         depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
@@ -295,25 +300,26 @@ def make_stub(corner: str, face_tex: Image.Image | None) -> Image.Image:
 
 
 def make_u(key: str, face_tex: Image.Image | None) -> Image.Image:
+    """U by geographic face letters: n=top, s=bottom, e=right, w=left."""
     ys, xs = np.indices((SIDE, SIDE))
     depth = np.full((SIDE, SIDE), 10**9, dtype=np.int32)
     mask = np.zeros((SIDE, SIDE), dtype=bool)
     if "n" in key:
-        m = ys >= SIDE - BAND
-        mask |= m
-        depth = np.where(m, np.minimum(depth, ys - (SIDE - BAND)), depth)
-    if "s" in key:
         m = ys < BAND
         mask |= m
         depth = np.where(m, np.minimum(depth, (BAND - 1) - ys), depth)
-    if "e" in key:
-        m = xs < BAND
+    if "s" in key:
+        m = ys >= SIDE - BAND
         mask |= m
-        depth = np.where(m, np.minimum(depth, (BAND - 1) - xs), depth)
-    if "w" in key:
+        depth = np.where(m, np.minimum(depth, ys - (SIDE - BAND)), depth)
+    if "e" in key:
         m = xs >= SIDE - BAND
         mask |= m
         depth = np.where(m, np.minimum(depth, xs - (SIDE - BAND)), depth)
+    if "w" in key:
+        m = xs < BAND
+        mask |= m
+        depth = np.where(m, np.minimum(depth, (BAND - 1) - xs), depth)
     depth = np.where(mask, depth, -1)
     return paint_by_depth(mask, depth, face_tex)
 
