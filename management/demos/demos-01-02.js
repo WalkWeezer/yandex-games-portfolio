@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
   /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250721g",
+  ART_BUST: "w250721h",
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
@@ -1265,10 +1265,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721g`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721h`));
     // стены — proof-геометрия без спрайтов (wall/window tiles не грузим)
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721g`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721h`));
     this._art = art;
     return art;
   },
@@ -3405,7 +3405,45 @@ window.FEEL_DEMOS["deadline-escape"] = {
     ctx.fillStyle = "#c9a66b"; ctx.fillRect(x + 3, y + 5, w - 6, 8);
   },
   /**
-   * Туман вне сетки (хром). Клетки кольца не затемняем — только полосы стен.
+   * Градиент тумана на клетках кольца границы — поверх пола.
+   * Ребро: линейный от края арены к play.
+   * Угол: от сторон у края к противолежащему (внутреннему) углу.
+   */
+  paintBorderCellFog(ctx, s) {
+    const b = Math.max(1, s.border | 0);
+    const ring = this.fogFrameRing(s.cols, s.rows, b);
+    if (!ring.length) return;
+
+    const fogStops = (g) => {
+      g.addColorStop(0, "rgba(2,3,8,0.92)");
+      g.addColorStop(0.45, "rgba(2,3,8,0.48)");
+      g.addColorStop(0.82, "rgba(2,3,8,0.12)");
+      g.addColorStop(1, "rgba(2,3,8,0)");
+    };
+
+    for (const { c, r } of ring) {
+      const { x, y, w: cw, h: ch } = this.cellRect(s, c, r);
+      const corner = this.mapCornerOf(s, c, r);
+      let g;
+      if (corner === "nw") g = ctx.createLinearGradient(x, y, x + cw, y + ch);
+      else if (corner === "ne") g = ctx.createLinearGradient(x + cw, y, x, y + ch);
+      else if (corner === "sw") g = ctx.createLinearGradient(x, y + ch, x + cw, y);
+      else if (corner === "se") g = ctx.createLinearGradient(x + cw, y + ch, x, y);
+      else {
+        const edge = this.fogEdgeOf(s, c, r);
+        if (edge === "n") g = ctx.createLinearGradient(0, y, 0, y + ch);
+        else if (edge === "s") g = ctx.createLinearGradient(0, y + ch, 0, y);
+        else if (edge === "w") g = ctx.createLinearGradient(x, 0, x + cw, 0);
+        else if (edge === "e") g = ctx.createLinearGradient(x + cw, 0, x, 0);
+        else continue;
+      }
+      fogStops(g);
+      ctx.fillStyle = g;
+      ctx.fillRect(x, y, cw, ch);
+    }
+  },
+  /**
+   * Туман вне сетки (хром).
    */
   drawFogOfWar(ctx, s, api) {
     const { w, h } = api;
@@ -3468,6 +3506,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
         }
       }
     }
+    // 1b) градиент тумана на кольце границы — поверх пола (и чёрного фона стен)
+    this.paintBorderCellFog(ctx, s);
     // 2) пропы + декоративные стены/окна на полосе тумана (каркас; концы = углы)
     for (let r = 0; r < s.rows; r++) {
       for (let c = 0; c < s.cols; c++) {
