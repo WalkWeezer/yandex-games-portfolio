@@ -1263,24 +1263,17 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallsoft1`));
-    // каркас: прямые + L + stub (+ U в запасе)
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallbreak1`));
+    // каркас: только прямые + stub-квадрат (без L/U — ломали вид «перекрестьями»)
     ["n", "s", "e", "w"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallsoft1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallsoft1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallbreak1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallbreak1`);
     });
     ["nw", "ne", "sw", "se"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallsoft1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallsoft1`);
-      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=wallsoft1`);
-      tryLoad("tile_window_stub_" + d, `frames/tile_window_stub_${d}.png?v=wallsoft1`);
-    });
-    ["nwe", "nsw", "nse", "swe"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallsoft1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallsoft1`);
+      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=wallbreak1`);
     });
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=wallsoft1`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=wallbreak1`));
     this._art = art;
     return art;
   },
@@ -1676,7 +1669,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
   },
   /**
    * Ключ спрайта стены по wallGeomOf.
-   * Окно (tile_window_*) только при одинарной полосе; иначе всегда wall.
+   * Только полоса (1 сторона) или stub-квадрат. L/U не используем.
+   * Окно (tile_window_*) только при одинарной полосе.
    */
   wallTileKey(s, col, row) {
     const geom = this.wallGeomOf(s, col, row);
@@ -1687,19 +1681,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     const edgeOf = { s: "n", n: "s", e: "w", w: "e" };
     if (geom.square) {
       const stubOf = { se: "nw", sw: "ne", ne: "sw", nw: "se" };
-      return prefix + "stub_" + (stubOf[geom.square] || "nw");
+      return "tile_wall_stub_" + (stubOf[geom.square] || "nw");
     }
-    if (geom.sides.length === 1) return prefix + edgeOf[geom.sides[0]];
-    if (geom.sides.length === 2) {
-      const k = geom.sides.map((x) => edgeOf[x]).sort().join("");
-      const two = { en: "ne", es: "se", nw: "nw", sw: "sw" };
-      return prefix + (two[k] || "n");
-    }
-    if (geom.sides.length === 3) {
-      const k = geom.sides.map((x) => edgeOf[x]).sort().join("");
-      const three = { enw: "nwe", ens: "nse", esw: "swe", nsw: "nsw" };
-      return prefix + (three[k] || "n");
-    }
+    if (geom.sides.length >= 1) return prefix + (edgeOf[geom.sides[0]] || "n");
     return prefix + "n";
   },
   /**

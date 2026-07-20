@@ -11,7 +11,7 @@
   const APPROVED_FILE = "style-seed-hero.APPROVED.json";
   const REJECTED_FILE = "style-seed-hero.REJECTED.json";
   const LS_KEY = "deadline-escape.style-seed";
-  const BUST = "wallsoft1";
+  const BUST = "wallbreak1";
 
   const CHECKER = "background:repeating-conic-gradient(#2a3340 0% 25%, #1a222c 0% 50%) 50%/12px 12px";
 
@@ -311,14 +311,15 @@
       nav: "Стены / окна",
       html: () =>
         card(
-          "Каркас · Бесшовный набор (стена=окно, угол целиком)",
-          "Мастера: <code>refs/art/ai-set-wall-n.png</code>, <code>ai-set-window-n.png</code>. " +
-            "Сборка: <code>build_seamless_wall_set.py</code>. Окно только на одинарной стене (50%). " +
-            "Угол карты при двух стенах — stub-квадрат.",
+          "Каркас · только полосы + stub (без L/U)",
+          "Мастера: <code>refs/art/ai-set-wall-n.png</code>, <code>ai-set-window-n.png</code>, <code>ai-set-stub-nw.png</code>. " +
+            "Сборка: <code>build_wall_break_set.py</code>. L/U убраны (архив <code>2026-07-20-broken-lu-corners</code>). " +
+            "Окно только на одинарной стене (50%). Угол карты при двух стенах — stub-квадрат.",
           pngRow([
             ["ai-set-wall-n.png", "AI master wall", true, ART],
             ["ai-set-window-n.png", "AI master window", true, ART],
-            ["wall_seamless_preview.png", "preview sheet", true],
+            ["ai-set-stub-nw.png", "AI master stub", true, ART],
+            ["wall_break_preview.png", "preview sheet", true],
           ]) +
             pngRow([
               ["frames/tile_wall_n.png", "wall N"],
@@ -333,12 +334,6 @@
               ["frames/tile_wall_stub_ne.png", "stub ne"],
               ["frames/tile_wall_stub_sw.png", "stub sw"],
               ["frames/tile_wall_stub_se.png", "stub se"],
-            ]) +
-            pngRow([
-              ["frames/tile_wall_nw.png", "угол nw"],
-              ["frames/tile_wall_ne.png", "угол ne"],
-              ["frames/tile_wall_nwe.png", "U nwe"],
-              ["wall_seamless_preview.png", "preview", true],
             ])
         ),
     },
@@ -443,6 +438,7 @@
             Всё, что не style-seed / ГГ carrier / актуальный env, перенесено в архив.
             <br/>• <code>archive/2026-07-18-pipeline-v1-reset/</code> — art, boss sheets, HR, концепты, chroma…
             <br/>• <code>archive/2026-07-20-wall-prop-composites/</code> — стена+проп композиты (N+plant и т.п.)
+            <br/>• <code>archive/2026-07-20-broken-lu-corners/</code> — L/U «перекрестья» (сняты с каталога)
             <br/>Не использовать как SoT.
           </p>
         </div>
@@ -454,7 +450,7 @@
     root.innerHTML = `
       <p class="sp-intro">
         <strong>ART_STATUS = PIPELINE_V1</strong> · каталог = всё, что грузит feel-демо + gate.
-        Стены: seamless set <code>?v=${BUST}</code>.
+        Стены: полосы+stub, без L/U <code>?v=${BUST}</code>.
       </p>
       <div class="sp-layout">
         <nav class="sp-nav" aria-label="Sprites"></nav>
