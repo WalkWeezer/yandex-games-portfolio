@@ -1443,7 +1443,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       moving: false, fromCol: start.col, fromRow: start.row, moveT: 0, moveDur: 0.095,
       walkStride: 0,
       gameMin: 0, minutesPerSecond: 18, totalMin: 540,
-      threats: [], pickups: [], colleagues: [], zones: [], spawnT: 1.2,
+      threats: [], pickups: [], zones: [], spawnT: 1.2,
       alive: true, won: false, invuln: 1.5,
       coffeeBoost: 0, shield: false, coins: 0, floor, bestFloor: floor,
       nearMiss: 0, tutorial: 3.2, pendingClick: null,
@@ -1549,7 +1549,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return this.edgeTransitOk(s, col, row);
   },
   /**
-   * Один шаг моба/коллеги. Клетки тени (fog) недоступны: открытый лайн
+   * Один шаг моба. Клетки тени (fog) недоступны: открытый лайн
    * перескакивается в том же шаге (off-map ↔ play), стена на каркасе — стоп.
    */
   tryMoverStep(s, col, row, dc, dr) {
@@ -2136,7 +2136,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
     this.stepToward(s, cell.col, cell.row);
   },
-  /** Кофе = slow-mo мира (боссы/коллеги), не ускорение шага */
+  /** Кофе = slow-mo мира (боссы), не ускорение шага */
   worldScale(s) {
     return s.coffeeBoost > 0 ? 0.42 : 1;
   },
@@ -2192,121 +2192,22 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (t.frac > 0.02 && this.isObstacleCell(s, t.col + t.dc, t.row + t.dr)) return true;
     return false;
   },
-  spawnColleague(s, api) {
-    const bonus = Math.random() < 0.42 ? "shield" : "coffee";
-    if (s.colleagues.some((c) => c.bonus === bonus)) return false;
-    if (bonus === "shield" && s.pickups.some((p) => p.type === "shield")) return false;
-    const dirs = ["down", "up", "left", "right"];
-    const shuffled = dirs.slice().sort(() => Math.random() - 0.5);
-    for (const dir of shuffled) {
-      let opts = this.edgeSpawns(s, dir).filter((o) => this.corridorClear(s, o.col, o.row, dir, 2));
-      if (!opts.length) continue;
-      // не «летит в игрока» по его полосе — предпочитаем соседние коридоры
-      const offLane = opts.filter((o) => (dir === "down" || dir === "up") ? o.col !== s.col : o.row !== s.row);
-      if (offLane.length) opts = offLane;
-      const pick = api.pick(opts);
-      const d = this.DIRS[dir];
-      const start = this.offMapStart(pick, dir);
-      const entryC = pick.col;
-      const entryR = pick.row;
-      if (!this.spawnCellOpen(s, entryC, entryR)) continue;
-      if (entryC === s.col && entryR === s.row) continue;
-      s.colleagues.push({
-        col: start.col, row: start.row, frac: 0,
-        dir, dc: d.dc, dr: d.dr,
-        px: start.col, py: start.row,
-        bonus,
-        age: 0,
-        floorSteps: 0,
-        dropAfter: 1 + ((Math.random() * 2) | 0), // через 1–2 шага по полу бейдж падает
-        offerT: 0,
-        offerDone: false,
-        helped: false,
-        waveT: 0,
-      });
-      if (!(s.allyFlash > 0)) {
-        s.allyFlash = 1.6;
-        s.allyFlashText = bonus === "coffee" ? "Коллега несёт кофе!" : "Коллега несёт бейдж!";
-      }
-      return true;
+  /** Кофе / бейдж — сразу на клетке карты, без моба-коллеги */
+  spawnMapBonus(s, api) {
+    const type = Math.random() < 0.42 ? "shield" : "coffee";
+    if (s.pickups.some((p) => p.type === type)) return false;
+    const cells = this.walkList(s, s.col, s.row).filter((cell) =>
+      !s.pickups.some((p) => p.col === cell.col && p.row === cell.row)
+    );
+    if (!cells.length) return false;
+    const pick = api.pick(cells);
+    s.pickups.push({ col: pick.col, row: pick.row, type });
+    if (!(s.allyFlash > 0)) {
+      s.allyFlash = 1.4;
+      s.allyFlashText = type === "coffee" ? "Кофе на карте!" : "Бейдж на карте!";
     }
-    return false;
-  },
-  /** Бейдж падает на клетку — его надо подобрать, не срывать с коллеги */
-  dropBadge(s, c) {
-    if (c.bonus !== "shield" || c.dropped) return false;
-    let col = c.col, row = c.row;
-    if (!this.walkable(s, col, row)) {
-      const near = this.walkList(s);
-      if (!near.length) return false;
-      let best = near[0], bestD = 99;
-      for (const cell of near) {
-        const d = Math.abs(cell.col - col) + Math.abs(cell.row - row);
-        if (d < bestD) { bestD = d; best = cell; }
-      }
-      col = best.col; row = best.row;
-    }
-    if (s.pickups.some((p) => p.type === "shield" && p.col === col && p.row === row)) return false;
-    s.pickups.push({ col, row, type: "shield" });
-    c.bonus = null;
-    c.dropped = true;
     this.sfx("drop");
     return true;
-  },
-  colleagueFacePlayer(s, c) {
-    const fdc = Math.sign(Math.round(s.px) - c.col);
-    const fdr = Math.sign(Math.round(s.py) - c.row);
-    if (fdc || fdr) c.dir = this.facingFromDelta(fdc, fdr);
-  },
-  colleagueTravelDir(c) {
-    c.dir = c.dc === 1 ? "right" : c.dc === -1 ? "left" : c.dr === 1 ? "down" : "up";
-  },
-  advanceColleague(s, c, cellsPerSec, dt) {
-    c.age += dt;
-    c.px = c.col + c.dc * c.frac;
-    c.py = c.row + c.dr * c.frac;
-
-    // после кофе — помахал и уходит живым (не «убитый моб»)
-    if (c.waveT > 0) {
-      c.waveT -= dt;
-      this.colleagueFacePlayer(s, c);
-      return;
-    }
-
-    const dist = Math.abs(c.px - s.px) + Math.abs(c.py - s.py);
-    // пауза-предложение: друг ждёт, игрок сам подходит
-    if (c.bonus && !c.helped && dist <= 1.6) {
-      if (c.offerT <= 0 && !c.offerDone) {
-        c.offerT = 0.85;
-        c.offerDone = true;
-      }
-    }
-    if (c.offerT > 0) {
-      c.offerT -= dt;
-      this.colleagueFacePlayer(s, c);
-      return;
-    }
-
-    this.colleagueTravelDir(c);
-    const speed = cellsPerSec * 0.38;
-    c.frac += speed * dt;
-    while (c.frac >= 1) {
-      c.frac -= 1;
-      const land = this.tryMoverStep(s, c.col, c.row, c.dc, c.dr);
-      if (!land) { c._dead = true; return; }
-      c.col = land.col; c.row = land.row;
-      if (c.bonus === "shield" && !c.dropped && this.onPlayFloor(s, c.col, c.row)) {
-        c.floorSteps = (c.floorSteps || 0) + 1;
-        if (c.floorSteps >= (c.dropAfter || 1)) this.dropBadge(s, c);
-      }
-    }
-    c.px = c.col + c.dc * c.frac;
-    c.py = c.row + c.dr * c.frac;
-    // ушёл за противоположный край после прохода поля
-    if (c.age > 1 && (c.px < -1.35 || c.py < -1.35 || c.px > s.cols + 0.35 || c.py > s.rows + 0.35)) {
-      if (c.bonus === "shield" && !c.dropped) this.dropBadge(s, c);
-      c._dead = true;
-    }
   },
   /** Линейные паттерны: fairness режет 1–2 клетки впереди по курсу (не мёртвый "line"). */
   isLaneThreat(t) {
@@ -2534,7 +2435,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
         s.pickups.push({ col: c.col, row: c.row, type: "coin" });
       }
     }
-    if (Math.random() < 0.36 + Math.min(0.12, fi * 0.03)) this.spawnColleague(s, api);
+    if (Math.random() < 0.36 + Math.min(0.12, fi * 0.03)) this.spawnMapBonus(s, api);
     // если у лимита — подождать дольше
     const full = this.liveThreatCount(s) >= max;
     s.spawnT = Math.max(0.32, (full ? 1.1 : 0.85) * (1.2 - fi * 0.04) * ph.spawnMul);
@@ -3138,7 +3039,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       px: start.col, py: start.row,
       moving: false, fromCol: start.col, fromRow: start.row, moveT: 0, moveDur: this.playerMoveMs({ floor }),
       walkStride: 0,
-      gameMin: 0, threats: [], pickups: [], colleagues: [], zones: [], spawnT: Math.max(0.55, 1.05 - (floor - 1) * 0.04),
+      gameMin: 0, threats: [], pickups: [], zones: [], spawnT: Math.max(0.55, 1.05 - (floor - 1) * 0.04),
       alive: true, won: false, invuln: 1.45,
       coffeeBoost: 0, shield: false, nearMiss: 0, tutorial: keepMeta.tutorial || 0, pendingClick: null,
       allyFlash: 0, allyFlashText: "",
@@ -3210,7 +3111,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (s.spawnT <= 0) this.spawnWave(s, api, ph);
 
     const scroll = 2.35 * ph.speedMul * this.threatSpeedScale(s);
-    for (const c of s.colleagues) this.advanceColleague(s, c, scroll, wdt);
 
     for (const t of s.threats) {
       this.advanceThreat(s, t, scroll, wdt);
@@ -3277,6 +3177,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
         if (p.type === "shield") {
           s.shield = true;
           this.sfx("badge");
+        } else if (p.type === "coffee") {
+          s.coffeeBoost = Math.max(s.coffeeBoost, 3.0);
+          this.sfx("coffee");
         } else {
           s.coins += 1;
           this.sfx("coin");
@@ -3285,27 +3188,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
     s.pickups = s.pickups.filter((p) => !p._dead);
 
-    for (const c of s.colleagues) {
-      // кофе — только подход на клетку (не lane-sweep как у боссов); бейдж с пола
-      const sameCell = c.col === s.col && c.row === s.row;
-      if (c.bonus === "coffee" && sameCell && !c.helped) {
-        s.coffeeBoost = Math.max(s.coffeeBoost, 3.0);
-        c.bonus = null;
-        c.helped = true;
-        c.waveT = 0.55;
-        c.offerT = 0;
-        this.colleagueFacePlayer(s, c);
-        this.sfx("coffee");
-      }
-    }
-    s.colleagues = s.colleagues.filter((c) => !c._dead && c.col >= -2 && c.row >= -2 && c.col <= s.cols + 1 && c.row <= s.rows + 1);
-
     if (s.gameMin >= s.totalMin) {
       s.won = true;
       s.floor += 1;
       s.bestFloor = Math.max(s.bestFloor, s.floor);
       s.threats = [];
-      s.colleagues = [];
       s.zones = [];
       this.sfx("promote");
       api.setHud(`ПОВЫШЕНИЕ! Этаж ${s.floor}`);
@@ -3698,6 +3585,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
           ctx.fillStyle = "#38bdf8";
           ctx.beginPath(); ctx.arc(pos.x, pos.y + bob, 10, 0, Math.PI * 2); ctx.fill();
         }
+      } else if (p.type === "coffee") {
+        if (!this.drawArt(ctx, "pu_coffee", pos.x, pos.y + bob, unit * 0.55)) {
+          ctx.fillStyle = "#fbbf24";
+          ctx.beginPath(); ctx.arc(pos.x, pos.y + bob, 10, 0, Math.PI * 2); ctx.fill();
+        }
       } else if (!this.drawArt(ctx, "pu_coin", pos.x, pos.y + bob * 0.5, unit * 0.45)) {
         ctx.beginPath(); ctx.arc(pos.x, pos.y, 9, 0, Math.PI * 2);
         ctx.fillStyle = "#fcd34d"; ctx.fill();
@@ -3713,54 +3605,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
         ctx.fillRect(x + 3, y + 3, s.cellW - 6, s.cellH - 6);
         ctx.fillStyle = "#ccfbf1"; ctx.font = "bold 8px Segoe UI"; ctx.textAlign = "center";
         ctx.fillText("ОТЧ", x + s.cellW / 2, y + s.cellH / 2 + 3);
-      }
-    }
-
-    for (const c of s.colleagues) {
-      if (c.px < -1.35 || c.py < -1.35 || c.px > s.cols + 0.35 || c.py > s.rows + 0.35) continue;
-      const offering = c.offerT > 0 || c.waveT > 0;
-      const bob = offering ? Math.sin(performance.now() * 0.014) * 3 : 0;
-      const pos = {
-        x: s.padX + (c.px + 0.5) * s.cellW,
-        y: s.padT + (c.py + 0.5) * s.cellH + bob,
-      };
-      if (pos.y < 70 || pos.y > h - 100 || pos.x < 0 || pos.x > w) continue;
-
-      // ally-маркер: мятное кольцо (не danger-цвета боссов)
-      const pulse = 0.55 + 0.45 * Math.sin(performance.now() * 0.01);
-      const ringR = (offering ? 20 : 16) + pulse * 3;
-      ctx.beginPath();
-      ctx.arc(pos.x, pos.y + unit * 0.22, ringR, 0, Math.PI * 2);
-      ctx.strokeStyle = offering
-        ? `rgba(52, 211, 153, ${0.55 + pulse * 0.35})`
-        : `rgba(45, 212, 191, ${0.35 + pulse * 0.25})`;
-      ctx.lineWidth = offering ? 3.2 : 2.4;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(pos.x, pos.y + unit * 0.22, ringR * 0.55, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(167, 243, 208, ${0.12 + pulse * 0.08})`;
-      ctx.fill();
-
-      const ck = "colleague_" + this.dirKey(c.dir);
-      const allyAlpha = coffee ? 0.92 : 1; // не гасим как угрозы
-      const drawn = this.drawArt(ctx, ck, pos.x, pos.y, unit * 0.95, allyAlpha);
-      if (!drawn) {
-        ctx.globalAlpha = allyAlpha;
-        ctx.beginPath(); ctx.arc(pos.x, pos.y, 13, 0, Math.PI * 2);
-        ctx.fillStyle = "#2dd4bf"; ctx.fill();
-        ctx.globalAlpha = 1;
-      }
-
-      // дар сверху по центру (без текстовых подписей)
-      const giftKey = c.bonus === "coffee" ? "pu_coffee" : c.bonus === "shield" ? "pu_badge" : null;
-      if (giftKey) {
-        const gy = pos.y - unit * 0.58;
-        if (!this.drawArt(ctx, giftKey, pos.x, gy, unit * 0.48)) {
-          ctx.beginPath();
-          ctx.arc(pos.x, gy, 7, 0, Math.PI * 2);
-          ctx.fillStyle = c.bonus === "coffee" ? "#fbbf24" : "#38bdf8";
-          ctx.fill();
-        }
       }
     }
 

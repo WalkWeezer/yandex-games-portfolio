@@ -1,0 +1,426 @@
+/* Работник месяца — Beta mock UI (Yandex Games portrait shell) */
+:root {
+  --mu-bg: #d8e2ee;
+  --mu-panel: #e8eef5;
+  --mu-panel-strong: #f4f7fb;
+  --mu-ink: #1d3557;
+  --mu-muted: #5b6b82;
+  --mu-line: #b8c5d6;
+  --mu-cta: #e9c46a;
+  --mu-cta-ink: #3d2e0a;
+  --mu-danger: #e63946;
+  --mu-ok: #2a9d8f;
+  --mu-carpet: #c8d2e0;
+  --mu-shadow: 0 8px 20px rgba(29, 53, 87, 0.12);
+}
+
+.mu-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(240px, 1fr);
+  gap: 20px;
+  align-items: start;
+  margin-top: 12px;
+}
+
+.mu-phone-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.mu-phone {
+  width: min(360px, 100%);
+  aspect-ratio: 360 / 640;
+  border-radius: 28px;
+  border: 2px solid #7f8ea3;
+  background: var(--mu-bg);
+  box-shadow: 0 0 0 6px #243041, var(--mu-shadow);
+  overflow: hidden;
+  position: relative;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  color: var(--mu-ink);
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.mu-safe {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 12px 12px;
+  box-sizing: border-box;
+  background:
+    radial-gradient(120% 80% at 50% -10%, #f7fafc 0%, transparent 55%),
+    linear-gradient(180deg, #e4ebf4 0%, var(--mu-bg) 40%, #cfd9e8 100%);
+}
+
+.mu-screen { display: none; flex: 1; flex-direction: column; gap: 8px; min-height: 0; }
+.mu-screen.active { display: flex; }
+
+.mu-brand {
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-size: 1.05rem;
+  line-height: 1.2;
+  color: var(--mu-ink);
+}
+.mu-brand small {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mu-muted);
+}
+
+.mu-panel {
+  background: var(--mu-panel-strong);
+  border: 1px solid var(--mu-line);
+  border-radius: 14px;
+  padding: 10px 12px;
+  box-shadow: var(--mu-shadow);
+}
+.mu-panel.tight { padding: 8px 10px; }
+.mu-panel.danger {
+  background: #ffe8ea;
+  border-color: #f1a0a6;
+  color: #7a1520;
+}
+.mu-panel.ok {
+  background: #e7f7f4;
+  border-color: #9ed9d0;
+}
+
+.mu-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mu-muted);
+}
+.mu-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 2px 0 0;
+  line-height: 1.2;
+}
+.mu-sub {
+  font-size: 0.78rem;
+  color: var(--mu-muted);
+  line-height: 1.35;
+  margin: 4px 0 0;
+}
+
+.mu-row { display: flex; gap: 8px; align-items: center; }
+.mu-row > * { flex: 1; min-width: 0; }
+.mu-grow { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+.mu-center { align-items: center; justify-content: center; text-align: center; }
+
+.mu-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: var(--mu-panel);
+  border: 1px solid var(--mu-line);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--mu-ink);
+}
+
+.mu-btn {
+  appearance: none;
+  border: 1px solid var(--mu-line);
+  background: var(--mu-panel-strong);
+  color: var(--mu-ink);
+  border-radius: 12px;
+  padding: 11px 12px;
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+.mu-btn:active { transform: scale(0.98); }
+.mu-btn:disabled { opacity: 0.45; cursor: default; transform: none; }
+.mu-btn.cta {
+  background: linear-gradient(180deg, #f3d78a 0%, var(--mu-cta) 100%);
+  border-color: #c9a24a;
+  color: var(--mu-cta-ink);
+  box-shadow: 0 4px 0 #b8903a;
+}
+.mu-btn.cta:active { box-shadow: 0 1px 0 #b8903a; transform: translateY(2px); }
+.mu-btn.ghost { background: transparent; }
+.mu-btn.danger {
+  background: #fff;
+  border-color: #f1a0a6;
+  color: #7a1520;
+}
+.mu-btn.icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  flex: 0 0 auto;
+  border-radius: 12px;
+}
+
+.mu-art {
+  flex: 1;
+  min-height: 120px;
+  border-radius: 16px;
+  border: 1px solid var(--mu-line);
+  background:
+    linear-gradient(180deg, rgba(232, 238, 245, 0.2), rgba(29, 53, 87, 0.08)),
+    url("../../games/deadline-escape/refs/art/style-seed-hero.png") center/contain no-repeat,
+    linear-gradient(160deg, #eef3f8, #c5d0df);
+  position: relative;
+  overflow: hidden;
+}
+.mu-art::after {
+  content: "офис · top-down";
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--mu-muted);
+  background: rgba(244, 247, 251, 0.85);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.mu-progress {
+  height: 10px;
+  border-radius: 999px;
+  background: #c5d0df;
+  overflow: hidden;
+  border: 1px solid var(--mu-line);
+}
+.mu-progress > i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #2a9d8f, #e9c46a);
+  transition: width 0.2s ease;
+}
+
+.mu-floors {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.mu-floor {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  border: 1px solid var(--mu-line);
+  background: var(--mu-panel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  cursor: pointer;
+  color: var(--mu-ink);
+}
+.mu-floor.current {
+  background: linear-gradient(180deg, #f3d78a, var(--mu-cta));
+  border-color: #c9a24a;
+  box-shadow: 0 3px 0 #b8903a;
+}
+.mu-floor.locked {
+  opacity: 0.45;
+  cursor: default;
+  background: #d7dee8;
+}
+
+.mu-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  background: rgba(244, 247, 251, 0.95);
+  border: 1px solid var(--mu-line);
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-weight: 800;
+  font-size: 0.82rem;
+}
+.mu-phase {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--mu-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mu-playfield {
+  flex: 1;
+  min-height: 0;
+  border-radius: 14px;
+  border: 1px solid var(--mu-line);
+  background:
+    linear-gradient(90deg, rgba(148, 163, 184, 0.25) 12%, transparent 12%),
+    linear-gradient(0deg, rgba(148, 163, 184, 0.25) 12%, transparent 12%),
+    var(--mu-carpet);
+  background-size: 28px 28px;
+  position: relative;
+  overflow: hidden;
+}
+.mu-dot {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--mu-ink);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+  transform: translate(-50%, -50%);
+}
+.mu-dot.boss {
+  background: var(--mu-danger);
+  width: 16px;
+  height: 16px;
+}
+.mu-dot.ally {
+  background: var(--mu-ok);
+  width: 14px;
+  height: 14px;
+}
+.mu-run-hint {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  background: rgba(244, 247, 251, 0.92);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 0.72rem;
+  color: var(--mu-muted);
+  text-align: center;
+  font-weight: 600;
+}
+
+.mu-modal-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(29, 53, 87, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 5;
+}
+.mu-modal {
+  width: 100%;
+  background: var(--mu-panel-strong);
+  border: 1px solid var(--mu-line);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: var(--mu-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mu-shop-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.mu-shop-card {
+  background: var(--mu-panel);
+  border: 1px solid var(--mu-line);
+  border-radius: 12px;
+  padding: 10px;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.mu-shop-card.locked { opacity: 0.5; }
+
+.mu-sdk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+.mu-sdk-pill {
+  font-size: 0.68rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: #1e3a5f;
+  color: #d7ecff;
+  border: 1px solid #3a7ebf;
+}
+.mu-sdk-pill.warn { background: #3d3415; color: #f5c542; border-color: #8a6d1d; }
+.mu-sdk-pill.ok { background: #163528; color: #3dd68c; border-color: #2a6b4a; }
+
+.mu-side {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.mu-side h4 { margin: 0 0 8px; font-size: 0.95rem; }
+.mu-side p { margin: 0 0 10px; color: var(--muted); font-size: 0.86rem; line-height: 1.45; }
+.mu-checks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mu-checks li {
+  font-size: 0.82rem;
+  color: var(--text);
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.mu-checks li::before {
+  content: "✓ ";
+  color: var(--ok);
+  font-weight: 700;
+}
+.mu-log {
+  margin-top: 12px;
+  max-height: 220px;
+  overflow: auto;
+  background: #0b0f14;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  color: #9fb3c8;
+  line-height: 1.45;
+}
+.mu-log .ok { color: #3dd68c; }
+.mu-log .warn { color: #f5c542; }
+.mu-log .info { color: #5db0ff; }
+
+.mu-caption {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.mu-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+@media (max-width: 860px) {
+  .mu-layout { grid-template-columns: 1fr; }
+  .mu-phone { width: min(360px, 92vw); }
+}

@@ -120,12 +120,12 @@ Wireframe UI inventory: `management/demos/deadline-wireframes.js`.
 
 | System | Trigger | Effect |
 |--------|---------|--------|
-| Coffee | approach ally colleague (same cell; not lane-hit) | `worldScale=0.42` for 3s |
-| BadgeDrop | colleague with shield walks 1–2 floor cells | pickup on floor |
+| Coffee | overlap pickup on floor | `worldScale=0.42` for 3s |
+| Badge | overlap pickup on floor | next hit → `shield_break`, i-frames ~0.65s |
 | Shield | hold badge | next hit → `shield_break`, i-frames ~0.65s |
 | Coin | overlap pickup | +1 soft |
 
-Colleague = ally (slow, offer pause, mint ring) — not a threat mob.  
+Bonuses spawn directly on walkable floor cells — no colleague mob.  
 **AC:** coffee does **not** speed player step; badge is **not** invisibility.
 
 ### 2.5 FloorProgression
