@@ -1263,11 +1263,15 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png`));
-    // каркас: стена/окно прижаты к внешнему краю клетки (n/s/w/e), без углов
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallart1`));
+    // каркас: стена/окно прижаты к внешнему краю + готовые композиты стена+проп
     ["n", "s", "e", "w"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallart1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallart1`);
+      ["plant", "cooler", "cabinet", "printer", "trash"].forEach((p) => {
+        tryLoad(`tile_wall_${d}_${p}`, `frames/tile_wall_${d}_${p}.png?v=wallart1`);
+        tryLoad(`tile_window_${d}_${p}`, `frames/tile_window_${d}_${p}.png?v=wallart1`);
+      });
     });
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
     ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png`));
@@ -3043,6 +3047,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
   drawWallAt(ctx, s, col, row, x, y, w, h) {
     const isWin = s.map[row][col] === 7;
     const edge = this.fogEdgeOf(s, col, row) || "n";
+    const decor = s.wallDecor && s.wallDecor[row] && s.wallDecor[row][col];
+    // готовый композит стена+проп (одна клетка, визуал)
+    if (decor) {
+      const comp = isWin ? `tile_window_${edge}_${decor}` : `tile_wall_${edge}_${decor}`;
+      if (this.drawTile(ctx, comp, x, y, w, h)) return;
+    }
     const key = isWin ? `tile_window_${edge}` : `tile_wall_${edge}`;
     let drawn = this.drawTile(ctx, key, x, y, w, h);
     if (!drawn && isWin) drawn = this.drawTile(ctx, "tile_window", x, y, w, h);
@@ -3072,12 +3082,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
         }
       }
     }
-    // визуальный проп в той же клетке (свободная половина к play)
-    this.drawWallDecorAt(ctx, s, col, row, x, y, w, h, edge);
+    // fallback: оверлей пропа, если композита нет
+    if (decor) this.drawWallDecorAt(ctx, s, col, row, x, y, w, h, edge);
   },
   /**
-   * Оверлей пропа в клетке стены: не меняет коллизию/спавн, только рисунок.
-   * Ставится во «внутренней» половине клетки (к офису), ≤ размера клетки.
+   * Fallback-оверлей пропа в клетке стены (если нет готового композита).
    */
   drawWallDecorAt(ctx, s, col, row, x, y, w, h, edge) {
     const kind = s.wallDecor && s.wallDecor[row] && s.wallDecor[row][col];

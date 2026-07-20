@@ -149,12 +149,12 @@ Cell codes: `0` floor · `1` desk 1×1 · `2` wall · `3` plant · `4` cooler ·
 play = interior walkable office (base 7×9 + growth)
 fog  = 1 cell band each side (not walkable for player)
 # / W = decorative wall/window on fog band
-wallDecor = visual-only prop overlay IN the same wall/window cell
+wallDecor = visual-only prop IN the same wall/window cell → draws tile_wall_{edge}_{prop}
 ```
 
-**Rules:** fog band depth **always 1** cell each side; strong FoW gradient (outer≈black → play=0) drawn over entities so spawns are visible silhouettes; walls/windows on fog frame; **props at walls are visual overlays in the same `2`/`7` cell** (do not occupy extra cells, do not change spawn/collision); desks/props solid only in play; enemies enter from open fog cells; play aisles connected; Hit = body overlap.
+**Rules:** fog band depth **always 1** cell each side; strong FoW gradient (outer≈black → play=0) drawn over entities so spawns are visible silhouettes; walls/windows on fog frame; **wall props are baked composites in the same `2`/`7` cell** (do not occupy extra cells, do not change spawn/collision); desks/props solid only in play; enemies enter from open fog cells; play aisles connected; Hit = body overlap.
 
-**Required env sprites:** floors/props/fog + **`tile_wall_{n,s,e,w}` / `tile_window_{n,s,e,w}`** + **`tile_cabinet` / `tile_printer` / `tile_trash`** (wall overlays) — DESIGN.md §8.
+**Required env sprites:** floors/props/fog + **`tile_wall_{n,s,e,w}` / `tile_window_{n,s,e,w}`** + **`tile_wall_{edge}_{prop}` / `tile_window_{edge}_{prop}`** — DESIGN.md §8.
 
 **Forbidden in MVP maps:** hideZones, LOS cones as primary verb, free-move navmesh chase.
 

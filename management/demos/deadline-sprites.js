@@ -208,24 +208,24 @@
         ${pngRow([["char_hero_idle_sheet.png", "ГГ idle sheet"], ["char_hero_walk_sheet.png", "ГГ walk sheet"]], SP)}
       </div>
       <div class="sp-card">
-        <h3>Необходимые env-спрайты · каркас</h3>
+        <h3>Необходимые env-спрайты · каркас + пропы</h3>
         <p class="sp-desc">
-          Полоса на всю ширину/высоту, вплотную к краю: <code>n/s</code> гориз., <code>w/e</code> боковые.
-          В той же клетке стены — визуальные пропы (<code>cabinet/printer/trash</code> + plant/cooler). Без углов.
+          Стена вплотную к краю; проп — готовый композит в той же клетке
+          (<code>tile_wall_{n,s,e,w}_{plant|cooler|cabinet|printer|trash}</code>).
+          Сборка: <code>build_wall_prop_tiles.py</code>.
         </p>
         ${pngRow([
-          ["frames/tile_wall_n.png", "wall N"],
-          ["frames/tile_wall_s.png", "wall S ↓"],
-          ["frames/tile_wall_w.png", "wall W"],
-          ["frames/tile_wall_e.png", "wall E"],
-          ["frames/tile_window_n.png", "window N"],
-          ["border_wall_preview.png", "preview", true],
+          ["frames/tile_wall_n_plant.png", "N+plant"],
+          ["frames/tile_wall_n_cooler.png", "N+cooler"],
+          ["frames/tile_wall_n_cabinet.png", "N+cabinet"],
+          ["frames/tile_wall_n_printer.png", "N+printer"],
+          ["frames/tile_wall_n_trash.png", "N+trash"],
+          ["border_wall_props_preview.png", "all edges×props", true],
         ], SP)}
         ${pngRow([
-          ["frames/tile_cabinet.png", "cabinet 1×1"],
-          ["frames/tile_printer.png", "printer 1×1"],
-          ["frames/tile_trash.png", "trash 1×1"],
-          ["border_props_preview.png", "props preview", true],
+          ["frames/tile_cabinet.png", "cabinet"],
+          ["frames/tile_printer.png", "printer"],
+          ["frames/tile_trash.png", "trash"],
         ], SP)}
       </div>
     `;
