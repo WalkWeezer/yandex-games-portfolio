@@ -1212,11 +1212,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   hint: "BETA спрайты · тап — шаг · кофе/бейдж · день ≈60с",
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
-<<<<<<< HEAD
-  /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250721t",
-=======
-  /** Меняй при выкладке стен — сбрасывает кэш ensureArt (не показывать игроку в prod) */
+/** Меняй при выкладке стен — сбрасывает кэш ensureArt (не показывать игроку в prod) */
   ART_BUST: "w250721t",
   /** Production = без DEV∞/эт±/GOD. play/ ставит DEADLINE_PROD=true; дашборд: ?dev=1 включает дев. */
   isProd() {
@@ -1228,7 +1224,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
       return true;
     }
   },
->>>>>>> origin/main
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
