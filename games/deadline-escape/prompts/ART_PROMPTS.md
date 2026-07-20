@@ -63,9 +63,22 @@ Mobile game UI tone board cool gray-blue panels #E8EEF5 with sticky yellow CTA b
 Top-down cartoon 7 by 9 office floor plan illustration: border walls, desks blocking some cells, open aisles for dodging, plants and cooler props, bright satirical corporate, no characters required, clear grid readability
 ```
 
+## JOB I — Env tiles (fog-frame) → `refs/sprites/frames/`
+
+Нужны для полосы тумана / каркаса офиса (feel demo + MVP). Якорь: `layout-feel.png`.
+
+| Out | Prompt focus |
+|-----|----------------|
+| `tile_wall.png` | Top-down cartoon office wall / cubicle partition tile 32×32, gray-blue panel + metal trim, game-ready, seamless-ish edge, no characters, no text |
+| `tile_window.png` | Top-down cartoon office window wall segment 32×32, same frame language as wall tile, light blue glass panes, satirical corporate, game-ready, no text |
+
+Уже в scaffolding (не регать без нужды): `tile_floor_a/b`, `tile_desk`, `tile_desk2`, `tile_plant`, `tile_cooler`, `tile_fog`.
+
 ## DoD
 
 - [ ] Paths match REFS.md  
 - [ ] HR pink / Director red readable  
 - [ ] Key art portrait full-bleed, no text  
 - [ ] No hide-zone green shimmer as brand  
+- [ ] `tile_wall` + `tile_window` listed in DESIGN.md §8 / REFS.md  
+

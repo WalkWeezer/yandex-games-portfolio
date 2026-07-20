@@ -1263,7 +1263,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png`));
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
     ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png`));
     this._art = art;
@@ -1362,10 +1362,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return true;
   },
   // 0 floor · 1 desk1×1 · 2 wall · 3 plant · 4 cooler · 5 desk2×1 anchor · 6 desk2 occupancy · 7 window
-  // с каждой стороны +1..2 клетки тумана (игрок не ходит; мобы спавнятся и видны);
+  // с каждой стороны +1 клетка тумана (игрок не ходит; мобы спавнятся и видны);
   // стены/окна на этой полосе — декоративные препятствия «как на концепте»
   /** Радиус тела для хитбокса (клетки). Хит = пересечение тел, не «общая клетка». */
   HIT_BODY: 0.36,
+  /** Всегда 1 клетка тумана с каждой стороны сетки. */
+  FOG_BORDER: 1,
   FLOOR_TINT: [
     "rgba(36, 26, 82, 1)",
     "rgba(30, 40, 70, 1)",
@@ -1496,11 +1498,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
       .map((f) => `э${f}:${d.byFloor[f]}`);
     return `💀${d.deaths} · ${parts.join(" ")} · посл.э${d.lastFloor}@${d.lastClock}`;
   },
-  /** Глубина тумана с каждой стороны: 1 или 2 клетки (меняется с этажом). */
-  borderDepthForFloor(floor) {
-    return ((floor | 0) % 2 === 0) ? 2 : 1;
+  /** Глубина тумана с каждой стороны — всегда 1 клетка. */
+  borderDepthForFloor(_floor) {
+    return this.FOG_BORDER;
   },
-  /** База play 7×9 + fog-border; каждые 25 этажей +1 play col/row */
+  /** База play 7×9 + fog-border 1; каждые 25 этажей +1 play col/row */
   gridSizeForFloor(floor) {
     const expansions = Math.max(0, Math.floor((floor | 0) / 25));
     let playCols = 7, playRows = 9;
@@ -2979,6 +2981,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return true;
   },
   drawWall(ctx, x, y, w, h, isWindow) {
+    if (isWindow && this.drawTile(ctx, "tile_window", x, y, w, h)) return;
+    if (!isWindow && this.drawTile(ctx, "tile_wall", x, y, w, h)) return;
+    // fallback: стена + процедурное стекло, пока нет tile_window
     if (!this.drawTile(ctx, "tile_wall", x, y, w, h)) {
       ctx.fillStyle = "#6b7c93";
       ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
