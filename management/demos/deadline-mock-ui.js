@@ -4,7 +4,7 @@
  * Mounts into #mu-app. No games/.../src while design REVIEW.
  */
 (function () {
-  const BUILD = "mu250720c";
+  const BUILD = "mu250720d";
   const STORAGE_KEY = "deadline-escape-mock-ui-v2";
 
   const COPY = {
@@ -205,6 +205,23 @@
       if (tab) tab.click();
       else location.hash = "demo";
     });
+
+    const KEY_STEP = {
+      KeyW: [0, -10], ArrowUp: [0, -10],
+      KeyS: [0, 10], ArrowDown: [0, 10],
+      KeyA: [-10, 0], ArrowLeft: [-10, 0],
+      KeyD: [10, 0], ArrowRight: [10, 0],
+    };
+    const onKey = (ev) => {
+      if (screen !== "run" || !run || run.paused || run.over || run.showTut) return;
+      const delta = KEY_STEP[ev.code];
+      if (!delta) return;
+      ev.preventDefault();
+      run.player.x = Math.max(12, Math.min(88, run.player.x + delta[0]));
+      run.player.y = Math.max(18, Math.min(86, run.player.y + delta[1]));
+      paintRunHud();
+    };
+    window.addEventListener("keydown", onKey);
 
     let screen = "boot";
     let run = null;
@@ -775,6 +792,7 @@
     return {
       destroy() {
         stopRunLoop();
+        window.removeEventListener("keydown", onKey);
         root.innerHTML = "";
       },
     };
