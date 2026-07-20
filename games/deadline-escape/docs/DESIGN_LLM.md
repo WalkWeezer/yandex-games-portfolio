@@ -52,7 +52,7 @@ games/deadline-escape/
 | ID | Правило |
 |----|---------|
 | INV-DE-01 | Portrait 720×1280 logical; no landscape-only MVP |
-| INV-DE-02 | **Full office grid** dodge (base 7×9 + props); NOT free-move chase; NOT hide/LOS MVP; NOT «только колонки 1/3/5» |
+| INV-DE-02 | **Full office grid** dodge (base 6×8 play + fog edge enter/exit); NOT free-move chase; NOT hide/LOS MVP |
 | INV-DE-03 | Win = survive clock **09:00→18:00** (`totalMin=540`); Fail = contact threat/zone without shield |
 | INV-DE-04 | Coffee = **world slow-mo** (scale 0.42, 3s); Badge = **1-hit shield** from floor drop |
 | INV-DE-05 | Hit = immediate **body overlap** (player `px/py` ↔ threat fractional pos, `HIT_BODY`); not shared grid cell |
@@ -130,7 +130,7 @@ Colleague = ally (slow, offer pause, mint ring) — not a threat mob.
 
 ### 2.5 FloorProgression
 
-- `gridSizeForFloor`: base 7×9; every 25 floors alternate +col/+row.
+- `gridSizeForFloor`: base 6×8 play; every 25 floors alternate +col/+row.
 - Layout seeded by floor; connected floors.
 - On win: `floor++`, new day layout.
 
@@ -146,13 +146,13 @@ Colleague = ally (slow, offer pause, mint ring) — not a threat mob.
 Cell codes: `0` floor · `1` desk 1×1 · `2` wall · `3` plant · `4` cooler · `5`/`6` desk 2×1 (W/E) · `7` window.
 
 ```
-play = interior walkable office (base 7×9 + growth)
-fog  = 1 cell band each side (not walkable for player)
+play = interior walkable office (base 6×8 + growth)
+fog  = 1 cell band each side (enter/exit only for mobs; not walk graph)
 # / W = decorative wall/window on fog band
 wallDecor = visual-only prop IN the same wall/window cell → draws tile_wall_{edge}_{prop}
 ```
 
-**Rules:** fog band depth **always 1** cell each side; FoW is **per edge cell** (local gradient outer→play); **disabled on wall/window cells (`2`/`7`)**; open fog cells keep silhouette spawn; wall props are baked composites in the same cell; desks/props solid only in play; enemies enter from open fog cells; play aisles connected; Hit = body overlap.
+**Rules:** fog band depth **always 1** cell each side; FoW is **per edge cell** (local gradient outer→play); **disabled on wall/window cells (`2`/`7`)**; open fog cells are **spawn enter/exit only** (mobs do not path along edge); wall props are baked composites in the same cell; desks/props solid only in play; enemies enter from open fog cells then walk play only; play aisles connected; Hit = body overlap.
 
 **Required env sprites:** floors/props/fog + **`tile_wall_{n,s,e,w}` / `tile_window_{n,s,e,w}`** + **`tile_wall_{edge}_{prop}` / `tile_window_{edge}_{prop}`** — DESIGN.md §8.
 

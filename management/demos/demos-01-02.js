@@ -1513,10 +1513,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
   borderDepthForFloor(_floor) {
     return this.FOG_BORDER;
   },
-  /** База play 7×9 + fog-border 1; каждые 25 этажей +1 play col/row */
+  /** База play 6×8 + fog-border 1; каждые 25 этажей +1 play col/row */
   gridSizeForFloor(floor) {
     const expansions = Math.max(0, Math.floor((floor | 0) / 25));
-    let playCols = 7, playRows = 9;
+    let playCols = 6, playRows = 8;
     for (let i = 0; i < expansions; i++) {
       if (i % 2 === 0) playCols += 1;
       else playRows += 1;
@@ -1537,13 +1537,19 @@ window.FEEL_DEMOS["deadline-escape"] = {
     const b = s.border | 0;
     return col >= b && col < s.cols - b && row >= b && row < s.rows - b;
   },
-  /** Пол для моба (в т.ч. полоса тумана); стены/пропы — нет */
+  /** Ходьба моба по арене (play). Край — не для ходьбы. */
   threatStepOk(s, col, row) {
-    if (col < 0 || row < 0 || col >= s.cols || row >= s.rows) return false;
+    if (!this.inPlayArea(s, col, row)) return false;
     return s.map[row][col] === 0;
   },
+  /** Открытая клетка края: только вход/выход на арену (не walk-граф). */
+  edgeTransitOk(s, col, row) {
+    if (!this.inFogBorder(s, col, row)) return false;
+    return s.map[row][col] === 0;
+  },
+  /** Спавн на краю — открытый вход. */
   spawnCellOpen(s, col, row) {
-    return this.threatStepOk(s, col, row);
+    return this.edgeTransitOk(s, col, row);
   },
   findStart(map, border = 1) {
     const rows = map.length, cols = map[0].length;
@@ -1731,7 +1737,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       candidates[j] = tmp;
     }
     const desk1 = 2 + ((floor - 1) % 3);
-    const desk2 = 2 + ((floor * 3) % 3) + Math.max(0, Math.floor((playCols * playRows - 63) / 28));
+    const desk2 = 2 + ((floor * 3) % 3) + Math.max(0, Math.floor((playCols * playRows - 48) / 28));
     const props = [];
     for (let i = 0; i < desk2; i++) props.push(5);
     for (let i = 0; i < desk1; i++) props.push(1);
@@ -1960,11 +1966,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
     const d = this.DIRS[dir];
     return { col: pick.col - d.dc * 2, row: pick.row - d.dr * 2 };
   },
-  /** Проход моба: туман за краем — да; столы/пропы — нет (ghost отдельно) */
+  /** Проход моба: off-map / вход-выход края / пол арены. Край не walk-граф. */
   moverPassable(s, col, row) {
     if (col < -2 || row < -2 || col > s.cols + 1 || row > s.rows + 1) return false;
-    if (col < 0 || row < 0 || col >= s.cols || row >= s.rows) return true; // fog
-    return s.map[row][col] === 0;
+    if (col < 0 || row < 0 || col >= s.cols || row >= s.rows) return true; // за сеткой
+    if (this.inPlayArea(s, col, row)) return s.map[row][col] === 0;
+    return this.edgeTransitOk(s, col, row); // край = только транзит вход/выход
   },
   onPlayFloor(s, col, row) {
     return this.walkable(s, col, row);
@@ -2149,7 +2156,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return this.KINDS.find((k) => k.id === id) || this.KINDS.find((k) => k.id === "hr");
   },
   corridorClear(s, col, row, dir, depth) {
-    // путь моба: пол в тумане + play (не стены/пропы)
+    // от входа: транзит края → пол арены (не стены/пропы)
     const d = this.DIRS[dir];
     let c = col, r = row;
     for (let i = 0; i < depth; i++) {
@@ -2172,7 +2179,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     // секретарь: вторая клетка хитбокса
     let wideDc = widePerp.dc, wideDr = widePerp.dr;
     if (kind.pattern === "wide") {
-      if (!this.threatStepOk(s, entryC + wideDc, entryR + wideDr)) {
+      if (!this.spawnCellOpen(s, entryC + wideDc, entryR + wideDr)) {
         wideDc *= -1; wideDr *= -1;
       }
     }
@@ -2419,7 +2426,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
         const k = key(nc, nr);
         if (prev.has(k)) continue;
         const isGoal = nc === goalC && nr === goalR;
-        // моб ходит по полу play + полоса тумана
+        // моб ходит только по арене (край — не walk)
         if (!isGoal && !this.threatStepOk(s, nc, nr)) continue;
         prev.set(k, cur);
         q.push({ c: nc, r: nr });
@@ -2435,6 +2442,20 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return { col: cur.c, row: cur.r };
   },
   weavePickNext(s, t) {
+    // уже на клетке выхода (край) — только уход за карту
+    if (t.entered && this.edgeTransitOk(s, t.col, t.row)) {
+      const ex = this.hrExitOff(s, t);
+      t.dc = Math.sign(ex.col - t.col) || (t.homeDir === "right" ? 1 : t.homeDir === "left" ? -1 : 0);
+      t.dr = Math.sign(ex.row - t.row) || (t.homeDir === "down" ? 1 : t.homeDir === "up" ? -1 : 0);
+      if (!t.dc && !t.dr) {
+        if (t.homeDir === "down") t.dr = 1;
+        else if (t.homeDir === "up") t.dr = -1;
+        else if (t.homeDir === "right") t.dc = 1;
+        else t.dc = -1;
+      }
+      t.dir = t.dc === 1 ? "right" : t.dc === -1 ? "left" : t.dr === 1 ? "down" : "up";
+      return;
+    }
     const goal = this.hrGoal(s, t);
     if (t.col === goal.col && t.row === goal.row) {
       const ex = this.hrExitOff(s, t);
@@ -2453,7 +2474,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (!next) {
       const opts = [[1, 0], [-1, 0], [0, 1], [0, -1]]
         .map(([dc, dr]) => ({ col: t.col + dc, row: t.row + dr }))
-        .filter((n) => this.threatStepOk(s, n.col, n.row) || n.col < 0 || n.row < 0 || n.col >= s.cols || n.row >= s.rows);
+        .filter((n) => this.threatStepOk(s, n.col, n.row)
+          || this.edgeTransitOk(s, n.col, n.row)
+          || n.col < 0 || n.row < 0 || n.col >= s.cols || n.row >= s.rows);
       if (!opts.length) { t._dead = true; return; }
       opts.sort((a, b) => {
         const da = Math.abs(a.col - goal.col) + Math.abs(a.row - goal.row);
@@ -2485,15 +2508,21 @@ window.FEEL_DEMOS["deadline-escape"] = {
         return;
       }
       if (!this.walkable(s, nc, nr)) {
-        // путь устарел — пересчитать направление с текущей клетки
-        this.weavePickNext(s, t);
-        if (t._dead) return;
-        const nc2 = t.col + t.dc, nr2 = t.row + t.dr;
-        if (!this.walkable(s, nc2, nr2) && !(nc2 < 0 || nr2 < 0 || nc2 >= s.cols || nr2 >= s.rows)) {
-          t._dead = true;
-          return;
+        // выход через клетку края (транзит) или пересчёт пути
+        if (this.edgeTransitOk(s, nc, nr)) {
+          t.col = nc; t.row = nr;
+        } else {
+          this.weavePickNext(s, t);
+          if (t._dead) return;
+          const nc2 = t.col + t.dc, nr2 = t.row + t.dr;
+          const off2 = nc2 < 0 || nr2 < 0 || nc2 >= s.cols || nr2 >= s.rows;
+          if (!this.walkable(s, nc2, nr2) && !this.edgeTransitOk(s, nc2, nr2) && !off2) {
+            t._dead = true;
+            return;
+          }
+          t.col = nc2; t.row = nr2;
+          if (off2) { t._dead = true; return; }
         }
-        t.col = nc2; t.row = nr2;
       } else {
         t.col = nc; t.row = nr;
       }
