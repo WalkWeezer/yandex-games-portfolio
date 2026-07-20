@@ -1,6 +1,6 @@
 window.FEEL_DEMOS = window.FEEL_DEMOS || {};
 
-/* ========== 01 Neon Bullet — combat-puzzle (cones + EXIT) ========== */
+/* === 01 Neon Bullet — combat-puzzle (cones + EXIT) === */
 window.FEEL_DEMOS["neon-bullet"] = {
   hint: "Стик/aim/Огонь · Рывок. Нож сзади = silent. Комбо → clear → EXIT.",
   COMBO_WINDOW: 2.2,
@@ -1207,15 +1207,11 @@ window.FEEL_DEMOS["neon-bullet"] = {
   },
 };
 
-/* ========== 02 Работник месяца — office grid dodge (chas-pik vector) ========== */
+/* === 02 Работник месяца — office grid dodge (chas-pik vector) === */
 window.FEEL_DEMOS["deadline-escape"] = {
   hint: "BETA спрайты · тап — шаг · кофе/бейдж · день ≈60с",
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
-<<<<<<< HEAD
-  /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250721t",
-=======
   /** Меняй при выкладке стен — сбрасывает кэш ensureArt (не показывать игроку в prod) */
   ART_BUST: "w250721t",
   /** Production = без DEV∞/эт±/GOD. play/ ставит DEADLINE_PROD=true; дашборд: ?dev=1 включает дев. */
@@ -1228,7 +1224,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
       return true;
     }
   },
->>>>>>> origin/main
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
@@ -3830,7 +3825,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   },
 };
 
-/* ========== 03 Tide of Relics — deeper combat ========== */
+/* === 03 Tide of Relics — deeper combat === */
 window.FEEL_DEMOS["tide-of-relics"] = {
   hint: "Распределяй энергию: Щит / Пушки / Паруса / Лечи. Победи 3 корабля акта.",
   create(api) {
