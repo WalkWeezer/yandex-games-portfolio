@@ -211,7 +211,7 @@
         <h3>Необходимые env-спрайты · каркас</h3>
         <p class="sp-desc">
           Полоса на всю ширину/высоту, вплотную к краю: <code>n/s</code> гориз., <code>w/e</code> боковые.
-          Рядом со стеной — 1×1 пропы (<code>cabinet/printer/trash</code> + plant/cooler). Без углов.
+          В той же клетке стены — визуальные пропы (<code>cabinet/printer/trash</code> + plant/cooler). Без углов.
         </p>
         ${pngRow([
           ["frames/tile_wall_n.png", "wall N"],

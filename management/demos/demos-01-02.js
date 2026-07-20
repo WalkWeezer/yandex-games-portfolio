@@ -1428,14 +1428,16 @@ window.FEEL_DEMOS["deadline-escape"] = {
     const grid = this.gridSizeForFloor(floor);
     const { cols, rows, border, playCols, playRows } = grid;
     const padT = 96, padB = 125, padX = 14;
-    const map = this.buildMap(floor, grid);
+    const built = this.buildMap(floor, grid);
+    const map = built.map;
+    const wallDecor = built.wallDecor;
     const start = this.findStart(map, border);
     const yDev = 86;
     const bGod = api.input.addButton({ x: api.w - 72, y: yDev, w: 58, h: 36, label: "DEV∞", color: dev.immortal ? "#22c55e" : "#64748b" });
     const bFloorDown = api.input.addButton({ x: api.w - 148, y: yDev, w: 36, h: 36, label: "эт−", color: "#475569" });
     const bFloorUp = api.input.addButton({ x: api.w - 108, y: yDev, w: 36, h: 36, label: "эт+", color: "#475569" });
     return {
-      cols, rows, border, playCols, playRows, padT, padB, padX, map,
+      cols, rows, border, playCols, playRows, padT, padB, padX, map, wallDecor,
       cellW: (api.w - padX * 2) / cols,
       cellH: (api.h - padT - padB) / rows,
       col: start.col, row: start.row,
@@ -1607,10 +1609,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
   isFrameSolid(cell) {
     return cell === 2 || cell === 7;
   },
-  /** 1×1 проп на полосе тумана (рядом со стеной; не шире клетки). */
-  isFogProp(cell) {
-    return cell === 3 || cell === 4 || cell === 8 || cell === 9 || cell === 10;
-  },
   /** Какое ребро полосы тумана: n/s/w/e. */
   fogEdgeOf(s, col, row) {
     const b = s.border | 0;
@@ -1623,11 +1621,13 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /**
    * Стены/окна на полосе тумана — доп. препятствия для красоты.
    * Прямые тайлы по ребру (без углов): n/s — на всю ширину; w/e — боковые.
+   * Возвращает wallDecor: визуальные пропы В ТЕХ ЖЕ клетках стены (не меняют map).
    */
   placeFogDecor(map, border, rnd) {
     const rows = map.length, cols = map[0].length;
     const ring = this.fogFrameRing(cols, rows, border);
-    if (!ring.length) return;
+    const wallDecor = Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
+    if (!ring.length) return wallDecor;
     // размечаем по рёбрам отдельно — сегменты визуально непрерывны
     for (const side of ["n", "e", "s", "w"]) {
       const idxs = [];
@@ -1667,74 +1667,50 @@ window.FEEL_DEMOS["deadline-escape"] = {
         map[r][c] = marks[i] === 2 ? 7 : 2;
       }
     }
-    this.placeFogWallProps(map, border, rnd, ring);
+    this.paintWallDecorOverlays(map, wallDecor, ring, rnd);
+    return wallDecor;
   },
   /**
-   * Разнообразие у стен: 1×1 пропы на соседних клетках кольца
-   * (растение / кулер / шкаф / принтер / урна). Никогда не шире 1 клетки.
+   * Визуальные пропы в клетках стены/окна (map не меняется).
+   * plant / cooler / cabinet / printer / trash — только рисунок у полосы стены.
    */
-  placeFogWallProps(map, border, rnd, ring) {
-    const rows = map.length, cols = map[0].length;
-    const ringCells = ring || this.fogFrameRing(cols, rows, border);
-    if (!ringCells.length) return;
-    const kinds = [3, 4, 8, 9, 10]; // plant, cooler, cabinet, printer, trash
+  paintWallDecorOverlays(map, wallDecor, ring, rnd) {
+    const kinds = ["plant", "cooler", "cabinet", "printer", "trash"];
     const bySide = { n: [], e: [], s: [], w: [] };
-    for (const cell of ringCells) bySide[cell.edge].push(cell);
-
+    for (const cell of ring) bySide[cell.edge].push(cell);
     for (const side of ["n", "e", "s", "w"]) {
       const cells = bySide[side];
-      if (cells.length < 3) continue;
-      let openIdx = [];
+      const wallIdx = [];
       for (let i = 0; i < cells.length; i++) {
         const { c, r } = cells[i];
-        if (map[r][c] === 0) openIdx.push(i);
+        if (this.isFrameSolid(map[r][c])) wallIdx.push(i);
       }
-      // кандидат = открытая клетка рядом со стеной/окном по кольцу
-      const candidates = [];
-      for (const i of openIdx) {
-        const left = i > 0 && this.isFrameSolid(map[cells[i - 1].r][cells[i - 1].c]);
-        const right = i < cells.length - 1 && this.isFrameSolid(map[cells[i + 1].r][cells[i + 1].c]);
-        if (left || right) candidates.push(i);
-      }
-      // бюджет: ~половина «дыр» у стен, но оставить ≥2 спавна
-      const keepOpen = 2;
-      const budget = Math.max(0, Math.min(candidates.length, openIdx.length - keepOpen, 1 + ((candidates.length * 0.55) | 0)));
-      // перемешать кандидатов
-      for (let i = candidates.length - 1; i > 0; i--) {
+      if (!wallIdx.length) continue;
+      const budget = Math.max(1, Math.round(wallIdx.length * 0.55));
+      // shuffle
+      for (let i = wallIdx.length - 1; i > 0; i--) {
         const j = (rnd() * (i + 1)) | 0;
-        const t = candidates[i]; candidates[i] = candidates[j]; candidates[j] = t;
+        const t = wallIdx[i]; wallIdx[i] = wallIdx[j]; wallIdx[j] = t;
       }
       let placed = 0;
-      let lastKind = -1;
-      for (const i of candidates) {
+      let last = "";
+      for (const i of wallIdx) {
         if (placed >= budget) break;
-        const { c, r } = cells[i];
-        if (map[r][c] !== 0) continue;
-        // не ставить два пропа подряд без «воздуха» — читаемее
-        const neighProp =
-          (i > 0 && this.isFogProp(map[cells[i - 1].r][cells[i - 1].c])) ||
-          (i < cells.length - 1 && this.isFogProp(map[cells[i + 1].r][cells[i + 1].c]));
-        if (neighProp && rnd() < 0.7) continue;
+        if (rnd() > 0.72 && placed > 0) continue;
+        // не дублировать один и тот же проп на соседних стенах подряд
+        const prev = i > 0 ? wallDecor[cells[i - 1].r][cells[i - 1].c] : null;
+        const next = i < cells.length - 1 ? wallDecor[cells[i + 1].r][cells[i + 1].c] : null;
+        if ((prev || next) && rnd() < 0.55) continue;
         let kind = kinds[(rnd() * kinds.length) | 0];
-        if (kind === lastKind && kinds.length > 1) kind = kinds[(rnd() * kinds.length) | 0];
-        map[r][c] = kind;
-        lastKind = kind;
+        if (kind === last && kinds.length > 1) kind = kinds[(rnd() * kinds.length) | 0];
+        const { c, r } = cells[i];
+        wallDecor[r][c] = kind;
+        last = kind;
         placed++;
-      }
-      // гарантия спавна: ≥2 открытых на стороне
-      let open = 0;
-      for (const { c, r } of cells) if (map[r][c] === 0) open++;
-      while (open < Math.min(keepOpen, cells.length)) {
-        const props = [];
-        for (const { c, r } of cells) if (this.isFogProp(map[r][c])) props.push({ c, r });
-        if (!props.length) break;
-        const p = props[(rnd() * props.length) | 0];
-        map[p.r][p.c] = 0;
-        open++;
       }
     }
   },
-  /** Play-пропы + полоса тумана со стенами/окнами */
+  /** Play-пропы + полоса тумана со стенами/окнами (+ визуальные оверлеи у стен) */
   buildMap(floor, grid) {
     const { cols, rows, border, playCols, playRows } = grid;
     const b = border | 0;
@@ -1781,8 +1757,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
       }
       pi++;
     }
-    this.placeFogDecor(map, b, rnd);
-    return map;
+    const wallDecor = this.placeFogDecor(map, b, rnd);
+    return { map, wallDecor };
   },
   /** Игрок: только play-пол; полоса тумана и пропы — нельзя */
   walkable(s, col, row) {
@@ -1791,8 +1767,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return s.map[row][col] === 0;
   },
   isBlockedProp(cell) {
-    return cell === 1 || cell === 2 || cell === 3 || cell === 4 || cell === 5 || cell === 6 || cell === 7
-      || cell === 8 || cell === 9 || cell === 10;
+    return cell === 1 || cell === 2 || cell === 3 || cell === 4 || cell === 5 || cell === 6 || cell === 7;
   },
   isWallCell(cell) {
     return cell === 2 || cell === 7;
@@ -2854,10 +2829,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
     const floor = keepMeta.floor;
     const grid = this.gridSizeForFloor(floor);
     const { cols, rows, border, playCols, playRows } = grid;
-    const map = this.buildMap(floor, grid);
+    const built = this.buildMap(floor, grid);
+    const map = built.map;
+    const wallDecor = built.wallDecor;
     const start = this.findStart(map, border);
     Object.assign(s, {
-      cols, rows, border, playCols, playRows, map,
+      cols, rows, border, playCols, playRows, map, wallDecor,
       cellW: (api.w - s.padX * 2) / cols,
       cellH: (api.h - s.padT - s.padB) / rows,
       col: start.col, row: start.row,
@@ -3067,32 +3044,57 @@ window.FEEL_DEMOS["deadline-escape"] = {
     const isWin = s.map[row][col] === 7;
     const edge = this.fogEdgeOf(s, col, row) || "n";
     const key = isWin ? `tile_window_${edge}` : `tile_wall_${edge}`;
-    if (this.drawTile(ctx, key, x, y, w, h)) return;
-    if (isWin && this.drawTile(ctx, "tile_window", x, y, w, h)) return;
-    if (this.drawTile(ctx, "tile_wall", x, y, w, h)) return;
-    // procedural fallback — flush to outer edge
-    const band = Math.max(10, Math.round((edge === "n" || edge === "s" ? h : w) * 0.46));
-    ctx.fillStyle = "#343944";
-    if (edge === "n") ctx.fillRect(x, y, w, band);
-    else if (edge === "s") ctx.fillRect(x, y + h - band, w, band);
-    else if (edge === "w") ctx.fillRect(x, y, band, h);
-    else ctx.fillRect(x + w - band, y, band, h);
-    ctx.fillStyle = "#b8a990";
-    const face = Math.max(4, (band * 0.2) | 0);
-    if (edge === "n") ctx.fillRect(x, y + band - face, w, face);
-    else if (edge === "s") ctx.fillRect(x, y + h - band, w, face);
-    else if (edge === "w") ctx.fillRect(x + band - face, y, face, h);
-    else ctx.fillRect(x + w - band, y, face, h);
-    if (isWin) {
-      ctx.fillStyle = "rgba(110, 185, 215, 0.8)";
-      if (edge === "n" || edge === "s") {
-        const yy = edge === "n" ? y + 8 : y + h - band + 8;
-        ctx.fillRect(x + w * 0.12, yy, w * 0.76, band - 20);
-      } else {
-        const xx = edge === "w" ? x + 8 : x + w - band + 8;
-        ctx.fillRect(xx, y + h * 0.12, band - 20, h * 0.76);
+    let drawn = this.drawTile(ctx, key, x, y, w, h);
+    if (!drawn && isWin) drawn = this.drawTile(ctx, "tile_window", x, y, w, h);
+    if (!drawn) drawn = this.drawTile(ctx, "tile_wall", x, y, w, h);
+    if (!drawn) {
+      // procedural fallback — flush to outer edge
+      const band = Math.max(10, Math.round((edge === "n" || edge === "s" ? h : w) * 0.46));
+      ctx.fillStyle = "#343944";
+      if (edge === "n") ctx.fillRect(x, y, w, band);
+      else if (edge === "s") ctx.fillRect(x, y + h - band, w, band);
+      else if (edge === "w") ctx.fillRect(x, y, band, h);
+      else ctx.fillRect(x + w - band, y, band, h);
+      ctx.fillStyle = "#b8a990";
+      const face = Math.max(4, (band * 0.2) | 0);
+      if (edge === "n") ctx.fillRect(x, y + band - face, w, face);
+      else if (edge === "s") ctx.fillRect(x, y + h - band, w, face);
+      else if (edge === "w") ctx.fillRect(x + band - face, y, face, h);
+      else ctx.fillRect(x + w - band, y, face, h);
+      if (isWin) {
+        ctx.fillStyle = "rgba(110, 185, 215, 0.8)";
+        if (edge === "n" || edge === "s") {
+          const yy = edge === "n" ? y + 8 : y + h - band + 8;
+          ctx.fillRect(x + w * 0.12, yy, w * 0.76, band - 20);
+        } else {
+          const xx = edge === "w" ? x + 8 : x + w - band + 8;
+          ctx.fillRect(xx, y + h * 0.12, band - 20, h * 0.76);
+        }
       }
     }
+    // визуальный проп в той же клетке (свободная половина к play)
+    this.drawWallDecorAt(ctx, s, col, row, x, y, w, h, edge);
+  },
+  /**
+   * Оверлей пропа в клетке стены: не меняет коллизию/спавн, только рисунок.
+   * Ставится во «внутренней» половине клетки (к офису), ≤ размера клетки.
+   */
+  drawWallDecorAt(ctx, s, col, row, x, y, w, h, edge) {
+    const kind = s.wallDecor && s.wallDecor[row] && s.wallDecor[row][col];
+    if (!kind) return;
+    const e = edge || this.fogEdgeOf(s, col, row) || "n";
+    const pw = w * 0.5;
+    const ph = h * 0.5;
+    let px = x + (w - pw) * 0.5;
+    let py = y + (h - ph) * 0.5;
+    if (e === "n") { px = x + (w - pw) * 0.5; py = y + h * 0.46; }
+    else if (e === "s") { px = x + (w - pw) * 0.5; py = y + h * 0.04; }
+    else if (e === "w") { px = x + w * 0.46; py = y + (h - ph) * 0.5; }
+    else if (e === "e") { px = x + w * 0.04; py = y + (h - ph) * 0.5; }
+    const tileKey = "tile_" + kind;
+    if (this.drawTile(ctx, tileKey, px, py, pw, ph)) return;
+    const code = { plant: 3, cooler: 4, cabinet: 8, printer: 9, trash: 10 }[kind];
+    if (code) this.drawProp(ctx, px, py, pw, ph, code);
   },
   drawProp(ctx, x, y, w, h, cell) {
     if (cell === 2 || cell === 7) return;
