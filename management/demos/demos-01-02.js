@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
   /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250721a",
+  ART_BUST: "w250721b",
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
@@ -1265,10 +1265,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721a`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721b`));
     // стены — proof-геометрия без спрайтов (wall/window tiles не грузим)
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721a`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721b`));
     this._art = art;
     return art;
   },
@@ -3312,16 +3312,16 @@ window.FEEL_DEMOS["deadline-escape"] = {
       else if (face === "w" && end === "n") ctx.fillRect(x + band, y, w - band, band);
       else if (face === "w" && end === "s") ctx.fillRect(x + band, y + h - band, w - band, band);
     };
-    /** Тёмная кайма хвостика — с внешней грани стены (к соседним клеткам), не внутрь U и не к хрому. */
+    /** Тёмная кайма хвостика — внешняя грань на всю длину клетки (лицо + хвостик). */
     const fillEndTailLip = (face, end) => {
-      if (face === "s" && end === "w") ctx.fillRect(x, y, lip, h - band);
-      else if (face === "s" && end === "e") ctx.fillRect(x + w - lip, y, lip, h - band);
-      else if (face === "n" && end === "w") ctx.fillRect(x, y + band, lip, h - band);
-      else if (face === "n" && end === "e") ctx.fillRect(x + w - lip, y + band, lip, h - band);
-      else if (face === "e" && end === "n") ctx.fillRect(x, y, w - band, lip);
-      else if (face === "e" && end === "s") ctx.fillRect(x, y + h - lip, w - band, lip);
-      else if (face === "w" && end === "n") ctx.fillRect(x + band, y, w - band, lip);
-      else if (face === "w" && end === "s") ctx.fillRect(x + band, y + h - lip, w - band, lip);
+      if (face === "s" && end === "w") ctx.fillRect(x, y, lip, h);
+      else if (face === "s" && end === "e") ctx.fillRect(x + w - lip, y, lip, h);
+      else if (face === "n" && end === "w") ctx.fillRect(x, y, lip, h);
+      else if (face === "n" && end === "e") ctx.fillRect(x + w - lip, y, lip, h);
+      else if (face === "e" && end === "n") ctx.fillRect(x, y, w, lip);
+      else if (face === "e" && end === "s") ctx.fillRect(x, y + h - lip, w, lip);
+      else if (face === "w" && end === "n") ctx.fillRect(x, y, w, lip);
+      else if (face === "w" && end === "s") ctx.fillRect(x, y + h - lip, w, lip);
     };
     const fillSquare = (sq) => {
       if (sq === "se") ctx.fillRect(x + w - band, y + h - band, band, band);
