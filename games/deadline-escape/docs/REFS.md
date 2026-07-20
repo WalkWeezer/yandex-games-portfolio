@@ -24,7 +24,7 @@
 | `frames/tile_fog.png` | текстура FoW |
 | `frames/tile_wall_{n,s,e,w}.png` | стена у внешнего края клетки |
 | `frames/tile_window_{n,s,e,w}.png` | окно у внешнего края |
-| `frames/tile_cabinet.png` · `tile_printer.png` · `tile_trash.png` | 1×1 пропы у стен (fog) |
+| `frames/tile_cabinet.png` · `tile_printer.png` · `tile_trash.png` | визуальные оверлеи в клетке стены |
 | `border_wall_preview.png` | превью n/s/w/e |
 | `border_props_preview.png` | превью cabinet/printer/trash |
 | `frames/pu_*` · `vfx_*` | пикапы / VFX scaffolding |

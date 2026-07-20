@@ -143,18 +143,18 @@ Colleague = ally (slow, offer pause, mint ring) — not a threat mob.
 
 ## 3. Level grammar
 
-Cell codes: `0` floor · `1` desk 1×1 · `2` wall · `3` plant · `4` cooler · `5`/`6` desk 2×1 (W/E) · `7` window · `8` cabinet · `9` printer · `10` trash.
+Cell codes: `0` floor · `1` desk 1×1 · `2` wall · `3` plant · `4` cooler · `5`/`6` desk 2×1 (W/E) · `7` window.
 
 ```
 play = interior walkable office (base 7×9 + growth)
 fog  = 1 cell band each side (not walkable for player)
 # / W = decorative wall/window on fog band
-P    = 1×1 prop next to wall on fog (plant/cooler/cabinet/printer/trash)
+wallDecor = visual-only prop overlay IN the same wall/window cell
 ```
 
-**Rules:** fog band depth **always 1** cell each side; strong FoW gradient (outer≈black → play=0) drawn over entities so spawns are visible silhouettes; walls/windows + **1×1 props beside walls** on fog frame (never wider than 1 cell; ≥2 open spawn cells/side); desks 2×1 only in play; enemies enter from open fog cells; play aisles connected; Hit = body overlap.
+**Rules:** fog band depth **always 1** cell each side; strong FoW gradient (outer≈black → play=0) drawn over entities so spawns are visible silhouettes; walls/windows on fog frame; **props at walls are visual overlays in the same `2`/`7` cell** (do not occupy extra cells, do not change spawn/collision); desks/props solid only in play; enemies enter from open fog cells; play aisles connected; Hit = body overlap.
 
-**Required env sprites:** floors/props/fog + **`tile_wall_{n,s,e,w}` / `tile_window_{n,s,e,w}`** + **`tile_cabinet` / `tile_printer` / `tile_trash`** — DESIGN.md §8.
+**Required env sprites:** floors/props/fog + **`tile_wall_{n,s,e,w}` / `tile_window_{n,s,e,w}`** + **`tile_cabinet` / `tile_printer` / `tile_trash`** (wall overlays) — DESIGN.md §8.
 
 **Forbidden in MVP maps:** hideZones, LOS cones as primary verb, free-move navmesh chase.
 
