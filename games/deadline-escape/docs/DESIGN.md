@@ -163,11 +163,12 @@ boot → menu → hub → (daily) → run HUD ↔ pause
 | `frames/tile_plant.png` | `3` растение | scaffolding |
 | `frames/tile_cooler.png` | `4` кулер | scaffolding |
 | `frames/tile_fog.png` | туман / FoW текстура | scaffolding |
-| `frames/tile_wall.png` | `2` стена (прямая, на всю клетку) | **есть** (simple v1) |
-| `frames/tile_window.png` | `7` окно (прямая, на всю клетку) | **есть** (simple v1) |
+| `frames/tile_wall_{n,s,e,w}.png` | `2` стена: на всю ширину/высоту, **вплотную к внешнему краю** | **есть** |
+| `frames/tile_window_{n,s,e,w}.png` | `7` окно, та же геометрия | **есть** |
 
-Пока **без углов/end-cap** — один тайл стены и один окна на любую сторону.  
-Сборка: `python management/tools/build_border_tiles.py`  
+- `n`/`s` — горизонтальная полоса (юг = вплотную **снизу** клетки)  
+- `w`/`e` — **боковые** спрайты (вплотную слева/справа)  
+- Пока **без углов**. Сборка: `python management/tools/build_border_tiles.py`  
 Концепт-якорь: `refs/levels/layout-feel.png`.
 
 **CONFIRM дизайна** = human playtest feel на телефоне, не идеальный roster арта.

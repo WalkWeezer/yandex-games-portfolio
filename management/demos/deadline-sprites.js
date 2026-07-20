@@ -210,12 +210,15 @@
       <div class="sp-card">
         <h3>Необходимые env-спрайты · каркас</h3>
         <p class="sp-desc">
-          Полоса тумана. Пока <strong>только прямые</strong> <code>tile_wall</code> / <code>tile_window</code> (без углов).
-          Сборка: <code>build_border_tiles.py</code> · список в <code>DESIGN.md</code> §8.
+          Полоса на всю ширину/высоту, вплотную к краю: <code>n/s</code> гориз., <code>w/e</code> боковые.
+          Без углов. Сборка: <code>build_border_tiles.py</code>.
         </p>
         ${pngRow([
-          ["frames/tile_wall.png", "tile_wall"],
-          ["frames/tile_window.png", "tile_window"],
+          ["frames/tile_wall_n.png", "wall N"],
+          ["frames/tile_wall_s.png", "wall S ↓"],
+          ["frames/tile_wall_w.png", "wall W"],
+          ["frames/tile_wall_e.png", "wall E"],
+          ["frames/tile_window_n.png", "window N"],
           ["border_wall_preview.png", "preview", true],
         ], SP)}
       </div>

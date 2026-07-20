@@ -66,15 +66,15 @@ Top-down cartoon 7 by 9 office floor plan illustration: border walls, desks bloc
 ## JOB I — Env tiles (fog-frame) → `refs/sprites/frames/`
 
 Каркас полосы тумана. Якорь: `layout-feel.png`.  
-**Сейчас (simple):** только прямые full-cell тайлы, **без углов**.
+**Сейчас:** полоса на всю ширину/высоту клетки, **вплотную к внешнему краю**; бока — отдельные спрайты. Без углов.
 
 | Out | Role |
 |-----|------|
-| `tile_wall.png` | стена на всю клетку (top-down slab) |
-| `tile_window.png` | окно на всю клетку |
+| `tile_wall_n/s` | гориз. стена у верха / низа клетки |
+| `tile_wall_w/e` | боковая стена у левого / правого края |
+| `tile_window_{n,s,e,w}` | то же с окном |
 
-Сборка: `python management/tools/build_border_tiles.py`  
-Углы / ориентация по рёбрам — later, после OK на simple.
+Сборка: `python management/tools/build_border_tiles.py`
 
 ## DoD
 
