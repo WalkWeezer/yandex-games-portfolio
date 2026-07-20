@@ -10,6 +10,7 @@ export interface MetaSave {
   dailyDate: string;
   runsSinceInterstitial: number;
   removeAds: boolean;
+  tutSeen: boolean;
 }
 
 export function todayKey(): string {
@@ -28,6 +29,7 @@ export function defaultMeta(): MetaSave {
     dailyDate: "",
     runsSinceInterstitial: 0,
     removeAds: false,
+    tutSeen: false,
   };
 }
 

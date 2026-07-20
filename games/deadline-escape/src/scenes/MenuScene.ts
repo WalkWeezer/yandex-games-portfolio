@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import { COPY } from "../data/canon";
 import { loadMeta } from "../systems/MetaSave";
-import { addCta, addMuted, addSecondary, addTitle, fillBg } from "../ui/UiKit";
+import { LOGICAL_W, MU, addArtFrame, addBrand, addChip, addCta, addRowButtons, fillSafeBg } from "../ui/UiKit";
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -9,25 +9,22 @@ export class MenuScene extends Phaser.Scene {
   }
 
   create(): void {
-    fillBg(this);
-    addTitle(this, 220, COPY.brand);
-    addMuted(this, 290, "Employee of the Month");
-
-    // Placeholder key-art frame
-    const art = this.add.rectangle(360, 520, 360, 360, 0xc5d0df).setStrokeStyle(2, 0xb7c4d4);
-    this.add.image(360, 500, "char_hero").setScale(4);
-    this.add.text(360, 640, "заглушка · key-art", {
-      fontSize: "18px",
-      color: "#5b6b82",
-      fontFamily: "Trebuchet MS, Segoe UI, sans-serif",
-    }).setOrigin(0.5);
-    void art;
+    fillSafeBg(this);
+    addBrand(this, 100);
+    addArtFrame(this, 420, 420);
 
     const meta = loadMeta();
-    addMuted(this, 760, `🪙 ${meta.coins} · best эт.${meta.bestFloor}`);
+    const chipY = 700;
+    addChip(this, LOGICAL_W / 2 - 160, chipY, `🪙 ${meta.coins}`, 220);
+    addChip(this, LOGICAL_W / 2 + 160, chipY, `best эт.${meta.bestFloor}`, 240);
 
-    addCta(this, 880, COPY.play, () => this.scene.start("Hub"));
-    addSecondary(this, 980, COPY.shop, () => this.scene.start("Shop"));
-    addSecondary(this, 1070, COPY.settings, () => this.scene.start("Settings", { back: "Menu" }));
+    addCta(this, 820, COPY.play, () => this.scene.start("Hub"));
+    addRowButtons(
+      this,
+      940,
+      { label: COPY.shop, onClick: () => this.scene.start("Shop") },
+      { label: COPY.settings, onClick: () => this.scene.start("Settings", { back: "Menu" }) },
+    );
+    void MU;
   }
 }

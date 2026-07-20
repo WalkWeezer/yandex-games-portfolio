@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import { COPY } from "../data/canon";
 import { getSdk } from "../sdk/yandex";
 import { loadMeta, saveMeta } from "../systems/MetaSave";
-import { addMuted, addSecondary, addTitle, fillBg } from "../ui/UiKit";
+import { FONT, LOGICAL_W, MU, addHeaderBar, fillSafeBg } from "../ui/UiKit";
 
 interface SettingsData {
   back?: string;
@@ -20,35 +20,59 @@ export class SettingsScene extends Phaser.Scene {
   }
 
   create(): void {
-    fillBg(this);
+    fillSafeBg(this);
     const meta = loadMeta();
-    addTitle(this, 180, COPY.settings, 36);
+    addHeaderBar(this, 90, COPY.settings, () => this.goBack());
 
-    const muteBg = this.add.rectangle(360, 360, 560, 90, 0xf7fafc).setStrokeStyle(2, 0xb7c4d4).setInteractive({ useHandCursor: true });
-    const muteTxt = this.add.text(360, 360, meta.mute ? "🔇 Звук выкл" : "🔊 Звук вкл", {
-      fontSize: "28px",
-      color: "#1d3557",
-      fontStyle: "bold",
-      fontFamily: "Trebuchet MS, Segoe UI, sans-serif",
-    }).setOrigin(0.5);
+    const muteBg = this.add
+      .rectangle(LOGICAL_W / 2, 320, MU.contentW, 100, MU.panelHi)
+      .setStrokeStyle(2, MU.line)
+      .setInteractive({ useHandCursor: true });
+    const muteTxt = this.add
+      .text(LOGICAL_W / 2, 320, meta.mute ? "🔇 Звук выкл" : "🔊 Звук вкл", {
+        fontFamily: FONT,
+        fontSize: "28px",
+        color: "#1d3557",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5);
     muteBg.on("pointerup", () => {
       meta.mute = !meta.mute;
       saveMeta(meta);
       muteTxt.setText(meta.mute ? "🔇 Звук выкл" : "🔊 Звук вкл");
     });
 
-    addMuted(this, 520, "Яндекс Игры · Cloud save · RU · portrait");
-    addMuted(this, 580, getSdk().isMock ? "SDK: DEV_MOCK" : "SDK: live");
-    addMuted(this, 640, "Графика: заглушки по DESIGN (G0)");
+    const info = (y: number, label: string, sub: string) => {
+      this.add.rectangle(LOGICAL_W / 2, y, MU.contentW, 120, MU.panelHi).setStrokeStyle(2, MU.line);
+      this.add
+        .text(80, y - 28, label.toUpperCase(), {
+          fontFamily: FONT,
+          fontSize: "16px",
+          color: "#5b6b82",
+          fontStyle: "bold",
+        })
+        .setOrigin(0, 0.5);
+      this.add
+        .text(80, y + 18, sub, {
+          fontFamily: FONT,
+          fontSize: "20px",
+          color: "#5b6b82",
+          fontStyle: "bold",
+          wordWrap: { width: MU.contentW - 80 },
+        })
+        .setOrigin(0, 0.5);
+    };
+    info(500, "Яндекс Игры", "Cloud save · RU · portrait · SDK " + (getSdk().isMock ? "DEV_MOCK" : "live"));
+    info(680, "Сборка UI", "G0 · UI = beta mock shell · графика-заглушки");
+  }
 
-    addSecondary(this, 860, "← Назад", () => {
-      if (this.back === "Run") {
-        this.scene.stop();
-        this.scene.resume("Run");
-        this.scene.launch("Pause");
-      } else {
-        this.scene.start(this.back);
-      }
-    });
+  private goBack(): void {
+    if (this.back === "Run") {
+      this.scene.stop();
+      this.scene.resume("Run");
+      this.scene.launch("Pause");
+    } else {
+      this.scene.start(this.back);
+    }
   }
 }
