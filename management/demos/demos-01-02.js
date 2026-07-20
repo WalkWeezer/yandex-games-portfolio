@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
 /** Меняй при выкладке стен — сбрасывает кэш ensureArt (не показывать игроку в prod) */
-  ART_BUST: "w250721t",
+  ART_BUST: "w250721v",
   /** Production = без DEV∞/эт±/GOD. play/ ставит DEADLINE_PROD=true; дашборд: ?dev=1 включает дев. */
   isProd() {
     if (window.DEADLINE_PROD === true) return true;
@@ -1276,7 +1276,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721t`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721v`));
     // стены layout-feel: mid / L / U / stub (+ window)
     [
       "wall_n", "wall_s", "wall_e", "wall_w",
@@ -1288,9 +1288,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
       "window_nwe", "window_nsw", "window_nse", "window_swe",
       "window_stub_nw", "window_stub_ne", "window_stub_sw", "window_stub_se",
       "wall", "window",
-    ].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721t`));
+    ].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721v`));
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721t`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721v`));
     this._art = art;
     return art;
   },
