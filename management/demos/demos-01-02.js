@@ -1720,54 +1720,164 @@ window.FEEL_DEMOS["deadline-escape"] = {
       }
     }
   },
+  /**
+   * Бюджет препятствий play по этажу (LEVEL_PROMPTS bands).
+   * 5×7 база: рано — открытые проходы; позже — плотнее, но ≤~35% блокировки.
+   */
+  playPropPlan(floor, playCols, playRows) {
+    const area = playCols * playRows;
+    const f = floor | 0;
+    let desk1, desk2, plant = 1, cooler = 1;
+    if (f <= 2) {
+      desk1 = 1; desk2 = 1; // open aisles
+    } else if (f <= 8) {
+      desk1 = 2; desk2 = 1;
+    } else if (f <= 16) {
+      desk1 = 2; desk2 = 2;
+    } else if (f <= 24) {
+      desk1 = 2; desk2 = 2;
+      if (area >= 42) desk1 += 1;
+    } else {
+      desk1 = 2 + ((f + playCols) % 2);
+      desk2 = 2 + Math.min(2, Math.floor((area - 35) / 18));
+    }
+    // жёсткий потолок: не больше ~38% клеток play
+    const maxCells = Math.max(4, Math.floor(area * 0.38));
+    while (desk1 + desk2 * 2 + plant + cooler > maxCells && desk2 > 1) desk2--;
+    while (desk1 + desk2 * 2 + plant + cooler > maxCells && desk1 > 1) desk1--;
+    return { desk1, desk2, plant, cooler };
+  },
+  /** Кандидаты play: внутри офиса, shuffle с весом к «островкам» (не на входах). */
+  playPropCandidates(map, border, rnd) {
+    const rows = map.length, cols = map[0].length;
+    const b = border | 0;
+    const playCols = cols - b * 2, playRows = rows - b * 2;
+    const aisleC = b + ((playCols / 2) | 0);
+    const aisleR = b + ((playRows / 2) | 0);
+    const list = [];
+    for (let r = b; r < rows - b; r++) {
+      for (let c = b; c < cols - b; c++) {
+        // вес: край play (входы со спавна) — ниже; центральные проходы — ниже; островки — выше
+        const onEdge = r === b || r === rows - b - 1 || c === b || c === cols - b - 1;
+        const onAisle = c === aisleC || r === aisleR;
+        let w = 10;
+        if (onEdge) w -= 6;
+        if (onAisle) w -= 4;
+        // чуть внутрь от края — хороший «мебельный» ряд
+        if (!onEdge && (r === b + 1 || r === rows - b - 2 || c === b + 1 || c === cols - b - 2)) w += 3;
+        list.push({ c, r, w: Math.max(1, w) });
+      }
+    }
+    list.forEach((x) => { x.key = rnd() / x.w; });
+    list.sort((a, b) => a.key - b.key);
+    return list;
+  },
+  /** После раскладки: у открытых входов края снести только soft-пропы (plant/cooler). */
+  clearPlayEntries(map, border) {
+    const rows = map.length, cols = map[0].length;
+    const b = border | 0;
+    const soft = new Set([3, 4]);
+    const clearAt = (c, r) => {
+      if (r < b || c < b || r >= rows - b || c >= cols - b) return;
+      if (soft.has(map[r][c])) map[r][c] = 0;
+    };
+    for (let c = b; c < cols - b; c++) {
+      if (map[0][c] === 0) clearAt(c, b);
+      if (map[rows - 1][c] === 0) clearAt(c, rows - b - 1);
+    }
+    for (let r = b; r < rows - b; r++) {
+      if (map[r][0] === 0) clearAt(b, r);
+      if (map[r][cols - 1] === 0) clearAt(cols - b - 1, r);
+    }
+  },
+  /** Клетка на периметре play (соседит с fog) — столы сюда не ставим. */
+  isPlayPerimeter(c, r, border, cols, rows) {
+    const b = border | 0;
+    return r === b || r === rows - b - 1 || c === b || c === cols - b - 1;
+  },
   /** Play-пропы + полоса тумана со стенами/окнами (+ визуальные оверлеи у стен) */
   buildMap(floor, grid) {
     const { cols, rows, border, playCols, playRows } = grid;
     const b = border | 0;
     const rnd = this.floorRng(floor);
     const map = Array.from({ length: rows }, () => Array.from({ length: cols }, () => 0));
-    const candidates = [];
-    for (let r = b; r < rows - b; r++) {
-      for (let c = b; c < cols - b; c++) candidates.push({ c, r });
-    }
-    for (let i = candidates.length - 1; i > 0; i--) {
-      const j = (rnd() * (i + 1)) | 0;
-      const tmp = candidates[i];
-      candidates[i] = candidates[j];
-      candidates[j] = tmp;
-    }
-    const desk1 = 2 + ((floor - 1) % 3);
-    const desk2 = 2 + ((floor * 3) % 3) + Math.max(0, Math.floor((playCols * playRows - 35) / 28));
+    const plan = this.playPropPlan(floor, playCols, playRows);
     const props = [];
-    for (let i = 0; i < desk2; i++) props.push(5);
-    for (let i = 0; i < desk1; i++) props.push(1);
-    props.push(3, 4);
-    let pi = 0;
-    for (const cell of candidates) {
-      if (pi >= props.length) break;
-      const kind = props[pi];
-      if (kind === 5) {
-        if (cell.c + 1 >= cols - b) continue;
-        if (map[cell.r][cell.c] !== 0 || map[cell.r][cell.c + 1] !== 0) continue;
-        map[cell.r][cell.c] = 5;
-        map[cell.r][cell.c + 1] = 6;
+    for (let i = 0; i < plan.desk2; i++) props.push(5);
+    for (let i = 0; i < plan.desk1; i++) props.push(1);
+    if (plan.plant) props.push(3);
+    if (plan.cooler) props.push(4);
+
+    const candidates = this.playPropCandidates(map, b, rnd);
+    for (const kind of props) {
+      let placed = false;
+      for (const cell of candidates) {
+        if (kind === 5) {
+          if (cell.c + 1 >= cols - b) continue;
+          if (map[cell.r][cell.c] !== 0 || map[cell.r][cell.c + 1] !== 0) continue;
+          // столы — только внутри, не на периметре входов
+          if (this.isPlayPerimeter(cell.c, cell.r, b, cols, rows)) continue;
+          if (this.isPlayPerimeter(cell.c + 1, cell.r, b, cols, rows)) continue;
+          const aisleC = b + ((playCols / 2) | 0);
+          if ((cell.c === aisleC || cell.c + 1 === aisleC) && rnd() < 0.3) continue;
+          map[cell.r][cell.c] = 5;
+          map[cell.r][cell.c + 1] = 6;
+          if (!this.mapConnected(map, b)) {
+            map[cell.r][cell.c] = 0;
+            map[cell.r][cell.c + 1] = 0;
+            continue;
+          }
+          placed = true;
+          break;
+        }
+        if (map[cell.r][cell.c] !== 0) continue;
+        // plant/cooler тоже не на периметре входов (иначе clear/спавн их сносит)
+        if (this.isPlayPerimeter(cell.c, cell.r, b, cols, rows)) continue;
+        const aisleC = b + ((playCols / 2) | 0);
+        const aisleR = b + ((playRows / 2) | 0);
+        if ((cell.c === aisleC || cell.r === aisleR) && rnd() < 0.25) continue;
+        map[cell.r][cell.c] = kind;
         if (!this.mapConnected(map, b)) {
           map[cell.r][cell.c] = 0;
-          map[cell.r][cell.c + 1] = 0;
           continue;
         }
-        pi++;
-        continue;
+        placed = true;
+        break;
       }
-      if (map[cell.r][cell.c] !== 0) continue;
-      map[cell.r][cell.c] = kind;
-      if (!this.mapConnected(map, b)) {
-        map[cell.r][cell.c] = 0;
-        continue;
+      if (!placed) {
+        for (const cell of candidates) {
+          if (kind === 5) {
+            if (cell.c + 1 >= cols - b) continue;
+            if (map[cell.r][cell.c] !== 0 || map[cell.r][cell.c + 1] !== 0) continue;
+            if (this.isPlayPerimeter(cell.c, cell.r, b, cols, rows)) continue;
+            if (this.isPlayPerimeter(cell.c + 1, cell.r, b, cols, rows)) continue;
+            map[cell.r][cell.c] = 5;
+            map[cell.r][cell.c + 1] = 6;
+            if (!this.mapConnected(map, b)) {
+              map[cell.r][cell.c] = 0;
+              map[cell.r][cell.c + 1] = 0;
+              continue;
+            }
+            break;
+          }
+          if (map[cell.r][cell.c] !== 0) continue;
+          if (this.isPlayPerimeter(cell.c, cell.r, b, cols, rows)) continue;
+          map[cell.r][cell.c] = kind;
+          if (!this.mapConnected(map, b)) {
+            map[cell.r][cell.c] = 0;
+            continue;
+          }
+          break;
+        }
       }
-      pi++;
     }
     const wallDecor = this.placeFogDecor(map, b, rnd);
+    this.clearPlayEntries(map, b);
+    if (!this.mapConnected(map, b)) {
+      for (let r = b; r < rows - b; r++) {
+        for (let c = b; c < cols - b; c++) map[r][c] = 0;
+      }
+    }
     return { map, wallDecor };
   },
   /** Игрок: только play-пол; полоса тумана и пропы — нельзя */
