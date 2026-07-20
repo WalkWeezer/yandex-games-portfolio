@@ -3433,7 +3433,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
 
     const edge = this.fogEdgeOf(s, col, row);
-    const faceByEdge = { n: "n", s: "s", w: "w", e: "e" };
+    // wallGeomOf — полосы к play (N→s …); лицо заглушки = та же сторона
+    const faceByEdge = { n: "s", s: "n", w: "e", e: "w" };
     const face = (edge && faceByEdge[edge]) || sides[0];
     const ends = sides.filter((side) => side !== face);
 
