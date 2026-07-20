@@ -1263,21 +1263,21 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallcorn1`));
-    // каркас: прямые + L(2) + U(3) + stub у угла арены
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallart2`));
+    // каркас: прямые + L + stub (+ U в запасе)
     ["n", "s", "e", "w"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallcorn1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallcorn1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallart2`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallart2`);
     });
     ["nw", "ne", "sw", "se"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallcorn1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallcorn1`);
-      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=wallcorn1`);
-      tryLoad("tile_window_stub_" + d, `frames/tile_window_stub_${d}.png?v=wallcorn1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallart2`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallart2`);
+      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=wallart2`);
+      tryLoad("tile_window_stub_" + d, `frames/tile_window_stub_${d}.png?v=wallart2`);
     });
     ["nwe", "nsw", "nse", "swe"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallcorn1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallcorn1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallart2`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallart2`);
     });
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
     ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png`));
@@ -1675,68 +1675,63 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return this.isFrameSolid(s.map[row][col]);
   },
   /**
-   * Ключ спрайта стены: прямая / L (2) / U (3) / stub у угла арены.
-   * Полосы на внутреннем краю (к play).
+   * Ключ спрайта стены.
+   * Угол арены: L если стены сходятся с двух сторон, иначе stub.
    */
   wallTileKey(s, col, row) {
     const isWin = s.map[row][col] === 7;
     const prefix = isWin ? "tile_window_" : "tile_wall_";
     const corner = this.mapCornerOf(s, col, row);
     if (corner) {
-      // руки вдоль двух рёбер от угла
-      let arm1 = false, arm2 = false, long1 = false, long2 = false;
+      let arm1 = false, arm2 = false;
       if (corner === "nw") {
-        arm1 = this.frameSolidAt(s, col + 1, row);      // восток по N
-        arm2 = this.frameSolidAt(s, col, row + 1);      // юг по W
-        long1 = arm1 && this.frameSolidAt(s, col + 2, row);
-        long2 = arm2 && this.frameSolidAt(s, col, row + 2);
+        arm1 = this.frameSolidAt(s, col + 1, row);
+        arm2 = this.frameSolidAt(s, col, row + 1);
       } else if (corner === "ne") {
         arm1 = this.frameSolidAt(s, col - 1, row);
         arm2 = this.frameSolidAt(s, col, row + 1);
-        long1 = arm1 && this.frameSolidAt(s, col - 2, row);
-        long2 = arm2 && this.frameSolidAt(s, col, row + 2);
       } else if (corner === "sw") {
         arm1 = this.frameSolidAt(s, col + 1, row);
         arm2 = this.frameSolidAt(s, col, row - 1);
-        long1 = arm1 && this.frameSolidAt(s, col + 2, row);
-        long2 = arm2 && this.frameSolidAt(s, col, row - 2);
       } else {
         arm1 = this.frameSolidAt(s, col - 1, row);
         arm2 = this.frameSolidAt(s, col, row - 1);
-        long1 = arm1 && this.frameSolidAt(s, col - 2, row);
-        long2 = arm2 && this.frameSolidAt(s, col, row - 2);
       }
-      if (arm1 && arm2 && long1 && long2) {
-        // глубокий угол — 3 полосы
-        const triple = { nw: "nwe", ne: "nwe", sw: "swe", se: "swe" }[corner];
-        return prefix + triple;
-      }
-      if (arm1 && arm2) return prefix + corner; // L: 2 стены
-      return prefix + "stub_" + corner; // маленький кусок у угла арены
+      if (arm1 && arm2) return prefix + corner;
+      return prefix + "stub_" + corner;
     }
     return prefix + (this.fogEdgeOf(s, col, row) || "n");
   },
   /**
-   * Стены/окна на полосе тумана — препятствия на рёбрах.
-   * Углы карты тоже могут быть стеной (stub / L / U подбирается при отрисовке).
-   * Пропы у стен не ставятся.
+   * Стены на рёбрах (без клеток угла карты). Углы: L / stub по соседям.
    */
   placeFogDecor(map, border, rnd) {
     const rows = map.length, cols = map[0].length;
     const ring = this.fogFrameRing(cols, rows, border);
     const wallDecor = Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
     if (!ring.length) return wallDecor;
+
+    const isRingCorner = (c, r) => {
+      const b = border | 0;
+      const onN = r === b - 1, onS = r === rows - b, onW = c === b - 1, onE = c === cols - b;
+      return (onN || onS) && (onW || onE);
+    };
+
     for (const side of ["n", "e", "s", "w"]) {
       const idxs = [];
-      for (let i = 0; i < ring.length; i++) if (ring[i].edge === side) idxs.push(i);
-      if (idxs.length < 3) continue;
+      for (let i = 0; i < ring.length; i++) {
+        if (ring[i].edge !== side) continue;
+        if (isRingCorner(ring[i].c, ring[i].r)) continue;
+        idxs.push(i);
+      }
+      if (idxs.length < 2) continue;
       const marks = Array(idxs.length).fill(0);
-      const budget = Math.max(1, Math.round(idxs.length * 0.35));
+      const budget = Math.max(1, Math.round(idxs.length * 0.38));
       let placed = 0, guard = 0;
-      while (placed < budget && guard < 60) {
+      while (placed < budget && guard < 80) {
         guard++;
         const start = (rnd() * idxs.length) | 0;
-        const len = 1 + ((rnd() * 3) | 0);
+        const len = 1 + ((rnd() * Math.min(3, idxs.length - start)) | 0);
         if (start + len > idxs.length) continue;
         let ok = true;
         for (let k = 0; k < len; k++) if (marks[start + k]) { ok = false; break; }
@@ -1744,7 +1739,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
         if (start + len < idxs.length && marks[start + len]) ok = false;
         if (!ok) continue;
         for (let k = 0; k < len && placed < budget; k++) {
-          const wantWin = side === "n" ? rnd() < 0.65 : side === "s" ? rnd() < 0.12 : rnd() < 0.2;
+          const wantWin = side === "n" ? rnd() < 0.55 : side === "s" ? rnd() < 0.1 : rnd() < 0.18;
           marks[start + k] = wantWin ? 2 : 1;
           placed++;
         }
@@ -1763,21 +1758,25 @@ window.FEEL_DEMOS["deadline-escape"] = {
         map[r][c] = marks[i] === 2 ? 7 : 2;
       }
     }
-    // если стена доходит до угла арены — угол тоже стена (для stub/L)
+
     const b = border | 0;
     const corners = [
-      [b - 1, b - 1],
-      [cols - b, b - 1],
-      [b - 1, rows - b],
-      [cols - b, rows - b],
+      { c: b - 1, r: b - 1, d1: [1, 0], d2: [0, 1] },
+      { c: cols - b, r: b - 1, d1: [-1, 0], d2: [0, 1] },
+      { c: b - 1, r: rows - b, d1: [1, 0], d2: [0, -1] },
+      { c: cols - b, r: rows - b, d1: [-1, 0], d2: [0, -1] },
     ];
-    for (const [c, r] of corners) {
+    for (const corner of corners) {
+      const { c, r } = corner;
       if (c < 0 || r < 0 || c >= cols || r >= rows) continue;
-      if (map[r][c] !== 0) continue;
-      const near = [
-        [c + 1, r], [c - 1, r], [c, r + 1], [c, r - 1],
-      ].some(([nc, nr]) => nr >= 0 && nc >= 0 && nr < rows && nc < cols && (map[nr][nc] === 2 || map[nr][nc] === 7));
-      if (near) map[r][c] = 2;
+      const solid = (dc, dr) => {
+        const nc = c + dc, nr = r + dr;
+        return nr >= 0 && nc >= 0 && nr < rows && nc < cols
+          && (map[nr][nc] === 2 || map[nr][nc] === 7);
+      };
+      if (solid(corner.d1[0], corner.d1[1]) || solid(corner.d2[0], corner.d2[1])) {
+        map[r][c] = 2;
+      }
     }
     return wallDecor;
   },
