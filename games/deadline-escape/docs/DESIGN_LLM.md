@@ -131,7 +131,7 @@ Colleague = ally (slow, offer pause, mint ring) — not a threat mob.
 ### 2.5 FloorProgression
 
 - `gridSizeForFloor`: base 5×7 play; every 25 floors alternate +col/+row.
-- Layout seeded by floor; connected floors.
+- Layout seeded by floor; connected play; prop budget by floor band; desks keep off entry perimeter.
 - On win: `floor++`, new day layout.
 
 ### 2.6 MetaSave (prod)
