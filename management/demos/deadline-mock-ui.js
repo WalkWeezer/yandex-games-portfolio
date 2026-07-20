@@ -21,6 +21,10 @@
     dailyTitle: "Побег из планёрки",
     dailyHub: "Daily · побег из планёрки",
     tut: "Ходи по светлым · избегай боссов · доживи до 18:00",
+    tutTitle: "Как играть",
+    tutRules: "Ходи по светлым клеткам. Избегай боссов. Доживи до 18:00 — получишь ПОВЫШЕНИЕ.",
+    tutControls: "Управление: тап по полю — шаг · WASD / стрелки · ⏸ пауза",
+    tutOk: "Понятно",
     nextFloor: "Следующий этаж",
     again: "Ещё раз",
     toHub: "В хаб",
@@ -238,8 +242,13 @@
         if (!lastTs) lastTs = ts;
         const dt = Math.min(0.05, (ts - lastTs) / 1000);
         lastTs = ts;
-        const scale = run.coffee ? 0.42 : 1;
+        const scale = (run.coffee ? 0.42 : 1) * (run.showTut ? 0 : 1);
         run.gameMin += 18 * 0.5 * dt * scale;
+        if (run.showTut) {
+          paintRunHud();
+          raf = requestAnimationFrame(tick);
+          return;
+        }
         if (run.gameMin >= 540) {
           run.over = true;
           run.win = true;
@@ -327,15 +336,11 @@
         iframesUntil: 0,
         badgeDropped: false,
         badge: null,
-        showTut: !state.tutSeen,
+        showTut: true,
         player: { x: 50, y: 62 },
         bosses: [{ x: 22, y: 28 }, { x: 70, y: 40 }],
         ally: { x: 48, y: 34 },
       };
-      if (!state.tutSeen) {
-        state.tutSeen = true;
-        persist(state);
-      }
       ysdk.gameplayStart();
       go("run");
       startRunLoop();
@@ -347,24 +352,25 @@
       const phase = phone.querySelector("[data-mu-phase]");
       const bar = phone.querySelector("[data-mu-daybar]");
       const field = phone.querySelector("[data-mu-field]");
+      const tip = phone.querySelector("[data-mu-tip]");
       if (clock) clock.textContent = fmtClock(run.gameMin);
       if (phase) phase.textContent = phaseFor(run.gameMin).label;
       if (bar) bar.style.width = `${Math.min(100, (run.gameMin / 540) * 100)}%`;
+      if (tip) tip.hidden = !run.showTut;
       if (field && screen === "run") {
-        field.innerHTML = `
-          ${run.showTut ? `<div class="mu-tut">${COPY.tut}</div>` : ""}
+        let layer = field.querySelector("[data-mu-entities]");
+        if (!layer) {
+          layer = document.createElement("div");
+          layer.dataset.muEntities = "1";
+          layer.style.cssText = "position:absolute;inset:0;pointer-events:none";
+          field.appendChild(layer);
+        }
+        layer.innerHTML = `
           <div class="mu-dot" style="left:${run.player.x}%;top:${run.player.y}%"></div>
           <div class="mu-dot ally" style="left:${run.ally.x}%;top:${run.ally.y}%"></div>
           ${run.badge ? `<div class="mu-dot badge" style="left:${run.badge.x}%;top:${run.badge.y}%"></div>` : ""}
           ${run.bosses.map((b) => `<div class="mu-dot boss" style="left:${b.x}%;top:${b.y}%"></div>`).join("")}
-          <div class="mu-stick" aria-hidden="true"></div>
         `;
-        if (run.showTut) {
-          clearTimeout(run._tutTimer);
-          run._tutTimer = setTimeout(() => {
-            if (run) run.showTut = false;
-          }, 3500);
-        }
       }
       const shield = phone.querySelector("[data-mu-shield]");
       const coffee = phone.querySelector("[data-mu-coffee]");
@@ -490,6 +496,12 @@
             </div>
             <div class="mu-progress"><i data-mu-daybar style="width:0%"></i></div>
             <div class="mu-playfield" data-mu-field data-action="step" role="application" aria-label="Игровое поле"></div>
+            <div class="mu-tip" data-mu-tip ${run && run.showTut ? "" : "hidden"}>
+              <div class="mu-label">${COPY.tutTitle}</div>
+              <div class="mu-tip-rules">${COPY.tutRules}</div>
+              <div class="mu-tip-controls">${COPY.tutControls}</div>
+              <button type="button" class="mu-btn cta" data-action="dismiss-tut">${COPY.tutOk}</button>
+            </div>
           </div>`;
       }
       if (id === "pause") {
@@ -669,13 +681,19 @@
               go("run");
               startRunLoop();
             }
-          } else if (act === "step") {
-            if (!run || run.paused || run.over) return;
+          }           else if (act === "step") {
+            if (!run || run.paused || run.over || run.showTut) return;
             const rect = btn.getBoundingClientRect();
             const x = ((ev.clientX - rect.left) / rect.width) * 100;
             const y = ((ev.clientY - rect.top) / rect.height) * 100;
             run.player.x = Math.max(12, Math.min(88, x));
             run.player.y = Math.max(18, Math.min(86, y));
+            paintRunHud();
+          } else if (act === "dismiss-tut") {
+            if (!run) return;
+            run.showTut = false;
+            state.tutSeen = true;
+            persist(state);
             paintRunHud();
           } else if (act === "toggle-mute") {
             state.mute = !state.mute;
