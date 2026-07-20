@@ -1263,11 +1263,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallflush1`));
-    // каркас: стена/окно flush к внешнему краю, почти чёрная подложка (пропы у стен не используются)
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallinner1`));
+    // каркас: стена/окно flush к внутреннему краю (к play), почти чёрная подложка снаружи
     ["n", "s", "e", "w"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallflush1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallflush1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallinner1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallinner1`);
     });
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
     ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png`));
@@ -3135,8 +3135,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return true;
   },
   /**
-   * Стена/окно: полоса вплотную к внешнему (наружному) краю клетки,
-   * остальное — почти чёрная подложка. Без предметов/пропов.
+   * Стена/окно: полоса вплотную к ВНУТРЕННЕМУ краю клетки (к play),
+   * противоположно внешнему краю сетки. Снаружи клетки — почти чёрная подложка.
+   * Без предметов/пропов.
    */
   drawWallAt(ctx, s, col, row, x, y, w, h) {
     const isWin = s.map[row][col] === 7;
@@ -3149,26 +3150,26 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (!drawn && isWin) drawn = this.drawTile(ctx, "tile_window", x, y, w, h);
     if (!drawn) drawn = this.drawTile(ctx, "tile_wall", x, y, w, h);
     if (!drawn) {
-      // procedural: полоса flush к внешнему краю
+      // procedural: полоса flush к внутреннему краю (к play), не к внешнему
       const band = Math.max(10, Math.round((edge === "n" || edge === "s" ? h : w) * 0.34));
       ctx.fillStyle = "#343944";
-      if (edge === "n") ctx.fillRect(x, y, w, band);
-      else if (edge === "s") ctx.fillRect(x, y + h - band, w, band);
-      else if (edge === "w") ctx.fillRect(x, y, band, h);
-      else ctx.fillRect(x + w - band, y, band, h);
+      if (edge === "n") ctx.fillRect(x, y + h - band, w, band);       // N-каркас → низ клетки
+      else if (edge === "s") ctx.fillRect(x, y, w, band);              // S-каркас → верх
+      else if (edge === "w") ctx.fillRect(x + w - band, y, band, h);   // W-каркас → право
+      else ctx.fillRect(x, y, band, h);                                // E-каркас → лево
       ctx.fillStyle = "#b8a990";
       const face = Math.max(4, (band * 0.22) | 0);
-      if (edge === "n") ctx.fillRect(x, y + band - face, w, face);
-      else if (edge === "s") ctx.fillRect(x, y + h - band, w, face);
-      else if (edge === "w") ctx.fillRect(x + band - face, y, face, h);
-      else ctx.fillRect(x + w - band, y, face, h);
+      if (edge === "n") ctx.fillRect(x, y + h - band, w, face);
+      else if (edge === "s") ctx.fillRect(x, y + band - face, w, face);
+      else if (edge === "w") ctx.fillRect(x + w - band, y, face, h);
+      else ctx.fillRect(x + band - face, y, face, h);
       if (isWin) {
         ctx.fillStyle = "rgba(110, 185, 215, 0.8)";
         if (edge === "n" || edge === "s") {
-          const yy = edge === "n" ? y + 6 : y + h - band + 6;
+          const yy = edge === "n" ? y + h - band + 6 : y + 6;
           ctx.fillRect(x + w * 0.12, yy, w * 0.76, Math.max(6, band - 16));
         } else {
-          const xx = edge === "w" ? x + 6 : x + w - band + 6;
+          const xx = edge === "w" ? x + w - band + 6 : x + 6;
           ctx.fillRect(xx, y + h * 0.12, Math.max(6, band - 16), h * 0.76);
         }
       }
