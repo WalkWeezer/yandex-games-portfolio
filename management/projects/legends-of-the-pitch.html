@@ -86,10 +86,16 @@
 
     <section class="tab-panel" id="tab-demo">
       <div class="panel demo-wrap">
-        <h3>Feel-демка удалена</h3>
-        <p class="lead">Старый код снят специально. Пиши с нуля по промпту — не из git history.</p>
-        <p class="muted" style="margin:0 0 8px">Промпт: <code>management/demos/PROMPT_LEGENDS_PITCH_SCRATCH.md</code></p>
-        <p class="demo-hint" id="demo-hint">Демки нет · FEEL_DEMOS["legends-of-the-pitch"] отсутствует</p>
+        <h3>Feel-демка (простые фигуры)</h3>
+        <p class="lead">6v6 · сетка 3×5 целиком · магазин/merge · смотри матч. Цель — проверить feel, не красоту арта.</p>
+        <div class="lan-box">С телефона: запусти <code>serve-dashboard.bat</code> на ПК, открой URL из окна батника (одна Wi-Fi сеть).</div>
+        <p class="demo-hint" id="demo-hint">Загрузка демки…</p>
+        <canvas id="feel-demo" class="demo-hires" width="540" height="960" aria-label="Feel demo"></canvas>
+        <div class="demo-actions">
+          <button class="btn" type="button" id="demo-restart">Рестарт</button>
+          <button class="btn" type="button" id="demo-fullscreen">На весь экран</button>
+          <span class="muted demo-controls-hint">Тап: карта → любая клетка · ×2 в матче</span>
+        </div>
       </div>
     </section>
 
@@ -2727,6 +2733,7 @@ window.CURRENT_SLUG = "legends-of-the-pitch";
 <script src="../demos/demos-01-02.js"></script>
 <script src="../demos/demos-03-06.js"></script>
 <script src="../demos/demos-07-10.js"></script>
+<script src="../demos/legends-pitch-demo.js"></script>
 <script src="../assets/dashboard.js"></script>
 </body>
 </html>
