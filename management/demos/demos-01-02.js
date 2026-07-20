@@ -1263,15 +1263,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallart1`));
-    // каркас: стена/окно прижаты к внешнему краю + готовые композиты стена+проп
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallflush1`));
+    // каркас: стена/окно flush к внешнему краю, почти чёрная подложка (пропы у стен не используются)
     ["n", "s", "e", "w"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallart1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallart1`);
-      ["plant", "cooler", "cabinet", "printer", "trash"].forEach((p) => {
-        tryLoad(`tile_wall_${d}_${p}`, `frames/tile_wall_${d}_${p}.png?v=wallart1`);
-        tryLoad(`tile_window_${d}_${p}`, `frames/tile_window_${d}_${p}.png?v=wallart1`);
-      });
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallflush1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallflush1`);
     });
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
     ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png`));
@@ -1652,9 +1648,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return null;
   },
   /**
-   * Стены/окна на полосе тумана — доп. препятствия для красоты.
-   * Прямые тайлы по ребру (без углов): n/s — на всю ширину; w/e — боковые.
-   * Возвращает wallDecor: визуальные пропы В ТЕХ ЖЕ клетках стены (не меняют map).
+   * Стены/окна на полосе тумана — препятствия на рёбрах (без углов).
+   * Пропы у стен не ставятся. wallDecor остаётся пустым (совместимость state).
    */
   placeFogDecor(map, border, rnd) {
     const rows = map.length, cols = map[0].length;
@@ -1700,48 +1695,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
         map[r][c] = marks[i] === 2 ? 7 : 2;
       }
     }
-    this.paintWallDecorOverlays(map, wallDecor, ring, rnd);
+    // пропы у стен отключены — только чистая стена/окно на почти чёрной подложке
     return wallDecor;
-  },
-  /**
-   * Визуальные пропы в клетках стены/окна (map не меняется).
-   * plant / cooler / cabinet / printer / trash — только рисунок у полосы стены.
-   */
-  paintWallDecorOverlays(map, wallDecor, ring, rnd) {
-    const kinds = ["plant", "cooler", "cabinet", "printer", "trash"];
-    const bySide = { n: [], e: [], s: [], w: [] };
-    for (const cell of ring) bySide[cell.edge].push(cell);
-    for (const side of ["n", "e", "s", "w"]) {
-      const cells = bySide[side];
-      const wallIdx = [];
-      for (let i = 0; i < cells.length; i++) {
-        const { c, r } = cells[i];
-        if (this.isFrameSolid(map[r][c])) wallIdx.push(i);
-      }
-      if (!wallIdx.length) continue;
-      const budget = Math.max(1, Math.round(wallIdx.length * 0.55));
-      // shuffle
-      for (let i = wallIdx.length - 1; i > 0; i--) {
-        const j = (rnd() * (i + 1)) | 0;
-        const t = wallIdx[i]; wallIdx[i] = wallIdx[j]; wallIdx[j] = t;
-      }
-      let placed = 0;
-      let last = "";
-      for (const i of wallIdx) {
-        if (placed >= budget) break;
-        if (rnd() > 0.72 && placed > 0) continue;
-        // не дублировать один и тот же проп на соседних стенах подряд
-        const prev = i > 0 ? wallDecor[cells[i - 1].r][cells[i - 1].c] : null;
-        const next = i < cells.length - 1 ? wallDecor[cells[i + 1].r][cells[i + 1].c] : null;
-        if ((prev || next) && rnd() < 0.55) continue;
-        let kind = kinds[(rnd() * kinds.length) | 0];
-        if (kind === last && kinds.length > 1) kind = kinds[(rnd() * kinds.length) | 0];
-        const { c, r } = cells[i];
-        wallDecor[r][c] = kind;
-        last = kind;
-        placed++;
-      }
-    }
   },
   /**
    * Бюджет препятствий play по этажу (LEVEL_PROMPTS bands).
@@ -3180,32 +3135,29 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return true;
   },
   /**
-   * Стена/окно по ребру: на всю ширину/высоту клетки, вплотную к внешнему краю.
-   * Юг → полоса снизу; север → сверху; бока → боковые спрайты. Без углов.
+   * Стена/окно: полоса вплотную к внешнему (наружному) краю клетки,
+   * остальное — почти чёрная подложка. Без предметов/пропов.
    */
   drawWallAt(ctx, s, col, row, x, y, w, h) {
     const isWin = s.map[row][col] === 7;
     const edge = this.fogEdgeOf(s, col, row) || "n";
-    const decor = s.wallDecor && s.wallDecor[row] && s.wallDecor[row][col];
-    // готовый композит стена+проп (одна клетка, визуал)
-    if (decor) {
-      const comp = isWin ? `tile_window_${edge}_${decor}` : `tile_wall_${edge}_${decor}`;
-      if (this.drawTile(ctx, comp, x, y, w, h)) return;
-    }
+    // подложка почти чёрная на всю клетку
+    ctx.fillStyle = "#020308";
+    ctx.fillRect(x, y, w, h);
     const key = isWin ? `tile_window_${edge}` : `tile_wall_${edge}`;
     let drawn = this.drawTile(ctx, key, x, y, w, h);
     if (!drawn && isWin) drawn = this.drawTile(ctx, "tile_window", x, y, w, h);
     if (!drawn) drawn = this.drawTile(ctx, "tile_wall", x, y, w, h);
     if (!drawn) {
-      // procedural fallback — flush to outer edge
-      const band = Math.max(10, Math.round((edge === "n" || edge === "s" ? h : w) * 0.46));
+      // procedural: полоса flush к внешнему краю
+      const band = Math.max(10, Math.round((edge === "n" || edge === "s" ? h : w) * 0.34));
       ctx.fillStyle = "#343944";
       if (edge === "n") ctx.fillRect(x, y, w, band);
       else if (edge === "s") ctx.fillRect(x, y + h - band, w, band);
       else if (edge === "w") ctx.fillRect(x, y, band, h);
       else ctx.fillRect(x + w - band, y, band, h);
       ctx.fillStyle = "#b8a990";
-      const face = Math.max(4, (band * 0.2) | 0);
+      const face = Math.max(4, (band * 0.22) | 0);
       if (edge === "n") ctx.fillRect(x, y + band - face, w, face);
       else if (edge === "s") ctx.fillRect(x, y + h - band, w, face);
       else if (edge === "w") ctx.fillRect(x + band - face, y, face, h);
@@ -3213,36 +3165,14 @@ window.FEEL_DEMOS["deadline-escape"] = {
       if (isWin) {
         ctx.fillStyle = "rgba(110, 185, 215, 0.8)";
         if (edge === "n" || edge === "s") {
-          const yy = edge === "n" ? y + 8 : y + h - band + 8;
-          ctx.fillRect(x + w * 0.12, yy, w * 0.76, band - 20);
+          const yy = edge === "n" ? y + 6 : y + h - band + 6;
+          ctx.fillRect(x + w * 0.12, yy, w * 0.76, Math.max(6, band - 16));
         } else {
-          const xx = edge === "w" ? x + 8 : x + w - band + 8;
-          ctx.fillRect(xx, y + h * 0.12, band - 20, h * 0.76);
+          const xx = edge === "w" ? x + 6 : x + w - band + 6;
+          ctx.fillRect(xx, y + h * 0.12, Math.max(6, band - 16), h * 0.76);
         }
       }
     }
-    // fallback: оверлей пропа, если композита нет
-    if (decor) this.drawWallDecorAt(ctx, s, col, row, x, y, w, h, edge);
-  },
-  /**
-   * Fallback-оверлей пропа в клетке стены (если нет готового композита).
-   */
-  drawWallDecorAt(ctx, s, col, row, x, y, w, h, edge) {
-    const kind = s.wallDecor && s.wallDecor[row] && s.wallDecor[row][col];
-    if (!kind) return;
-    const e = edge || this.fogEdgeOf(s, col, row) || "n";
-    const pw = w * 0.5;
-    const ph = h * 0.5;
-    let px = x + (w - pw) * 0.5;
-    let py = y + (h - ph) * 0.5;
-    if (e === "n") { px = x + (w - pw) * 0.5; py = y + h * 0.46; }
-    else if (e === "s") { px = x + (w - pw) * 0.5; py = y + h * 0.04; }
-    else if (e === "w") { px = x + w * 0.46; py = y + (h - ph) * 0.5; }
-    else if (e === "e") { px = x + w * 0.04; py = y + (h - ph) * 0.5; }
-    const tileKey = "tile_" + kind;
-    if (this.drawTile(ctx, tileKey, px, py, pw, ph)) return;
-    const code = { plant: 3, cooler: 4, cabinet: 8, printer: 9, trash: 10 }[kind];
-    if (code) this.drawProp(ctx, px, py, pw, ph, code);
   },
   drawProp(ctx, x, y, w, h, cell) {
     if (cell === 2 || cell === 7) return;
@@ -3288,9 +3218,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
     ctx.fillStyle = "#c9a66b"; ctx.fillRect(x + 3, y + 5, w - 6, 8);
   },
   /**
-   * Туман войны: отдельно на каждую клетку края полосы.
-   * Градиент внутри клетки: внешний край → к play.
-   * Стены/окна: короткий мягкий градиент с внешнего края (без резкого стыка с тенью).
+   * Туман войны по клеткам каркаса.
+   * Обычная клетка края — один линейный градиент (чёрный у внешнего края).
+   * Угол или сосед со стеной — два линейных градиента, чёрный у обоих краёв.
+   * Клетки стен: без FoW (подложка уже почти чёрная).
    */
   drawFogOfWar(ctx, s, api) {
     const { w, h } = api;
@@ -3300,7 +3231,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
     const cw = s.cellW, ch = s.cellH;
     const gw = s.cols * cw, gh = s.rows * ch;
 
-    // за пределами сетки — почти чёрный
     ctx.fillStyle = "rgba(2, 3, 8, 0.97)";
     ctx.fillRect(0, 0, w, gy);
     ctx.fillRect(0, gy + gh, w, h - (gy + gh));
@@ -3308,14 +3238,14 @@ window.FEEL_DEMOS["deadline-escape"] = {
     ctx.fillRect(gx + gw, gy, w - (gx + gw), gh);
 
     const fogStops = (g) => {
-      g.addColorStop(0, "rgba(2,3,8,0.94)");
-      g.addColorStop(0.45, "rgba(6,8,16,0.62)");
-      g.addColorStop(0.82, "rgba(8,10,20,0.22)");
+      g.addColorStop(0, "rgba(2,3,8,0.96)");
+      g.addColorStop(0.4, "rgba(6,8,16,0.68)");
+      g.addColorStop(0.78, "rgba(8,10,20,0.26)");
       g.addColorStop(1, "rgba(8,10,20,0)");
     };
 
-    /** Локальный градиент на одну клетку края по направлению ребра. */
-    const paintCellFog = (c, r, edge) => {
+    /** Один линейный градиент: чёрный у указанного края клетки → прозрачный к противоположному. */
+    const paintEdgeGrad = (c, r, edge) => {
       const x = gx + c * cw;
       const y = gy + r * ch;
       let g;
@@ -3328,47 +3258,42 @@ window.FEEL_DEMOS["deadline-escape"] = {
       ctx.fillRect(x, y, cw, ch);
     };
 
-    /** Короткий мягкий край на стене/окне — сгладить стык тень→яркая стена. */
-    const paintWallFogSoft = (c, r, edge) => {
-      const x = gx + c * cw;
-      const y = gy + r * ch;
-      const frac = 0.34;
-      let g, rx, ry, rw, rh;
-      if (edge === "n") {
-        rh = ch * frac;
-        g = ctx.createLinearGradient(0, y, 0, y + rh);
-        rx = x; ry = y; rw = cw;
-      } else if (edge === "s") {
-        rh = ch * frac;
-        g = ctx.createLinearGradient(0, y + ch, 0, y + ch - rh);
-        rx = x; ry = y + ch - rh; rw = cw;
-      } else if (edge === "w") {
-        rw = cw * frac;
-        g = ctx.createLinearGradient(x, 0, x + rw, 0);
-        rx = x; ry = y; rh = ch;
-      } else {
-        rw = cw * frac;
-        g = ctx.createLinearGradient(x + cw, 0, x + cw - rw, 0);
-        rx = x + cw - rw; ry = y; rh = ch;
+    /** Какие края клетки должны быть чёрными (1 или 2). */
+    const fogDarkEdges = (c, r, primary) => {
+      const edges = [];
+      const push = (e) => { if (e && !edges.includes(e)) edges.push(e); };
+      push(primary);
+      const onN = r === b - 1;
+      const onS = r === s.rows - b;
+      const onW = c === b - 1;
+      const onE = c === s.cols - b;
+      // угол карты — два внешних края
+      if ((onN || onS) && (onW || onE)) {
+        if (onN) push("n");
+        if (onS) push("s");
+        if (onW) push("w");
+        if (onE) push("e");
+        return edges;
       }
-      g.addColorStop(0, "rgba(2,3,8,0.78)");
-      g.addColorStop(0.5, "rgba(6,8,16,0.32)");
-      g.addColorStop(1, "rgba(8,10,20,0)");
-      ctx.fillStyle = g;
-      ctx.fillRect(rx, ry, rw, rh);
+      // сосед со стеной/окном — доп. градиент от стороны стены (чёрный у стыка)
+      const neigh = [[1, 0, "e"], [-1, 0, "w"], [0, 1, "s"], [0, -1, "n"]];
+      for (const [dc, dr, ed] of neigh) {
+        const nc = c + dc, nr = r + dr;
+        if (nc < 0 || nr < 0 || nc >= s.cols || nr >= s.rows) continue;
+        if (this.isFrameSolid(s.map[nr][nc])) push(ed);
+      }
+      return edges;
     };
 
     const ring = this.fogFrameRing(s.cols, s.rows, b);
     for (const { c, r, edge } of ring) {
-      if (this.isFrameSolid(s.map[r][c])) {
-        paintWallFogSoft(c, r, edge);
-        continue;
-      }
-      paintCellFog(c, r, edge);
+      if (this.isFrameSolid(s.map[r][c])) continue; // стена: только чёрная подложка + спрайт
+      const dark = fogDarkEdges(c, r, edge);
+      for (const e of dark) paintEdgeGrad(c, r, e);
     }
 
     if (fog && fog.complete && fog.naturalWidth) {
-      ctx.globalAlpha = 0.28;
+      ctx.globalAlpha = 0.22;
       ctx.drawImage(fog, 0, 0, w, gy);
       ctx.drawImage(fog, 0, gy + gh, w, h - (gy + gh));
       ctx.globalAlpha = 1;
@@ -3400,6 +3325,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
     for (let r = 0; r < s.rows; r++) {
       for (let c = 0; c < s.cols; c++) {
         const x = s.padX + c * s.cellW, y = s.padT + r * s.cellH;
+        // клетки стены/окна — почти чёрная подложка (не светлый пол)
+        if (this.isFrameSolid(s.map[r][c])) {
+          ctx.fillStyle = "#020308";
+          ctx.fillRect(x, y, s.cellW, s.cellH);
+          continue;
+        }
         const floorKey = (r + c) % 2 ? "tile_floor_a" : "tile_floor_b";
         if (!this.drawTile(ctx, floorKey, x, y, s.cellW, s.cellH)) {
           ctx.fillStyle = coffee
