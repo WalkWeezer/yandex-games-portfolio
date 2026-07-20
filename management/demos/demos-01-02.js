@@ -1263,21 +1263,21 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=walllu1`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallfix1`));
     // каркас: полосы + цельные L/U (одна заливка, без склейки полос) + stub
     ["n", "s", "e", "w"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=walllu1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=walllu1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallfix1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallfix1`);
     });
     ["nw", "ne", "sw", "se"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=walllu1`);
-      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=walllu1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallfix1`);
+      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=wallfix1`);
     });
     ["nwe", "nsw", "nse", "swe"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=walllu1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallfix1`);
     });
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=walllu1`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=wallfix1`));
     this._art = art;
     return art;
   },
@@ -1673,11 +1673,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
   },
   /**
    * Ключ спрайта стены по wallGeomOf.
-   * Полоса / цельный L / цельный U / stub. Окно только на одинарной полосе.
+   * Окно только на прямой полосе ребра (не угол карты). Углы — L / stub / полоса.
    */
   wallTileKey(s, col, row) {
     const geom = this.wallGeomOf(s, col, row);
-    const single = !geom.square && geom.sides.length === 1;
+    const isMapCorner = !!this.mapCornerOf(s, col, row);
+    const single = !geom.square && geom.sides.length === 1 && !isMapCorner;
     const wantWin = s.map[row][col] === 7 && single;
     const prefix = wantWin ? "tile_window_" : "tile_wall_";
     const edgeOf = { s: "n", n: "s", e: "w", w: "e" };
@@ -1776,11 +1777,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
       }
     }
 
-    // окна только на одинарных стенах — 50%
+    // окна только на прямых рёбрах (не угол карты) — 50%
     const frame = { map, border: b, cols, rows };
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         if (map[r][c] !== 2) continue;
+        if (this.mapCornerOf(frame, c, r)) continue; // угол — всегда стена, не окно
         const geom = this.wallGeomOf(frame, c, r);
         if (geom.square || geom.sides.length !== 1) continue;
         if (rnd() < 0.5) map[r][c] = 7;
@@ -3216,6 +3218,14 @@ window.FEEL_DEMOS["deadline-escape"] = {
       api.setHud(`${this.clock(s.gameMin)} · ${ph.label} · эт.${s.floor} · 🪙${s.coins}${buff ? " · " + buff : ""}${god}${startTip}${s.nearMiss > 0 ? " · near!" : ""}${tip}`);
     }
   },
+  /** Пиксельные границы клетки — без субпиксельных щелей между спрайтами. */
+  cellRect(s, col, row) {
+    const x0 = Math.round(s.padX + col * s.cellW);
+    const y0 = Math.round(s.padT + row * s.cellH);
+    const x1 = Math.round(s.padX + (col + 1) * s.cellW);
+    const y1 = Math.round(s.padT + (row + 1) * s.cellH);
+    return { x: x0, y: y0, w: Math.max(1, x1 - x0), h: Math.max(1, y1 - y0) };
+  },
   /** Пол — ровно в клетку, без зазоров */
   drawTile(ctx, key, x, y, w, h) {
     const art = this.ensureArt();
@@ -3302,11 +3312,13 @@ window.FEEL_DEMOS["deadline-escape"] = {
    * Fallback — прямоугольники той же геометрии.
    */
   drawWallAt(ctx, s, col, row, x, y, w, h) {
+    // лёгкий overlap — гасит hairline между соседними клетками
+    const dx = x - 1, dy = y - 1, dw = w + 2, dh = h + 2;
     ctx.fillStyle = "#020308";
-    ctx.fillRect(x, y, w, h);
+    ctx.fillRect(dx, dy, dw, dh);
 
     const key = this.wallTileKey(s, col, row);
-    if (this.drawTile(ctx, key, x, y, w, h)) return;
+    if (this.drawTile(ctx, key, dx, dy, dw, dh)) return;
 
     const isWin = key.indexOf("window") >= 0;
     const { sides, square } = this.wallGeomOf(s, col, row);
@@ -3467,31 +3479,31 @@ window.FEEL_DEMOS["deadline-escape"] = {
     // 1) пол целиком — иначе клетка 6 затирает правую половину стола 2×1
     for (let r = 0; r < s.rows; r++) {
       for (let c = 0; c < s.cols; c++) {
-        const x = s.padX + c * s.cellW, y = s.padT + r * s.cellH;
+        const { x, y, w: cw, h: ch } = this.cellRect(s, c, r);
         // клетки стены/окна — почти чёрная подложка (не светлый пол)
         if (this.isFrameSolid(s.map[r][c])) {
           ctx.fillStyle = "#020308";
-          ctx.fillRect(x, y, s.cellW, s.cellH);
+          ctx.fillRect(x, y, cw, ch);
           continue;
         }
         const floorKey = (r + c) % 2 ? "tile_floor_a" : "tile_floor_b";
-        if (!this.drawTile(ctx, floorKey, x, y, s.cellW, s.cellH)) {
+        if (!this.drawTile(ctx, floorKey, x, y, cw, ch)) {
           ctx.fillStyle = coffee
             ? ((r + c) % 2 ? "#d9cfc0" : "#cfc4b4")
             : ((r + c) % 2 ? "#e9e5df" : "#ded9d2");
-          ctx.fillRect(x, y, s.cellW, s.cellH);
+          ctx.fillRect(x, y, cw, ch);
         }
       }
     }
     // 2) пропы + декоративные стены/окна на полосе тумана (каркас; концы = углы)
     for (let r = 0; r < s.rows; r++) {
       for (let c = 0; c < s.cols; c++) {
-        const x = s.padX + c * s.cellW, y = s.padT + r * s.cellH;
+        const { x, y, w: cw, h: ch } = this.cellRect(s, c, r);
         const cell = s.map[r][c];
         if (cell === 6) continue;
-        if (cell === 2 || cell === 7) this.drawWallAt(ctx, s, c, r, x, y, s.cellW, s.cellH);
+        if (cell === 2 || cell === 7) this.drawWallAt(ctx, s, c, r, x, y, cw, ch);
         else if (cell === 5) this.drawDesk2(ctx, x, y, s.cellW, s.cellH);
-        else if (cell !== 0) this.drawProp(ctx, x, y, s.cellW, s.cellH, cell);
+        else if (cell !== 0) this.drawProp(ctx, x, y, cw, ch, cell);
       }
     }
 
