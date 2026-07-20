@@ -10,7 +10,7 @@ Cell: 0 floor · 1 desk · 2 wall · 3 plant · 4 cooler · 5/6 desk2×1 · 7 wi
 Play grid: 5×7 (+growth every 25 floors)
 Fog band: always +1 cell each side; FoW per edge cell, disabled on wall/window; edge = mob enter/exit only (not walk)
 Decor: wall/window on fog frame; baked composites tile_wall_{edge}_{prop} IN the same wall cell
-Required sprites: tile_wall/window_{n,s,e,w}[+_{prop}] + tile_cabinet/printer/trash + floor/desk/plant/cooler/fog
+Required sprites: tile_wall/window_{n,s,e,w} + L/U/stub + floor/desk/plant/cooler/fog
 Interior: desks/props solid in play only; wallDecor does not change map codes; aisles connected
 Spawn: from open fog-band edge cells (≥2/side); visible under FoW
 Hit: body overlap (px/py), not shared cell

@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
 /** Меняй при выкладке стен — сбрасывает кэш ensureArt (не показывать игроку в prod) */
-  ART_BUST: "w250722a",
+  ART_BUST: "w250722d",
   /** Production = без DEV∞/эт±/GOD. play/ ставит DEADLINE_PROD=true; дашборд: ?dev=1 включает дев. */
   isProd() {
     if (window.DEADLINE_PROD === true) return true;
@@ -1276,9 +1276,21 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250722a`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250722d`));
+    // стены Option A: mid / L / U / stub (+ window)
+    [
+      "wall_n", "wall_s", "wall_e", "wall_w",
+      "wall_nw", "wall_ne", "wall_sw", "wall_se",
+      "wall_nwe", "wall_nsw", "wall_nse", "wall_swe",
+      "wall_stub_nw", "wall_stub_ne", "wall_stub_sw", "wall_stub_se",
+      "window_n", "window_s", "window_e", "window_w",
+      "window_nw", "window_ne", "window_sw", "window_se",
+      "window_nwe", "window_nsw", "window_nse", "window_swe",
+      "window_stub_nw", "window_stub_ne", "window_stub_sw", "window_stub_se",
+      "wall", "window",
+    ].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250722d`));
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250722a`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250722d`));
     this._art = art;
     return art;
   },
@@ -3279,7 +3291,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
    *  1 side  — mid
    *  2 sides — L
    *  3 sides — U
-   *  square  — stub (имя квадрата к play)
+   *  square  — stub (имя квадрата к play; wallTileKey зеркалит в geographic file)
    */
   wallGeomOf(s, col, row) {
     const sides = [];
@@ -3349,17 +3361,59 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return { sides, square: null };
   },
   /**
-   * Стены — только procedural-заглушки по wallPictureOf (без спрайтов).
+   * Ключ спрайта стены из wallPictureOf (Option A tiles).
+   * sides = полосы в клетке (n/s/e/w географически: n=верх клетки).
+   * mid: face→ребро карты (s→tile_wall_n — полоса снизу к play).
+   * L/U: имя = набор faces (nw = верх+лево).
+   */
+  wallTileKey(s, col, row) {
+    const pic = this.wallPictureOf(s, col, row);
+    const { kind, sides, square } = pic;
+    if (kind === "empty") return null;
+    const win = s.map[row][col] === 7;
+    const pref = win ? "tile_window_" : "tile_wall_";
+    const faceToEdge = { s: "n", n: "s", e: "w", w: "e" };
+    if (kind === "stub" && square) {
+      const bySq = { se: "nw", sw: "ne", ne: "sw", nw: "se" };
+      return pref + "stub_" + (bySq[square] || "nw");
+    }
+    if (kind === "mid" || kind === "face") {
+      if (sides.length !== 1) return null;
+      const edge = faceToEdge[sides[0]];
+      return edge ? pref + edge : null;
+    }
+    if (kind === "L") {
+      const set = new Set(sides);
+      if (set.has("n") && set.has("w")) return pref + "nw";
+      if (set.has("n") && set.has("e")) return pref + "ne";
+      if (set.has("s") && set.has("w")) return pref + "sw";
+      if (set.has("s") && set.has("e")) return pref + "se";
+      return null;
+    }
+    if (kind === "U") {
+      const set = new Set(sides);
+      if (set.has("n") && set.has("w") && set.has("e")) return pref + "nwe";
+      if (set.has("n") && set.has("s") && set.has("w")) return pref + "nsw";
+      if (set.has("n") && set.has("s") && set.has("e")) return pref + "nse";
+      if (set.has("s") && set.has("w") && set.has("e")) return pref + "swe";
+      return null;
+    }
+    return null;
+  },
+  /**
+   * Стены — Option A спрайты по wallPictureOf; fallback — procedural.
    */
   drawWallAt(ctx, s, col, row, x, y, w, h) {
     ctx.fillStyle = "#020308";
     ctx.fillRect(x, y, w, h);
+    const key = this.wallTileKey(s, col, row);
+    if (key && this.drawTile(ctx, key, x, y, w, h)) return;
     const pic = this.wallPictureOf(s, col, row);
     const { sides, square, kind } = pic;
     if (kind === "empty") return;
     const band = Math.max(10, Math.round(Math.min(s.cellW, s.cellH) * 0.42));
-    const body = "#a8acb2";
-    const edgeCol = "#3a3e44";
+    const body = "#d2b282";
+    const edgeCol = "#783e18";
     const lip = Math.max(3, (band * 0.18) | 0);
 
     const fillFace = (face) => {
@@ -3451,9 +3505,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (cell === 1 && this.drawTile(ctx, "tile_desk", x, y, w, h)) return;
     if (cell === 3 && this.drawTile(ctx, "tile_plant", x, y, w, h)) return;
     if (cell === 4 && this.drawTile(ctx, "tile_cooler", x, y, w, h)) return;
-    if (cell === 8 && this.drawTile(ctx, "tile_cabinet", x, y, w, h)) return;
-    if (cell === 9 && this.drawTile(ctx, "tile_printer", x, y, w, h)) return;
-    if (cell === 10 && this.drawTile(ctx, "tile_trash", x, y, w, h)) return;
     if (cell === 1) {
       ctx.fillStyle = "#6b5344"; ctx.fillRect(x + 2, y + 4, w - 4, h - 8);
       ctx.fillStyle = "#c9a66b"; ctx.fillRect(x + 4, y + 6, w - 8, 6);
@@ -3464,22 +3515,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
     } else if (cell === 4) {
       ctx.fillStyle = "#94a3b8"; ctx.fillRect(x + 4, y + 6, w - 8, h - 12);
       ctx.fillStyle = "#67e8f9"; ctx.fillRect(x + 8, y + 10, w - 16, 8);
-    } else if (cell === 8) {
-      ctx.fillStyle = "#76889e"; ctx.fillRect(x + w * 0.28, y + h * 0.18, w * 0.44, h * 0.68);
-      ctx.fillStyle = "#c9b070"; ctx.fillRect(x + w * 0.46, y + h * 0.32, w * 0.08, h * 0.06);
-      ctx.fillRect(x + w * 0.46, y + h * 0.48, w * 0.08, h * 0.06);
-      ctx.fillRect(x + w * 0.46, y + h * 0.64, w * 0.08, h * 0.06);
-    } else if (cell === 9) {
-      ctx.fillStyle = "#4b5563"; ctx.fillRect(x + w * 0.22, y + h * 0.32, w * 0.56, h * 0.4);
-      ctx.fillStyle = "#e5e7eb"; ctx.fillRect(x + w * 0.26, y + h * 0.58, w * 0.48, h * 0.14);
-      ctx.fillStyle = "#4ade80"; ctx.beginPath();
-      ctx.arc(x + w * 0.68, y + h * 0.42, w * 0.05, 0, Math.PI * 2); ctx.fill();
-    } else if (cell === 10) {
-      ctx.fillStyle = "#475569"; ctx.beginPath();
-      ctx.ellipse(x + w * 0.5, y + h * 0.72, w * 0.18, h * 0.1, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillRect(x + w * 0.34, y + h * 0.36, w * 0.32, h * 0.38);
-      ctx.fillStyle = "#1e293b"; ctx.beginPath();
-      ctx.ellipse(x + w * 0.5, y + h * 0.38, w * 0.16, h * 0.08, 0, 0, Math.PI * 2); ctx.fill();
     }
   },
   drawDesk2(ctx, x, y, cellW, cellH) {

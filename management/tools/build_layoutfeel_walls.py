@@ -1,40 +1,36 @@
 #!/usr/bin/env python3
-"""Build fog-frame wall tiles from layout-feel AI masters + geometry canon.
+"""Build Option A wall tiles (APPROVED) → frames/.
 
-SoT look: refs/levels/layout-feel.png + generated ai-*-layoutfeel.png
-SoT geom: wallGeomOf bands (~42% toward play), black under #020308.
+SoT look: refs/art/wall-option-a-cream-wood.png + wall-option-a-window.png
+SoT geom: wallGeomOf bands (~42% toward play), underfill #000/#020308.
 
-Outputs frames/tile_wall_{n,s,e,w,nw,...}, stubs, U, windows + art masters.
+Straights: rotate N master.
+L / U / stub: solid face fill + wood/cream edge rims only (no panel-cross).
 """
 from __future__ import annotations
 
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
 FRAMES = ROOT / "games" / "deadline-escape" / "refs" / "sprites" / "frames"
 ART = ROOT / "games" / "deadline-escape" / "refs" / "art"
+SPRITES = FRAMES.parent
 ARTIF = Path("/opt/cursor/artifacts/assets")
-SIDE = 256
-BAND = 108  # ~42% — matches feel demo band
-UNDER = (2, 3, 8, 255)
 
-# layout-feel / sampled AI cool office greys
-CAP = (58, 60, 66, 255)
-CAP_HI = (92, 96, 104, 255)
-FACE = (168, 172, 178, 255)
-FACE_DK = (132, 136, 144, 255)
-FACE_LO = (148, 152, 158, 255)
-BASE = (48, 50, 54, 255)
-BASE_HI = (78, 82, 88, 255)
-OUT = (28, 30, 34, 255)
-SEAM = (72, 76, 84, 255)
-GLASS = (140, 196, 220, 255)
-GLASS_HI = (210, 236, 248, 255)
-FRAME = (210, 214, 220, 255)
-FRAME_DK = (90, 96, 104, 255)
+SIDE = 256
+BAND = 108
+UNDER = (0, 0, 0, 255)
+WOOD = (120, 64, 24, 255)
+WOOD_HI = (162, 100, 46, 255)
+CREAM = (244, 230, 204, 255)
+CREAM_DK = (214, 194, 160, 255)
+FACE = (210, 178, 130, 255)
+FACE2 = (198, 166, 118, 255)
+WOOD_W = 18
+CREAM_W = 12
 
 
 def under() -> Image.Image:
@@ -43,133 +39,42 @@ def under() -> Image.Image:
 
 def find_master(names: list[str]) -> Path | None:
     for name in names:
-        for base in (ARTIF, ART):
+        for base in (ART, ARTIF, SPRITES / "chroma"):
             p = base / name
             if p.exists():
                 return p
     return None
 
 
-def extract_n_band(src: Image.Image) -> Image.Image:
-    """Crop wall content → SIDE×BAND strip (play at bottom)."""
-    a = np.asarray(src.convert("RGBA"))
-    lum = a[..., :3].astype(np.int16).sum(-1)
-    m = lum > 50
-    ys, xs = np.where(m)
+def black_key(im: Image.Image, thr: float = 16.0) -> Image.Image:
+    a = np.asarray(im.convert("RGBA")).astype(np.float32)
+    lum = a[..., :3].mean(-1)
+    alpha = np.where(lum < thr, 0, np.clip((lum - thr) / 10 * 255, 0, 255))
+    out = a.copy()
+    out[..., 3] = np.minimum(a[..., 3], alpha)
+    return Image.fromarray(out.astype(np.uint8), "RGBA")
+
+
+def extract_band(src: Image.Image) -> Image.Image:
+    cut = black_key(src)
+    a = np.asarray(cut)
+    ys, xs = np.where(a[..., 3] > 40)
     if len(ys) < 50:
         raise RuntimeError("no wall content in master")
     y0, y1 = int(ys.min()), int(ys.max()) + 1
-    # prefer full width; trim tiny side noise
-    x0, x1 = 0, a.shape[1]
-    crop = src.crop((x0, y0, x1, y1)).resize((SIDE, BAND), Image.Resampling.LANCZOS)
-    return crop.convert("RGBA")
+    x0, x1 = int(xs.min()), int(xs.max()) + 1
+    if x1 - x0 < src.width * 0.65:
+        x0, x1 = 0, src.width
+    return cut.crop((x0, y0, x1, y1)).resize((SIDE, BAND), Image.Resampling.LANCZOS).convert("RGBA")
 
 
-def place_band_bottom(band: Image.Image) -> Image.Image:
+def place_bottom(band: Image.Image) -> Image.Image:
     im = under()
-    im.paste(band, (0, SIDE - BAND), band)
-    # force left/right seam wrap
+    im.alpha_composite(band, (0, SIDE - BAND))
     a = np.array(im, copy=True)
+    a[: SIDE - BAND] = UNDER
     a[:, SIDE - 1] = a[:, 0]
     return Image.fromarray(a)
-
-
-def paint_procedural_n(with_window: bool = False) -> Image.Image:
-    """Fallback / window: layout-feel layers with panel seams."""
-    im = under()
-    y0 = SIDE - BAND
-    y1 = SIDE
-    d = ImageDraw.Draw(im)
-
-    # soft shadow above band (toward outer void)
-    sh = Image.new("RGBA", (SIDE, SIDE), (0, 0, 0, 0))
-    sd = ImageDraw.Draw(sh)
-    sd.rectangle((0, y0 - 10, SIDE - 1, y0 + 2), fill=(0, 0, 0, 70))
-    sh = sh.filter(ImageFilter.GaussianBlur(4))
-    im.alpha_composite(sh)
-    d = ImageDraw.Draw(im)
-
-    cap_h = max(12, int(BAND * 0.16))
-    base_h = max(14, int(BAND * 0.18))
-    body_y0 = y0 + cap_h
-    body_y1 = y1 - base_h
-
-    # dark cap (layout-feel top)
-    d.rectangle((0, y0, SIDE - 1, body_y0 - 1), fill=CAP)
-    d.line((0, y0 + 1, SIDE - 1, y0 + 1), fill=CAP_HI, width=2)
-    d.line((0, body_y0 - 1, SIDE - 1, body_y0 - 1), fill=OUT, width=1)
-
-    # light face
-    d.rectangle((0, body_y0, SIDE - 1, body_y1 - 1), fill=FACE)
-    a = np.array(im, copy=True)
-    for i, y in enumerate(range(body_y0, body_y1)):
-        tt = i / max(1, body_y1 - body_y0 - 1)
-        a[y, :, :3] = np.clip(
-            a[y, :, :3].astype(np.int16) - int(14 * tt), 0, 255
-        ).astype(np.uint8)
-    im.paste(Image.fromarray(a))
-    d = ImageDraw.Draw(im)
-
-    # vertical panel seams (layout-feel)
-    panel_w = SIDE // 4
-    for px in range(panel_w, SIDE, panel_w):
-        d.line((px, body_y0 + 2, px, body_y1 - 3), fill=SEAM, width=2)
-        d.line((px + 1, body_y0 + 2, px + 1, body_y1 - 3), fill=FACE_LO, width=1)
-
-    # baseboard toward play
-    d.rectangle((0, body_y1, SIDE - 1, y1 - 1), fill=BASE)
-    d.line((0, body_y1 + 1, SIDE - 1, body_y1 + 1), fill=BASE_HI, width=2)
-    d.line((0, y1 - 2, SIDE - 1, y1 - 2), fill=OUT, width=2)
-
-    if with_window:
-        gx0, gx1 = int(SIDE * 0.18), int(SIDE * 0.82)
-        gy0, gy1 = body_y0 + 8, body_y1 - 6
-        d.rounded_rectangle((gx0, gy0, gx1, gy1), radius=5, fill=FRAME_DK)
-        d.rounded_rectangle((gx0 + 4, gy0 + 4, gx1 - 4, gy1 - 4), radius=3, fill=FRAME)
-        d.rounded_rectangle((gx0 + 8, gy0 + 8, gx1 - 8, gy1 - 8), radius=2, fill=GLASS)
-        cx = (gx0 + gx1) // 2
-        cy = (gy0 + gy1) // 2
-        d.line((cx, gy0 + 10, cx, gy1 - 10), fill=GLASS_HI, width=2)
-        d.line((gx0 + 12, cy, gx1 - 12, cy), fill=GLASS_HI, width=2)
-        d.rectangle((gx0 - 2, gy1 - 2, gx1 + 2, min(y1 - 3, gy1 + 5)), fill=BASE_HI)
-
-    a = np.array(im, copy=True)
-    a[:, SIDE - 1] = a[:, 0]
-    return Image.fromarray(a)
-
-
-def blend_ai_n(ai_band: Image.Image) -> Image.Image:
-    """Seat AI strip into layout-feel geometry; keep AI face, enforce layers."""
-    proc = paint_procedural_n(False)
-    im = under()
-    # paste AI band
-    im.paste(ai_band, (0, SIDE - BAND), ai_band)
-    # darken extreme top pixels toward CAP if AI is too light on cap
-    a = np.array(im, copy=True)
-    y0 = SIDE - BAND
-    cap_h = max(10, int(BAND * 0.14))
-    for y in range(y0, y0 + cap_h):
-        t = (y - y0) / max(1, cap_h - 1)
-        target = np.array(CAP[:3], dtype=np.float32) * (1 - t) + np.array(CAP_HI[:3], dtype=np.float32) * t
-        row = a[y, :, :3].astype(np.float32)
-        a[y, :, :3] = (row * 0.35 + target * 0.65).clip(0, 255).astype(np.uint8)
-        a[y, :, 3] = 255
-    # ensure baseboard dark
-    base_h = max(12, int(BAND * 0.16))
-    for y in range(SIDE - base_h, SIDE):
-        t = (y - (SIDE - base_h)) / max(1, base_h - 1)
-        target = np.array(BASE[:3], dtype=np.float32) * (1 - t * 0.3)
-        row = a[y, :, :3].astype(np.float32)
-        a[y, :, :3] = (row * 0.4 + target * 0.6).clip(0, 255).astype(np.uint8)
-        a[y, :, 3] = 255
-    a[:, SIDE - 1] = a[:, 0]
-    im = Image.fromarray(a)
-    # light procedural overlay for seams only
-    overlay = paint_procedural_n(False)
-    oa = np.asarray(overlay)
-    ia = np.array(im, copy=True)
-    # keep AI mostly; pull seam columns from procedural if darker
-    return Image.fromarray(ia)
 
 
 def orient(n_tile: Image.Image, edge: str) -> Image.Image:
@@ -184,150 +89,164 @@ def orient(n_tile: Image.Image, edge: str) -> Image.Image:
     return n_tile
 
 
-def band_layer_color(t: float, band: int = BAND):
-    cap_h = max(12, int(band * 0.16))
-    base_h = max(14, int(band * 0.18))
-    if t < 2:
-        return CAP_HI
-    if t < cap_h:
-        return CAP
-    if t < band - base_h:
-        # soft face gradient
-        ft = (t - cap_h) / max(1, band - base_h - cap_h)
-        c0 = np.array(FACE[:3], dtype=np.float32)
-        c1 = np.array(FACE_DK[:3], dtype=np.float32)
-        rgb = (c0 * (1 - ft) + c1 * ft).astype(np.uint8)
-        return (int(rgb[0]), int(rgb[1]), int(rgb[2]), 255)
-    return BASE
+def edges_from_mask(mask, play_dirs, outer_dirs):
+    void = ~mask
+    up = np.zeros_like(mask)
+    up[1:] = void[:-1]
+    up[0] = True
+    dn = np.zeros_like(mask)
+    dn[:-1] = void[1:]
+    dn[-1] = True
+    lf = np.zeros_like(mask)
+    lf[:, 1:] = void[:, :-1]
+    lf[:, 0] = True
+    rt = np.zeros_like(mask)
+    rt[:, :-1] = void[:, 1:]
+    rt[:, -1] = True
+    play = np.zeros_like(mask)
+    outer = np.zeros_like(mask)
+    for d in play_dirs:
+        if d == "n":
+            play |= mask & up
+        if d == "s":
+            play |= mask & dn
+        if d == "w":
+            play |= mask & lf
+        if d == "e":
+            play |= mask & rt
+    for d in outer_dirs:
+        if d == "n":
+            outer |= mask & up
+        if d == "s":
+            outer |= mask & dn
+        if d == "w":
+            outer |= mask & lf
+        if d == "e":
+            outer |= mask & rt
+    return play, outer
 
 
-def depth_l(ys, xs, corner: str):
-    """L arms by geographic corner name: nw = top+left, se = bottom+right."""
-    if corner == "nw":
-        # top + left
-        d_h = (BAND - 1) - ys
-        d_v = (BAND - 1) - xs
-        on_h = ys < BAND
-        on_v = xs < BAND
-        depth = np.full(ys.shape, -1, dtype=np.int32)
-        depth[on_h] = d_h[on_h]
-        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
-        mask = on_h | on_v
-    elif corner == "ne":
-        # top + right
-        d_h = (BAND - 1) - ys
-        d_v = xs - (SIDE - BAND)
-        on_h = ys < BAND
-        on_v = xs >= SIDE - BAND
-        depth = np.full(ys.shape, -1, dtype=np.int32)
-        depth[on_h] = d_h[on_h]
-        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
-        mask = on_h | on_v
-    elif corner == "sw":
-        # bottom + left
-        d_h = ys - (SIDE - BAND)
-        d_v = (BAND - 1) - xs
-        on_h = ys >= SIDE - BAND
-        on_v = xs < BAND
-        depth = np.full(ys.shape, -1, dtype=np.int32)
-        depth[on_h] = d_h[on_h]
-        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
-        mask = on_h | on_v
-    else:
-        # se = bottom + right
-        d_h = ys - (SIDE - BAND)
-        d_v = xs - (SIDE - BAND)
-        on_h = ys >= SIDE - BAND
-        on_v = xs >= SIDE - BAND
-        depth = np.full(ys.shape, -1, dtype=np.int32)
-        depth[on_h] = d_h[on_h]
-        depth[on_v] = np.where(depth[on_v] < 0, d_v[on_v], np.minimum(depth[on_v], d_v[on_v]))
-        mask = on_h | on_v
-    return mask, depth
-
-
-def paint_by_depth(mask: np.ndarray, depth: np.ndarray, face_tex: Image.Image | None) -> Image.Image:
+def paint_solid_with_rims(mask, play_edge, outer_edge) -> Image.Image:
     a = np.array(under(), copy=True)
-    ys, xs = np.where(mask & (depth >= 0))
-    tex = None
-    if face_tex is not None:
-        tex = np.asarray(face_tex.convert("RGBA"))
+    ys, xs = np.where(mask)
+    dist = np.full(mask.shape, -1, np.int32)
+    frontier = play_edge & mask
+    dist[frontier] = 0
+    cur = frontier.copy()
+    d = 0
+    while cur.any() and d < BAND:
+        d += 1
+        grow = np.zeros_like(mask)
+        grow[:-1] |= cur[1:]
+        grow[1:] |= cur[:-1]
+        grow[:, :-1] |= cur[:, 1:]
+        grow[:, 1:] |= cur[:, :-1]
+        grow &= mask & (dist < 0)
+        dist[grow] = d
+        cur = grow
+    dist = np.where(mask & (dist < 0), BAND - 1, dist)
+
+    outer_dist = np.full(mask.shape, -1, np.int32)
+    frontier = outer_edge & mask
+    outer_dist[frontier] = 0
+    cur = frontier.copy()
+    d = 0
+    while cur.any() and d < BAND:
+        d += 1
+        grow = np.zeros_like(mask)
+        grow[:-1] |= cur[1:]
+        grow[1:] |= cur[:-1]
+        grow[:, :-1] |= cur[:, 1:]
+        grow[:, 1:] |= cur[:, :-1]
+        grow &= mask & (outer_dist < 0)
+        outer_dist[grow] = d
+        cur = grow
+    outer_dist = np.where(mask & (outer_dist < 0), BAND - 1, outer_dist)
+
     for y, x in zip(ys, xs):
-        t = int(depth[y, x])
-        if t < 0 or t >= BAND:
-            continue
-        col = band_layer_color(t)
-        cap_h = max(12, int(BAND * 0.16))
-        base_h = max(14, int(BAND * 0.18))
-        if tex is not None and cap_h <= t < BAND - base_h:
-            # sample AI face row
-            ty = min(BAND - 1, t)
-            tx = x % SIDE
-            tr, tg, tb, ta = tex[ty, tx]
-            if ta > 200:
-                # mix AI face into cool grey target
-                mix = np.array([tr, tg, tb], dtype=np.float32) * 0.55 + np.array(col[:3], dtype=np.float32) * 0.45
-                col = (int(mix[0]), int(mix[1]), int(mix[2]), 255)
-        a[y, x] = col
-    # inner rim highlight
-    inner = mask & (depth >= 0) & (depth <= 2)
-    a[inner] = CAP_HI
+        dp = int(dist[y, x])
+        do = int(outer_dist[y, x])
+        if dp < WOOD_W:
+            u = dp / max(1, WOOD_W - 1)
+            c = (np.array(WOOD_HI[:3]) * (1 - u) + np.array(WOOD[:3]) * u).astype(np.uint8)
+        elif do < CREAM_W:
+            u = do / max(1, CREAM_W - 1)
+            c = (np.array(CREAM[:3]) * (1 - u) + np.array(CREAM_DK[:3]) * u).astype(np.uint8)
+        else:
+            u = (dp - WOOD_W) / max(1, BAND - WOOD_W - CREAM_W)
+            u = float(np.clip(u, 0, 1))
+            c = (np.array(FACE[:3]) * (1 - u) + np.array(FACE2[:3]) * u).astype(np.uint8)
+        a[y, x, :3] = c
+        a[y, x, 3] = 255
     return Image.fromarray(a)
 
 
-def make_corner(corner: str, face_tex: Image.Image | None) -> Image.Image:
-    ys, xs = np.indices((SIDE, SIDE))
-    mask, depth = depth_l(ys, xs, corner)
-    return paint_by_depth(mask, depth, face_tex)
-
-
-def make_stub(corner: str, face_tex: Image.Image | None) -> Image.Image:
-    ys, xs = np.indices((SIDE, SIDE))
+def make_L(corner: str) -> Image.Image:
+    yy, xx = np.indices((SIDE, SIDE))
     if corner == "nw":
-        mask = (ys >= SIDE - BAND) & (xs >= SIDE - BAND)
-        depth = np.minimum(ys - (SIDE - BAND), xs - (SIDE - BAND))
+        mask = (yy < BAND) | (xx < BAND)
+        play, outer = edges_from_mask(mask, ("s", "e"), ("n", "w"))
     elif corner == "ne":
-        mask = (ys >= SIDE - BAND) & (xs < BAND)
-        depth = np.minimum(ys - (SIDE - BAND), (BAND - 1) - xs)
+        mask = (yy < BAND) | (xx >= SIDE - BAND)
+        play, outer = edges_from_mask(mask, ("s", "w"), ("n", "e"))
     elif corner == "sw":
-        mask = (ys < BAND) & (xs >= SIDE - BAND)
-        depth = np.minimum((BAND - 1) - ys, xs - (SIDE - BAND))
+        mask = (yy >= SIDE - BAND) | (xx < BAND)
+        play, outer = edges_from_mask(mask, ("n", "e"), ("s", "w"))
     else:
-        mask = (ys < BAND) & (xs < BAND)
-        depth = np.minimum((BAND - 1) - ys, (BAND - 1) - xs)
-    depth = np.where(mask, depth, -1)
-    return paint_by_depth(mask, depth, face_tex)
+        mask = (yy >= SIDE - BAND) | (xx >= SIDE - BAND)
+        play, outer = edges_from_mask(mask, ("n", "w"), ("s", "e"))
+    return paint_solid_with_rims(mask, play, outer)
 
 
-def make_u(key: str, face_tex: Image.Image | None) -> Image.Image:
-    """U by geographic face letters: n=top, s=bottom, e=right, w=left."""
-    ys, xs = np.indices((SIDE, SIDE))
-    depth = np.full((SIDE, SIDE), 10**9, dtype=np.int32)
-    mask = np.zeros((SIDE, SIDE), dtype=bool)
+def make_stub(corner: str) -> Image.Image:
+    yy, xx = np.indices((SIDE, SIDE))
+    if corner == "nw":
+        mask = (yy >= SIDE - BAND) & (xx >= SIDE - BAND)
+        play, outer = edges_from_mask(mask, ("s", "e"), ("n", "w"))
+    elif corner == "ne":
+        mask = (yy >= SIDE - BAND) & (xx < BAND)
+        play, outer = edges_from_mask(mask, ("s", "w"), ("n", "e"))
+    elif corner == "sw":
+        mask = (yy < BAND) & (xx >= SIDE - BAND)
+        play, outer = edges_from_mask(mask, ("n", "e"), ("s", "w"))
+    else:
+        mask = (yy < BAND) & (xx < BAND)
+        play, outer = edges_from_mask(mask, ("n", "w"), ("s", "e"))
+    return paint_solid_with_rims(mask, play, outer)
+
+
+def make_U(key: str) -> Image.Image:
+    yy, xx = np.indices((SIDE, SIDE))
+    mask = np.zeros((SIDE, SIDE), bool)
     if "n" in key:
-        m = ys < BAND
-        mask |= m
-        depth = np.where(m, np.minimum(depth, (BAND - 1) - ys), depth)
+        mask |= yy < BAND
     if "s" in key:
-        m = ys >= SIDE - BAND
-        mask |= m
-        depth = np.where(m, np.minimum(depth, ys - (SIDE - BAND)), depth)
+        mask |= yy >= SIDE - BAND
     if "e" in key:
-        m = xs >= SIDE - BAND
-        mask |= m
-        depth = np.where(m, np.minimum(depth, xs - (SIDE - BAND)), depth)
+        mask |= xx >= SIDE - BAND
     if "w" in key:
-        m = xs < BAND
-        mask |= m
-        depth = np.where(m, np.minimum(depth, (BAND - 1) - xs), depth)
-    depth = np.where(mask, depth, -1)
-    return paint_by_depth(mask, depth, face_tex)
+        mask |= xx < BAND
+    play_dirs, outer_dirs = [], []
+    if "n" in key:
+        play_dirs.append("s")
+        outer_dirs.append("n")
+    if "s" in key:
+        play_dirs.append("n")
+        outer_dirs.append("s")
+    if "e" in key:
+        play_dirs.append("w")
+        outer_dirs.append("e")
+    if "w" in key:
+        play_dirs.append("e")
+        outer_dirs.append("w")
+    play, outer = edges_from_mask(mask, tuple(play_dirs), tuple(outer_dirs))
+    return paint_solid_with_rims(mask, play, outer)
 
 
 def save(name: str, im: Image.Image) -> None:
     path = FRAMES / name
     im.save(path)
-    print("wrote", path.name, path.stat().st_size)
+    print("wrote", path.name)
 
 
 def main() -> None:
@@ -335,49 +254,23 @@ def main() -> None:
     ART.mkdir(parents=True, exist_ok=True)
 
     wall_src = find_master([
-        "ai-wall-n-layoutfeel.png",
-        "ai-set-wall-n.png",
-        "wall_master_n.png",
+        "wall-option-a-cream-wood.png",
+        "wall_n_black.png",
     ])
     win_src = find_master([
-        "ai-window-n-layoutfeel.png",
-        "ai-set-window-n.png",
-        "window_master_n.png",
+        "wall-option-a-window.png",
+        "window_n_black.png",
     ])
+    if not wall_src or not win_src:
+        raise SystemExit("missing Option A masters in refs/art/")
 
-    if wall_src:
-        print("master wall:", wall_src)
-        raw = Image.open(wall_src).convert("RGBA")
-        raw.save(ART / "ai-wall-n-layoutfeel.png")
-        band = extract_n_band(raw)
-        band.save(ART / "ai-set-wall-n.png")
-        n = blend_ai_n(band)
-        face_tex = band
-    else:
-        print("no AI wall master — procedural layout-feel")
-        n = paint_procedural_n(False)
-        face_tex = n.crop((0, SIDE - BAND, SIDE, SIDE))
-
-    if win_src:
-        print("master window:", win_src)
-        wraw = Image.open(win_src).convert("RGBA")
-        wraw.save(ART / "ai-window-n-layoutfeel.png")
-        try:
-            wband = extract_n_band(wraw)
-            wband.save(ART / "ai-set-window-n.png")
-            win_n = place_band_bottom(wband)
-            # reinforce dark under
-            wa = np.array(win_n, copy=True)
-            lum = wa[..., :3].astype(np.int16).sum(-1)
-            wa[lum < 40] = UNDER
-            win_n = Image.fromarray(wa)
-        except Exception as e:
-            print("window extract failed, procedural:", e)
-            win_n = paint_procedural_n(True)
-    else:
-        win_n = paint_procedural_n(True)
-
-    walls = {e: orient(n, e) for e in "nsew"}
+    print("master wall:", wall_src)
+    print("master window:", win_src)
+    wband = extract_band(Image.open(wall_src).convert("RGBA"))
+    vband = extract_band(Image.open(win_src).convert("RGBA"))
+    wall_n = place_bottom(wband)
+    win_n = place_bottom(vband)
+    walls = {e: orient(wall_n, e) for e in "nsew"}
     wins = {e: orient(win_n, e) for e in "nsew"}
 
     for e, im in walls.items():
@@ -388,56 +281,41 @@ def main() -> None:
     save("tile_window.png", wins["n"])
 
     for c in ("nw", "ne", "sw", "se"):
-        corner = make_corner(c, face_tex)
+        corner = make_L(c)
+        stub = make_stub(c)
         save(f"tile_wall_{c}.png", corner)
         save(f"tile_window_{c}.png", corner)
-        stub = make_stub(c, face_tex)
         save(f"tile_wall_stub_{c}.png", stub)
         save(f"tile_window_stub_{c}.png", stub)
 
     for key in ("nwe", "nsw", "nse", "swe"):
-        u = make_u(key, face_tex)
+        u = make_U(key)
         save(f"tile_wall_{key}.png", u)
         save(f"tile_window_{key}.png", u)
 
-    # catalog copies
-    for src_name, dst_name in [
-        ("ai-wall-corner-nw-layoutfeel.png", "ai-set-corner-nw.png"),
-        ("ai-wall-stub-se-layoutfeel.png", "ai-set-stub-nw.png"),
-        ("ai-wall-stub-se-layoutfeel.png", "stub_master_nw.png"),
-    ]:
-        src = find_master([src_name])
-        if src:
-            Image.open(src).convert("RGBA").save(ART / dst_name)
-            print("ref", dst_name)
-
-    # U master from nwe
+    # art copies
+    Image.open(FRAMES / "tile_wall_n.png").save(ART / "ai-set-wall-n.png")
+    Image.open(FRAMES / "tile_window_n.png").save(ART / "ai-set-window-n.png")
     Image.open(FRAMES / "tile_wall_nwe.png").save(ART / "ai-set-u-nwe.png")
-    Image.open(FRAMES / "tile_wall_nw.png").save(ART / "tile_wall_nw.png")
     for e in "nsew":
         Image.open(FRAMES / f"tile_wall_{e}.png").save(ART / f"tile_wall_{e}.png")
+    Image.open(FRAMES / "tile_wall_nw.png").save(ART / "tile_wall_nw.png")
     for c in ("nw", "ne", "sw", "se"):
         Image.open(FRAMES / f"tile_wall_stub_{c}.png").save(ART / f"tile_wall_stub_{c}.png")
 
+    prev = Image.new("RGBA", (SIDE * 4 + 24, SIDE * 2 + 24), (22, 20, 28, 255))
     names = [
-        "tile_wall_n", "tile_window_n", "tile_wall_nw", "tile_wall_stub_nw",
-        "tile_wall_e", "tile_window_e", "tile_wall_nwe", "tile_wall_swe",
+        "tile_wall_n", "tile_window_n", "tile_wall_e", "tile_window_e",
+        "tile_wall_sw", "tile_wall_se", "tile_wall_nwe", "tile_wall_stub_nw",
     ]
-    prev = Image.new("RGBA", (SIDE * 4 + 24, SIDE * 2 + 24), (24, 26, 32, 255))
     for i, nm in enumerate(names):
         prev.paste(Image.open(FRAMES / f"{nm}.png"), (12 + (i % 4) * SIDE, 12 + (i // 4) * SIDE))
-    out_prev = Path("/opt/cursor/artifacts/wall-layoutfeel-preview.png")
-    prev.save(out_prev)
-    prev.save(FRAMES.parent / "wall_layoutfeel_preview.png")
-    prev.save(FRAMES.parent / "wall_seamless_preview.png")
-
-    # seam strip
-    seam = Image.new("RGBA", (SIDE * 3, SIDE), UNDER)
-    seam.paste(walls["n"], (0, 0))
-    seam.paste(walls["n"], (SIDE, 0))
-    seam.paste(wins["n"], (SIDE * 2, 0))
-    seam.save(Path("/opt/cursor/artifacts/wall-layoutfeel-seam.png"))
-    print("DONE", out_prev)
+    prev.save(SPRITES / "wall_layoutfeel_preview.png")
+    prev.save(SPRITES / "wall_seamless_preview.png")
+    if ARTIF.parent.exists():
+        ARTIF.mkdir(parents=True, exist_ok=True)
+        prev.save(ARTIF / "wall-set-a-overview.png")
+    print("DONE Option A walls")
 
 
 if __name__ == "__main__":

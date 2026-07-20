@@ -65,26 +65,19 @@ Top-down cartoon 7 by 9 office floor plan illustration: border walls, desks bloc
 
 ## JOB I — Env tiles (fog-frame) → `refs/sprites/frames/`
 
-Каркас полосы тумана. Якорь стиля: desk + AI masters  
-`refs/art/ai-set-wall-n.png` (+ window/corner refs). Бесшовный набор: стена и окно — одна геометрия/палитра; угол — цельная форма, не compose.
-
-**Сейчас:** полоса **full-bleed** (без боковых гэпов) на внутреннем крае к play;
-L / U / stub-квадрат на углах. Окно только на одинарной стене (50%).
+Каркас полосы тумана. **APPROVED Option A:** cream panels + wood  
+Masters: `refs/art/wall-option-a-cream-wood.png` · `wall-option-a-window.png`.
 
 | Out | Role |
 |-----|------|
 | `tile_wall_{n,s,e,w}` | прямая стена flush |
 | `tile_window_{n,s,e,w}` | то же с окном |
-| `tile_wall_{nw,ne,sw,se}` | L |
+| `tile_wall_{nw,ne,sw,se}` | L (solid rim, без panel-cross) |
 | `tile_wall_stub_*` | квадрат стыка угла карты |
 | `tile_wall_{nwe,nsw,nse,swe}` | U |
-| `tile_cabinet` / `tile_printer` / `tile_trash` | AI пропы |
 
-~~`tile_wall/window_{edge}_{prop}`~~ → архив `archive/2026-07-20-wall-prop-composites/`
-
-Сборка стен: `python management/tools/build_layoutfeel_walls.py`  
-(якорь: `refs/levels/layout-feel.png` + AI masters `ai-*-layoutfeel.png`;  
-старое: `build_seamless_wall_set.py` / `process_styled_walls.py`)
+Сборка: `python management/tools/build_layoutfeel_walls.py`  
+Feel: `wallTileKey` ← `wallPictureOf`
 
 ## DoD
 
