@@ -163,10 +163,15 @@ boot → menu → hub → (daily) → run HUD ↔ pause
 | `frames/tile_plant.png` | `3` растение | scaffolding |
 | `frames/tile_cooler.png` | `4` кулер | scaffolding |
 | `frames/tile_fog.png` | туман / FoW текстура | scaffolding |
-| `frames/tile_wall.png` | `2` стена на полосе тумана | **нужен** (есть черновик) |
-| `frames/tile_window.png` | `7` окно на полосе тумана | **нужен** (сейчас fallback = wall+стекло) |
+| `frames/tile_wall_{n,s,e,w}.png` | прямая стена на ребре | **есть** |
+| `frames/tile_window_{n,s,e,w}.png` | окно на ребре | **есть** |
+| `frames/tile_wall_end_* .png` | **конец сегмента = угол** (end-cap) | **есть** |
+| `frames/tile_corner_{nw,ne,sw,se}.png` | угол комнаты (L) | **есть** |
+| `frames/tile_wall.png` · `tile_window.png` | alias → `_n` | есть |
 
-Концепт-якорь каркаса: `refs/levels/layout-feel.png` (стены / окна / дверной проём).
+Автовыбор в демке: mid → `wall_/window_`; конец сегмента → `wall_end_*` (угол); стык рёбер → `corner_*`.  
+Сборка: `python management/tools/build_border_tiles.py`  
+Концепт-якорь: `refs/levels/layout-feel.png`.
 
 **CONFIRM дизайна** = human playtest feel на телефоне, не идеальный roster арта.
 
