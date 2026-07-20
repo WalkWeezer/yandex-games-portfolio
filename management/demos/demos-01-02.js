@@ -1513,7 +1513,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   borderDepthForFloor(_floor) {
     return this.FOG_BORDER;
   },
-  /** База play 5×7 + fog-border 1; каждые 25 этажей +1 play col/row */
+  /** База play 5×7 (без fog); fog-border 1 с каждой стороны; +1 col/row каждые 25 этажей */
   gridSizeForFloor(floor) {
     const expansions = Math.max(0, Math.floor((floor | 0) / 25));
     let playCols = 5, playRows = 7;
