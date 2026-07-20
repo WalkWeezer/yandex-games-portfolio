@@ -146,16 +146,12 @@ Colleague = ally (slow, offer pause, mint ring) — not a threat mob.
 Cell codes: `0` floor · `1` desk 1×1 · `2` wall · `3` plant · `4` cooler · `5`/`6` desk 2×1 (W/E) · `7` window.
 
 ```
-. = floor / passage
-# = wall
-W = window
-D = desk 1×1
-DD = desk 2×1
-P = plant
-C = cooler
+play = interior walkable office (base 7×9 + growth)
+fog  = 1–2 cell band each side (not walkable for player)
+# / W = decorative wall/window on fog band (obstacles, beauty)
 ```
 
-**Rules:** perimeter ~80% passages / ~20% wall+window segments (seeded like furniture); props 1–2 cells interior; enemies enter **only from passages** from fog; aisles connected; no soft-lock spawn. Hit = body overlap, not cell equality.
+**Rules:** fog band depth 1|2 by floor; strong FoW gradient (outer≈black → play=0) drawn over entities so spawns are visible silhouettes; walls/windows seeded on fog frame like furniture; props only in play; enemies enter from open fog cells; play aisles connected; Hit = body overlap.
 
 **Forbidden in MVP maps:** hideZones, LOS cones as primary verb, free-move navmesh chase.
 

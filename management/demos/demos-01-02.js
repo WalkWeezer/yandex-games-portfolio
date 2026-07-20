@@ -1362,11 +1362,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return true;
   },
   // 0 floor · 1 desk1×1 · 2 wall · 3 plant · 4 cooler · 5 desk2×1 anchor · 6 desk2 occupancy · 7 window
-  // периметр: ~20% стены/окна, ~80% проходы (пол) — мобы входят только из проходов
+  // с каждой стороны +1..2 клетки тумана (игрок не ходит; мобы спавнятся и видны);
+  // стены/окна на этой полосе — декоративные препятствия «как на концепте»
   /** Радиус тела для хитбокса (клетки). Хит = пересечение тел, не «общая клетка». */
   HIT_BODY: 0.36,
-  /** Доля периметра, которая остаётся проходом (спавн мобов). */
-  PASSAGE_RATIO: 0.8,
   FLOOR_TINT: [
     "rgba(36, 26, 82, 1)",
     "rgba(30, 40, 70, 1)",
@@ -1419,16 +1418,17 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
     const dev = this.ensureDev();
     const floor = Math.max(1, dev.startFloor | 0);
-    const { cols, rows } = this.gridSizeForFloor(floor);
+    const grid = this.gridSizeForFloor(floor);
+    const { cols, rows, border, playCols, playRows } = grid;
     const padT = 96, padB = 125, padX = 14;
-    const map = this.buildMap(floor, cols, rows);
-    const start = this.findStart(map);
+    const map = this.buildMap(floor, grid);
+    const start = this.findStart(map, border);
     const yDev = 86;
     const bGod = api.input.addButton({ x: api.w - 72, y: yDev, w: 58, h: 36, label: "DEV∞", color: dev.immortal ? "#22c55e" : "#64748b" });
     const bFloorDown = api.input.addButton({ x: api.w - 148, y: yDev, w: 36, h: 36, label: "эт−", color: "#475569" });
     const bFloorUp = api.input.addButton({ x: api.w - 108, y: yDev, w: 36, h: 36, label: "эт+", color: "#475569" });
     return {
-      cols, rows, padT, padB, padX, map,
+      cols, rows, border, playCols, playRows, padT, padB, padX, map,
       cellW: (api.w - padX * 2) / cols,
       cellH: (api.h - padT - padB) / rows,
       col: start.col, row: start.row,
@@ -1496,28 +1496,55 @@ window.FEEL_DEMOS["deadline-escape"] = {
       .map((f) => `э${f}:${d.byFloor[f]}`);
     return `💀${d.deaths} · ${parts.join(" ")} · посл.э${d.lastFloor}@${d.lastClock}`;
   },
-  /** База 7×9; каждые 25 этажей +1 колонка или +1 ряд (по очереди) */
+  /** Глубина тумана с каждой стороны: 1 или 2 клетки (меняется с этажом). */
+  borderDepthForFloor(floor) {
+    return ((floor | 0) % 2 === 0) ? 2 : 1;
+  },
+  /** База play 7×9 + fog-border; каждые 25 этажей +1 play col/row */
   gridSizeForFloor(floor) {
     const expansions = Math.max(0, Math.floor((floor | 0) / 25));
-    let cols = 7, rows = 9;
+    let playCols = 7, playRows = 9;
     for (let i = 0; i < expansions; i++) {
-      if (i % 2 === 0) cols += 1;
-      else rows += 1;
+      if (i % 2 === 0) playCols += 1;
+      else playRows += 1;
     }
-    return { cols, rows };
+    const border = this.borderDepthForFloor(floor);
+    return {
+      playCols, playRows, border,
+      cols: playCols + border * 2,
+      rows: playRows + border * 2,
+    };
   },
-  findStart(map) {
+  inFogBorder(s, col, row) {
+    const b = s.border | 0;
+    if (col < 0 || row < 0 || col >= s.cols || row >= s.rows) return false;
+    return col < b || row < b || col >= s.cols - b || row >= s.rows - b;
+  },
+  inPlayArea(s, col, row) {
+    const b = s.border | 0;
+    return col >= b && col < s.cols - b && row >= b && row < s.rows - b;
+  },
+  /** Пол для моба (в т.ч. полоса тумана); стены/пропы — нет */
+  threatStepOk(s, col, row) {
+    if (col < 0 || row < 0 || col >= s.cols || row >= s.rows) return false;
+    return s.map[row][col] === 0;
+  },
+  spawnCellOpen(s, col, row) {
+    return this.threatStepOk(s, col, row);
+  },
+  findStart(map, border = 1) {
     const rows = map.length, cols = map[0].length;
-    for (let r = rows - 2; r >= 1; r--) {
+    const b = border | 0;
+    for (let r = rows - b - 1; r >= b; r--) {
       const c = (cols / 2) | 0;
       if (map[r][c] === 0) return { col: c, row: r };
     }
-    for (let r = 1; r < rows - 1; r++) {
-      for (let c = 1; c < cols - 1; c++) {
+    for (let r = b; r < rows - b; r++) {
+      for (let c = b; c < cols - b; c++) {
         if (map[r][c] === 0) return { col: c, row: r };
       }
     }
-    return { col: 3, row: 7 };
+    return { col: b + 3, row: b + 5 };
   },
   /** Детерминированный RNG по этажу — одна и та же раскладка на рестарте дня */
   floorRng(floor) {
@@ -1527,11 +1554,13 @@ window.FEEL_DEMOS["deadline-escape"] = {
       return x / 4294967296;
     };
   },
-  mapConnected(map) {
+  /** Связность только play-зоны (полоса тумана не участвует). */
+  mapConnected(map, border = 1) {
     const rows = map.length, cols = map[0].length;
+    const b = border | 0;
     let start = null, open = 0;
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
+    for (let r = b; r < rows - b; r++) {
+      for (let c = b; c < cols - b; c++) {
         if (map[r][c] !== 0) continue;
         open++;
         if (!start) start = { c, r };
@@ -1546,7 +1575,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       reach++;
       for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const nc = cur.c + dc, nr = cur.r + dr;
-        if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
+        if (nr < b || nc < b || nr >= rows - b || nc >= cols - b) continue;
         if (map[nr][nc] !== 0) continue;
         const key = `${nc},${nr}`;
         if (seen.has(key)) continue;
@@ -1556,72 +1585,84 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
     return reach === open;
   },
-  /** Периметр по часовой: верх → право → низ → лево (углы один раз). */
-  perimeterCells(cols, rows) {
+  /** Внутреннее кольцо тумана (рядом с play) — сюда ставим каркас офиса. */
+  fogFrameRing(cols, rows, border) {
+    const b = border | 0;
     const cells = [];
-    for (let c = 0; c < cols; c++) cells.push({ c, r: 0, edge: "n" });
-    for (let r = 1; r < rows - 1; r++) cells.push({ c: cols - 1, r, edge: "e" });
-    for (let c = cols - 1; c >= 0; c--) cells.push({ c, r: rows - 1, edge: "s" });
-    for (let r = rows - 2; r >= 1; r--) cells.push({ c: 0, r, edge: "w" });
+    const r0 = b - 1, r1 = rows - b, c0 = b - 1, c1 = cols - b;
+    if (b < 1) return cells;
+    for (let c = c0; c <= c1; c++) {
+      if (c >= 0 && c < cols) {
+        cells.push({ c, r: r0, edge: "n" });
+        cells.push({ c, r: r1, edge: "s" });
+      }
+    }
+    for (let r = r0 + 1; r <= r1 - 1; r++) {
+      if (r >= 0 && r < rows) {
+        cells.push({ c: c0, r, edge: "w" });
+        cells.push({ c: c1, r, edge: "e" });
+      }
+    }
     return cells;
   },
   /**
-   * Стены/окна на периметре как «мебель»: seed от этажа, ~PASSAGE_RATIO проходов.
-   * Мобы спавнятся только из проходов (пол на краю).
+   * Стены/окна на полосе тумана — доп. препятствия для красоты (каркас кабинета).
+   * Большая часть полосы остаётся открытым туманом: оттуда спавн и силуэты мобов.
    */
-  placePerimeterWalls(map, rnd) {
+  placeFogDecor(map, border, rnd) {
     const rows = map.length, cols = map[0].length;
-    const ring = this.perimeterCells(cols, rows);
-    const n = ring.length;
-    const wallBudget = Math.max(4, Math.round(n * (1 - this.PASSAGE_RATIO)));
-    // короткие сегменты 1–3 клетки, разбросаны по кольцу
-    const marks = Array(n).fill(0); // 0 passage · 1 wall · 2 window
-    let placed = 0;
-    let guard = 0;
-    while (placed < wallBudget && guard < 80) {
+    const ring = this.fogFrameRing(cols, rows, border);
+    if (!ring.length) return;
+    // ~35% кольца — стены/окна сегментами; остальное — чистый туман
+    const wallBudget = Math.max(4, Math.round(ring.length * 0.35));
+    const marks = Array(ring.length).fill(0);
+    let placed = 0, guard = 0;
+    while (placed < wallBudget && guard < 100) {
       guard++;
-      const start = (rnd() * n) | 0;
+      const start = (rnd() * ring.length) | 0;
       const len = 1 + ((rnd() * 3) | 0);
       let ok = true;
       for (let k = 0; k < len; k++) {
-        if (marks[(start + k) % n]) { ok = false; break; }
+        if (marks[(start + k) % ring.length]) { ok = false; break; }
       }
-      // не склеивать сегменты вплотную — оставляем проход между кусками
-      if (marks[(start - 1 + n) % n] || marks[(start + len) % n]) ok = false;
+      if (marks[(start - 1 + ring.length) % ring.length] || marks[(start + len) % ring.length]) ok = false;
       if (!ok) continue;
       for (let k = 0; k < len && placed < wallBudget; k++) {
-        const idx = (start + k) % n;
+        const idx = (start + k) % ring.length;
         const edge = ring[idx].edge;
-        // окна чаще на севере (концепт layout-feel), реже на других сторонах
-        const wantWin = edge === "n" ? rnd() < 0.65 : rnd() < 0.22;
+        const wantWin = edge === "n" ? rnd() < 0.7 : edge === "s" ? rnd() < 0.1 : rnd() < 0.2;
         marks[idx] = wantWin ? 2 : 1;
         placed++;
       }
     }
-    // на каждой стороне ≥1 проход — иначе мобы не зайдут с этой кромки
+    // с каждой стороны оставляем ≥2 открытых клетки тумана под спавн
     for (const side of ["n", "e", "s", "w"]) {
       const idxs = [];
-      for (let i = 0; i < n; i++) if (ring[i].edge === side) idxs.push(i);
-      if (!idxs.length) continue;
-      if (idxs.every((i) => marks[i])) {
-        const open = idxs[(rnd() * idxs.length) | 0];
-        marks[open] = 0;
+      for (let i = 0; i < ring.length; i++) if (ring[i].edge === side) idxs.push(i);
+      let open = idxs.filter((i) => !marks[i]).length;
+      while (open < Math.min(2, idxs.length)) {
+        const blocked = idxs.filter((i) => marks[i]);
+        if (!blocked.length) break;
+        marks[blocked[(rnd() * blocked.length) | 0]] = 0;
+        open++;
       }
     }
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < ring.length; i++) {
       if (!marks[i]) continue;
       const { c, r } = ring[i];
+      if (r < 0 || c < 0 || r >= rows || c >= cols) continue;
       map[r][c] = marks[i] === 2 ? 7 : 2;
     }
   },
-  /** Интерьерные пропы + периметр стен/окон (~80% проходов) */
-  buildMap(floor, cols = 7, rows = 9) {
+  /** Play-пропы + полоса тумана со стенами/окнами */
+  buildMap(floor, grid) {
+    const { cols, rows, border, playCols, playRows } = grid;
+    const b = border | 0;
     const rnd = this.floorRng(floor);
     const map = Array.from({ length: rows }, () => Array.from({ length: cols }, () => 0));
     const candidates = [];
-    // пропы только внутри — край отдаём стенам/проходам
-    for (let r = 1; r < rows - 1; r++) {
-      for (let c = 1; c < cols - 1; c++) candidates.push({ c, r });
+    for (let r = b; r < rows - b; r++) {
+      for (let c = b; c < cols - b; c++) candidates.push({ c, r });
     }
     for (let i = candidates.length - 1; i > 0; i--) {
       const j = (rnd() * (i + 1)) | 0;
@@ -1630,21 +1671,21 @@ window.FEEL_DEMOS["deadline-escape"] = {
       candidates[j] = tmp;
     }
     const desk1 = 2 + ((floor - 1) % 3);
-    const desk2 = 2 + ((floor * 3) % 3) + Math.max(0, Math.floor((cols * rows - 63) / 28));
+    const desk2 = 2 + ((floor * 3) % 3) + Math.max(0, Math.floor((playCols * playRows - 63) / 28));
     const props = [];
-    for (let i = 0; i < desk2; i++) props.push(5); // 2×1 desk anchor
+    for (let i = 0; i < desk2; i++) props.push(5);
     for (let i = 0; i < desk1; i++) props.push(1);
-    props.push(3, 4); // plant + cooler
+    props.push(3, 4);
     let pi = 0;
     for (const cell of candidates) {
       if (pi >= props.length) break;
       const kind = props[pi];
       if (kind === 5) {
-        if (cell.c + 1 >= cols - 1) continue;
+        if (cell.c + 1 >= cols - b) continue;
         if (map[cell.r][cell.c] !== 0 || map[cell.r][cell.c + 1] !== 0) continue;
         map[cell.r][cell.c] = 5;
         map[cell.r][cell.c + 1] = 6;
-        if (!this.mapConnected(map)) {
+        if (!this.mapConnected(map, b)) {
           map[cell.r][cell.c] = 0;
           map[cell.r][cell.c + 1] = 0;
           continue;
@@ -1654,28 +1695,19 @@ window.FEEL_DEMOS["deadline-escape"] = {
       }
       if (map[cell.r][cell.c] !== 0) continue;
       map[cell.r][cell.c] = kind;
-      if (!this.mapConnected(map)) {
+      if (!this.mapConnected(map, b)) {
         map[cell.r][cell.c] = 0;
         continue;
       }
       pi++;
     }
-    this.placePerimeterWalls(map, rnd);
-    // периметр не должен резать связность (пропы уже проверены)
-    if (!this.mapConnected(map)) {
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if ((r === 0 || r === rows - 1 || c === 0 || c === cols - 1)
-            && (map[r][c] === 2 || map[r][c] === 7)) {
-            map[r][c] = 0;
-          }
-        }
-      }
-    }
+    this.placeFogDecor(map, b, rnd);
     return map;
   },
+  /** Игрок: только play-пол; полоса тумана и пропы — нельзя */
   walkable(s, col, row) {
     if (row < 0 || col < 0 || row >= s.rows || col >= s.cols) return false;
+    if (!this.inPlayArea(s, col, row)) return false;
     return s.map[row][col] === 0;
   },
   isBlockedProp(cell) {
@@ -1696,16 +1728,16 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return out;
   },
   edgeSpawns(s, dir) {
-    // вход только из проходов периметра (пол); стены/окна — не спавн
+    // спавн на внешней кромке полосы тумана (открытый пол); стены — не спавн
     const cells = [];
     if (dir === "down") {
-      for (let c = 0; c < s.cols; c++) if (this.walkable(s, c, 0)) cells.push({ col: c, row: 0, dir });
+      for (let c = 0; c < s.cols; c++) if (this.spawnCellOpen(s, c, 0)) cells.push({ col: c, row: 0, dir });
     } else if (dir === "up") {
-      for (let c = 0; c < s.cols; c++) if (this.walkable(s, c, s.rows - 1)) cells.push({ col: c, row: s.rows - 1, dir });
+      for (let c = 0; c < s.cols; c++) if (this.spawnCellOpen(s, c, s.rows - 1)) cells.push({ col: c, row: s.rows - 1, dir });
     } else if (dir === "right") {
-      for (let r = 0; r < s.rows; r++) if (this.walkable(s, 0, r)) cells.push({ col: 0, row: r, dir });
+      for (let r = 0; r < s.rows; r++) if (this.spawnCellOpen(s, 0, r)) cells.push({ col: 0, row: r, dir });
     } else if (dir === "left") {
-      for (let r = 0; r < s.rows; r++) if (this.walkable(s, s.cols - 1, r)) cells.push({ col: s.cols - 1, row: r, dir });
+      for (let r = 0; r < s.rows; r++) if (this.spawnCellOpen(s, s.cols - 1, r)) cells.push({ col: s.cols - 1, row: r, dir });
     }
     return cells;
   },
@@ -1905,7 +1937,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const start = this.offMapStart(pick, dir);
       const entryC = pick.col;
       const entryR = pick.row;
-      if (!this.walkable(s, entryC, entryR)) continue;
+      if (!this.spawnCellOpen(s, entryC, entryR)) continue;
       if (entryC === s.col && entryR === s.row) continue;
       s.colleagues.push({
         col: start.col, row: start.row, frac: 0,
@@ -2057,11 +2089,13 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return this.KINDS.find((k) => k.id === id) || this.KINDS.find((k) => k.id === "hr");
   },
   corridorClear(s, col, row, dir, depth) {
+    // путь моба: пол в тумане + play (не стены/пропы)
     const d = this.DIRS[dir];
     let c = col, r = row;
     for (let i = 0; i < depth; i++) {
       c += d.dc; r += d.dr;
-      if (!this.walkable(s, c, r)) return false;
+      if (c < 0 || r < 0 || c >= s.cols || r >= s.rows) continue;
+      if (s.map[r][c] !== 0) return false;
     }
     return true;
   },
@@ -2078,7 +2112,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     // секретарь: вторая клетка хитбокса
     let wideDc = widePerp.dc, wideDr = widePerp.dr;
     if (kind.pattern === "wide") {
-      if (!this.walkable(s, entryC + wideDc, entryR + wideDr)) {
+      if (!this.threatStepOk(s, entryC + wideDc, entryR + wideDr)) {
         wideDc *= -1; wideDr *= -1;
       }
     }
@@ -2111,7 +2145,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     const optsRaw = needsFloor ? this.edgeSpawns(s, dir) : this.edgeSpawnsAny(s, dir);
     if (!optsRaw.length) return null;
 
-    const depth = ["dash", "peek", "hold", "weave", "patrol", "chaos", "hunt", "pincer", "report", "blink", "wide"].includes(pattern) ? 2 : 1;
+    const depth = (s.border | 0) + (["dash", "peek", "hold", "weave", "patrol", "chaos", "hunt", "pincer", "report", "blink", "wide"].includes(pattern) ? 2 : 1);
     const scored = optsRaw.map((o) => {
       let crowd = 0;
       for (const t of s.threats) {
@@ -2129,7 +2163,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     scored.sort((a, b) => a.score - b.score);
     const pick = scored[(Math.random() * Math.min(3, scored.length)) | 0].o;
     const entryC = pick.col, entryR = pick.row;
-    if (needsFloor && !this.walkable(s, entryC, entryR) && pattern !== "ghost") return null;
+    if (needsFloor && !this.spawnCellOpen(s, entryC, entryR) && pattern !== "ghost") return null;
     const t = this.baseThreat(s, kind, dir, pick);
     const ghost = { ...t, col: entryC, row: entryR };
     if (!this.hasEscape(s, [ghost])) return null;
@@ -2138,11 +2172,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Клиент: клещи — два моба с противоположных краёв одной линии */
   spawnPincer(s, api) {
     const kind = this.KINDS.find((k) => k.id === "client");
+    const b = s.border | 0;
     const vertical = Math.random() < 0.5;
     if (vertical) {
       const cols = [];
-      for (let c = 1; c < s.cols - 1; c++) {
-        if (this.walkable(s, c, 1) && this.walkable(s, c, s.rows - 2)) cols.push(c);
+      for (let c = b; c < s.cols - b; c++) {
+        if (this.walkable(s, c, b) && this.walkable(s, c, s.rows - b - 1)) cols.push(c);
       }
       if (!cols.length) return false;
       const lane = api.pick(cols);
@@ -2150,14 +2185,14 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bot = this.edgeSpawns(s, "up").find((o) => o.col === lane);
       if (!top || !bot) return false;
       const a = this.baseThreat(s, kind, "down", top);
-      const b = this.baseThreat(s, kind, "up", bot);
-      a.pattern = "pincer"; b.pattern = "pincer";
-      s.threats.push(a, b);
+      const b2 = this.baseThreat(s, kind, "up", bot);
+      a.pattern = "pincer"; b2.pattern = "pincer";
+      s.threats.push(a, b2);
       return true;
     }
     const rows = [];
-    for (let r = 1; r < s.rows - 1; r++) {
-      if (this.walkable(s, 1, r) && this.walkable(s, s.cols - 2, r)) rows.push(r);
+    for (let r = b; r < s.rows - b; r++) {
+      if (this.walkable(s, b, r) && this.walkable(s, s.cols - b - 1, r)) rows.push(r);
     }
     if (!rows.length) return false;
     const lane = api.pick(rows);
@@ -2165,9 +2200,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     const right = this.edgeSpawns(s, "left").find((o) => o.row === lane);
     if (!left || !right) return false;
     const a = this.baseThreat(s, kind, "right", left);
-    const b = this.baseThreat(s, kind, "left", right);
-    a.pattern = "pincer"; b.pattern = "pincer";
-    s.threats.push(a, b);
+    const b2 = this.baseThreat(s, kind, "left", right);
+    a.pattern = "pincer"; b2.pattern = "pincer";
+    s.threats.push(a, b2);
     return true;
   },
   spawnWave(s, api, ph) {
@@ -2296,10 +2331,11 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (t.entered && (cx < -1.5 || cy < -1.5 || cx > s.cols + 0.5 || cy > s.rows + 0.5)) t._dead = true;
   },
   hrGoal(s, t) {
-    if (t.homeDir === "down") return { col: t.homeLane, row: s.rows - 2 };
-    if (t.homeDir === "up") return { col: t.homeLane, row: 1 };
-    if (t.homeDir === "right") return { col: s.cols - 2, row: t.homeLane };
-    return { col: 1, row: t.homeLane };
+    const b = s.border | 0;
+    if (t.homeDir === "down") return { col: t.homeLane, row: s.rows - b - 1 };
+    if (t.homeDir === "up") return { col: t.homeLane, row: b };
+    if (t.homeDir === "right") return { col: s.cols - b - 1, row: t.homeLane };
+    return { col: b, row: t.homeLane };
   },
   hrExitOff(s, t) {
     if (t.homeDir === "down") return { col: t.homeLane, row: s.rows };
@@ -2323,7 +2359,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
         const k = key(nc, nr);
         if (prev.has(k)) continue;
         const isGoal = nc === goalC && nr === goalR;
-        if (!isGoal && !this.walkable(s, nc, nr)) continue;
+        // моб ходит по полу play + полоса тумана
+        if (!isGoal && !this.threatStepOk(s, nc, nr)) continue;
         prev.set(k, cur);
         q.push({ c: nc, r: nr });
       }
@@ -2356,7 +2393,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (!next) {
       const opts = [[1, 0], [-1, 0], [0, 1], [0, -1]]
         .map(([dc, dr]) => ({ col: t.col + dc, row: t.row + dr }))
-        .filter((n) => this.walkable(s, n.col, n.row) || n.col < 0 || n.row < 0 || n.col >= s.cols || n.row >= s.rows);
+        .filter((n) => this.threatStepOk(s, n.col, n.row) || n.col < 0 || n.row < 0 || n.col >= s.cols || n.row >= s.rows);
       if (!opts.length) { t._dead = true; return; }
       opts.sort((a, b) => {
         const da = Math.abs(a.col - goal.col) + Math.abs(a.row - goal.row);
@@ -2734,11 +2771,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
   },
   resetDay(s, api, keepMeta) {
     const floor = keepMeta.floor;
-    const { cols, rows } = this.gridSizeForFloor(floor);
-    const map = this.buildMap(floor, cols, rows);
-    const start = this.findStart(map);
+    const grid = this.gridSizeForFloor(floor);
+    const { cols, rows, border, playCols, playRows } = grid;
+    const map = this.buildMap(floor, grid);
+    const start = this.findStart(map, border);
     Object.assign(s, {
-      cols, rows, map,
+      cols, rows, border, playCols, playRows, map,
       cellW: (api.w - s.padX * 2) / cols,
       cellH: (api.h - s.padT - s.padB) / rows,
       col: start.col, row: start.row,
@@ -2994,49 +3032,59 @@ window.FEEL_DEMOS["deadline-escape"] = {
     ctx.fillStyle = "#6b5344"; ctx.fillRect(x + 1, y + 3, w - 2, h - 6);
     ctx.fillStyle = "#c9a66b"; ctx.fillRect(x + 3, y + 5, w - 6, 8);
   },
+  /**
+   * Туман войны на полосе 1–2 клеток с каждой стороны:
+   * снаружи почти чёрный → к play-зоне alpha 0.
+   * Рисуется ПОВЕРХ мобов: спавн читается силуэтом, ходить сюда нельзя.
+   */
   drawFogOfWar(ctx, s, api) {
     const { w, h } = api;
     const fog = this.ensureArt().img.tile_fog;
-    // плотный туман за пределами сетки
-    ctx.fillStyle = "rgba(12, 14, 28, 0.92)";
-    ctx.fillRect(0, 0, w, s.padT);
-    ctx.fillRect(0, s.padT + s.rows * s.cellH, w, h - (s.padT + s.rows * s.cellH));
-    ctx.fillRect(0, s.padT, s.padX, s.rows * s.cellH);
-    ctx.fillRect(s.padX + s.cols * s.cellW, s.padT, w - (s.padX + s.cols * s.cellW), s.rows * s.cellH);
-    // мягкий край на 1 клетку внутрь
-    const edge = Math.min(s.cellW, s.cellH) * 0.55;
-    const gx = s.padX, gy = s.padT, gw = s.cols * s.cellW, gh = s.rows * s.cellH;
-    const g = ctx.createRadialGradient(gx + gw / 2, gy + gh / 2, Math.min(gw, gh) * 0.35, gx + gw / 2, gy + gh / 2, Math.max(gw, gh) * 0.72);
-    g.addColorStop(0, "rgba(12,14,28,0)");
-    g.addColorStop(0.72, "rgba(12,14,28,0.08)");
-    g.addColorStop(1, "rgba(12,14,28,0.55)");
-    ctx.fillStyle = g;
-    ctx.fillRect(gx, gy, gw, gh);
-    // полосы тумана у кромок сетки
-    const band = ctx.createLinearGradient(0, gy, 0, gy + edge);
-    band.addColorStop(0, "rgba(12,14,28,0.65)");
-    band.addColorStop(1, "rgba(12,14,28,0)");
-    ctx.fillStyle = band;
-    ctx.fillRect(gx, gy, gw, edge);
-    const bandB = ctx.createLinearGradient(0, gy + gh, 0, gy + gh - edge);
-    bandB.addColorStop(0, "rgba(12,14,28,0.65)");
-    bandB.addColorStop(1, "rgba(12,14,28,0)");
-    ctx.fillStyle = bandB;
-    ctx.fillRect(gx, gy + gh - edge, gw, edge);
-    const bandL = ctx.createLinearGradient(gx, 0, gx + edge, 0);
-    bandL.addColorStop(0, "rgba(12,14,28,0.55)");
-    bandL.addColorStop(1, "rgba(12,14,28,0)");
-    ctx.fillStyle = bandL;
-    ctx.fillRect(gx, gy, edge, gh);
-    const bandR = ctx.createLinearGradient(gx + gw, 0, gx + gw - edge, 0);
-    bandR.addColorStop(0, "rgba(12,14,28,0.55)");
-    bandR.addColorStop(1, "rgba(12,14,28,0)");
-    ctx.fillStyle = bandR;
-    ctx.fillRect(gx + gw - edge, gy, edge, gh);
+    const b = Math.max(1, s.border | 0);
+    const gx = s.padX, gy = s.padT;
+    const cw = s.cellW, ch = s.cellH;
+    const gw = s.cols * cw, gh = s.rows * ch;
+    const bandX = b * cw, bandY = b * ch;
+
+    // за пределами сетки — почти чёрный
+    ctx.fillStyle = "rgba(2, 3, 8, 0.97)";
+    ctx.fillRect(0, 0, w, gy);
+    ctx.fillRect(0, gy + gh, w, h - (gy + gh));
+    ctx.fillRect(0, gy, gx, gh);
+    ctx.fillRect(gx + gw, gy, w - (gx + gw), gh);
+
+    const fogStop = (g) => {
+      g.addColorStop(0, "rgba(2,3,8,0.94)");
+      g.addColorStop(0.45, "rgba(6,8,16,0.62)");
+      g.addColorStop(0.82, "rgba(8,10,20,0.22)");
+      g.addColorStop(1, "rgba(8,10,20,0)");
+    };
+
+    // верх
+    const gT = ctx.createLinearGradient(0, gy, 0, gy + bandY);
+    fogStop(gT);
+    ctx.fillStyle = gT;
+    ctx.fillRect(gx, gy, gw, bandY);
+    // низ
+    const gB = ctx.createLinearGradient(0, gy + gh, 0, gy + gh - bandY);
+    fogStop(gB);
+    ctx.fillStyle = gB;
+    ctx.fillRect(gx, gy + gh - bandY, gw, bandY);
+    // лево
+    const gL = ctx.createLinearGradient(gx, 0, gx + bandX, 0);
+    fogStop(gL);
+    ctx.fillStyle = gL;
+    ctx.fillRect(gx, gy, bandX, gh);
+    // право
+    const gR = ctx.createLinearGradient(gx + gw, 0, gx + gw - bandX, 0);
+    fogStop(gR);
+    ctx.fillStyle = gR;
+    ctx.fillRect(gx + gw - bandX, gy, bandX, gh);
+
     if (fog && fog.complete && fog.naturalWidth) {
-      ctx.globalAlpha = 0.35;
-      ctx.drawImage(fog, 0, 0, w, s.padT);
-      ctx.drawImage(fog, 0, s.padT + gh, w, h - s.padT - gh);
+      ctx.globalAlpha = 0.28;
+      ctx.drawImage(fog, 0, 0, w, gy);
+      ctx.drawImage(fog, 0, gy + gh, w, h - (gy + gh));
       ctx.globalAlpha = 1;
     }
   },
@@ -3075,24 +3123,15 @@ window.FEEL_DEMOS["deadline-escape"] = {
         }
       }
     }
-    // 2) пропы поверх (desk2 — один спрайт на две клетки); стены/окна — после тумана
+    // 2) пропы + декоративные стены/окна на полосе тумана (каркас офиса)
     for (let r = 0; r < s.rows; r++) {
       for (let c = 0; c < s.cols; c++) {
         const x = s.padX + c * s.cellW, y = s.padT + r * s.cellH;
         const cell = s.map[r][c];
-        if (cell === 6 || cell === 2 || cell === 7) continue;
-        if (cell === 5) this.drawDesk2(ctx, x, y, s.cellW, s.cellH);
+        if (cell === 6) continue;
+        if (cell === 2 || cell === 7) this.drawWall(ctx, x, y, s.cellW, s.cellH, cell === 7);
+        else if (cell === 5) this.drawDesk2(ctx, x, y, s.cellW, s.cellH);
         else if (cell !== 0) this.drawProp(ctx, x, y, s.cellW, s.cellH, cell);
-      }
-    }
-    this.drawFogOfWar(ctx, s, api);
-    // 3) стены/окна поверх тумана — читаемый каркас кабинета, проходы = дыры в периметре
-    for (let r = 0; r < s.rows; r++) {
-      for (let c = 0; c < s.cols; c++) {
-        const cell = s.map[r][c];
-        if (cell !== 2 && cell !== 7) continue;
-        const x = s.padX + c * s.cellW, y = s.padT + r * s.cellH;
-        this.drawWall(ctx, x, y, s.cellW, s.cellH, cell === 7);
       }
     }
 
@@ -3251,6 +3290,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
     if (s.won) this.drawArt(ctx, "vfx_confetti", pp.x, pp.y - 20, unit * 1.4, 0.9);
     if (!s.alive) this.drawArt(ctx, "vfx_slam", pp.x, pp.y, unit * 1.2, 0.55);
+
+    // туман поверх сущностей: полоса 1–2 клеток — силуэты спавна видны, ходить нельзя
+    this.drawFogOfWar(ctx, s, api);
 
     ctx.fillStyle = "rgba(30,27,75,0.92)"; ctx.fillRect(10, 10, w - 20, 72);
     ctx.strokeStyle = coffee ? "#fbbf24" : shield ? "#38bdf8" : "#22d3a8"; ctx.strokeRect(10, 10, w - 20, 72);
