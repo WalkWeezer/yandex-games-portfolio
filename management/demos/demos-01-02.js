@@ -1263,7 +1263,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png`));
     // каркас: стена/окно прижаты к внешнему краю клетки (n/s/w/e), без углов
     ["n", "s", "e", "w"].forEach((d) => {
       tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png`);
@@ -1607,6 +1607,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
   isFrameSolid(cell) {
     return cell === 2 || cell === 7;
   },
+  /** 1×1 проп на полосе тумана (рядом со стеной; не шире клетки). */
+  isFogProp(cell) {
+    return cell === 3 || cell === 4 || cell === 8 || cell === 9 || cell === 10;
+  },
   /** Какое ребро полосы тумана: n/s/w/e. */
   fogEdgeOf(s, col, row) {
     const b = s.border | 0;
@@ -1661,6 +1665,72 @@ window.FEEL_DEMOS["deadline-escape"] = {
         if (!marks[i]) continue;
         const { c, r } = ring[idxs[i]];
         map[r][c] = marks[i] === 2 ? 7 : 2;
+      }
+    }
+    this.placeFogWallProps(map, border, rnd, ring);
+  },
+  /**
+   * Разнообразие у стен: 1×1 пропы на соседних клетках кольца
+   * (растение / кулер / шкаф / принтер / урна). Никогда не шире 1 клетки.
+   */
+  placeFogWallProps(map, border, rnd, ring) {
+    const rows = map.length, cols = map[0].length;
+    const ringCells = ring || this.fogFrameRing(cols, rows, border);
+    if (!ringCells.length) return;
+    const kinds = [3, 4, 8, 9, 10]; // plant, cooler, cabinet, printer, trash
+    const bySide = { n: [], e: [], s: [], w: [] };
+    for (const cell of ringCells) bySide[cell.edge].push(cell);
+
+    for (const side of ["n", "e", "s", "w"]) {
+      const cells = bySide[side];
+      if (cells.length < 3) continue;
+      let openIdx = [];
+      for (let i = 0; i < cells.length; i++) {
+        const { c, r } = cells[i];
+        if (map[r][c] === 0) openIdx.push(i);
+      }
+      // кандидат = открытая клетка рядом со стеной/окном по кольцу
+      const candidates = [];
+      for (const i of openIdx) {
+        const left = i > 0 && this.isFrameSolid(map[cells[i - 1].r][cells[i - 1].c]);
+        const right = i < cells.length - 1 && this.isFrameSolid(map[cells[i + 1].r][cells[i + 1].c]);
+        if (left || right) candidates.push(i);
+      }
+      // бюджет: ~половина «дыр» у стен, но оставить ≥2 спавна
+      const keepOpen = 2;
+      const budget = Math.max(0, Math.min(candidates.length, openIdx.length - keepOpen, 1 + ((candidates.length * 0.55) | 0)));
+      // перемешать кандидатов
+      for (let i = candidates.length - 1; i > 0; i--) {
+        const j = (rnd() * (i + 1)) | 0;
+        const t = candidates[i]; candidates[i] = candidates[j]; candidates[j] = t;
+      }
+      let placed = 0;
+      let lastKind = -1;
+      for (const i of candidates) {
+        if (placed >= budget) break;
+        const { c, r } = cells[i];
+        if (map[r][c] !== 0) continue;
+        // не ставить два пропа подряд без «воздуха» — читаемее
+        const neighProp =
+          (i > 0 && this.isFogProp(map[cells[i - 1].r][cells[i - 1].c])) ||
+          (i < cells.length - 1 && this.isFogProp(map[cells[i + 1].r][cells[i + 1].c]));
+        if (neighProp && rnd() < 0.7) continue;
+        let kind = kinds[(rnd() * kinds.length) | 0];
+        if (kind === lastKind && kinds.length > 1) kind = kinds[(rnd() * kinds.length) | 0];
+        map[r][c] = kind;
+        lastKind = kind;
+        placed++;
+      }
+      // гарантия спавна: ≥2 открытых на стороне
+      let open = 0;
+      for (const { c, r } of cells) if (map[r][c] === 0) open++;
+      while (open < Math.min(keepOpen, cells.length)) {
+        const props = [];
+        for (const { c, r } of cells) if (this.isFogProp(map[r][c])) props.push({ c, r });
+        if (!props.length) break;
+        const p = props[(rnd() * props.length) | 0];
+        map[p.r][p.c] = 0;
+        open++;
       }
     }
   },
@@ -1721,7 +1791,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return s.map[row][col] === 0;
   },
   isBlockedProp(cell) {
-    return cell === 1 || cell === 2 || cell === 3 || cell === 4 || cell === 5 || cell === 6 || cell === 7;
+    return cell === 1 || cell === 2 || cell === 3 || cell === 4 || cell === 5 || cell === 6 || cell === 7
+      || cell === 8 || cell === 9 || cell === 10;
   },
   isWallCell(cell) {
     return cell === 2 || cell === 7;
@@ -3028,6 +3099,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (cell === 1 && this.drawTile(ctx, "tile_desk", x, y, w, h)) return;
     if (cell === 3 && this.drawTile(ctx, "tile_plant", x, y, w, h)) return;
     if (cell === 4 && this.drawTile(ctx, "tile_cooler", x, y, w, h)) return;
+    if (cell === 8 && this.drawTile(ctx, "tile_cabinet", x, y, w, h)) return;
+    if (cell === 9 && this.drawTile(ctx, "tile_printer", x, y, w, h)) return;
+    if (cell === 10 && this.drawTile(ctx, "tile_trash", x, y, w, h)) return;
     if (cell === 1) {
       ctx.fillStyle = "#6b5344"; ctx.fillRect(x + 2, y + 4, w - 4, h - 8);
       ctx.fillStyle = "#c9a66b"; ctx.fillRect(x + 4, y + 6, w - 8, 6);
@@ -3038,6 +3112,22 @@ window.FEEL_DEMOS["deadline-escape"] = {
     } else if (cell === 4) {
       ctx.fillStyle = "#94a3b8"; ctx.fillRect(x + 4, y + 6, w - 8, h - 12);
       ctx.fillStyle = "#67e8f9"; ctx.fillRect(x + 8, y + 10, w - 16, 8);
+    } else if (cell === 8) {
+      ctx.fillStyle = "#76889e"; ctx.fillRect(x + w * 0.28, y + h * 0.18, w * 0.44, h * 0.68);
+      ctx.fillStyle = "#c9b070"; ctx.fillRect(x + w * 0.46, y + h * 0.32, w * 0.08, h * 0.06);
+      ctx.fillRect(x + w * 0.46, y + h * 0.48, w * 0.08, h * 0.06);
+      ctx.fillRect(x + w * 0.46, y + h * 0.64, w * 0.08, h * 0.06);
+    } else if (cell === 9) {
+      ctx.fillStyle = "#4b5563"; ctx.fillRect(x + w * 0.22, y + h * 0.32, w * 0.56, h * 0.4);
+      ctx.fillStyle = "#e5e7eb"; ctx.fillRect(x + w * 0.26, y + h * 0.58, w * 0.48, h * 0.14);
+      ctx.fillStyle = "#4ade80"; ctx.beginPath();
+      ctx.arc(x + w * 0.68, y + h * 0.42, w * 0.05, 0, Math.PI * 2); ctx.fill();
+    } else if (cell === 10) {
+      ctx.fillStyle = "#475569"; ctx.beginPath();
+      ctx.ellipse(x + w * 0.5, y + h * 0.72, w * 0.18, h * 0.1, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillRect(x + w * 0.34, y + h * 0.36, w * 0.32, h * 0.38);
+      ctx.fillStyle = "#1e293b"; ctx.beginPath();
+      ctx.ellipse(x + w * 0.5, y + h * 0.38, w * 0.16, h * 0.08, 0, 0, Math.PI * 2); ctx.fill();
     }
   },
   drawDesk2(ctx, x, y, cellW, cellH) {

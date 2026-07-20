@@ -29,7 +29,7 @@
 | HR | idle 4-dir + walk 6×4 (**без special**); один body idle↔walk; W=mirror E |
 | 11 других боссов | **4-dir turnaround only** (без walk) |
 | Коллега / пикапы | 4-dir · `pu_coin` / `pu_coffee` / `pu_badge` |
-| Env-тайлы | floor/desk/plant/cooler/fog + **wall/window n/s/w/e** (edge-flush, без углов; DESIGN.md §8) |
+| Env-тайлы | floor/desk/plant/cooler/fog + **wall/window n/s/w/e** + **cabinet/printer/trash** 1×1 у стен (DESIGN.md §8) |
 
 ## Style lock (look)
 

@@ -6,13 +6,13 @@
 ## Grammar
 
 ```
-Cell: 0 floor · 1 desk · 2 wall · 3 plant · 4 cooler · 5/6 desk2×1 · 7 window
+Cell: 0 floor · 1 desk · 2 wall · 3 plant · 4 cooler · 5/6 desk2×1 · 7 window · 8 cabinet · 9 printer · 10 trash
 Play grid: 7×9 (+growth every 25 floors)
 Fog band: always +1 cell each side (player cannot walk; FoW gradient outer→black)
-Decor: wall/window segments on fog frame (beauty obstacles, seeded like furniture)
-Required sprites: tile_wall_{n,s,e,w}, tile_window_{n,s,e,w} (edge-flush; no corners) + floor/desk/plant/cooler/fog
-Interior: desks/props in play only; aisles connected
-Spawn: from open fog-band edge cells; visible under FoW
+Decor: wall/window segments on fog frame + 1×1 props beside walls (never wider than 1 cell)
+Required sprites: tile_wall_{n,s,e,w}, tile_window_{n,s,e,w}, tile_cabinet/printer/trash + floor/desk/plant/cooler/fog
+Interior: desks 2×1 only in play; fog may host 1×1 props next to walls; aisles connected
+Spawn: from open fog-band edge cells (≥2/side); visible under FoW
 Hit: body overlap (px/py), not shared cell
 Fairness: hasEscape on play floor
 ```
