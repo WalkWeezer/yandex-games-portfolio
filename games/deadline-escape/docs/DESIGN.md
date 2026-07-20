@@ -173,7 +173,8 @@ boot → menu → hub → (daily) → run HUD ↔ pause
 - `w`/`e` — **боковые** спрайты (вплотную слева/справа)  
 - Пропы у стен — **готовые композиты** в той же клетке `2`/`7` (`wallDecor`); map/спавн не меняются  
 - `prop` ∈ `plant|cooler|cabinet|printer|trash`  
-- Пока **без углов**. Сборка: `python management/tools/build_wall_prop_tiles.py`  
+- Стиль стен = тот же painterly top-down, что стол/кулер/растение (не flat placeholder)  
+- Пока **без углов**. Сборка: `python management/tools/process_styled_walls.py` (источники в `refs/sprites/chroma/wall_*_black.png`)  
 Концепт-якорь: `refs/levels/layout-feel.png`.
 
 **CONFIRM дизайна** = human playtest feel на телефоне, не идеальный roster арта.
