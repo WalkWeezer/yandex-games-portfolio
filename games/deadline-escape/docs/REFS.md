@@ -25,9 +25,6 @@
 | `frames/tile_wall_{n,s,e,w}.png` | стена у внешнего края клетки |
 | `frames/tile_window_{n,s,e,w}.png` | окно у внешнего края |
 | `frames/tile_cabinet.png` · `tile_printer.png` · `tile_trash.png` | пропы (AI) |
-| `frames/tile_wall_{n,s,e,w}_{prop}.png` | композит стена+проп |
-| `frames/tile_window_{n,s,e,w}_{prop}.png` | композит окно+проп |
-| `border_wall_props_preview.png` | превью всех edge×prop |
 | `frames/pu_*` · `vfx_*` | пикапы / VFX scaffolding |
 
 Motion tutorial: [Slynyrd Pixelblog 55](https://www.slynyrd.com/blog/2025/3/24/pixelblog-55-top-down-character-animation)
@@ -36,6 +33,7 @@ Motion tutorial: [Slynyrd Pixelblog 55](https://www.slynyrd.com/blog/2025/3/24/p
 
 | Path | Contents |
 |------|----------|
+| `archive/2026-07-20-wall-prop-composites/` | `tile_wall/window_*_{prop}` + border props preview |
 | `archive/2026-07-18-pipeline-v1-reset/` | концепты, HR, боссы, chroma/sheets — вынесены из `refs/` |
 | `archive/2026-07-18-sprites-cleanup/` | более ранний cleanup |
 | `archive/2026-07-17-pre-feel-sync/` | pre-feel пакет |

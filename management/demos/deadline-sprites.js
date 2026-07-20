@@ -11,7 +11,7 @@
   const APPROVED_FILE = "style-seed-hero.APPROVED.json";
   const REJECTED_FILE = "style-seed-hero.REJECTED.json";
   const LS_KEY = "deadline-escape.style-seed";
-  const BUST = "wallseam1";
+  const BUST = "archprops1";
 
   const CHECKER = "background:repeating-conic-gradient(#2a3340 0% 25%, #1a222c 0% 50%) 50%/12px 12px";
 
@@ -351,7 +351,7 @@
       html: () =>
         card(
           "Мебель и пропы play",
-          "Стол / растения / кулер / шкаф / принтер / урна. Стена+проп композиты — запас (пока не в placeFogDecor).",
+          "Отдельные пропы на play. Композиты стена+проп архивированы: <code>archive/2026-07-20-wall-prop-composites/</code>.",
           pngRow([
             ["frames/tile_desk.png", "desk"],
             ["frames/tile_desk2.png", "desk2"],
@@ -360,15 +360,7 @@
             ["frames/tile_cabinet.png", "cabinet"],
             ["frames/tile_printer.png", "printer"],
             ["frames/tile_trash.png", "trash"],
-          ]) +
-            pngRow([
-              ["frames/tile_wall_n_plant.png", "N+plant"],
-              ["frames/tile_wall_n_cooler.png", "N+cooler"],
-              ["frames/tile_wall_n_cabinet.png", "N+cabinet"],
-              ["frames/tile_wall_n_printer.png", "N+printer"],
-              ["frames/tile_wall_n_trash.png", "N+trash"],
-              ["border_wall_props_preview.png", "all edges×props", true],
-            ])
+          ])
         ),
     },
     {
@@ -448,9 +440,10 @@
         <div class="sp-card">
           <h3>Архив наработок</h3>
           <p class="sp-desc">
-            Всё, что не style-seed / ГГ carrier / актуальный env, перенесено в
-            <code>games/deadline-escape/archive/2026-07-18-pipeline-v1-reset/</code>
-            (art, boss sheets, HR, концепты, chroma…). Не использовать как SoT.
+            Всё, что не style-seed / ГГ carrier / актуальный env, перенесено в архив.
+            <br/>• <code>archive/2026-07-18-pipeline-v1-reset/</code> — art, boss sheets, HR, концепты, chroma…
+            <br/>• <code>archive/2026-07-20-wall-prop-composites/</code> — стена+проп композиты (N+plant и т.п.)
+            <br/>Не использовать как SoT.
           </p>
         </div>
       `,

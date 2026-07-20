@@ -79,7 +79,8 @@ L / U / stub-квадрат на углах. Окно только на один
 | `tile_wall_stub_*` | квадрат стыка угла карты |
 | `tile_wall_{nwe,nsw,nse,swe}` | U |
 | `tile_cabinet` / `tile_printer` / `tile_trash` | AI пропы |
-| `tile_wall_{n,s,e,w}_{prop}` | композит стена+проп (запас) |
+
+~~`tile_wall/window_{edge}_{prop}`~~ → архив `archive/2026-07-20-wall-prop-composites/`
 
 Сборка стен: `python management/tools/build_seamless_wall_set.py`  
 (старое: `process_styled_walls.py` / `build_wall_corner_tiles.py`)

@@ -1263,21 +1263,21 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallseam1`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=archprops1`));
     // каркас: прямые + L + stub (+ U в запасе)
     ["n", "s", "e", "w"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallseam1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallseam1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=archprops1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=archprops1`);
     });
     ["nw", "ne", "sw", "se"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallseam1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallseam1`);
-      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=wallseam1`);
-      tryLoad("tile_window_stub_" + d, `frames/tile_window_stub_${d}.png?v=wallseam1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=archprops1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=archprops1`);
+      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=archprops1`);
+      tryLoad("tile_window_stub_" + d, `frames/tile_window_stub_${d}.png?v=archprops1`);
     });
     ["nwe", "nsw", "nse", "swe"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallseam1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallseam1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=archprops1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=archprops1`);
     });
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
     ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png`));
