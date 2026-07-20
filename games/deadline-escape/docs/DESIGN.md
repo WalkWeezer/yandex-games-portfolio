@@ -164,19 +164,17 @@ boot → menu → hub → (daily) → run HUD ↔ pause
 | `frames/tile_plant.png` | `3` растение | scaffolding |
 | `frames/tile_cooler.png` | `4` кулер | scaffolding |
 | `frames/tile_fog.png` | туман / FoW текстура | scaffolding |
-| `frames/tile_wall_{n,s,e,w}.png` | `2` стена: на всю ширину/высоту, **вплотную к внешнему краю** | **есть** |
-| `frames/tile_window_{n,s,e,w}.png` | `7` окно, та же геометрия | **есть** |
+| `frames/tile_wall_{n,s,e,w}.png` | `2` стена: полоса ~42% к play · **Option A** | **есть** |
+| `frames/tile_window_{n,s,e,w}.png` | `7` окно | **есть** |
+| `frames/tile_wall_{nw,ne,sw,se}` · `*_stub_*` · `*_{nwe,…}` | L / stub / U (solid rim) | **есть** |
 | `frames/tile_cabinet.png` · `tile_printer.png` · `tile_trash.png` | пропы (AI) | **есть** |
-| `frames/tile_wall_{n,s,e,w}_{prop}.png` | композит стена+проп в одной клетке | **есть** |
-| `frames/tile_window_{n,s,e,w}_{prop}.png` | композит окно+проп | **есть** |
 
 - `n`/`s` — горизонтальная полоса (юг = вплотную **снизу** клетки)  
 - `w`/`e` — **боковые** спрайты (вплотную слева/справа)  
-- Пропы у стен — **готовые композиты** в той же клетке `2`/`7` (`wallDecor`); map/спавн не меняются  
-- `prop` ∈ `plant|cooler|cabinet|printer|trash`  
-- Стиль стен = тот же painterly top-down, что стол/кулер/растение (не flat placeholder)  
-- Пока **без углов**. Сборка: `python management/tools/process_styled_walls.py` (источники в `refs/sprites/chroma/wall_*_black.png`)  
-Концепт-якорь: `refs/levels/layout-feel.png`.
+- Пропы play — отдельные клетки; композиты стена+проп в архиве  
+- Стиль: cream panels + wood baseboard (Option A APPROVED)  
+- Сборка: `python management/tools/build_layoutfeel_walls.py`  
+Концепт-якорь: `refs/art/wall-option-a-cream-wood.png`.
 
 **CONFIRM дизайна** = human playtest feel на телефоне, не идеальный roster арта.
 
