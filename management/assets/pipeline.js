@@ -168,7 +168,7 @@
       ],
       games: {
         deadline: { state: "done", note: "STATUS F1 ✅ · сетка 7×9, день≈60с, fullscreen + стики" },
-        legends: { state: "done", note: "Магазин → merge → расстановка → 9-раунд матч (legends-pitch-demo.js)" },
+        legends: { state: "missing", note: "Демка удалена · пиши с нуля: demos/PROMPT_LEGENDS_PITCH_SCRATCH.md" },
       },
     },
     {

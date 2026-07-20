@@ -1,7 +1,7 @@
 window.FEEL_DEMOS = window.FEEL_DEMOS || {};
 
 /* ========== 04 Legends of the Pitch ========== */
-/* legends-of-the-pitch → management/demos/legends-pitch-demo.js (rewrite Pass-2) */
+/* FEEL demo purged — write from scratch via management/demos/PROMPT_LEGENDS_PITCH_SCRATCH.md */
 
 /* ========== 05 Merge Bazaar ========== */
 window.FEEL_DEMOS["merge-bazaar"] = {
