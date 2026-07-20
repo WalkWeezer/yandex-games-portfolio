@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
   /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250720w",
+  ART_BUST: "w250720x",
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
@@ -1265,10 +1265,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250720w`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250720x`));
     // стены — proof-геометрия без спрайтов (wall/window tiles не грузим)
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250720w`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250720x`));
     this._art = art;
     return art;
   },
@@ -3209,71 +3209,74 @@ window.FEEL_DEMOS["deadline-escape"] = {
    * Геометрия стены в клетке каркаса (proof, без спрайтов).
    * { sides: n/s/w/e[], square: nw|ne|sw|se|null }
    *
-   * Полосы и стыки — к ВНЕШНЕМУ краю клетки (к границе экрана / хрому), не к play.
+   * Полоса к play (N→s, S→n, W→e, E→w). Торцы — «хвостики» до внешнего края клетки.
    *  1 side  — середина ряда
-   *  2 sides — торец ряда (полоса + stub) или угол арены L из двух внешних полос
-   *  3 sides — одиночная U
-   *  square  — не используется для углов арены (там L из sides, стык = квадрат перекрытия)
+   *  2 sides — торец (полоса + хвостик до экрана)
+   *  3 sides — одиночная U (полоса + оба хвостика до экрана)
+   *  square  — угол арены между двумя стенами: stub у стыка к play
    */
   wallGeomOf(s, col, row) {
     const sides = [];
     const push = (side) => { if (!sides.includes(side)) sides.push(side); };
     const corner = this.mapCornerOf(s, col, row);
 
-    // Угол арены: полосы по внешним рёбрам — вплотную к экрану
+    // Угол арены: 2 соседа → stub к play; 1 сосед → продолжение полосы к play
     if (corner === "nw") {
       const a = this.frameSolidAt(s, col + 1, row);
       const b = this.frameSolidAt(s, col, row + 1);
-      if (a) push("n");
-      if (b) push("w");
+      if (a && b) return { sides: [], square: "se" };
+      if (a) push("s");
+      if (b) push("e");
       return { sides, square: null };
     }
     if (corner === "ne") {
       const a = this.frameSolidAt(s, col - 1, row);
       const b = this.frameSolidAt(s, col, row + 1);
-      if (a) push("n");
-      if (b) push("e");
+      if (a && b) return { sides: [], square: "sw" };
+      if (a) push("s");
+      if (b) push("w");
       return { sides, square: null };
     }
     if (corner === "sw") {
       const a = this.frameSolidAt(s, col + 1, row);
       const b = this.frameSolidAt(s, col, row - 1);
-      if (a) push("s");
-      if (b) push("w");
+      if (a && b) return { sides: [], square: "ne" };
+      if (a) push("n");
+      if (b) push("e");
       return { sides, square: null };
     }
     if (corner === "se") {
       const a = this.frameSolidAt(s, col - 1, row);
       const b = this.frameSolidAt(s, col, row - 1);
-      if (a) push("s");
-      if (b) push("e");
+      if (a && b) return { sides: [], square: "nw" };
+      if (a) push("n");
+      if (b) push("w");
       return { sides, square: null };
     }
 
-    // Ребро: внешняя полоса (к экрану) + торцы, если нет соседа вдоль кольца
+    // Ребро: полоса к play + торцы, если нет соседа вдоль кольца
     const edge = this.fogEdgeOf(s, col, row);
     if (edge === "n") {
-      push("n");
-      if (!this.frameSolidAt(s, col - 1, row)) push("w");
-      if (!this.frameSolidAt(s, col + 1, row)) push("e");
-    } else if (edge === "s") {
       push("s");
       if (!this.frameSolidAt(s, col - 1, row)) push("w");
       if (!this.frameSolidAt(s, col + 1, row)) push("e");
+    } else if (edge === "s") {
+      push("n");
+      if (!this.frameSolidAt(s, col - 1, row)) push("w");
+      if (!this.frameSolidAt(s, col + 1, row)) push("e");
     } else if (edge === "w") {
-      push("w");
+      push("e");
       if (!this.frameSolidAt(s, col, row - 1)) push("n");
       if (!this.frameSolidAt(s, col, row + 1)) push("s");
     } else if (edge === "e") {
-      push("e");
+      push("w");
       if (!this.frameSolidAt(s, col, row - 1)) push("n");
       if (!this.frameSolidAt(s, col, row + 1)) push("s");
     }
     return { sides, square: null };
   },
   /**
-   * Стены — бесшовные полосы у границы экрана (без крестов mid-edge).
-   * Угол арены: одна или две внешние полосы вплотную к хрому.
+   * Стены — полоса к play; хвостики торцов продлены до внешнего края (к экрану).
    */
   drawWallAt(ctx, s, col, row, x, y, w, h) {
     const { sides, square } = this.wallGeomOf(s, col, row);
@@ -3288,26 +3291,26 @@ window.FEEL_DEMOS["deadline-escape"] = {
       else if (face === "w") ctx.fillRect(x, y, band, h);
       else if (face === "e") ctx.fillRect(x + w - band, y, band, h);
     };
-    /** Кромка на внешней стороне — к экрану. */
+    /** Кромка на стороне к play. */
     const fillFaceLip = (face) => {
       if (face === "n") ctx.fillRect(x, y, w, lip);
       else if (face === "s") ctx.fillRect(x, y + h - lip, w, lip);
       else if (face === "w") ctx.fillRect(x, y, lip, h);
       else if (face === "e") ctx.fillRect(x + w - lip, y, lip, h);
     };
-    /** Торец mid-edge: stub внутрь клетки (к play), без полной поперечины. */
-    const fillEndStub = (face, end) => {
-      let sx = x, sy = y;
-      if (face === "s" && end === "w") { sx = x; sy = y + h - 2 * band; }
-      else if (face === "s" && end === "e") { sx = x + w - band; sy = y + h - 2 * band; }
-      else if (face === "n" && end === "w") { sx = x; sy = y + band; }
-      else if (face === "n" && end === "e") { sx = x + w - band; sy = y + band; }
-      else if (face === "e" && end === "n") { sx = x + w - 2 * band; sy = y; }
-      else if (face === "e" && end === "s") { sx = x + w - 2 * band; sy = y + h - band; }
-      else if (face === "w" && end === "n") { sx = x + band; sy = y; }
-      else if (face === "w" && end === "s") { sx = x + band; sy = y + h - band; }
-      else return;
-      ctx.fillRect(sx, sy, band, band);
+    /**
+     * Хвостик торца: от лицевой полосы до внешнего края клетки (к хрому/экрану).
+     * Не band×band — иначе остаётся щель пола у границы.
+     */
+    const fillEndTail = (face, end) => {
+      if (face === "s" && end === "w") ctx.fillRect(x, y, band, h - band);
+      else if (face === "s" && end === "e") ctx.fillRect(x + w - band, y, band, h - band);
+      else if (face === "n" && end === "w") ctx.fillRect(x, y + band, band, h - band);
+      else if (face === "n" && end === "e") ctx.fillRect(x + w - band, y + band, band, h - band);
+      else if (face === "e" && end === "n") ctx.fillRect(x, y, w - band, band);
+      else if (face === "e" && end === "s") ctx.fillRect(x, y + h - band, w - band, band);
+      else if (face === "w" && end === "n") ctx.fillRect(x + band, y, w - band, band);
+      else if (face === "w" && end === "s") ctx.fillRect(x + band, y + h - band, w - band, band);
     };
     const fillSquare = (sq) => {
       if (sq === "se") ctx.fillRect(x + w - band, y + h - band, band, band);
@@ -3317,17 +3320,17 @@ window.FEEL_DEMOS["deadline-escape"] = {
     };
     const fillSquareLip = (sq) => {
       if (sq === "se") {
-        ctx.fillRect(x + w - band, y + h - lip, band, lip);
-        ctx.fillRect(x + w - lip, y + h - band, lip, band);
+        ctx.fillRect(x + w - band, y + h - band, band, lip);
+        ctx.fillRect(x + w - band, y + h - band, lip, band);
       } else if (sq === "sw") {
-        ctx.fillRect(x, y + h - lip, band, lip);
-        ctx.fillRect(x, y + h - band, lip, band);
+        ctx.fillRect(x, y + h - band, band, lip);
+        ctx.fillRect(x + band - lip, y + h - band, lip, band);
       } else if (sq === "ne") {
-        ctx.fillRect(x + w - band, y, band, lip);
-        ctx.fillRect(x + w - lip, y, lip, band);
+        ctx.fillRect(x + w - band, y + band - lip, band, lip);
+        ctx.fillRect(x + w - band, y, lip, band);
       } else if (sq === "nw") {
-        ctx.fillRect(x, y, band, lip);
-        ctx.fillRect(x, y, lip, band);
+        ctx.fillRect(x, y + band - lip, band, lip);
+        ctx.fillRect(x + band - lip, y, lip, band);
       }
     };
 
@@ -3340,24 +3343,14 @@ window.FEEL_DEMOS["deadline-escape"] = {
     }
     if (!sides.length) return;
 
-    const corner = this.mapCornerOf(s, col, row);
-    // Угол карты: все sides — полные внешние полосы (L вплотную к экрану)
-    if (corner) {
-      ctx.fillStyle = body;
-      for (const side of sides) fillFace(side);
-      ctx.fillStyle = edgeCol;
-      for (const side of sides) fillFaceLip(side);
-      return;
-    }
-
     const edge = this.fogEdgeOf(s, col, row);
-    const faceByEdge = { n: "n", s: "s", w: "w", e: "e" };
+    const faceByEdge = { n: "s", s: "n", w: "e", e: "w" };
     const face = (edge && faceByEdge[edge]) || sides[0];
     const ends = sides.filter((side) => side !== face);
 
     ctx.fillStyle = body;
     fillFace(face);
-    for (const end of ends) fillEndStub(face, end);
+    for (const end of ends) fillEndTail(face, end);
 
     ctx.fillStyle = edgeCol;
     fillFaceLip(face);
