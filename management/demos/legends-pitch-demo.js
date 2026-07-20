@@ -1208,7 +1208,6 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     s.ball.y = f.y1;
     if (f.shot) {
       this.resolveShot(s);
-      if (s.banner === "ГОООЛ!") s.lastScorer = f.side;
       return;
     }
     if (f.to && f.to.card) {
