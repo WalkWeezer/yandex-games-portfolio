@@ -17,7 +17,6 @@ FRAMES = ROOT / "games" / "deadline-escape" / "refs" / "sprites" / "frames"
 SIDE = 256
 # ~45% of cell — reads as architecture, not a hairline
 BAND = 112
-STUB_ARM = 118
 UNDER = (2, 3, 8, 255)
 
 # palette — close to desk wood / office props
@@ -166,23 +165,20 @@ def compose(*tiles: Image.Image) -> Image.Image:
 
 
 def make_stub(base: Image.Image, corner: str) -> Image.Image:
+    """Маленький квадрат толщины BAND у стыка к play (не мини-L в пустоту)."""
     a = np.asarray(base)
     out = np.zeros_like(a)
     out[:] = (*UNDER[:3], 255)
     m = content(a)
     bm = np.zeros_like(m)
     if corner == "nw":
-        bm[SIDE - BAND : SIDE, SIDE - STUB_ARM : SIDE] = True
-        bm[SIDE - STUB_ARM : SIDE, SIDE - BAND : SIDE] = True
+        bm[SIDE - BAND : SIDE, SIDE - BAND : SIDE] = True
     elif corner == "ne":
-        bm[SIDE - BAND : SIDE, 0:STUB_ARM] = True
-        bm[SIDE - STUB_ARM : SIDE, 0:BAND] = True
+        bm[SIDE - BAND : SIDE, 0:BAND] = True
     elif corner == "sw":
-        bm[0:BAND, SIDE - STUB_ARM : SIDE] = True
-        bm[0:STUB_ARM, SIDE - BAND : SIDE] = True
+        bm[0:BAND, SIDE - BAND : SIDE] = True
     else:
-        bm[0:BAND, 0:STUB_ARM] = True
-        bm[0:STUB_ARM, 0:BAND] = True
+        bm[0:BAND, 0:BAND] = True
     keep = m & bm
     out[keep] = a[keep]
     return Image.fromarray(out)

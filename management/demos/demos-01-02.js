@@ -1263,21 +1263,21 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallnice1`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallgen1`));
     // каркас: прямые + L + stub (+ U в запасе)
     ["n", "s", "e", "w"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallnice1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallnice1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallgen1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallgen1`);
     });
     ["nw", "ne", "sw", "se"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallnice1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallnice1`);
-      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=wallnice1`);
-      tryLoad("tile_window_stub_" + d, `frames/tile_window_stub_${d}.png?v=wallnice1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallgen1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallgen1`);
+      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=wallgen1`);
+      tryLoad("tile_window_stub_" + d, `frames/tile_window_stub_${d}.png?v=wallgen1`);
     });
     ["nwe", "nsw", "nse", "swe"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallnice1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallnice1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallgen1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallgen1`);
     });
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
     ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png`));
@@ -1675,35 +1675,36 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return this.isFrameSolid(s.map[row][col]);
   },
   /**
-   * Ключ спрайта стены.
-   * Угол арены: L если стены сходятся с двух сторон, иначе stub.
+   * Ключ спрайта стены по wallGeomOf.
+   * Окно (tile_window_*) только при одинарной полосе; иначе всегда wall.
    */
   wallTileKey(s, col, row) {
-    const isWin = s.map[row][col] === 7;
-    const prefix = isWin ? "tile_window_" : "tile_wall_";
-    const corner = this.mapCornerOf(s, col, row);
-    if (corner) {
-      let arm1 = false, arm2 = false;
-      if (corner === "nw") {
-        arm1 = this.frameSolidAt(s, col + 1, row);
-        arm2 = this.frameSolidAt(s, col, row + 1);
-      } else if (corner === "ne") {
-        arm1 = this.frameSolidAt(s, col - 1, row);
-        arm2 = this.frameSolidAt(s, col, row + 1);
-      } else if (corner === "sw") {
-        arm1 = this.frameSolidAt(s, col + 1, row);
-        arm2 = this.frameSolidAt(s, col, row - 1);
-      } else {
-        arm1 = this.frameSolidAt(s, col - 1, row);
-        arm2 = this.frameSolidAt(s, col, row - 1);
-      }
-      if (arm1 && arm2) return prefix + corner;
-      return prefix + "stub_" + corner;
+    const geom = this.wallGeomOf(s, col, row);
+    const single = !geom.square && geom.sides.length === 1;
+    const wantWin = s.map[row][col] === 7 && single;
+    const prefix = wantWin ? "tile_window_" : "tile_wall_";
+    // стороны геометрии → имена тайлов (ребро тумана): s→n, n→s, e→w, w→e
+    const edgeOf = { s: "n", n: "s", e: "w", w: "e" };
+    if (geom.square) {
+      const stubOf = { se: "nw", sw: "ne", ne: "sw", nw: "se" };
+      return prefix + "stub_" + (stubOf[geom.square] || "nw");
     }
-    return prefix + (this.fogEdgeOf(s, col, row) || "n");
+    if (geom.sides.length === 1) return prefix + edgeOf[geom.sides[0]];
+    if (geom.sides.length === 2) {
+      const k = geom.sides.map((x) => edgeOf[x]).sort().join("");
+      const two = { en: "ne", es: "se", nw: "nw", sw: "sw" };
+      return prefix + (two[k] || "n");
+    }
+    if (geom.sides.length === 3) {
+      const k = geom.sides.map((x) => edgeOf[x]).sort().join("");
+      const three = { enw: "nwe", ens: "nse", esw: "swe", nsw: "nsw" };
+      return prefix + (three[k] || "n");
+    }
+    return prefix + "n";
   },
   /**
-   * Стены на рёбрах (без клеток угла карты). Углы: L / stub по соседям.
+   * Стены на рёбрах (без клеток угла карты). Углы — только стена (квадрат/полоса).
+   * Окно (7) только на одинарной стене, 50% шанс.
    */
   placeFogDecor(map, border, rnd) {
     const rows = map.length, cols = map[0].length;
@@ -1740,8 +1741,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
         if (start + len < idxs.length && marks[start + len]) ok = false;
         if (!ok) continue;
         for (let k = 0; k < len && placed < budget; k++) {
-          const wantWin = side === "n" ? rnd() < 0.45 : side === "s" ? rnd() < 0.08 : rnd() < 0.15;
-          marks[start + k] = wantWin ? 2 : 1;
+          marks[start + k] = 1;
           placed++;
         }
       }
@@ -1756,7 +1756,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       for (let i = 0; i < idxs.length; i++) {
         if (!marks[i]) continue;
         const { c, r } = ring[idxs[i]];
-        map[r][c] = marks[i] === 2 ? 7 : 2;
+        map[r][c] = 2;
       }
     }
 
@@ -1777,6 +1777,17 @@ window.FEEL_DEMOS["deadline-escape"] = {
       };
       if (solid(corner.d1[0], corner.d1[1]) || solid(corner.d2[0], corner.d2[1])) {
         map[r][c] = 2;
+      }
+    }
+
+    // окна только на одинарных стенах — 50%
+    const frame = { map, border: b, cols, rows };
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (map[r][c] !== 2) continue;
+        const geom = this.wallGeomOf(frame, c, r);
+        if (geom.square || geom.sides.length !== 1) continue;
+        if (rnd() < 0.5) map[r][c] = 7;
       }
     }
     return wallDecor;
@@ -3218,7 +3229,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return true;
   },
   /**
-   * Геометрия proof-стены в клетке.
+   * Геометрия стены в клетке каркаса.
    * { sides: n/s/w/e[], square: nw|ne|sw|se|null }
    *
    * Угол карты:
@@ -3286,15 +3297,17 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return { sides, square: null };
   },
   /**
-   * PROOF: только простые прямоугольники, без спрайтов.
-   * Без гэпов: полосы flush к краю клетки, соседние клетки стыкуются вплотную.
-   * Угол карты при двух стенах — квадрат толщины полосы у стыка к play.
+   * Стены спрайтами по wallTileKey / wallGeomOf.
+   * Fallback — прямоугольники той же геометрии.
    */
   drawWallAt(ctx, s, col, row, x, y, w, h) {
-    const isWin = s.map[row][col] === 7;
     ctx.fillStyle = "#020308";
     ctx.fillRect(x, y, w, h);
 
+    const key = this.wallTileKey(s, col, row);
+    if (this.drawTile(ctx, key, x, y, w, h)) return;
+
+    const isWin = key.indexOf("window") >= 0;
     const { sides, square } = this.wallGeomOf(s, col, row);
     const band = Math.max(10, Math.round(Math.min(w, h) * 0.42));
     const body = isWin ? "#7aa8c4" : "#c4a882";
@@ -3313,7 +3326,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
       else if (side === "e") ctx.fillRect(x + w - band, y, band, h);
     }
 
-    // тёмный кант с внутренней стороны (к центру клетки / в пустоту)
     ctx.fillStyle = edgeCol;
     if (square === "se") {
       ctx.fillRect(x + w - band, y + h - band, band, lip);
