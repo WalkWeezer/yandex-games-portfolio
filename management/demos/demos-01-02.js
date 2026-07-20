@@ -1513,10 +1513,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
   borderDepthForFloor(_floor) {
     return this.FOG_BORDER;
   },
-  /** База play 6×8 + fog-border 1; каждые 25 этажей +1 play col/row */
+  /** База play 5×7 + fog-border 1; каждые 25 этажей +1 play col/row */
   gridSizeForFloor(floor) {
     const expansions = Math.max(0, Math.floor((floor | 0) / 25));
-    let playCols = 6, playRows = 8;
+    let playCols = 5, playRows = 7;
     for (let i = 0; i < expansions; i++) {
       if (i % 2 === 0) playCols += 1;
       else playRows += 1;
@@ -1737,7 +1737,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       candidates[j] = tmp;
     }
     const desk1 = 2 + ((floor - 1) % 3);
-    const desk2 = 2 + ((floor * 3) % 3) + Math.max(0, Math.floor((playCols * playRows - 48) / 28));
+    const desk2 = 2 + ((floor * 3) % 3) + Math.max(0, Math.floor((playCols * playRows - 35) / 28));
     const props = [];
     for (let i = 0; i < desk2; i++) props.push(5);
     for (let i = 0; i < desk1; i++) props.push(1);

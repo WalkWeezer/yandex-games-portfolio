@@ -7,7 +7,7 @@
 
 ```
 Cell: 0 floor · 1 desk · 2 wall · 3 plant · 4 cooler · 5/6 desk2×1 · 7 window
-Play grid: 6×8 (+growth every 25 floors)
+Play grid: 5×7 (+growth every 25 floors)
 Fog band: always +1 cell each side; FoW per edge cell, disabled on wall/window; edge = mob enter/exit only (not walk)
 Decor: wall/window on fog frame; baked composites tile_wall_{edge}_{prop} IN the same wall cell
 Required sprites: tile_wall/window_{n,s,e,w}[+_{prop}] + tile_cabinet/printer/trash + floor/desk/plant/cooler/fog
