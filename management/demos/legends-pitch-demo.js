@@ -783,6 +783,53 @@
     }
   }
 
+  function clearButtonClicks(s) {
+    // Drain edge-triggers so a fight-time tap can't instantly skip shop
+    void s.btnFight.clicked;
+    void s.btnReroll.clicked;
+    void s.btnReady.clicked;
+    s.btnFight.pressed = false;
+    s.btnReroll.pressed = false;
+    s.btnReady.pressed = false;
+    s.btnFight._held = false;
+    s.btnReroll._held = false;
+    s.btnReady._held = false;
+  }
+
+  function layoutPhaseButtons(s) {
+    // Park unused buttons off-canvas so they can't eat taps / store pressed
+    if (s.phase === "fight") {
+      s.btnFight.x = -999;
+      s.btnFight.y = -999;
+      s.btnReroll.x = -999;
+      s.btnReroll.y = -999;
+      s.btnReady.x = -999;
+      s.btnReady.y = -999;
+    } else if (s.phase === "result") {
+      s.btnFight.x = W / 2 - 70;
+      s.btnFight.y = H - 52;
+      s.btnReroll.x = -999;
+      s.btnReroll.y = -999;
+      s.btnReady.x = -999;
+      s.btnReady.y = -999;
+    } else if (s.phase === "shop") {
+      s.btnFight.x = W / 2 - 70;
+      s.btnFight.y = H - 52;
+      s.btnReroll.x = 16;
+      s.btnReroll.y = H - 52;
+      s.btnReady.x = -999;
+      s.btnReady.y = -999;
+    } else {
+      // lineup
+      s.btnFight.x = W / 2 - 70;
+      s.btnFight.y = H - 52;
+      s.btnReroll.x = 16;
+      s.btnReroll.y = H - 52;
+      s.btnReady.x = W - 116;
+      s.btnReady.y = H - 52;
+    }
+  }
+
   function endRound(s, api) {
     if (s.round >= ROUNDS) {
       s.phase = "result";
@@ -793,19 +840,25 @@
       s.oppField = [];
       s.ball.holderId = null;
       s.ball.flight = null;
+      s.shopGate = 0;
+      clearButtonClicks(s);
+      layoutPhaseButtons(s);
       return;
     }
-    // Между раундами — закупка
+    // Между раундами — обязательно закупка (не автостарт следующего раунда)
     s.phase = "shop";
     s.round += 1;
     s.gold += 3 + s.round;
     returnShopToBag(s);
     rollShop(s);
     s.flash = `Закупка · раунд ${s.round}/${ROUNDS} · ${formatMatchClock(s.clock)}`;
-    s.flashT = 1.5;
+    s.flashT = 2.2;
     s.oppField = [];
     s.ball.holderId = null;
     s.ball.flight = null;
+    s.shopGate = 0.85; // block «Раунд N» until player can see the shop
+    clearButtonClicks(s);
+    layoutPhaseButtons(s);
   }
 
   function startFight(s, api) {
@@ -839,6 +892,8 @@
     const to = formatMatchClock(s.round * MIN_PER_ROUND);
     s.flash = `Раунд ${s.round}/${ROUNDS} · ${from}–${to}`;
     s.flashT = 1.2;
+    clearButtonClicks(s);
+    layoutPhaseButtons(s);
   }
 
   function placeSelected(s, col, row) {
@@ -948,6 +1003,7 @@
       btnFight,
       btnReroll,
       btnReady,
+      shopGate: 0,
       ball: { x: 0, y: 0, holderId: null, flight: null, lastFromId: null, lastToId: null, passPairBan: 0, passStreak: 0 },
       beat: 0,
       beatLabel: "",
@@ -963,6 +1019,7 @@
     giveStarters(s);
     // Opponent hidden until fight — seeded from presets on kickoff
     rollShop(s);
+    layoutPhaseButtons(s);
     return s;
   }
 
@@ -1024,6 +1081,9 @@
 
     update(s, api, dt) {
       s._pr = pitchRect(api);
+      layoutPhaseButtons(s);
+
+      if (s.shopGate > 0) s.shopGate -= dt;
 
       if (s.speedBtn.clicked) {
         s.speed = s.speed === 1 ? 2 : 1;
@@ -1035,6 +1095,7 @@
           const fresh = createState(api);
           Object.keys(fresh).forEach((k) => (s[k] = fresh[k]));
           s._pr = pitchRect(api);
+          layoutPhaseButtons(s);
         }
         api.setHud(
           (s.scoreYou > s.scoreOpp ? "Победа" : s.scoreYou < s.scoreOpp ? "Поражение" : "Ничья") +
@@ -1044,9 +1105,15 @@
       }
 
       if (s.phase === "fight") {
-        s.btnFight.label = "…";
+        // Drain any presses on parked buttons
+        clearButtonClicks(s);
         updateFight(s, api, dt);
-        // consume stray taps
+        // If round ended → shop this frame: stop fight HUD and fall through next frame
+        if (s.phase !== "fight") {
+          layoutPhaseButtons(s);
+          api.setHud(`Закупка · 💰${s.gold} · раунд ${s.round}/${ROUNDS} · ${formatMatchClock(s.clock)}`);
+          return;
+        }
         while (api.input.consumeTap()) {}
         const tacs = activeTactics(s.field)
           .map((t) => `${t.name}×${t.n}`)
@@ -1058,8 +1125,12 @@
         return;
       }
 
-      // lineup / shop UI
-      if (s.btnReroll.clicked && (s.phase === "shop" || s.phase === "lineup")) {
+      // lineup / shop UI — must click «Раунд N» after gate; no auto-start
+      if (s.phase === "shop" && s.shopGate > 0) {
+        // Ignore held / leftover presses until the shop is readable
+        clearButtonClicks(s);
+      }
+      if (s.btnReroll.clicked && (s.phase === "shop" || s.phase === "lineup") && s.shopGate <= 0) {
         if (s.gold >= 1) {
           s.gold -= 1;
           returnShopToBag(s);
@@ -1070,11 +1141,16 @@
       }
       if (s.btnReady.clicked && s.phase === "lineup") {
         s.phase = "shop";
+        s.shopGate = 0.25;
+        clearButtonClicks(s);
+        layoutPhaseButtons(s);
         s.flash = `Закупка перед раундом ${s.round}`;
         s.flashT = 1;
       }
       if (s.btnFight.clicked) {
-        if (s.phase === "lineup" || s.phase === "shop") startFight(s, api);
+        if ((s.phase === "lineup" || s.phase === "shop") && s.shopGate <= 0) {
+          startFight(s, api);
+        }
       }
 
       const tap = api.input.consumeTap();
@@ -1187,6 +1263,17 @@
         );
       }
 
+      if (s.phase === "shop") {
+        ctx.fillStyle = "rgba(0,0,0,0.4)";
+        roundRect(ctx, w / 2 - 130, 70, 260, 36, 8);
+        ctx.fill();
+        ctx.fillStyle = "#ffe08a";
+        ctx.font = "bold 16px Trebuchet MS, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(`ЗАКУПКА · раунд ${s.round}/${ROUNDS}`, w / 2, 88);
+      }
+
       if (s.phase === "fight" && s.beat > 0 && s.beatLabel) {
         ctx.fillStyle = "rgba(0,0,0,0.35)";
         roundRect(ctx, w / 2 - 80, 70, 160, 32, 8);
@@ -1224,9 +1311,9 @@
       // hide unused buttons visually by phase — engine still draws them; adjust labels
       s.btnReroll.label = s.phase === "fight" || s.phase === "result" ? "" : "Реролл 1";
       s.btnReady.label = s.phase === "lineup" ? "Готово" : "";
-      if (s.phase === "fight") s.btnFight.label = "×" + s.speed;
+      if (s.phase === "fight") s.btnFight.label = "";
       else if (s.phase === "result") s.btnFight.label = "Заново";
-      else if (s.phase === "shop") s.btnFight.label = `Раунд ${s.round}`;
+      else if (s.phase === "shop") s.btnFight.label = s.shopGate > 0 ? "…" : `Раунд ${s.round}`;
       else s.btnFight.label = "В матч";
     },
   };
