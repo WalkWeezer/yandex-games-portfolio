@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
 /** Меняй при выкладке стен — сбрасывает кэш ensureArt (не показывать игроку в prod) */
-  ART_BUST: "w250721y",
+  ART_BUST: "w250722a",
   /** Production = без DEV∞/эт±/GOD. play/ ставит DEADLINE_PROD=true; дашборд: ?dev=1 включает дев. */
   isProd() {
     if (window.DEADLINE_PROD === true) return true;
@@ -1276,9 +1276,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721y`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250722a`));
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721y`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250722a`));
     this._art = art;
     return art;
   },
@@ -1747,7 +1747,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       { c: b - 1, r: rows - b, d1: [1, 0], d2: [0, -1] },
       { c: cols - b, r: rows - b, d1: [-1, 0], d2: [0, -1] },
     ];
-    // угол: stub если обе руки; 1 рука — редко
+    // угол: всегда стена, если есть хотя бы одна рука (стык mid↔угол)
     for (const corner of corners) {
       const { c, r, d1, d2 } = corner;
       if (c < 0 || r < 0 || c >= cols || r >= rows) continue;
@@ -1756,11 +1756,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
         return nr >= 0 && nc >= 0 && nr < rows && nc < cols && map[nr][nc] === 2;
       };
       const a = solid(d1[0], d1[1]), b2 = solid(d2[0], d2[1]);
-      if (a && b2) map[r][c] = 2;
-      else if ((a || b2) && rnd() < 0.20) map[r][c] = 2;
+      if (a || b2) map[r][c] = 2;
     }
 
-    // ≥70% открытых на кольце — снимаем любые стены (картинка из битмапа пересчитается)
+    // ≥70% открытых на кольце — снимаем mid-edge, углы не трогаем
     const needOpen = Math.ceil(ring.length * 0.70);
     const walls = [];
     for (const { c, r } of ring) if (map[r][c] === 2) walls.push({ c, r });
@@ -1775,23 +1774,17 @@ window.FEEL_DEMOS["deadline-escape"] = {
       map[cell.r][cell.c] = 0;
       openCount++;
     }
-    for (const cell of walls) {
-      if (openCount >= needOpen) break;
-      if (map[cell.r][cell.c] !== 2) continue;
-      map[cell.r][cell.c] = 0;
-      openCount++;
-    }
-    // угол без рук — не стена
+    // угол без рук — не стена; с руками — восстановить после mid-clean
     for (const corner of corners) {
       const { c, r, d1, d2 } = corner;
       if (c < 0 || r < 0 || c >= cols || r >= rows) continue;
-      if (map[r][c] !== 2) continue;
       const solid = (dc, dr) => {
         const nc = c + dc, nr = r + dr;
         return nr >= 0 && nc >= 0 && nr < rows && nc < cols && map[nr][nc] === 2;
       };
       const arms = (solid(d1[0], d1[1]) ? 1 : 0) + (solid(d2[0], d2[1]) ? 1 : 0);
       if (arms === 0) map[r][c] = 0;
+      else map[r][c] = 2;
     }
     return wallDecor;
   },
