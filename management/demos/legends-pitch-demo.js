@@ -1,1157 +1,788 @@
 /**
- * Legends of the Pitch — feel demo ZONE 6v6
- *
- * Вся сетка 3×5 доступна для позиционирования (ты и соперник).
- * После свистка — короткий engage с мест расстановки. Мяч летит, моменты с паузой.
+ * Legends of the Pitch — Feel demo (from scratch)
+ * Vector: DESIGN.md Pass-2
+ * Карта = амплуа + тактика · TFT ×2/×3 · 5v5 · вся сетка · смотри матч
  */
 window.FEEL_DEMOS = window.FEEL_DEMOS || {};
 
 window.FEEL_DEMOS["legends-of-the-pitch"] = {
-  hint: "Вся сетка для расстановки (ты и соперник) → магазин → матч. Мяч летит, моменты читаемые.",
+  hint: "5v5: расставь по всей сетке → магазин (3→★) → смотри матч. Тактики ×2/×3.",
 
   COLS: 3,
-  ROWS: 5, // 0 = их ворота, 4 = наши
-  DECK_SIZE: 18,
-  SHOP_SIZE: 3,
-  BENCH_MAX: 7,
-  MERGE_NEED: 3,
-  COPIES: 3,
+  ROWS: 5,
+  FIELD: 5,
+  DECK: 12,
+  SHOP: 3,
+  BENCH: 2,
+  MERGE: 3,
   ROUNDS: 7,
-  FIELD: 6,
 
-  TACTIC_RU: {
-    Gegenpress: "Gegenpress",
-    TikiTaka: "Tiki-Taka",
-    ParkBus: "Park Bus",
-    Counter: "Counter",
-    WingPlay: "Wing Play",
-    RouteOne: "Route One",
+  TACTIC: {
+    Gegenpress: { ru: "Gegenpress", color: "#f97316" },
+    TikiTaka: { ru: "Tiki-Taka", color: "#38bdf8" },
+    ParkBus: { ru: "Park Bus", color: "#a78bfa" },
+    Counter: { ru: "Counter", color: "#f472b6" },
+    WingPlay: { ru: "Wing Play", color: "#4ade80" },
   },
-  TACTIC_COLOR: {
-    Gegenpress: "#f97316",
-    TikiTaka: "#38bdf8",
-    ParkBus: "#a78bfa",
-    Counter: "#f472b6",
-    WingPlay: "#4ade80",
-    RouteOne: "#fbbf24",
-  },
-  ROLE_COLOR: { GK: "#c4b5fd", DEF: "#60a5fa", MID: "#fbbf24", WING: "#86efac", FWD: "#f87171" },
 
-  AMP_ACT: {
-    ShotStop: { save: 5, clear: 2, pass: 1 },
-    SweeperGK: { save: 3, clear: 2, pass: 3 },
-    NoNonsense: { tackle: 3, clear: 3, pass: 1 },
-    BallPlayCB: { tackle: 2, pass: 3, clear: 1 },
-    FullBack: { tackle: 2, pass: 2, cross: 2 },
-    WingBack: { tackle: 2, pass: 2, cross: 3, dribble: 1 },
-    Anchor: { tackle: 3, intercept: 2, pass: 2 },
-    BWM: { tackle: 4, intercept: 3, pass: 2 },
+  AMP: {
+    ShotStop: { pass: 1, clear: 2, shoot: 0, tackle: 0 },
+    NoNonsense: { pass: 1, clear: 3, tackle: 3, shoot: 0 },
+    BallPlayCB: { pass: 3, tackle: 2, clear: 1, shoot: 0 },
+    BWM: { pass: 2, tackle: 4, shoot: 1 },
     Playmaker: { pass: 5, shoot: 1, dribble: 1 },
-    Mezzala: { pass: 3, shoot: 2, dribble: 2 },
-    Winger: { cross: 4, dribble: 2, pass: 2, shoot: 1 },
-    InsideFwd: { shoot: 3, dribble: 2, pass: 2 },
-    Target: { shoot: 2, pass: 2, hold: 3 },
+    Winger: { cross: 4, pass: 2, shoot: 1, dribble: 2 },
     Poacher: { shoot: 5, pass: 1 },
-    FalseNine: { pass: 4, shoot: 2, dribble: 2 },
-    Shadow: { shoot: 3, pass: 2, dribble: 2 },
+    Target: { shoot: 2, pass: 2, hold: 3 },
+    InsideFwd: { shoot: 3, pass: 2, dribble: 2 },
+    Mezzala: { pass: 3, shoot: 2, dribble: 2 },
   },
 
   CATALOG: [
-    { name: "Мороз", amp: "NoNonsense", tactic: "ParkBus", role: "DEF", cost: 2, pac: 5, sht: 2, pas: 3, def: 9, wor: 7 },
-    { name: "Холм", amp: "Anchor", tactic: "ParkBus", role: "MID", cost: 2, pac: 5, sht: 3, pas: 5, def: 8, wor: 8 },
-    { name: "Круз", amp: "ShotStop", tactic: "ParkBus", role: "GK", cost: 2, pac: 4, sht: 1, pas: 4, def: 9, wor: 6 },
-    { name: "Риф", amp: "FullBack", tactic: "WingPlay", role: "DEF", cost: 2, pac: 7, sht: 2, pas: 5, def: 7, wor: 7 },
-    { name: "Нова", amp: "BWM", tactic: "Gegenpress", role: "MID", cost: 2, pac: 7, sht: 3, pas: 5, def: 7, wor: 8 },
-    { name: "Кип", amp: "Target", tactic: "RouteOne", role: "FWD", cost: 2, pac: 4, sht: 6, pas: 4, def: 4, wor: 7 },
-    { name: "Клык", amp: "BWM", tactic: "Gegenpress", role: "MID", cost: 3, pac: 7, sht: 4, pas: 6, def: 8, wor: 9 },
-    { name: "Коста", amp: "WingBack", tactic: "Gegenpress", role: "WING", cost: 3, pac: 8, sht: 4, pas: 6, def: 6, wor: 8 },
-    { name: "Рей", amp: "Winger", tactic: "WingPlay", role: "WING", cost: 3, pac: 9, sht: 6, pas: 7, def: 3, wor: 6 },
-    { name: "Окафор", amp: "Target", tactic: "WingPlay", role: "FWD", cost: 3, pac: 4, sht: 7, pas: 5, def: 4, wor: 8 },
-    { name: "Брант", amp: "BallPlayCB", tactic: "TikiTaka", role: "DEF", cost: 3, pac: 5, sht: 2, pas: 8, def: 7, wor: 6 },
-    { name: "Ила", amp: "Playmaker", tactic: "TikiTaka", role: "MID", cost: 3, pac: 6, sht: 5, pas: 8, def: 3, wor: 6 },
-    { name: "Волк", amp: "SweeperGK", tactic: "Gegenpress", role: "GK", cost: 3, pac: 6, sht: 1, pas: 7, def: 7, wor: 7 },
-    { name: "Дрейк", amp: "Shadow", tactic: "Counter", role: "MID", cost: 3, pac: 7, sht: 8, pas: 5, def: 3, wor: 6 },
-    { name: "Ларс", amp: "Poacher", tactic: "Counter", role: "FWD", cost: 3, pac: 8, sht: 8, pas: 3, def: 2, wor: 5 },
-    { name: "Найт", amp: "Poacher", tactic: "Counter", role: "FWD", cost: 4, pac: 8, sht: 9, pas: 3, def: 2, wor: 5 },
-    { name: "Сато", amp: "Playmaker", tactic: "TikiTaka", role: "MID", cost: 4, pac: 6, sht: 6, pas: 9, def: 3, wor: 6 },
-    { name: "Бриз", amp: "InsideFwd", tactic: "Counter", role: "WING", cost: 4, pac: 8, sht: 8, pas: 5, def: 2, wor: 6 },
-    { name: "Рока", amp: "Winger", tactic: "WingPlay", role: "WING", cost: 4, pac: 9, sht: 6, pas: 7, def: 3, wor: 6 },
-    { name: "Феликс", amp: "FalseNine", tactic: "TikiTaka", role: "FWD", cost: 5, pac: 7, sht: 7, pas: 8, def: 2, wor: 7 },
-    { name: "Аида", amp: "Poacher", tactic: "Gegenpress", role: "FWD", cost: 5, pac: 8, sht: 8, pas: 5, def: 3, wor: 8 },
-    { name: "Шрам", amp: "NoNonsense", tactic: "ParkBus", role: "DEF", cost: 5, pac: 5, sht: 2, pas: 4, def: 9, wor: 8 },
-    { name: "Юна", amp: "Mezzala", tactic: "Counter", role: "MID", cost: 5, pac: 7, sht: 7, pas: 8, def: 3, wor: 7 },
-    { name: "Мира", amp: "Playmaker", tactic: "RouteOne", role: "MID", cost: 4, pac: 5, sht: 4, pas: 8, def: 4, wor: 6 },
+    { name: "Круз", amp: "ShotStop", tactic: "ParkBus", role: "GK", cost: 2, pac: 4, sht: 1, pas: 4, def: 9 },
+    { name: "Мороз", amp: "NoNonsense", tactic: "ParkBus", role: "DEF", cost: 2, pac: 5, sht: 2, pas: 3, def: 9 },
+    { name: "Брант", amp: "BallPlayCB", tactic: "TikiTaka", role: "DEF", cost: 3, pac: 5, sht: 2, pas: 8, def: 7 },
+    { name: "Нова", amp: "BWM", tactic: "Gegenpress", role: "MID", cost: 2, pac: 7, sht: 3, pas: 5, def: 7 },
+    { name: "Клык", amp: "BWM", tactic: "Gegenpress", role: "MID", cost: 3, pac: 7, sht: 4, pas: 6, def: 8 },
+    { name: "Ила", amp: "Playmaker", tactic: "TikiTaka", role: "MID", cost: 3, pac: 6, sht: 5, pas: 8, def: 3 },
+    { name: "Сато", amp: "Playmaker", tactic: "TikiTaka", role: "MID", cost: 4, pac: 6, sht: 6, pas: 9, def: 3 },
+    { name: "Рей", amp: "Winger", tactic: "WingPlay", role: "WING", cost: 3, pac: 9, sht: 6, pas: 7, def: 3 },
+    { name: "Рока", amp: "Winger", tactic: "WingPlay", role: "WING", cost: 4, pac: 9, sht: 6, pas: 7, def: 3 },
+    { name: "Ларс", amp: "Poacher", tactic: "Counter", role: "FWD", cost: 3, pac: 8, sht: 8, pas: 3, def: 2 },
+    { name: "Найт", amp: "Poacher", tactic: "Counter", role: "FWD", cost: 4, pac: 8, sht: 9, pas: 3, def: 2 },
+    { name: "Кип", amp: "Target", tactic: "ParkBus", role: "FWD", cost: 2, pac: 4, sht: 6, pas: 4, def: 4 },
+    { name: "Бриз", amp: "InsideFwd", tactic: "Counter", role: "WING", cost: 4, pac: 8, sht: 8, pas: 5, def: 2 },
+    { name: "Юна", amp: "Mezzala", tactic: "Counter", role: "MID", cost: 5, pac: 7, sht: 7, pas: 8, def: 3 },
+    { name: "Шрам", amp: "NoNonsense", tactic: "ParkBus", role: "DEF", cost: 5, pac: 5, sht: 2, pas: 4, def: 9 },
+    { name: "Окафор", amp: "Target", tactic: "WingPlay", role: "FWD", cost: 3, pac: 4, sht: 7, pas: 5, def: 4 },
   ],
 
-  /**
-   * Стартовые позы по всей сетке (можно двигать в любую клетку).
-   * ox/oy — чтобы не стакать в центре клетки.
-   */
-  US_SLOTS: [
-    { zone: "GK", col: 1, row: 4, ox: 0, oy: 10 },
-    { zone: "DEF", col: 0, row: 3, ox: -12, oy: 4 },
-    { zone: "DEF", col: 2, row: 3, ox: 12, oy: 4 },
-    { zone: "MID", col: 1, row: 2, ox: 10, oy: 8 },
-    { zone: "WING", col: 0, row: 1, ox: -10, oy: 4 },
-    { zone: "FWD", col: 1, row: 1, ox: -8, oy: 2 },
+  // стартовые позы: обе команды уже на всей сетке
+  US_FORM: [
+    { zone: "GK", col: 1, row: 4 },
+    { zone: "DEF", col: 0, row: 3 },
+    { zone: "DEF", col: 2, row: 3 },
+    { zone: "MID", col: 1, row: 2 },
+    { zone: "FWD", col: 1, row: 1 },
   ],
-  OPP_SLOTS: [
-    { zone: "GK", col: 1, row: 0, ox: 0, oy: -10 },
-    { zone: "DEF", col: 0, row: 1, ox: -12, oy: -4 },
-    { zone: "DEF", col: 2, row: 1, ox: 12, oy: -4 },
-    { zone: "MID", col: 1, row: 2, ox: -10, oy: -8 },
-    { zone: "WING", col: 2, row: 3, ox: 10, oy: -4 },
-    { zone: "FWD", col: 1, row: 3, ox: 8, oy: -2 },
+  OPP_FORM: [
+    { zone: "GK", col: 1, row: 0 },
+    { zone: "DEF", col: 0, row: 1 },
+    { zone: "DEF", col: 2, row: 1 },
+    { zone: "MID", col: 1, row: 2 },
+    { zone: "FWD", col: 1, row: 3 },
   ],
 
   create(api) {
-    this.syncLayout(api);
-    const W = api.w;
-    const H = api.h;
-    const start = api.input.addButton({ x: W / 2 - 70, y: H - 70, w: 140, h: 54, label: "Далее", color: "#3dd68c" });
-    const reroll = api.input.addButton({ x: 14, y: H - 70, w: 110, h: 54, label: "Реролл 2", color: "#64748b" });
-    const sell = api.input.addButton({ x: W - 124, y: H - 70, w: 110, h: 54, label: "Продать", color: "#f07178" });
-    const speed = api.input.addButton({ x: -999, y: -999, w: 64, h: 40, label: "×2", color: "#5db0ff" });
-    return this.fresh(api, { start, reroll, sell, speed });
+    this.layout(api);
+    const btns = {
+      go: api.input.addButton({ x: api.w / 2 - 70, y: api.h - 68, w: 140, h: 52, label: "Далее", color: "#3dd68c" }),
+      reroll: api.input.addButton({ x: 12, y: api.h - 68, w: 108, h: 52, label: "Реролл 2", color: "#64748b" }),
+      sell: api.input.addButton({ x: api.w - 120, y: api.h - 68, w: 108, h: 52, label: "Продать", color: "#f07178" }),
+      spd: api.input.addButton({ x: -999, y: -999, w: 60, h: 36, label: "×2", color: "#5db0ff" }),
+    };
+    return this.fresh(api, btns);
   },
 
-  syncLayout(api) {
+  layout(api) {
     const W = api.w;
     const H = api.h;
-    const pitchBottom = Math.floor(H * 0.56);
-    const padX = 22;
-    const padY = 52;
-    const gw = W - padX * 2;
-    const gh = pitchBottom - padY - 10;
+    const pitchBottom = Math.floor(H * 0.55);
+    const padX = 20;
+    const padY = 50;
     this.L = {
       W,
       H,
       pitchBottom,
       uiTop: pitchBottom + 4,
-      originX: padX,
-      originY: padY,
-      cellW: gw / this.COLS,
-      cellH: gh / this.ROWS,
+      ox: padX,
+      oy: padY,
+      cw: (W - padX * 2) / this.COLS,
+      ch: (pitchBottom - padY - 8) / this.ROWS,
     };
-    return this.L;
   },
 
-  cellCenter(col, row) {
-    const L = this.L;
+  cellXY(col, row) {
     return {
-      x: L.originX + (col + 0.5) * L.cellW,
-      y: L.originY + (row + 0.5) * L.cellH,
+      x: this.L.ox + (col + 0.5) * this.L.cw,
+      y: this.L.oy + (row + 0.5) * this.L.ch,
     };
   },
 
-  slotWorld(col, row, ox, oy) {
-    const p = this.cellCenter(col, row);
-    return { x: p.x + (ox || 0), y: p.y + (oy || 0) };
-  },
-
-  mint(base, stars) {
-    return { ...base, uid: base.name + "_" + Math.random().toString(36).slice(2, 6), stars: stars || 1 };
-  },
-  starLabel(c) {
-    return "★".repeat(c.stars || 1);
-  },
-
-  buildDeck() {
-    const pool = this.CATALOG.slice();
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = (Math.random() * (i + 1)) | 0;
-      [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-    const picked = [];
-    const tactics = new Set();
-    for (const c of pool) {
-      if (picked.length >= this.DECK_SIZE) break;
-      if (tactics.size < 4 || tactics.has(c.tactic) || picked.length < 12) {
-        picked.push(this.mint(c, 1));
-        tactics.add(c.tactic);
-      }
-    }
-    while (picked.length < this.DECK_SIZE) {
-      const c = pool[picked.length % pool.length];
-      picked.push(this.mint(c, 1));
-    }
-    return picked;
-  },
-
-  applyPose(u, pose) {
-    u.col = pose.col;
-    u.row = pose.row;
-    u.ox = pose.ox || 0;
-    u.oy = pose.oy || 0;
-  },
-
-  rememberHome(u) {
-    u.home = { col: u.col, row: u.row, ox: u.ox || 0, oy: u.oy || 0 };
-  },
-
-  makeTeam(side, slots) {
-    return slots.map((slot, i) => {
-      const p = this.slotWorld(slot.col, slot.row, slot.ox, slot.oy);
-      const u = {
-        side,
-        index: i,
-        zone: slot.zone,
-        col: slot.col,
-        row: slot.row,
-        ox: slot.ox || 0,
-        oy: slot.oy || 0,
-        home: { col: slot.col, row: slot.row, ox: slot.ox || 0, oy: slot.oy || 0 },
-        card: null,
-        px: p.x,
-        py: p.y,
-        facing: side === "us" ? -Math.PI / 2 : Math.PI / 2,
-        arm: Math.random() * 6,
-        act: null,
-        actT: 0,
-        lungeX: 0,
-        lungeY: 0,
-      };
-      return u;
-    });
-  },
-
-  cellFromTap(tap) {
-    const L = this.L;
-    if (!L) return null;
-    const c = Math.floor((tap.x - L.originX) / L.cellW);
-    const r = Math.floor((tap.y - L.originY) / L.cellH);
-    if (c < 0 || c >= this.COLS || r < 0 || r >= this.ROWS) return null;
+  cellAt(tap) {
+    const c = Math.floor((tap.x - this.L.ox) / this.L.cw);
+    const r = Math.floor((tap.y - this.L.oy) / this.L.ch);
+    if (c < 0 || r < 0 || c >= this.COLS || r >= this.ROWS) return null;
     return { col: c, row: r };
   },
 
-  /** развести игроков внутри одной клетки (своя/чужая сторона) */
-  packCell(s, col, row) {
-    const here = [...s.ours, ...s.opp].filter((u) => u.col === col && u.row === row);
-    const us = here.filter((u) => u.side === "us");
-    const opp = here.filter((u) => u.side === "opp");
-    const place = (list, sideSign) => {
-      list.forEach((u, i) => {
-        const spread = list.length > 1 ? (i - (list.length - 1) / 2) * 14 : 0;
-        u.ox = sideSign * 10 + spread * 0.35;
-        u.oy = spread;
-        this.rememberHome(u);
-        if (u.card || s.phase === "lineup" || s.phase === "shop") this.snapUnit(u);
-      });
-    };
-    place(us, -1);
-    place(opp, 1);
+  mint(base, stars) {
+    return Object.assign({}, base, {
+      uid: base.name + "_" + Math.random().toString(36).slice(2, 5),
+      stars: stars || 1,
+    });
   },
 
-  moveUnitToCell(s, u, col, row) {
-    const prev = { col: u.col, row: u.row };
-    u.col = col;
-    u.row = row;
-    this.packCell(s, col, row);
-    if (prev.col !== col || prev.row !== row) this.packCell(s, prev.col, prev.row);
+  shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  },
+
+  buildDeck() {
+    const pool = this.shuffle(this.CATALOG);
+    const out = [];
+    const tactics = new Set();
+    for (const c of pool) {
+      if (out.length >= this.DECK) break;
+      if (tactics.size < 3 || tactics.has(c.tactic) || out.length < 8) {
+        out.push(this.mint(c));
+        tactics.add(c.tactic);
+      }
+    }
+    while (out.length < this.DECK) out.push(this.mint(pool[out.length % pool.length]));
+    return out;
+  },
+
+  makeSide(side, form) {
+    return form.map((f, i) => {
+      const p = this.cellXY(f.col, f.row);
+      const ox = side === "us" ? -8 : 8;
+      return {
+        side,
+        i,
+        zone: f.zone,
+        col: f.col,
+        row: f.row,
+        ox,
+        oy: ((i % 3) - 1) * 6,
+        card: null,
+        x: p.x + ox,
+        y: p.y,
+        face: side === "us" ? -Math.PI / 2 : Math.PI / 2,
+        arm: Math.random() * 5,
+        act: null,
+        actT: 0,
+        lx: 0,
+        ly: 0,
+      };
+    });
   },
 
   seedOpp(api, deck) {
-    const team = this.makeTeam("opp", this.OPP_SLOTS);
-    const tactics = [...new Set(deck.map((c) => c.tactic))].slice(0, 4);
-    const pool = this.CATALOG.filter((c) => tactics.includes(c.tactic));
+    const team = this.makeSide("opp", this.OPP_FORM);
+    const tags = [...new Set(deck.map((c) => c.tactic))].slice(0, 3);
+    const pool = this.CATALOG.filter((c) => tags.includes(c.tactic));
     for (const u of team) {
       const cand = pool.filter((c) => c.role === u.zone);
       const base = cand.length ? api.pick(cand) : api.pick(this.CATALOG.filter((c) => c.role === u.zone));
-      u.card = this.mint(base || this.CATALOG[0], 1);
+      u.card = this.mint(base || this.CATALOG[0]);
     }
+    this.packAll(team);
     return team;
   },
 
+  packAll(units) {
+    const map = new Map();
+    for (const u of units) {
+      const k = u.col + "," + u.row;
+      if (!map.has(k)) map.set(k, []);
+      map.get(k).push(u);
+    }
+    for (const list of map.values()) {
+      const us = list.filter((u) => u.side === "us");
+      const opp = list.filter((u) => u.side === "opp");
+      us.forEach((u, i) => {
+        u.ox = -10;
+        u.oy = (i - (us.length - 1) / 2) * 12;
+      });
+      opp.forEach((u, i) => {
+        u.ox = 10;
+        u.oy = (i - (opp.length - 1) / 2) * 12;
+      });
+    }
+  },
+
+  snap(u) {
+    const p = this.cellXY(u.col, u.row);
+    u.x = p.x + u.ox;
+    u.y = p.y + u.oy;
+  },
+
   fresh(api, btns) {
-    this.syncLayout(api);
+    this.layout(api);
     const deck = this.buildDeck();
-    const ours = this.makeTeam("us", this.US_SLOTS);
+    const ours = this.makeSide("us", this.US_FORM);
     const opp = this.seedOpp(api, deck);
-    btns.start.label = "В магазин";
-    btns.start.color = "#3dd68c";
+    const mid = this.cellXY(1, 2);
     btns.reroll.x = -999;
     btns.sell.x = -999;
-    btns.speed.x = -999;
-    const mid = this.cellCenter(1, 2);
+    btns.spd.x = -999;
     return {
-      start: btns.start,
-      reroll: btns.reroll,
-      sell: btns.sell,
-      speed: btns.speed,
+      ...btns,
       phase: "lineup",
       deck,
-      poolNames: deck.map((c) => c.name),
       bag: this.makeBag(deck),
       ours,
       opp,
       bench: [],
       shop: [],
-      selected: null,
+      sel: null,
       coins: 10,
       round: 0,
       minute: 0,
-      myGoals: 0,
-      oppGoals: 0,
-      ball: { col: 1, row: 2, owner: null, flying: null, x: mid.x, y: mid.y },
+      gh: 0,
+      ga: 0,
+      ball: { x: mid.x, y: mid.y, col: 1, row: 2, owner: null, fly: null },
       fx: [],
-      log: [],
-      subline: "Вся сетка · карта → клетка (6/6)",
+      line: "Карта → любая клетка сетки (5/5)",
+      note: "5v5 · колода 12 · витрина 3 · скамейка 2",
       banner: null,
       bannerT: 0,
-      bannerColor: "#fff",
+      bannerC: "#fff",
       pulse: 0,
-      thinkT: 0,
-      beatT: 0,
-      spreadT: 0,
-      segmentT: 0,
-      timeScale: 1,
-      note: "6v6 · колода 18 · витрина 3 · скамейка 7",
-      lastResult: null,
-      lastPassFrom: null,
-      lastPassTo: null,
-      passStreak: 0,
-      pendingShot: null,
+      think: 0,
+      beat: 0,
+      seg: 0,
+      scale: 1,
+      lastFrom: null,
+      streak: 0,
+      result: null,
+      pending: null,
+      restart: 0,
     };
   },
 
   makeBag(deck) {
-    const bag = [];
     const names = [...new Set(deck.map((c) => c.name))];
-    for (const n of names) {
-      const base = this.CATALOG.find((c) => c.name === n) || deck.find((c) => c.name === n);
-      for (let i = 0; i < this.COPIES; i++) bag.push(base.name);
-    }
+    const bag = [];
+    for (const n of names) for (let i = 0; i < 3; i++) bag.push(n);
     return bag;
   },
 
-  filled(team) {
-    return team.filter((u) => u.card).length;
-  },
   units(s) {
     return [...s.ours, ...s.opp].filter((u) => u.card);
   },
-  atCell(s, col, row) {
+  filled(s) {
+    return s.ours.filter((u) => u.card).length;
+  },
+  at(s, col, row) {
     return this.units(s).filter((u) => u.col === col && u.row === row);
   },
-  teammates(s, side) {
-    return (side === "us" ? s.ours : s.opp).filter((u) => u.card);
-  },
-  enemies(s, side) {
-    return (side === "us" ? s.opp : s.ours).filter((u) => u.card);
+  side(s, who) {
+    return (who === "us" ? s.ours : s.opp).filter((u) => u.card);
   },
 
-  tacticCount(team) {
+  tactics(team) {
     const c = Object.create(null);
-    for (const u of team) {
-      if (!u.card) continue;
-      c[u.card.tactic] = (c[u.card.tactic] || 0) + 1;
-    }
+    for (const u of team) if (u.card) c[u.card.tactic] = (c[u.card.tactic] || 0) + 1;
     return Object.entries(c)
       .filter(([, n]) => n >= 2)
-      .map(([id, n]) => ({ id, n, level: n >= 4 ? 3 : n >= 3 ? 2 : 1 }))
+      .map(([id, n]) => ({ id, n, lv: n >= 4 ? 3 : n >= 3 ? 2 : 1 }))
       .sort((a, b) => b.n - a.n);
   },
 
-  shopOffer(s, api) {
-    if (!s.bag.length) s.bag = this.makeBag(s.deck.length ? s.deck : s.poolNames.map((n) => ({ name: n })));
+  offer(s, api) {
+    if (!s.bag.length) s.bag = this.makeBag(s.deck);
     const name = api.pick(s.bag);
     const base = this.CATALOG.find((c) => c.name === name);
-    return { card: this.mint(base, 1), price: base.cost, name };
+    return { card: this.mint(base), price: base.cost, name };
   },
   refreshShop(s, api) {
     s.shop = [];
-    for (let i = 0; i < this.SHOP_SIZE; i++) s.shop.push(this.shopOffer(s, api));
-  },
-  takeFromBag(s, name) {
-    const i = s.bag.indexOf(name);
-    if (i >= 0) s.bag.splice(i, 1);
+    for (let i = 0; i < this.SHOP; i++) s.shop.push(this.offer(s, api));
   },
 
   tryMerge(s) {
-    let merged = null;
-    for (let guard = 0; guard < 6; guard++) {
+    for (let g = 0; g < 4; g++) {
       let did = false;
       const names = new Set([
         ...s.ours.filter((u) => u.card).map((u) => u.card.name),
         ...s.bench.map((c) => c.name),
       ]);
       for (const name of names) {
-        const field = [];
+        const parts = [];
         s.ours.forEach((u, i) => {
-          if (u.card && u.card.name === name && (u.card.stars || 1) === 1) field.push({ where: "field", i, card: u.card });
+          if (u.card && u.card.name === name && u.card.stars === 1) parts.push({ w: "f", i, card: u.card });
         });
-        const bench = [];
         s.bench.forEach((c, i) => {
-          if (c.name === name && (c.stars || 1) === 1) bench.push({ where: "bench", i, card: c });
+          if (c.name === name && c.stars === 1) parts.push({ w: "b", i, card: c });
         });
-        const all = [...field, ...bench];
-        if (all.length < this.MERGE_NEED) continue;
-        const keep = all.find((p) => p.where === "field") || all[0];
+        if (parts.length < this.MERGE) continue;
+        const keep = parts.find((p) => p.w === "f") || parts[0];
         const take = [keep];
-        for (const p of all) {
-          if (take.length >= this.MERGE_NEED) break;
-          if (p !== keep) take.push(p);
-        }
+        for (const p of parts) if (take.length < this.MERGE && p !== keep) take.push(p);
         take
           .slice()
           .sort((a, b) => b.i - a.i)
           .forEach((p) => {
-            if (p.where === "field") s.ours[p.i].card = null;
+            if (p.w === "f") s.ours[p.i].card = null;
             else s.bench.splice(p.i, 1);
           });
         const up = this.mint(keep.card, 2);
-        if (keep.where === "field") {
+        if (keep.w === "f") {
           s.ours[keep.i].card = up;
-          this.snapUnit(s.ours[keep.i]);
-        } else if (s.bench.length < this.BENCH_MAX) s.bench.push(up);
-        merged = up;
-        did = true;
+          this.snap(s.ours[keep.i]);
+        } else if (s.bench.length < this.BENCH) s.bench.push(up);
         s.banner = "MERGE ★";
-        s.bannerColor = "#fbbf24";
+        s.bannerC = "#fbbf24";
         s.bannerT = 0.9;
-        s.subline = up.name + " · " + up.amp;
+        s.line = up.name + " ★★";
+        did = true;
       }
       if (!did) break;
     }
-    return merged;
   },
 
-  unitTarget(u) {
-    return this.slotWorld(u.col, u.row, u.ox, u.oy);
+  moveTo(s, u, col, row) {
+    u.col = col;
+    u.row = row;
+    this.packAll([...s.ours, ...s.opp]);
+    this.snap(u);
   },
 
-  snapUnit(u) {
-    const p = this.unitTarget(u);
-    u.px = p.x;
-    u.py = p.y;
-    u.lungeX = 0;
-    u.lungeY = 0;
-  },
-
-  placeOn(u, card) {
-    u.card = card;
-    this.rememberHome(u);
-    this.snapUnit(u);
-    u.act = null;
-    u.actT = 0;
-  },
-
-  resetToHome(s) {
-    for (const u of [...s.ours, ...s.opp]) {
-      if (u.home) this.applyPose(u, u.home);
-      if (u.card) this.snapUnit(u);
-    }
-  },
-
-  beginSpread(s) {
-    // играем с клеток расстановки (вся сетка уже могла пересечься)
-    const mid = this.cellCenter(1, 2);
-    for (const u of this.units(s)) {
-      this.rememberHome(u);
-      this.faceToward(u, mid.x, mid.y);
-      u.lungeX = Math.cos(u.facing) * 8;
-      u.lungeY = Math.sin(u.facing) * 8;
-    }
-    s.spreadT = 0.95;
-    s.beatT = 0.95;
-    s.ball.owner = null;
-    s.ball.x = mid.x;
-    s.ball.y = mid.y;
-    s.ball.col = 1;
-    s.ball.row = 2;
-    s.banner = "СВИСТОК";
-    s.bannerColor = "#e2e8f0";
-    s.bannerT = 0.9;
-    this.pushLog(s, "Свисток · с ваших позиций");
-  },
-
-  finishKickoff(s) {
-    const mid = s.ours.find((u) => u.card && u.zone === "MID") || s.ours.find((u) => u.card);
-    if (mid) {
-      this.giveBall(s, mid, true);
-      this.pushLog(s, "Мяч · " + mid.card.name);
-    }
-    s.beatT = 0.55;
-    s.thinkT = 0.55;
-  },
-
-  spawnFx(s, kind, x, y, extra) {
-    const life =
-      { pass: 0.55, cross: 0.7, tackle: 0.65, intercept: 0.65, shot: 0.7, save: 0.7, goal: 1.1, mark: 0.5 }[kind] || 0.45;
-    s.fx.push(Object.assign({ kind, x, y, t: life, life }, extra || {}));
-  },
-  pushLog(s, text) {
-    s.log.unshift(text);
-    if (s.log.length > 6) s.log.pop();
-    s.subline = text;
+  log(s, t) {
+    s.line = t;
   },
   beat(s, t) {
-    s.beatT = Math.max(s.beatT || 0, t);
+    s.beat = Math.max(s.beat, t);
+  },
+  fx(s, kind, x, y, extra) {
+    const life = { pass: 0.5, cross: 0.65, tackle: 0.6, shot: 0.65, save: 0.7, goal: 1.0 }[kind] || 0.45;
+    s.fx.push(Object.assign({ kind, x, y, t: life, life }, extra || {}));
   },
 
-  neighbors(col, row) {
-    const out = [];
-    for (let dc = -1; dc <= 1; dc++) {
-      for (let dr = -1; dr <= 1; dr++) {
-        if (!dc && !dr) continue;
-        const c = col + dc;
-        const r = row + dr;
-        if (c >= 0 && c < this.COLS && r >= 0 && r < this.ROWS) out.push({ col: c, row: r });
-      }
-    }
-    return out;
-  },
-
-  pathCells(a, b) {
-    const cells = [];
-    const steps = Math.max(Math.abs(b.col - a.col), Math.abs(b.row - a.row));
-    for (let i = 1; i < steps; i++) {
-      cells.push({
-        col: a.col + Math.round(((b.col - a.col) * i) / steps),
-        row: a.row + Math.round(((b.row - a.row) * i) / steps),
-      });
-    }
-    return cells;
-  },
-
-  weightsFor(u, s) {
-    const base = Object.assign({}, this.AMP_ACT[u.card.amp] || { pass: 2, shoot: 1, tackle: 1 });
-    const tactics = this.tacticCount(u.side === "us" ? s.ours : s.opp);
-    const top = tactics[0];
-    const lv = top ? top.level : 0;
+  // ——— combat helpers ———
+  weights(u, s) {
+    const w = Object.assign({ pass: 2, shoot: 1, tackle: 1, hold: 1 }, this.AMP[u.card.amp] || {});
+    const top = this.tactics(u.side === "us" ? s.ours : s.opp)[0];
     if (top) {
-      if (top.id === "Gegenpress") {
-        base.tackle = (base.tackle || 0) + 1 + lv;
-        base.intercept = (base.intercept || 0) + 1;
-      }
-      if (top.id === "TikiTaka") base.pass = (base.pass || 0) + 2 + lv;
+      if (top.id === "Gegenpress") w.tackle = (w.tackle || 0) + 1 + top.lv;
+      if (top.id === "TikiTaka") w.pass = (w.pass || 0) + 2 + top.lv;
       if (top.id === "ParkBus") {
-        base.tackle = (base.tackle || 0) + 1;
-        base.clear = (base.clear || 0) + 1;
-        base.shoot = Math.max(0, (base.shoot || 0) - 1);
+        w.tackle = (w.tackle || 0) + 1;
+        w.clear = (w.clear || 0) + 2;
+        w.shoot = Math.max(0, (w.shoot || 0) - 1);
       }
-      if (top.id === "Counter") {
-        base.pass = (base.pass || 0) + 1;
-        base.shoot = (base.shoot || 0) + lv;
-      }
-      if (top.id === "WingPlay") base.cross = (base.cross || 0) + 2 + lv;
-      if (top.id === "RouteOne") {
-        base.cross = (base.cross || 0) + 1;
-        base.shoot = (base.shoot || 0) + 1;
-      }
+      if (top.id === "Counter") w.shoot = (w.shoot || 0) + top.lv;
+      if (top.id === "WingPlay") w.cross = (w.cross || 0) + 2 + top.lv;
     }
-    const attackDepth = u.side === "us" ? 2 - u.row : u.row - 2;
-    if (attackDepth < 0) base.shoot = 0;
-    else base.shoot = (base.shoot || 0) + 1 + attackDepth * 2;
-    const stagn = s.passStreak || 0;
-    if (stagn >= 2) {
-      base.shoot = (base.shoot || 0) + stagn;
-      base.cross = (base.cross || 0) + 1;
-      base.pass = Math.max(0, (base.pass || 0) - stagn);
-    }
-    if (stagn >= 4 && attackDepth >= 0) {
-      base.shoot = (base.shoot || 0) + 6;
-      base.pass = 0;
+    const depth = u.side === "us" ? 2 - u.row : u.row - 2;
+    if (depth < 0) w.shoot = 0;
+    else w.shoot = (w.shoot || 0) + 1 + depth;
+    if (s.streak >= 2) {
+      w.shoot = (w.shoot || 0) + s.streak;
+      w.pass = Math.max(0, (w.pass || 0) - 1);
     }
     if (u.zone === "GK") {
-      base.shoot = 0;
-      base.cross = 0;
-      base.dribble = 0;
-      base.clear = (base.clear || 0) + 3;
+      w.shoot = 0;
+      w.cross = 0;
+      w.clear = (w.clear || 0) + 3;
     }
-    return base;
+    return w;
   },
 
-  pickWeighted(weights) {
+  pick(w) {
     let sum = 0;
-    for (const k of Object.keys(weights)) sum += Math.max(0, weights[k]);
+    for (const k of Object.keys(w)) sum += Math.max(0, w[k] || 0);
     if (sum <= 0) return "hold";
     let r = Math.random() * sum;
-    for (const k of Object.keys(weights)) {
-      r -= Math.max(0, weights[k]);
+    for (const k of Object.keys(w)) {
+      r -= Math.max(0, w[k] || 0);
       if (r <= 0) return k;
     }
     return "hold";
   },
 
-  passProgress(owner, target) {
-    if (owner.side === "us") return owner.row - target.row;
-    return target.row - owner.row;
+  fwd(a, b) {
+    return a.side === "us" ? a.row - b.row : b.row - a.row;
   },
 
-  passTargets(s, owner, { cross = false, clear = false } = {}) {
-    const mates = this.teammates(s, owner.side).filter((u) => u !== owner && u.card);
-    const last = s.lastPassFrom;
-    const banned = new Set();
-    if (last) banned.add(last);
-    if (s.lastPassTo && s.lastPassFrom === owner) banned.add(s.lastPassTo);
-
-    const inReach = (m) => {
-      const dc = Math.abs(m.col - owner.col);
-      const dr = Math.abs(m.row - owner.row);
-      if (clear || cross) return dc + dr <= 3 && this.passProgress(owner, m) >= 0;
-      return dc <= 1 && dr <= 1 && !(dc === 0 && dr === 0);
-    };
-
-    let targets = mates.filter((m) => inReach(m) && !banned.has(m));
-    if (cross) {
-      const air = mates.filter((m) => this.passProgress(owner, m) >= 0 && !banned.has(m));
-      if (air.length) targets = air;
-    }
-    if (!targets.length) targets = mates.filter((m) => inReach(m) && m !== last);
-    targets.sort((a, b) => {
-      const pa = this.passProgress(owner, a);
-      const pb = this.passProgress(owner, b);
-      let sa = a.card.pas + pa * 3 + (a.zone === "FWD" ? 2 : 0) + (cross && a.zone === "FWD" ? 3 : 0);
-      let sb = b.card.pas + pb * 3 + (b.zone === "FWD" ? 2 : 0) + (cross && b.zone === "FWD" ? 3 : 0);
-      if ((s.passStreak || 0) >= 2) {
-        if (pa <= 0) sa -= 4;
-        if (pb <= 0) sb -= 4;
-      }
-      if (owner.card.amp === "Playmaker" || owner.card.amp === "FalseNine") {
-        sa += 2;
-        sb += 2;
-      }
-      return sb - sa + Math.random() * 0.4;
-    });
-    return targets;
+  targets(s, owner, long) {
+    const mates = this.side(s, owner.side).filter((u) => u !== owner);
+    const ban = new Set();
+    if (s.lastFrom) ban.add(s.lastFrom);
+    return mates
+      .filter((m) => {
+        const dc = Math.abs(m.col - owner.col);
+        const dr = Math.abs(m.row - owner.row);
+        if (long) return dc + dr <= 3 && this.fwd(owner, m) >= 0 && !ban.has(m);
+        return dc <= 1 && dr <= 1 && (dc || dr) && !ban.has(m);
+      })
+      .sort((a, b) => this.fwd(owner, b) - this.fwd(owner, a) + (b.card.pas - a.card.pas) * 0.1);
   },
 
-  giveBall(s, unit, snap) {
-    s.ball.owner = unit;
-    s.ball.col = unit.col;
-    s.ball.row = unit.row;
-    s.ball.flying = null;
+  give(s, u, snap) {
+    s.ball.owner = u;
+    s.ball.col = u.col;
+    s.ball.row = u.row;
+    s.ball.fly = null;
     if (snap) {
-      s.ball.x = unit.px;
-      s.ball.y = unit.py - 14;
+      s.ball.x = u.x;
+      s.ball.y = u.y - 12;
     }
   },
 
-  launchBall(s, x1, y1, dur, meta) {
+  launch(s, x1, y1, dur, meta) {
     s.ball.owner = null;
-    s.ball.flying = Object.assign(
-      {
-        x0: s.ball.x,
-        y0: s.ball.y,
-        x1,
-        y1,
-        t: dur,
-        life: dur,
-        arc: 0,
-        checked: false,
-      },
+    s.ball.fly = Object.assign(
+      { x0: s.ball.x, y0: s.ball.y, x1, y1, t: dur, life: dur, arc: 0 },
       meta || {}
     );
   },
 
-  faceToward(u, x, y) {
-    u.facing = Math.atan2(y - u.py, x - u.px);
+  face(u, x, y) {
+    u.face = Math.atan2(y - u.y, x - u.x);
   },
 
-  tryTackle(s, defender, owner, adjacent) {
-    const same = defender.col === owner.col && defender.row === owner.row;
-    if (!same && !adjacent) return false;
-    const w = this.weightsFor(defender, s);
-    if ((w.tackle || 0) < 1) return false;
-    let chance =
-      (same ? 0.34 : 0.05 + Math.min(0.1, (s.passStreak || 0) * 0.03)) +
-      defender.card.def * 0.03 +
-      ((defender.card.stars || 1) - 1) * 0.05 -
-      owner.card.pac * 0.02;
-    if (adjacent && (w.tackle || 0) < 2 && (s.passStreak || 0) < 2) return false;
-    if (Math.random() > Math.min(same ? 0.68 : 0.32, chance)) return false;
-
-    defender.act = "tackle";
-    defender.actT = 0.55;
-    this.faceToward(defender, owner.px, owner.py);
-    defender.lungeX = (owner.px - defender.px) * 0.35;
-    defender.lungeY = (owner.py - defender.py) * 0.35;
-    owner.act = "stumble";
-    owner.actT = 0.45;
-    this.spawnFx(s, "tackle", (defender.px + owner.px) / 2, (defender.py + owner.py) / 2, {
-      color: this.TACTIC_COLOR[defender.card.tactic],
-    });
-    this.giveBall(s, defender, false);
-    s.lastPassFrom = null;
-    s.lastPassTo = null;
-    s.passStreak = 0;
-    this.pushLog(s, "Отбор · " + defender.card.name + " (" + defender.card.amp + ")");
-    this.beat(s, 0.85);
-    return true;
-  },
-
-  pickInterceptor(s, from, to, passerSide) {
-    const path = this.pathCells(from, to);
-    path.push({ col: to.col, row: to.row });
-    const seen = new Set();
-    const cand = [];
-    for (const cell of path) {
-      const key = cell.col + "," + cell.row;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      for (const f of this.atCell(s, cell.col, cell.row).filter((u) => u.side !== passerSide && u.card)) {
-        const w = this.weightsFor(f, s);
-        const atRecv = f.col === to.col && f.row === to.row;
-        const chance = (atRecv ? 0.15 : 0.09) + f.card.def * 0.02 + (w.intercept || 0) * 0.04;
-        if (Math.random() < Math.min(0.38, chance)) cand.push(f);
-      }
-    }
-    return cand[0] || null;
-  },
-
-  doPass(s, owner, cross, clear) {
-    const targets = this.passTargets(s, owner, { cross: !!cross, clear: !!clear });
-    if (!targets.length) return false;
-    const target = targets[0];
-    const kind = cross ? "cross" : clear ? "clear" : "pass";
-    owner.act = kind === "clear" ? "pass" : kind;
+  doPass(s, owner, cross) {
+    const list = this.targets(s, owner, cross);
+    if (!list.length) return false;
+    const t = list[0];
+    owner.act = cross ? "cross" : "pass";
     owner.actT = 0.4;
-    this.faceToward(owner, target.px, target.py);
-    owner.lungeX = Math.cos(owner.facing) * 6;
-    owner.lungeY = Math.sin(owner.facing) * 6;
-    this.spawnFx(s, cross ? "cross" : "pass", owner.px, owner.py, { x2: target.px, y2: target.py });
-
-    const prog = this.passProgress(owner, target);
-    s.lastPassFrom = owner;
-    s.lastPassTo = target;
-    if (prog > 0) s.passStreak = 0;
-    else s.passStreak = (s.passStreak || 0) + 1;
-
-    const dist = Math.hypot(target.px - owner.px, target.py - owner.py);
-    const dur = Math.max(0.35, Math.min(0.85, dist / 220)) * (cross ? 1.25 : 1);
-    const label = (cross ? "Навес · " : clear ? "Вынос · " : "Пас · ") + owner.card.name + " → " + target.card.name;
-    this.pushLog(s, label);
+    this.face(owner, t.x, t.y);
+    owner.lx = Math.cos(owner.face) * 7;
+    owner.ly = Math.sin(owner.face) * 7;
+    this.fx(s, cross ? "cross" : "pass", owner.x, owner.y, { x2: t.x, y2: t.y });
+    s.lastFrom = owner;
+    s.streak = this.fwd(owner, t) > 0 ? 0 : s.streak + 1;
+    const dist = Math.hypot(t.x - owner.x, t.y - owner.y);
+    const dur = Math.max(0.32, Math.min(0.8, dist / 240)) * (cross ? 1.2 : 1);
+    this.log(s, (cross ? "Навес · " : "Пас · ") + owner.card.name + " → " + t.card.name);
     this.beat(s, dur + 0.35);
 
-    const thief = this.pickInterceptor(s, owner, target, owner.side);
-    this.launchBall(s, target.px, target.py - 12, dur, {
-      arc: cross ? 28 : clear ? 18 : 8,
-      to: target,
-      thief,
-      label,
-      kind,
-    });
+    // перехват?
+    let thief = null;
+    const path = [{ col: t.col, row: t.row }];
+    for (const cell of path) {
+      for (const f of this.at(s, cell.col, cell.row)) {
+        if (f.side === owner.side) continue;
+        const ww = this.weights(f, s);
+        if (Math.random() < 0.12 + f.card.def * 0.02 + (ww.tackle || 0) * 0.02) thief = f;
+      }
+    }
+    this.launch(s, t.x, t.y - 12, dur, { arc: cross ? 26 : 8, to: t, thief });
     return true;
   },
 
   doShoot(s, owner) {
     owner.act = "shot";
     owner.actT = 0.5;
-    const goalRow = owner.side === "us" ? 0 : 4;
-    const goal = this.cellCenter(1, goalRow);
-    this.faceToward(owner, goal.x, goal.y);
-    owner.lungeX = Math.cos(owner.facing) * 10;
-    owner.lungeY = Math.sin(owner.facing) * 10;
-    this.spawnFx(s, "shot", owner.px, owner.py, { x2: goal.x, y2: goal.y, color: "#fde68a" });
-
+    const goal = this.cellXY(1, owner.side === "us" ? 0 : 4);
+    this.face(owner, goal.x, goal.y);
+    owner.lx = Math.cos(owner.face) * 10;
+    owner.ly = Math.sin(owner.face) * 10;
+    this.fx(s, "shot", owner.x, owner.y, { x2: goal.x, y2: goal.y });
     const depth = owner.side === "us" ? 2 - owner.row : owner.row - 2;
     const chance =
-      0.18 +
-      owner.card.sht * 0.045 +
-      ((owner.card.stars || 1) - 1) * 0.06 +
-      Math.max(0, depth) * 0.06 +
-      (owner.card.amp === "Poacher" ? 0.08 : 0);
-    s.pendingShot = { who: owner.side, chance: Math.min(0.68, chance), shooter: owner.card };
-    s.lastPassFrom = null;
-    s.lastPassTo = null;
-    s.passStreak = 0;
-    this.pushLog(s, "Удар · " + owner.card.name + " (" + owner.card.amp + ")");
-    const dur = 0.55;
-    this.beat(s, dur + 0.2);
-    this.launchBall(s, goal.x, goal.y, dur, { arc: 22, shot: true, side: owner.side });
+      0.2 + owner.card.sht * 0.045 + (owner.card.stars - 1) * 0.06 + Math.max(0, depth) * 0.05;
+    s.pending = { who: owner.side, chance: Math.min(0.65, chance), name: owner.card.name };
+    s.lastFrom = null;
+    s.streak = 0;
+    this.log(s, "Удар · " + owner.card.name + " (" + owner.card.amp + ")");
+    this.beat(s, 0.75);
+    this.launch(s, goal.x, goal.y, 0.55, { arc: 20, shot: true, side: owner.side });
     return true;
   },
 
   resolveShot(s) {
-    const p = s.pendingShot;
+    const p = s.pending;
+    s.pending = null;
     if (!p) return;
-    s.pendingShot = null;
-    const gkSide = p.who === "us" ? "opp" : "us";
-    const gk = this.teammates(s, gkSide).find((u) => u.zone === "GK");
-    const box = this.atCell(s, 1, p.who === "us" ? 0 : 4).filter((u) => u.side !== p.who);
-
-    if (box.length && Math.random() < 0.22) {
-      const b = box[0];
-      b.act = "tackle";
-      b.actT = 0.5;
-      this.spawnFx(s, "tackle", b.px, b.py, { color: "#a78bfa" });
-      this.giveBall(s, b, false);
-      this.pushLog(s, "Блок · " + b.card.name);
-      s.banner = "БЛОК";
-      s.bannerColor = "#a78bfa";
-      s.bannerT = 1.0;
-      this.beat(s, 1.0);
-      return;
-    }
+    const gk = this.side(s, p.who === "us" ? "opp" : "us").find((u) => u.zone === "GK");
     if (Math.random() < p.chance) {
-      if (p.who === "us") s.myGoals += 1;
-      else s.oppGoals += 1;
-      s.lastScorer = p.who;
+      if (p.who === "us") s.gh++;
+      else s.ga++;
       s.banner = "ГОООЛ!";
-      s.bannerColor = "#fbbf24";
-      s.bannerT = 1.6;
-      const g = this.cellCenter(1, p.who === "us" ? 0 : 4);
-      this.spawnFx(s, "goal", g.x, g.y);
-      this.pushLog(s, "Гол · " + p.shooter.name);
-      this.beat(s, 1.5);
-      s.restartKick = 1.4;
-    } else if (gk && Math.random() < 0.6) {
+      s.bannerC = "#fbbf24";
+      s.bannerT = 1.5;
+      this.fx(s, "goal", this.cellXY(1, p.who === "us" ? 0 : 4).x, this.cellXY(1, p.who === "us" ? 0 : 4).y);
+      this.log(s, "Гол · " + p.name);
+      this.beat(s, 1.4);
+      s.restart = 1.35;
+      s.lastScorer = p.who;
+    } else if (gk && Math.random() < 0.55) {
       gk.act = "save";
-      gk.actT = 0.65;
-      gk.lungeX = (s.ball.x - gk.px) * 0.2;
-      gk.lungeY = (s.ball.y - gk.py) * 0.2;
-      this.spawnFx(s, "save", gk.px, gk.py, { color: "#c4b5fd" });
-      this.giveBall(s, gk, false);
+      gk.actT = 0.6;
+      this.fx(s, "save", gk.x, gk.y);
+      this.give(s, gk, false);
       s.banner = "СЕЙВ";
-      s.bannerColor = "#c4b5fd";
-      s.bannerT = 1.15;
-      this.pushLog(s, "Сейв · " + gk.card.name);
-      this.beat(s, 1.15);
+      s.bannerC = "#c4b5fd";
+      s.bannerT = 1.1;
+      this.log(s, "Сейв · " + gk.card.name);
+      this.beat(s, 1.1);
     } else {
       s.banner = Math.random() < 0.5 ? "МИМО" : "ШТАНГА";
-      s.bannerColor = "#94a3b8";
-      s.bannerT = 1.0;
-      if (gk) this.giveBall(s, gk, false);
-      this.pushLog(s, s.banner);
-      this.beat(s, 1.0);
+      s.bannerC = "#94a3b8";
+      s.bannerT = 0.9;
+      if (gk) this.give(s, gk, false);
+      this.log(s, s.banner);
+      this.beat(s, 0.9);
     }
   },
 
-  afterGoalRestart(s) {
-    s.restartKick = 0;
-    for (const u of this.units(s)) {
-      this.applyPose(u, u.home);
-      this.snapUnit(u);
-    }
-    const kickSide = s.lastScorer === "us" ? "opp" : "us";
-    const m =
-      this.teammates(s, kickSide).find((u) => u.zone === "MID") || this.teammates(s, kickSide)[0];
-    const center = this.cellCenter(1, 2);
-    s.ball.x = center.x;
-    s.ball.y = center.y;
-    if (m) this.giveBall(s, m, true);
-    this.pushLog(s, "Центр · снова в игре");
-    this.beat(s, 0.7);
+  tryTackle(s, def, owner, adj) {
+    const same = def.col === owner.col && def.row === owner.row;
+    if (!same && !adj) return false;
+    const w = this.weights(def, s);
+    if ((w.tackle || 0) < 1) return false;
+    let ch = (same ? 0.32 : 0.06 + s.streak * 0.03) + def.card.def * 0.03 - owner.card.pac * 0.02;
+    if (adj && s.streak < 2) return false;
+    if (Math.random() > Math.min(same ? 0.65 : 0.3, ch)) return false;
+    def.act = "tackle";
+    def.actT = 0.5;
+    this.face(def, owner.x, owner.y);
+    def.lx = (owner.x - def.x) * 0.3;
+    def.ly = (owner.y - def.y) * 0.3;
+    this.fx(s, "tackle", (def.x + owner.x) / 2, (def.y + owner.y) / 2, {
+      color: this.TACTIC[def.card.tactic].color,
+    });
+    this.give(s, def, false);
+    s.lastFrom = null;
+    s.streak = 0;
+    this.log(s, "Отбор · " + def.card.name + " (" + def.card.amp + ")");
+    this.beat(s, 0.85);
+    return true;
   },
 
-  simTick(s) {
-    if (s.ball.owner) {
-      const owner = s.ball.owner;
-      if (!owner.card) {
-        s.ball.owner = null;
-        return;
+  tick(s) {
+    const owner = s.ball.owner;
+    if (!owner || !owner.card) {
+      const here = this.at(s, s.ball.col, s.ball.row);
+      if (here.length) {
+        here.sort((a, b) => b.card.pac - a.card.pac);
+        this.give(s, here[0], false);
+        this.log(s, "Подбор · " + here[0].card.name);
+        this.beat(s, 0.35);
       }
-      const same = this.atCell(s, owner.col, owner.row).filter((u) => u.side !== owner.side && u.card);
-      for (const f of same) {
-        if (this.tryTackle(s, f, owner, false)) return;
-      }
-      const near = [];
-      for (const n of this.neighbors(owner.col, owner.row)) {
-        for (const f of this.atCell(s, n.col, n.row)) {
-          if (f.side !== owner.side && f.card) near.push(f);
+      return;
+    }
+
+    for (const f of this.at(s, owner.col, owner.row).filter((u) => u.side !== owner.side)) {
+      if (this.tryTackle(s, f, owner, false)) return;
+    }
+    for (let dc = -1; dc <= 1; dc++) {
+      for (let dr = -1; dr <= 1; dr++) {
+        if (!dc && !dr) continue;
+        const c = owner.col + dc;
+        const r = owner.row + dr;
+        if (c < 0 || r < 0 || c >= this.COLS || r >= this.ROWS) continue;
+        for (const f of this.at(s, c, r).filter((u) => u.side !== owner.side)) {
+          if (this.tryTackle(s, f, owner, true)) return;
         }
       }
-      near.sort((a, b) => (b.card.def || 0) - (a.card.def || 0));
-      for (const f of near) {
-        if (this.tryTackle(s, f, owner, true)) return;
-      }
+    }
 
-      const w = this.weightsFor(owner, s);
-      const aw = {
-        pass: w.pass || 0,
-        cross: w.cross || 0,
-        shoot: w.shoot || 0,
-        dribble: w.dribble || 0,
-        hold: w.hold || 0,
-        clear: w.clear || 0,
-      };
-      const hasPass = this.passTargets(s, owner, {}).length > 0;
-      const hasCross = this.passTargets(s, owner, { cross: true }).length > 0;
-      const hasClear = this.passTargets(s, owner, { clear: true }).length > 0;
-      if (!hasPass) aw.pass = 0;
-      if (!hasCross) aw.cross = 0;
-      if (!hasClear) aw.clear = 0;
-      const attackDepth = owner.side === "us" ? 2 - owner.row : owner.row - 2;
-      if (attackDepth >= 0 && !hasPass && !hasCross) aw.shoot = Math.max(aw.shoot, 3);
-
-      const act = this.pickWeighted(aw);
-      if (act === "shoot") {
-        this.doShoot(s, owner);
-        return;
-      }
-      if (act === "cross") {
-        if (!this.doPass(s, owner, true, false)) {
-          if (attackDepth >= 0) this.doShoot(s, owner);
-          else this.doPass(s, owner, false, true);
-        }
-        return;
-      }
-      if (act === "clear") {
-        if (!this.doPass(s, owner, false, true)) {
+    const w = this.weights(owner, s);
+    const aw = {
+      pass: this.targets(s, owner, false).length ? w.pass || 0 : 0,
+      cross: this.targets(s, owner, true).length ? w.cross || 0 : 0,
+      shoot: w.shoot || 0,
+      clear: this.targets(s, owner, true).length ? w.clear || 0 : 0,
+      hold: w.hold || 0,
+      dribble: w.dribble || 0,
+    };
+    const act = this.pick(aw);
+    if (act === "shoot") return void this.doShoot(s, owner);
+    if (act === "cross" || act === "clear") {
+      if (!this.doPass(s, owner, true)) {
+        if ((w.shoot || 0) > 0) this.doShoot(s, owner);
+        else {
           owner.act = "dribble";
           owner.actT = 0.4;
-          this.pushLog(s, "Контроль · " + owner.card.name);
-          this.beat(s, 0.45);
-        }
-        return;
-      }
-      if (act === "dribble" || act === "hold") {
-        owner.act = "dribble";
-        owner.actT = 0.45;
-        owner.lungeX = Math.cos(owner.facing) * 4;
-        owner.lungeY = Math.sin(owner.facing) * 4;
-        s.passStreak = (s.passStreak || 0) + 1;
-        this.pushLog(s, "Контроль · " + owner.card.name);
-        this.beat(s, 0.5);
-        return;
-      }
-      if (!this.doPass(s, owner, false, false)) {
-        if (attackDepth >= 0) this.doShoot(s, owner);
-        else if (!this.doPass(s, owner, false, true)) {
-          owner.act = "dribble";
-          owner.actT = 0.4;
-          this.pushLog(s, "Контроль · " + owner.card.name);
+          this.log(s, "Контроль · " + owner.card.name);
           this.beat(s, 0.45);
         }
       }
       return;
     }
-
-    const here = this.atCell(s, s.ball.col, s.ball.row).filter((u) => u.card);
-    if (here.length) {
-      here.sort((a, b) => b.card.pac - a.card.pac);
-      this.giveBall(s, here[0], false);
-      s.passStreak = 0;
-      this.pushLog(s, "Подбор · " + here[0].card.name);
-      this.beat(s, 0.4);
+    if (act === "hold" || act === "dribble") {
+      owner.act = "dribble";
+      owner.actT = 0.4;
+      s.streak++;
+      this.log(s, "Контроль · " + owner.card.name);
+      this.beat(s, 0.45);
+      return;
+    }
+    if (!this.doPass(s, owner, false)) {
+      if ((w.shoot || 0) > 0) this.doShoot(s, owner);
+      else {
+        owner.act = "dribble";
+        owner.actT = 0.4;
+        this.log(s, "Контроль · " + owner.card.name);
+        this.beat(s, 0.45);
+      }
     }
   },
 
-  deckRect(i, api) {
+  // ——— UI rects ———
+  deckRect(i) {
     const col = i % 6;
     const row = (i / 6) | 0;
-    const w = Math.floor((api.w - 20) / 6) - 3;
-    return { x: 10 + col * (w + 3), y: this.L.uiTop + 26 + row * 52, w, h: 48 };
+    const w = Math.floor((this.L.W - 18) / 6) - 3;
+    return { x: 9 + col * (w + 3), y: this.L.uiTop + 24 + row * 50, w, h: 46 };
   },
-  shopRect(i, api) {
-    const w = Math.floor((api.w - 28) / 3) - 4;
-    return { x: 12 + i * (w + 6), y: this.L.uiTop + 125, w, h: 84 };
+  shopRect(i) {
+    const w = Math.floor((this.L.W - 28) / 3) - 4;
+    return { x: 12 + i * (w + 6), y: this.L.uiTop + 118, w, h: 80 };
   },
-  benchRect(i, api) {
-    const w = Math.floor((api.w - 20) / 4) - 3;
-    const col = i % 4;
-    const row = (i / 4) | 0;
-    return { x: 10 + col * (w + 3), y: this.L.uiTop + 24 + row * 46, w, h: 40 };
+  benchRect(i) {
+    const w = Math.floor((this.L.W - 24) / 2) - 4;
+    return { x: 12 + i * (w + 6), y: this.L.uiTop + 24, w, h: 44 };
   },
 
   hitUnit(u, tap) {
-    return Math.hypot(tap.x - u.px, tap.y - u.py) < 30;
+    return Math.hypot(tap.x - u.x, tap.y - u.y) < 28;
   },
 
-  /** карта/игрок → любая клетка сетки */
-  handleGridPlace(s, tap) {
-    const cell = this.cellFromTap(tap);
-    if (!cell) return false;
-
-    // попали в своего игрока — приоритет над клеткой
+  placeGrid(s, tap) {
+    const cell = this.cellAt(tap);
+    // свой юнит
     for (const u of s.ours) {
       if (!this.hitUnit(u, tap)) continue;
-      if (s.selected?.from === "deck") {
-        const card = s.deck[s.selected.index];
+      if (s.sel?.from === "deck") {
+        const card = s.deck[s.sel.i];
         if (!card) return true;
         if (u.card) s.deck.push(u.card);
-        this.placeOn(u, card);
-        s.deck.splice(s.selected.index, 1);
-        s.selected = null;
+        u.card = card;
+        s.deck.splice(s.sel.i, 1);
+        this.snap(u);
+        s.sel = null;
         s.note = u.zone + " ← " + u.card.name;
         return true;
       }
-      if (s.selected?.from === "bench") {
-        const card = s.bench[s.selected.index];
+      if (s.sel?.from === "bench") {
+        const card = s.bench[s.sel.i];
         if (!card) return true;
-        if (u.card) {
-          const tmp = u.card;
-          this.placeOn(u, card);
-          s.bench[s.selected.index] = tmp;
-        } else {
-          this.placeOn(u, card);
-          s.bench.splice(s.selected.index, 1);
-        }
-        s.selected = null;
+        if (u.card) s.bench[s.sel.i] = u.card;
+        else s.bench.splice(s.sel.i, 1);
+        u.card = card;
+        this.snap(u);
+        s.sel = null;
         this.tryMerge(s);
         s.note = "На " + u.zone;
         return true;
       }
-      if (s.selected?.from === "field") {
-        const a = s.ours[s.selected.index];
+      if (s.sel?.from === "field") {
+        const a = s.ours[s.sel.i];
         if (a === u) {
           if (u.card && s.phase === "lineup") {
             s.deck.push(u.card);
             u.card = null;
             s.note = "В колоду";
-          } else if (u.card && s.bench.length < this.BENCH_MAX) {
+          } else if (u.card && s.bench.length < this.BENCH) {
             s.bench.push(u.card);
             u.card = null;
             s.note = "На скамейку";
           }
-          s.selected = null;
+          s.sel = null;
         } else {
           const tmp = a.card;
           a.card = u.card;
           u.card = tmp;
-          if (a.card) this.snapUnit(a);
-          if (u.card) this.snapUnit(u);
+          s.sel = null;
           s.note = "Свап";
-          s.selected = null;
         }
         return true;
       }
       if (u.card) {
-        s.selected = { from: "field", index: u.index };
-        s.note = u.card.name + " · тап клетку = сдвиг";
-        s.subline = u.card.amp + " · тап любую клетку сетки";
+        s.sel = { from: "field", i: u.i };
+        s.line = u.card.name + " · тап клетку = сдвиг";
         return true;
       }
     }
 
-    if (s.selected?.from === "deck") {
-      const card = s.deck[s.selected.index];
-      if (!card) return true;
-      let u = s.ours.find((x) => x.col === cell.col && x.row === cell.row && x.card);
-      if (!u) u = s.ours.find((x) => !x.card);
+    if (!cell) return false;
+
+    if (s.sel?.from === "deck") {
+      const card = s.deck[s.sel.i];
+      let u = s.ours.find((x) => x.col === cell.col && x.row === cell.row && x.card) || s.ours.find((x) => !x.card);
       if (!u) {
-        s.note = "Уже 6/6 — выбери игрока и сдвинь";
+        s.note = "5/5 — выбери кого сдвинуть";
         return true;
       }
       if (u.card) s.deck.push(u.card);
-      this.moveUnitToCell(s, u, cell.col, cell.row);
-      this.placeOn(u, card);
-      s.deck.splice(s.selected.index, 1);
-      s.selected = null;
-      s.note = cell.col + "," + cell.row + " ← " + u.card.name;
+      this.moveTo(s, u, cell.col, cell.row);
+      u.card = card;
+      s.deck.splice(s.sel.i, 1);
+      s.sel = null;
+      s.note = cell.col + "·" + cell.row + " ← " + card.name;
       return true;
     }
-
-    if (s.selected?.from === "bench") {
-      const card = s.bench[s.selected.index];
-      if (!card) return true;
-      let u = s.ours.find((x) => x.col === cell.col && x.row === cell.row && x.card);
-      if (!u) u = s.ours.find((x) => !x.card);
+    if (s.sel?.from === "bench") {
+      const card = s.bench[s.sel.i];
+      let u = s.ours.find((x) => x.col === cell.col && x.row === cell.row && x.card) || s.ours.find((x) => !x.card);
       if (!u) {
-        s.note = "Уже 6/6 — выбери кого заменить/сдвинуть";
+        s.note = "5/5 — сдвинь / замени";
         return true;
       }
-      if (u.card) {
-        const tmp = u.card;
-        this.moveUnitToCell(s, u, cell.col, cell.row);
-        this.placeOn(u, card);
-        s.bench[s.selected.index] = tmp;
-      } else {
-        this.moveUnitToCell(s, u, cell.col, cell.row);
-        this.placeOn(u, card);
-        s.bench.splice(s.selected.index, 1);
-      }
-      s.selected = null;
+      if (u.card) s.bench[s.sel.i] = u.card;
+      else s.bench.splice(s.sel.i, 1);
+      this.moveTo(s, u, cell.col, cell.row);
+      u.card = card;
+      s.sel = null;
       this.tryMerge(s);
-      s.note = "Клетка " + cell.col + "," + cell.row;
+      s.note = "Клетка " + cell.col + "·" + cell.row;
       return true;
     }
-
-    if (s.selected?.from === "field") {
-      const u = s.ours[s.selected.index];
-      if (!u) return true;
-      this.moveUnitToCell(s, u, cell.col, cell.row);
-      s.selected = null;
-      s.note = (u.card ? u.card.name : u.zone) + " → " + cell.col + "," + cell.row;
-      s.subline = "Позиция " + cell.col + "·" + cell.row;
+    if (s.sel?.from === "field") {
+      const u = s.ours[s.sel.i];
+      this.moveTo(s, u, cell.col, cell.row);
+      s.sel = null;
+      s.note = (u.card ? u.card.name : u.zone) + " → " + cell.col + "·" + cell.row;
       return true;
     }
-
     return false;
   },
 
+  // ——— phases ———
   updateLineup(s, api) {
     s.reroll.x = -999;
     s.sell.x = -999;
-    s.speed.x = -999;
-    s.start.x = api.w / 2 - 70;
-    s.start.y = api.h - 70;
-    const n = this.filled(s.ours);
-    s.start.label = n >= this.FIELD ? "В магазин" : "Состав " + n + "/" + this.FIELD;
-    s.start.color = n >= this.FIELD ? "#3dd68c" : "#64748b";
+    s.spd.x = -999;
+    s.go.x = api.w / 2 - 70;
+    s.go.y = api.h - 68;
+    const n = this.filled(s);
+    s.go.label = n >= this.FIELD ? "В магазин" : "Состав " + n + "/" + this.FIELD;
+    s.go.color = n >= this.FIELD ? "#3dd68c" : "#64748b";
 
     const tap = api.input.consumeTap();
     if (tap) {
       for (let i = 0; i < s.deck.length; i++) {
-        const r = this.deckRect(i, api);
+        const r = this.deckRect(i);
         if (tap.x >= r.x && tap.x <= r.x + r.w && tap.y >= r.y && tap.y <= r.y + r.h) {
-          s.selected = { from: "deck", index: i };
-          s.subline = s.deck[i].amp + " · тап любую клетку сетки";
+          s.sel = { from: "deck", i };
+          s.line = s.deck[i].amp + " · " + this.TACTIC[s.deck[i].tactic].ru + " · клетка?";
           return;
         }
       }
-      if (this.handleGridPlace(s, tap)) return;
+      if (this.placeGrid(s, tap)) return;
     }
-    if (s.start.clicked && n >= this.FIELD) {
-      s.poolNames = [
-        ...new Set([...s.ours.filter((u) => u.card).map((u) => u.card.name), ...s.deck.map((c) => c.name)]),
-      ];
-      while (s.poolNames.length < this.DECK_SIZE) {
-        const extra = api.pick(this.CATALOG).name;
-        if (!s.poolNames.includes(extra)) s.poolNames.push(extra);
-      }
-      s.deck = s.poolNames.map((name) => this.mint(this.CATALOG.find((c) => c.name === name), 1));
-      s.bag = this.makeBag(s.deck);
+    if (s.go.clicked && n >= this.FIELD) {
+      s.bag = this.makeBag(s.ours.filter((u) => u.card).map((u) => u.card).concat(s.deck));
       s.coins = 10;
       s.phase = "shop";
       this.refreshShop(s, api);
-      s.reroll.x = 14;
-      s.sell.x = api.w - 124;
-      s.start.label = "В бой!";
-      s.note = "Скамейка → клетка на всей сетке";
-      s.subline = "Магазин · ролл из колоды 18";
+      s.go.label = "В бой!";
+      s.note = "Купи → скамейка → клетка";
+      s.line = "Магазин · равномерный ролл";
     }
-    const tc = this.tacticCount(s.ours);
-    api.setHud(
-      "Сетка 3×5 · " +
-        n +
-        "/" +
-        this.FIELD +
-        " · " +
-        (tc.map((t) => t.id.slice(0, 4) + "×" + t.n).join(" ") || "нет×2") +
-        " · " +
-        s.note
-    );
-  },
-
-  buyOffer(s, api, i) {
-    const offer = s.shop[i];
-    if (!offer) return;
-    if (s.coins < offer.price) {
-      s.note = "Нужно " + offer.price + "🪙";
-      return;
-    }
-    if (s.bench.length >= this.BENCH_MAX) {
-      s.note = "Скамейка полна";
-      return;
-    }
-    s.coins -= offer.price;
-    this.takeFromBag(s, offer.name);
-    s.bench.push(offer.card);
-    s.shop[i] = null;
-    const m = this.tryMerge(s);
-    s.note = m ? "MERGE " + m.name : "Купил " + offer.card.name + " → клетка";
+    const tc = this.tactics(s.ours);
+    api.setHud("Сетка · " + n + "/5 · " + (tc.map((t) => t.id.slice(0, 4) + "×" + t.n).join(" ") || "нет×2") + " · " + s.note);
   },
 
   updateShop(s, api) {
-    s.speed.x = -999;
-    s.reroll.x = 14;
-    s.reroll.y = api.h - 70;
-    s.sell.x = api.w - 124;
-    s.sell.y = api.h - 70;
-    s.start.x = api.w / 2 - 70;
-    s.start.y = api.h - 70;
+    s.spd.x = -999;
+    s.reroll.x = 12;
+    s.reroll.y = api.h - 68;
+    s.sell.x = api.w - 120;
+    s.sell.y = api.h - 68;
+    s.go.x = api.w / 2 - 70;
+    s.go.y = api.h - 68;
 
     if (s.reroll.clicked) {
       if (s.coins >= 2) {
@@ -1160,194 +791,190 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
         s.note = "Реролл";
       } else s.note = "Нужно 2🪙";
     }
-    if (s.sell.clicked && s.selected) {
-      if (s.selected.from === "bench") {
-        const c = s.bench[s.selected.index];
-        if (c) {
-          s.coins += Math.max(1, c.cost - 1);
-          s.bench.splice(s.selected.index, 1);
-          s.selected = null;
-          s.note = "Продано";
-        }
-      } else if (s.selected.from === "field") {
-        const u = s.ours[s.selected.index];
-        if (u?.card) {
-          s.coins += Math.max(1, u.card.cost - 1);
-          u.card = null;
-          s.selected = null;
-          s.note = "Продано";
-        }
+    if (s.sell.clicked && s.sel) {
+      if (s.sel.from === "bench" && s.bench[s.sel.i]) {
+        s.coins += Math.max(1, s.bench[s.sel.i].cost - 1);
+        s.bench.splice(s.sel.i, 1);
+        s.sel = null;
+        s.note = "Продано";
+      } else if (s.sel.from === "field" && s.ours[s.sel.i]?.card) {
+        s.coins += Math.max(1, s.ours[s.sel.i].card.cost - 1);
+        s.ours[s.sel.i].card = null;
+        s.sel = null;
+        s.note = "Продано";
       }
     }
 
     const tap = api.input.consumeTap();
     if (tap) {
-      for (let i = 0; i < this.SHOP_SIZE; i++) {
-        const r = this.shopRect(i, api);
+      for (let i = 0; i < this.SHOP; i++) {
+        const r = this.shopRect(i);
         if (tap.x >= r.x && tap.x <= r.x + r.w && tap.y >= r.y && tap.y <= r.y + r.h) {
-          this.buyOffer(s, api, i);
+          const o = s.shop[i];
+          if (!o) return;
+          if (s.coins < o.price) {
+            s.note = "Нужно " + o.price + "🪙";
+            return;
+          }
+          if (s.bench.length >= this.BENCH) {
+            s.note = "Скамейка 2/2";
+            return;
+          }
+          s.coins -= o.price;
+          const bi = s.bag.indexOf(o.name);
+          if (bi >= 0) s.bag.splice(bi, 1);
+          s.bench.push(o.card);
+          s.shop[i] = null;
+          this.tryMerge(s);
+          s.note = "Купил " + o.card.name;
           return;
         }
       }
       for (let i = 0; i < s.bench.length; i++) {
-        const r = this.benchRect(i, api);
+        const r = this.benchRect(i);
         if (tap.x >= r.x && tap.x <= r.x + r.w && tap.y >= r.y && tap.y <= r.y + r.h) {
-          s.selected = { from: "bench", index: i };
-          s.subline = s.bench[i].amp + " · тап любую клетку сетки";
+          s.sel = { from: "bench", i };
+          s.line = s.bench[i].amp + " · тап клетку";
           return;
         }
       }
-      if (this.handleGridPlace(s, tap)) return;
+      if (this.placeGrid(s, tap)) return;
     }
 
-    if (s.start.clicked) {
+    if (s.go.clicked) {
       if (s.round >= this.ROUNDS) {
         s.phase = "done";
-        s.lastResult = s.myGoals > s.oppGoals ? "win" : s.myGoals < s.oppGoals ? "lose" : "draw";
-        s.start.label = "Ещё";
-        s.start.color = "#5db0ff";
+        s.result = s.gh > s.ga ? "win" : s.gh < s.ga ? "lose" : "draw";
+        s.go.label = "Ещё";
+        s.go.color = "#5db0ff";
         s.reroll.x = -999;
         s.sell.x = -999;
         return;
       }
-      if (this.filled(s.ours) < this.FIELD) {
-        s.note = "Нужно 6/6 на сетке";
+      if (this.filled(s) < this.FIELD) {
+        s.note = "Нужно 5/5 на сетке";
         return;
       }
-      this.startFight(s, api);
+      this.startFight(s);
     }
-    const tc = this.tacticCount(s.ours);
+    const tc = this.tactics(s.ours);
     api.setHud(
-      "🪙" +
-        s.coins +
-        " · скамейка " +
-        s.bench.length +
-        "/" +
-        this.BENCH_MAX +
-        " · [" +
-        (tc.map((t) => this.TACTIC_RU[t.id] + "×" + t.n).join(", ") || "нет×2") +
-        "] · " +
-        s.note
+      "🪙" + s.coins + " · bench " + s.bench.length + "/2 · [" + (tc.map((t) => this.TACTIC[t.id].ru + "×" + t.n).join(", ") || "—") + "] · " + s.note
     );
   },
 
-  startFight(s, api) {
+  startFight(s) {
     s.phase = "fight";
-    s.selected = null;
+    s.sel = null;
     s.reroll.x = -999;
     s.sell.x = -999;
-    s.speed.x = 14;
-    s.speed.y = 10;
-    s.start.label = "…";
-    s.start.color = "#334155";
-    s.segmentT = 28;
-    s.thinkT = 99;
-    s.pendingShot = null;
-    s.restartKick = 0;
-    s.lastScorer = null;
-    // вернуть визуально на home, затем разбежка на push
-    this.resetToHome(s);
-    this.beginSpread(s);
+    s.spd.x = 12;
+    s.spd.y = 10;
+    s.go.label = "…";
+    s.go.color = "#334155";
+    s.seg = 26;
+    s.think = 1.0;
+    s.beat = 1.0;
+    s.pending = null;
+    s.restart = 0;
+    this.packAll([...s.ours, ...s.opp]);
+    for (const u of this.units(s)) this.snap(u);
+    const mid = this.cellXY(1, 2);
+    s.ball.owner = null;
+    s.ball.fly = null;
+    s.ball.x = mid.x;
+    s.ball.y = mid.y;
+    s.banner = "СВИСТОК";
+    s.bannerC = "#e2e8f0";
+    s.bannerT = 0.85;
+    this.log(s, "Свисток · матч с ваших позиций");
+    s._kick = 0.9;
   },
 
   enterShop(s, api) {
     s.phase = "shop";
     s.ball.owner = null;
-    s.ball.flying = null;
-    s.pendingShot = null;
-    s.selected = null;
-    s.spreadT = 0;
-    s.beatT = 0;
-    s.restartKick = 0;
-    s.speed.x = -999;
-    s.reroll.x = 14;
-    s.sell.x = api.w - 124;
-    s.start.label = s.round >= this.ROUNDS ? "Итог" : "В бой!";
-    s.start.color = "#3dd68c";
-    s.coins += 4 + Math.min(4, (s.coins / 10) | 0);
+    s.ball.fly = null;
+    s.pending = null;
+    s.sel = null;
+    s.beat = 0;
+    s.spd.x = -999;
+    s.reroll.x = 12;
+    s.sell.x = api.w - 120;
+    s.go.label = s.round >= this.ROUNDS ? "Итог" : "В бой!";
+    s.go.color = "#3dd68c";
+    s.coins += 4;
     this.refreshShop(s, api);
-    s.note = "Вся сетка · скамейка → клетка";
-    this.resetToHome(s);
+    s.note = "Сетка · скамейка → клетка";
+    for (const u of [...s.ours, ...s.opp]) if (u.card) this.snap(u);
   },
 
-  updateBallFlight(s, dts) {
-    const f = s.ball.flying;
+  updateFly(s, dt) {
+    const f = s.ball.fly;
     if (!f) return;
-    f.t -= dts;
+    f.t -= dt;
     const u = 1 - Math.max(0, f.t) / f.life;
     const e = u * u * (3 - 2 * u);
     s.ball.x = f.x0 + (f.x1 - f.x0) * e;
     s.ball.y = f.y0 + (f.y1 - f.y0) * e - Math.sin(u * Math.PI) * (f.arc || 0);
 
-    // перехват на середине полёта
     if (!f.checked && u >= 0.45 && f.thief) {
       f.checked = true;
       const th = f.thief;
-      th.act = "intercept";
-      th.actT = 0.55;
-      th.lungeX = (s.ball.x - th.px) * 0.4;
-      th.lungeY = (s.ball.y - th.py) * 0.4;
-      this.spawnFx(s, "intercept", th.px, th.py, { color: "#38bdf8" });
-      this.launchBall(s, th.px, th.py - 12, 0.28, { arc: 4, to: th, steal: true });
-      s.lastPassFrom = null;
-      s.lastPassTo = null;
-      s.passStreak = 0;
-      this.pushLog(s, "Перехват · " + th.card.name);
-      this.beat(s, 0.9);
+      th.act = "tackle";
+      th.actT = 0.5;
+      this.fx(s, "tackle", th.x, th.y, { color: "#38bdf8" });
+      this.launch(s, th.x, th.y - 12, 0.25, { arc: 4, to: th });
+      s.lastFrom = null;
+      s.streak = 0;
+      this.log(s, "Перехват · " + th.card.name);
+      this.beat(s, 0.85);
       return;
     }
-
     if (f.t > 0) return;
-
-    s.ball.flying = null;
+    s.ball.fly = null;
     s.ball.x = f.x1;
     s.ball.y = f.y1;
     if (f.shot) {
       this.resolveShot(s);
       return;
     }
-    if (f.to && f.to.card) {
-      this.giveBall(s, f.to, false);
-      if (f.steal) this.beat(s, 0.55);
-      else this.beat(s, 0.4);
+    if (f.to) {
+      this.give(s, f.to, false);
+      this.beat(s, 0.35);
     }
   },
 
   update(s, api, dt) {
-    this.syncLayout(api);
-    const dts = dt * (s.phase === "fight" ? s.timeScale : 1);
+    this.layout(api);
+    const dts = dt * (s.phase === "fight" ? s.scale : 1);
     s.pulse += dts;
     if (s.bannerT > 0) s.bannerT -= dts;
-    if (s.beatT > 0) s.beatT -= dts;
+    if (s.beat > 0) s.beat -= dts;
     for (const f of s.fx) f.t -= dts;
     s.fx = s.fx.filter((f) => f.t > 0);
 
     for (const u of this.units(s)) {
-      u.arm += dts * (u.act ? 14 : 7);
+      u.arm += dts * (u.act ? 12 : 6);
       if (u.actT > 0) u.actT -= dts;
       else {
         u.act = null;
-        u.lungeX *= Math.max(0, 1 - dts * 8);
-        u.lungeY *= Math.max(0, 1 - dts * 8);
+        u.lx *= Math.max(0, 1 - dts * 8);
+        u.ly *= Math.max(0, 1 - dts * 8);
       }
-      const p = this.unitTarget(u);
-      const idleX = s.phase === "fight" ? Math.sin(s.pulse * 2.1 + u.arm) * 2.2 : 0;
-      const idleY = s.phase === "fight" ? Math.cos(s.pulse * 1.7 + u.index) * 1.6 : 0;
-      const tx = p.x + idleX + (u.lungeX || 0);
-      const ty = p.y + idleY + (u.lungeY || 0);
-      const k = Math.min(1, (s.spreadT > 0 ? 3.2 : 5.5) * dts);
-      u.px += (tx - u.px) * k;
-      u.py += (ty - u.py) * k;
-      if (s.phase === "fight" && !u.act) {
-        u.facing = u.side === "us" ? -Math.PI / 2 : Math.PI / 2;
-      }
+      const p = this.cellXY(u.col, u.row);
+      const idle = s.phase === "fight" ? Math.sin(s.pulse * 2 + u.arm) * 2 : 0;
+      const tx = p.x + u.ox + idle + u.lx;
+      const ty = p.y + u.oy + Math.cos(s.pulse * 1.6 + u.i) * (s.phase === "fight" ? 1.4 : 0) + u.ly;
+      u.x += (tx - u.x) * Math.min(1, 6 * dts);
+      u.y += (ty - u.y) * Math.min(1, 6 * dts);
     }
 
-    if (s.ball.flying) this.updateBallFlight(s, dts);
+    if (s.ball.fly) this.updateFly(s, dts);
     else if (s.ball.owner) {
       const o = s.ball.owner;
-      s.ball.x += (o.px - s.ball.x) * Math.min(1, dts * 8);
-      s.ball.y += (o.py - 14 - s.ball.y) * Math.min(1, dts * 8);
+      s.ball.x += (o.x - s.ball.x) * Math.min(1, 8 * dts);
+      s.ball.y += (o.y - 12 - s.ball.y) * Math.min(1, 8 * dts);
       s.ball.col = o.col;
       s.ball.row = o.row;
     }
@@ -1355,64 +982,72 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     if (s.phase === "done") {
       s.reroll.x = -999;
       s.sell.x = -999;
-      s.speed.x = -999;
-      if (s.start.clicked || api.input.consumeTap()) {
-        Object.assign(s, this.fresh(api, { start: s.start, reroll: s.reroll, sell: s.sell, speed: s.speed }));
+      s.spd.x = -999;
+      if (s.go.clicked || api.input.consumeTap()) {
+        Object.assign(s, this.fresh(api, { go: s.go, reroll: s.reroll, sell: s.sell, spd: s.spd }));
       }
       return;
     }
-    if (s.phase === "lineup") {
-      this.updateLineup(s, api);
-      return;
-    }
-    if (s.phase === "shop") {
-      this.updateShop(s, api);
-      return;
-    }
+    if (s.phase === "lineup") return void this.updateLineup(s, api);
+    if (s.phase === "shop") return void this.updateShop(s, api);
 
     // fight
-    s.speed.x = 14;
-    s.speed.y = 10;
-    s.speed.label = s.timeScale > 1 ? "×1" : "×2";
-    if (s.speed.clicked) s.timeScale = s.timeScale > 1 ? 1 : 2;
+    s.spd.x = 12;
+    s.spd.y = 10;
+    s.spd.label = s.scale > 1 ? "×1" : "×2";
+    if (s.spd.clicked) s.scale = s.scale > 1 ? 1 : 2;
 
-    if (s.spreadT > 0) {
-      s.spreadT -= dts;
-      if (s.spreadT <= 0) {
-        s.spreadT = 0;
-        this.finishKickoff(s);
+    if (s._kick > 0) {
+      s._kick -= dts;
+      if (s._kick <= 0) {
+        const mid = s.ours.find((u) => u.card && u.zone === "MID") || s.ours.find((u) => u.card);
+        if (mid) {
+          this.give(s, mid, true);
+          this.log(s, "Мяч · " + mid.card.name);
+        }
+        s.beat = 0.5;
+        s.think = 0.5;
       }
-      api.setHud(s.myGoals + ":" + s.oppGoals + " · разбежка…");
+      api.setHud(s.gh + ":" + s.ga + " · свисток");
       return;
     }
 
-    if (s.restartKick > 0) {
-      s.restartKick -= dts;
-      if (s.restartKick <= 0) this.afterGoalRestart(s);
-      api.setHud(s.myGoals + ":" + s.oppGoals + " · " + s.minute + "'");
+    if (s.restart > 0) {
+      s.restart -= dts;
+      if (s.restart <= 0) {
+        const kick = s.lastScorer === "us" ? "opp" : "us";
+        const m = this.side(s, kick).find((u) => u.zone === "MID") || this.side(s, kick)[0];
+        const c = this.cellXY(1, 2);
+        s.ball.x = c.x;
+        s.ball.y = c.y;
+        if (m) this.give(s, m, true);
+        this.log(s, "Центр");
+        this.beat(s, 0.6);
+      }
+      api.setHud(s.gh + ":" + s.ga + " · " + s.minute + "'");
       return;
     }
 
-    s.segmentT -= dts;
-    s.thinkT -= dts;
-    if (s.thinkT <= 0 && s.beatT <= 0 && !s.ball.flying && !s.pendingShot) {
-      this.simTick(s);
-      s.thinkT = 0.85 + Math.random() * 0.45;
+    s.seg -= dts;
+    s.think -= dts;
+    if (s.think <= 0 && s.beat <= 0 && !s.ball.fly && !s.pending) {
+      this.tick(s);
+      s.think = 0.9 + Math.random() * 0.4;
     }
-    if (s.segmentT <= 0) {
-      s.round += 1;
+    if (s.seg <= 0) {
+      s.round++;
       s.minute = Math.min(90, s.round * 13);
       this.enterShop(s, api);
       if (s.round >= this.ROUNDS) {
-        s.start.label = "Итог";
-        s.note = "Финал " + s.myGoals + ":" + s.oppGoals;
+        s.go.label = "Итог";
+        s.note = "Финал " + s.gh + ":" + s.ga;
       }
     }
-    api.setHud(s.myGoals + ":" + s.oppGoals + " · " + s.minute + "' · зона 6v6" + (s.timeScale > 1 ? " · ×2" : ""));
+    api.setHud(s.gh + ":" + s.ga + " · " + s.minute + "' · 5v5" + (s.scale > 1 ? " · ×2" : ""));
   },
 
-  // ——— DRAW ———
-  roundRect(ctx, x, y, w, h, r) {
+  // ——— draw ———
+  rr(ctx, x, y, w, h, r) {
     const rr = Math.min(r, w / 2, h / 2);
     ctx.beginPath();
     ctx.moveTo(x + rr, y);
@@ -1425,355 +1060,302 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
 
   drawPitch(ctx, s) {
     const L = this.L;
-    // atmosphere
     const g = ctx.createLinearGradient(0, 0, 0, L.H);
     g.addColorStop(0, "#0a1520");
-    g.addColorStop(0.45, "#0d1f18");
+    g.addColorStop(0.5, "#0c1f18");
     g.addColorStop(1, "#081018");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, L.W, L.H);
 
-    const px = L.originX;
-    const py = L.originY;
-    const pw = L.cellW * this.COLS;
-    const ph = L.cellH * this.ROWS;
-
-    // pitch body
     for (let r = 0; r < this.ROWS; r++) {
       for (let c = 0; c < this.COLS; c++) {
-        const x = px + c * L.cellW;
-        const y = py + r * L.cellH;
-        const stripe = (r + c) % 2;
-        ctx.fillStyle = stripe ? "#1b5a36" : "#174e2f";
-        ctx.fillRect(x, y, L.cellW + 0.5, L.cellH + 0.5);
+        ctx.fillStyle = (r + c) % 2 ? "#1b5a36" : "#174e2f";
+        ctx.fillRect(L.ox + c * L.cw, L.oy + r * L.ch, L.cw + 0.5, L.ch + 0.5);
       }
     }
 
-    // вся сетка доступна — подсветка при выборе
-    if (s.phase !== "fight" && s.selected) {
+    if (s.phase !== "fight" && s.sel) {
       for (let r = 0; r < this.ROWS; r++) {
         for (let c = 0; c < this.COLS; c++) {
-          ctx.fillStyle = "rgba(253, 224, 71, 0.10)";
-          ctx.fillRect(px + c * L.cellW + 2, py + r * L.cellH + 2, L.cellW - 4, L.cellH - 4);
+          ctx.fillStyle = "rgba(253,224,71,0.12)";
+          ctx.fillRect(L.ox + c * L.cw + 2, L.oy + r * L.ch + 2, L.cw - 4, L.ch - 4);
         }
       }
     }
 
-    // lines
     ctx.strokeStyle = "rgba(255,255,255,0.55)";
     ctx.lineWidth = 2.5;
-    ctx.strokeRect(px, py, pw, ph);
-
-    ctx.strokeStyle = "rgba(255,255,255,0.16)";
+    ctx.strokeRect(L.ox, L.oy, L.cw * this.COLS, L.ch * this.ROWS);
+    ctx.strokeStyle = "rgba(255,255,255,0.14)";
     ctx.lineWidth = 1;
     for (let c = 1; c < this.COLS; c++) {
       ctx.beginPath();
-      ctx.moveTo(px + c * L.cellW, py);
-      ctx.lineTo(px + c * L.cellW, py + ph);
+      ctx.moveTo(L.ox + c * L.cw, L.oy);
+      ctx.lineTo(L.ox + c * L.cw, L.oy + L.ch * this.ROWS);
       ctx.stroke();
     }
     for (let r = 1; r < this.ROWS; r++) {
       ctx.beginPath();
-      ctx.moveTo(px, py + r * L.cellH);
-      ctx.lineTo(px + pw, py + r * L.cellH);
+      ctx.moveTo(L.ox, L.oy + r * L.ch);
+      ctx.lineTo(L.ox + L.cw * this.COLS, L.oy + r * L.ch);
       ctx.stroke();
     }
-
-    // halfway
-    const midY = py + 2.5 * L.cellH;
+    const midY = L.oy + 2.5 * L.ch;
     ctx.strokeStyle = "rgba(255,255,255,0.65)";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(px, midY);
-    ctx.lineTo(px + pw, midY);
+    ctx.moveTo(L.ox, midY);
+    ctx.lineTo(L.ox + L.cw * this.COLS, midY);
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(px + pw / 2, midY, Math.min(28, L.cellW * 0.28), 0, Math.PI * 2);
+    ctx.arc(L.ox + (L.cw * this.COLS) / 2, midY, 26, 0, Math.PI * 2);
     ctx.stroke();
 
-    // goals
-    ctx.fillStyle = "rgba(226,232,240,0.2)";
-    ctx.fillRect(px + L.cellW * 0.7, py - 6, L.cellW * 0.6, 8);
-    ctx.fillRect(px + L.cellW * 0.7, py + ph - 2, L.cellW * 0.6, 8);
-    ctx.strokeStyle = "rgba(255,255,255,0.45)";
-    ctx.strokeRect(px + L.cellW * 0.55, py, L.cellW * 0.9, L.cellH * 0.55);
-    ctx.strokeRect(px + L.cellW * 0.55, py + ph - L.cellH * 0.55, L.cellW * 0.9, L.cellH * 0.55);
-
-    // пустые слоты + соперник виден на всей сетке
     if (s.phase !== "fight") {
       for (const u of s.ours) {
         if (u.card) continue;
-        const p = this.unitTarget(u);
+        const p = this.cellXY(u.col, u.row);
         ctx.strokeStyle = "rgba(134,239,172,0.5)";
         ctx.lineWidth = 2;
-        this.roundRect(ctx, p.x - 28, p.y - 20, 56, 40, 8);
+        this.rr(ctx, p.x + u.ox - 26, p.y + u.oy - 18, 52, 36, 8);
         ctx.stroke();
         ctx.fillStyle = "rgba(226,232,240,0.75)";
-        ctx.font = "bold 12px 'Trebuchet MS', sans-serif";
+        ctx.font = "bold 11px Trebuchet MS, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(u.zone, p.x, p.y + 4);
+        ctx.fillText(u.zone, p.x + u.ox, p.y + u.oy + 4);
       }
-      if (s.selected) {
-        ctx.fillStyle = "rgba(253,224,71,0.85)";
-        ctx.font = "bold 11px 'Trebuchet MS', sans-serif";
+      if (s.sel) {
+        ctx.fillStyle = "rgba(253,224,71,0.9)";
+        ctx.font = "bold 11px Trebuchet MS, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("тап клетку — позиция на всей сетке", px + pw / 2, py - 8);
+        ctx.fillText("вся сетка · тап клетку", L.W / 2, L.oy - 8);
       }
     }
   },
 
   drawPlayer(ctx, u, hot, pulse) {
-    if (!u.card) return;
     const c = u.card;
-    const isOpp = u.side === "opp";
-    const r = 14 + ((c.stars || 1) - 1) * 2;
-    const bob = Math.sin(pulse * 8 + u.arm) * (u.act ? 0.4 : 1.4);
-    const x = u.px;
-    const y = u.py + bob;
-    const ang = u.facing;
-    const tac = this.TACTIC_COLOR[c.tactic];
+    const opp = u.side === "opp";
+    const r = 13 + (c.stars - 1) * 2;
+    const bob = Math.sin(pulse * 8 + u.arm) * (u.act ? 0.3 : 1.3);
+    const x = u.x;
+    const y = u.y + bob;
+    const tac = this.TACTIC[c.tactic].color;
 
-    // shadow
-    ctx.fillStyle = "rgba(0,0,0,0.32)";
+    ctx.fillStyle = "rgba(0,0,0,0.3)";
     ctx.beginPath();
-    ctx.ellipse(x, y + r * 0.85, r * 0.85, 3.8, 0, 0, Math.PI * 2);
+    ctx.ellipse(x, y + r * 0.85, r * 0.8, 3.5, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // limbs
-    const swing = Math.sin(u.arm) * (u.act === "tackle" || u.act === "shot" ? 1.1 : 0.4);
-    ctx.strokeStyle = isOpp ? "#fecaca" : "#bbf7d0";
-    ctx.lineWidth = 3.2;
+    const swing = Math.sin(u.arm) * (u.act === "tackle" || u.act === "shot" ? 1 : 0.4);
+    ctx.strokeStyle = opp ? "#fecaca" : "#bbf7d0";
+    ctx.lineWidth = 3;
     ctx.lineCap = "round";
     for (const side of [-1, 1]) {
-      const a = ang + side * (0.9 + swing * 0.5);
+      const a = u.face + side * (0.85 + swing * 0.4);
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(x + Math.cos(a) * (r + 7), y + Math.sin(a) * (r + 7));
       ctx.stroke();
     }
 
-    // body
-    const body = ctx.createRadialGradient(x - 3, y - 4, 2, x, y, r);
-    body.addColorStop(0, isOpp ? "#ef4444" : "#22c55e");
-    body.addColorStop(1, isOpp ? "#991b1b" : "#166534");
+    const body = ctx.createRadialGradient(x - 3, y - 3, 2, x, y, r);
+    body.addColorStop(0, opp ? "#ef4444" : "#22c55e");
+    body.addColorStop(1, opp ? "#991b1b" : "#166534");
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fillStyle = body;
     ctx.fill();
     ctx.strokeStyle = hot ? "#fff" : tac;
-    ctx.lineWidth = hot ? 3.2 : 2.2;
+    ctx.lineWidth = hot ? 3 : 2;
     ctx.stroke();
 
-    // head
     ctx.beginPath();
-    ctx.arc(x + Math.cos(ang) * 2, y + Math.sin(ang) * 2 - r * 0.15, r * 0.42, 0, Math.PI * 2);
+    ctx.arc(x, y - r * 0.1, r * 0.4, 0, Math.PI * 2);
     ctx.fillStyle = "#f5d0a9";
     ctx.fill();
 
-    // action ring
     if (u.act && u.actT > 0) {
-      ctx.strokeStyle = tac;
       ctx.globalAlpha = Math.min(1, u.actT * 2);
+      ctx.strokeStyle = tac;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(x, y, r + 6 + (0.5 - u.actT) * 10, 0, Math.PI * 2);
+      ctx.arc(x, y, r + 5 + (0.5 - u.actT) * 8, 0, Math.PI * 2);
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
 
     ctx.fillStyle = "#fff";
-    ctx.font = "bold 12px 'Trebuchet MS', 'Segoe UI', sans-serif";
+    ctx.font = "bold 11px Trebuchet MS, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(c.name, x, y - r - 8);
+    ctx.fillText(c.name, x, y - r - 7);
     ctx.fillStyle = tac;
-    ctx.font = "bold 10px 'Trebuchet MS', sans-serif";
-    ctx.fillText(c.amp, x, y + r + 13);
-    if ((c.stars || 1) > 1) {
+    ctx.font = "bold 9px Trebuchet MS, sans-serif";
+    ctx.fillText(c.amp, x, y + r + 12);
+    if (c.stars > 1) {
       ctx.fillStyle = "#fde68a";
-      ctx.fillText(this.starLabel(c), x, y + r + 25);
+      ctx.fillText("★★", x, y + r + 23);
     }
   },
 
-  drawFx(ctx, fx) {
-    const a = Math.max(0, fx.t / fx.life);
-    const k = 1 - a;
-    ctx.save();
-    ctx.globalAlpha = a;
-    if (fx.kind === "pass" || fx.kind === "cross") {
-      ctx.strokeStyle = fx.kind === "cross" ? "#86efac" : "rgba(255,255,255,0.9)";
-      ctx.setLineDash(fx.kind === "cross" ? [3, 7] : [6, 5]);
-      ctx.lineWidth = fx.kind === "cross" ? 3 : 2.2;
-      ctx.beginPath();
-      ctx.moveTo(fx.x, fx.y);
-      ctx.lineTo(fx.x2, fx.y2);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    } else if (fx.kind === "tackle") {
-      ctx.strokeStyle = fx.color || "#f97316";
-      ctx.lineWidth = 3.5;
-      ctx.beginPath();
-      ctx.arc(fx.x, fx.y, 10 + k * 18, -1, 1);
-      ctx.stroke();
-    } else if (fx.kind === "intercept") {
-      ctx.strokeStyle = "#38bdf8";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(fx.x - 14, fx.y);
-      ctx.lineTo(fx.x + 14, fx.y);
-      ctx.moveTo(fx.x, fx.y - 14);
-      ctx.lineTo(fx.x, fx.y + 14);
-      ctx.stroke();
-    } else if (fx.kind === "shot") {
-      ctx.strokeStyle = fx.color || "#fde68a";
-      ctx.lineWidth = 4;
-      const t = Math.min(1, k * 1.4);
-      ctx.beginPath();
-      ctx.moveTo(fx.x, fx.y);
-      ctx.lineTo(fx.x + (fx.x2 - fx.x) * t, fx.y + (fx.y2 - fx.y) * t);
-      ctx.stroke();
-    } else if (fx.kind === "save") {
-      ctx.strokeStyle = "#c4b5fd";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(fx.x, fx.y, 12 + k * 20, 0, Math.PI * 2);
-      ctx.stroke();
-    } else if (fx.kind === "goal") {
-      ctx.fillStyle = "#fde68a";
-      ctx.font = "bold 22px 'Trebuchet MS', sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("ГОЛ", fx.x, fx.y - k * 24);
-    }
-    ctx.restore();
-  },
-
-  drawChip(ctx, x, y, w, h, card, selected, price) {
-    ctx.save();
-    this.roundRect(ctx, x, y, w, h, 8);
-    ctx.fillStyle = selected ? "#1e3a8a" : "#123524";
+  drawChip(ctx, x, y, w, h, card, sel, price) {
+    this.rr(ctx, x, y, w, h, 8);
+    ctx.fillStyle = sel ? "#1e3a8a" : "#123524";
     ctx.fill();
-    ctx.strokeStyle = selected ? "#fff" : this.TACTIC_COLOR[card.tactic];
-    ctx.lineWidth = selected ? 2.4 : 1.6;
+    ctx.strokeStyle = sel ? "#fff" : this.TACTIC[card.tactic].color;
+    ctx.lineWidth = sel ? 2.2 : 1.5;
     ctx.stroke();
-    ctx.fillStyle = this.ROLE_COLOR[card.role];
-    ctx.fillRect(x + 3, y + 3, w - 6, 5);
     ctx.fillStyle = "#fff";
-    ctx.font = "bold 11px 'Trebuchet MS', sans-serif";
+    ctx.font = "bold 11px Trebuchet MS, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(card.name, x + w / 2, y + 22);
+    ctx.fillText(card.name, x + w / 2, y + 18);
     ctx.fillStyle = "#cbd5e1";
-    ctx.font = "9px 'Trebuchet MS', sans-serif";
-    ctx.fillText(card.amp, x + w / 2, y + 34);
-    ctx.fillStyle = this.TACTIC_COLOR[card.tactic];
-    ctx.font = "bold 9px 'Trebuchet MS', sans-serif";
-    const tn = this.TACTIC_RU[card.tactic];
-    ctx.fillText(tn.length > 10 ? tn.slice(0, 9) + "…" : tn, x + w / 2, y + h - 8);
+    ctx.font = "9px Trebuchet MS, sans-serif";
+    ctx.fillText(card.amp, x + w / 2, y + 32);
+    ctx.fillStyle = this.TACTIC[card.tactic].color;
+    ctx.font = "bold 9px Trebuchet MS, sans-serif";
+    ctx.fillText(this.TACTIC[card.tactic].ru, x + w / 2, y + h - 8);
     if (price != null) {
       ctx.fillStyle = "#fde68a";
-      ctx.font = "bold 12px 'Trebuchet MS', sans-serif";
-      ctx.fillText(price + "🪙", x + w / 2, y + h - 20);
+      ctx.font = "bold 12px Trebuchet MS, sans-serif";
+      ctx.fillText(price + "🪙", x + w / 2, y + h - 22);
     }
-    ctx.restore();
   },
 
   draw(s, api) {
     const { ctx } = api;
-    this.syncLayout(api);
+    this.layout(api);
     const L = this.L;
     this.drawPitch(ctx, s);
 
-    // scoreboard
-    this.roundRect(ctx, L.W / 2 - 108, 6, 216, 40, 10);
-    ctx.fillStyle = "rgba(0,0,0,0.62)";
+    this.rr(ctx, L.W / 2 - 100, 6, 200, 38, 10);
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
     ctx.fill();
     ctx.fillStyle = "#fff";
-    ctx.font = "bold 18px 'Trebuchet MS', 'Segoe UI', sans-serif";
+    ctx.font = "bold 17px Trebuchet MS, sans-serif";
     ctx.textAlign = "center";
-    const title =
-      s.phase === "lineup" ? "РАССТАНОВКА" : s.phase === "shop" ? "МАГАЗИН" : s.myGoals + " : " + s.oppGoals;
+    const title = s.phase === "lineup" ? "РАССТАНОВКА" : s.phase === "shop" ? "МАГАЗИН" : s.gh + " : " + s.ga;
     ctx.fillText(title, L.W / 2, 24);
     ctx.fillStyle = "#fde68a";
-    ctx.font = "bold 12px 'Trebuchet MS', sans-serif";
-    ctx.fillText(s.phase === "fight" ? s.minute + "'" : "🪙" + s.coins, L.W / 2, 40);
+    ctx.font = "bold 12px Trebuchet MS, sans-serif";
+    ctx.fillText(s.phase === "fight" ? s.minute + "'" : "🪙" + s.coins, L.W / 2, 38);
 
-    const tc = this.tacticCount(s.ours);
     let cx = 10;
-    for (const t of tc.slice(0, 3)) {
-      const label = this.TACTIC_RU[t.id] + "×" + t.n;
-      const tw = 16 + label.length * 6.2;
-      this.roundRect(ctx, cx, L.pitchBottom - 18, tw, 15, 4);
+    for (const t of this.tactics(s.ours).slice(0, 3)) {
+      const label = this.TACTIC[t.id].ru + "×" + t.n;
+      const tw = 14 + label.length * 6;
+      this.rr(ctx, cx, L.pitchBottom - 16, tw, 14, 4);
       ctx.fillStyle = "rgba(0,0,0,0.55)";
       ctx.fill();
-      ctx.strokeStyle = this.TACTIC_COLOR[t.id];
+      ctx.strokeStyle = this.TACTIC[t.id].color;
       ctx.stroke();
-      ctx.fillStyle = this.TACTIC_COLOR[t.id];
-      ctx.font = "bold 10px 'Trebuchet MS', sans-serif";
-      ctx.fillText(label, cx + tw / 2, L.pitchBottom - 6);
+      ctx.fillStyle = this.TACTIC[t.id].color;
+      ctx.font = "bold 10px Trebuchet MS, sans-serif";
+      ctx.fillText(label, cx + tw / 2, L.pitchBottom - 5);
       cx += tw + 4;
     }
 
-    const list = this.units(s).sort((a, b) => a.py - b.py);
-    for (const u of list) this.drawPlayer(ctx, u, s.ball.owner === u, s.pulse);
+    for (const u of this.units(s).sort((a, b) => a.y - b.y)) {
+      this.drawPlayer(ctx, u, s.ball.owner === u, s.pulse);
+    }
 
-    // ball with soft shadow
-    if (s.phase === "fight" || s.ball.owner || s.ball.flying) {
-      const bx = s.ball.x || L.W / 2;
-      const by = s.ball.y || L.originY + L.cellH * 2.5;
+    if (s.phase === "fight" || s.ball.owner || s.ball.fly) {
       ctx.fillStyle = "rgba(0,0,0,0.25)";
       ctx.beginPath();
-      ctx.ellipse(bx, by + 5, 7, 3, 0, 0, Math.PI * 2);
+      ctx.ellipse(s.ball.x, s.ball.y + 5, 6, 2.5, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = "#fffef2";
       ctx.beginPath();
-      ctx.arc(bx, by, 6.5, 0, Math.PI * 2);
+      ctx.arc(s.ball.x, s.ball.y, 6, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = "#334155";
-      ctx.lineWidth = 1.2;
       ctx.stroke();
     }
-    for (const f of s.fx) this.drawFx(ctx, f);
 
-    if (s.subline) {
-      this.roundRect(ctx, 12, L.pitchBottom + 2, L.W - 24, 22, 6);
-      ctx.fillStyle = "rgba(0,0,0,0.58)";
+    for (const f of s.fx) {
+      const a = Math.max(0, f.t / f.life);
+      ctx.save();
+      ctx.globalAlpha = a;
+      if (f.kind === "pass" || f.kind === "cross") {
+        ctx.strokeStyle = f.kind === "cross" ? "#86efac" : "#fff";
+        ctx.setLineDash(f.kind === "cross" ? [3, 6] : [5, 4]);
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.moveTo(f.x, f.y);
+        ctx.lineTo(f.x2, f.y2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else if (f.kind === "tackle") {
+        ctx.strokeStyle = f.color || "#f97316";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, 10 + (1 - a) * 14, -0.9, 0.9);
+        ctx.stroke();
+      } else if (f.kind === "shot") {
+        ctx.strokeStyle = "#fde68a";
+        ctx.lineWidth = 3.5;
+        const k = 1 - a;
+        ctx.beginPath();
+        ctx.moveTo(f.x, f.y);
+        ctx.lineTo(f.x + (f.x2 - f.x) * Math.min(1, k * 1.4), f.y + (f.y2 - f.y) * Math.min(1, k * 1.4));
+        ctx.stroke();
+      } else if (f.kind === "save") {
+        ctx.strokeStyle = "#c4b5fd";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, 12 + (1 - a) * 16, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (f.kind === "goal") {
+        ctx.fillStyle = "#fde68a";
+        ctx.font = "bold 22px Trebuchet MS, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("ГОЛ", f.x, f.y - (1 - a) * 20);
+      }
+      ctx.restore();
+    }
+
+    if (s.line) {
+      this.rr(ctx, 12, L.pitchBottom + 2, L.W - 24, 20, 6);
+      ctx.fillStyle = "rgba(0,0,0,0.55)";
       ctx.fill();
       ctx.fillStyle = "#f1f5f9";
-      ctx.font = "13px 'Trebuchet MS', sans-serif";
+      ctx.font = "12px Trebuchet MS, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(s.subline, L.W / 2, L.pitchBottom + 17);
+      ctx.fillText(s.line, L.W / 2, L.pitchBottom + 16);
     }
 
     if (s.phase === "lineup") {
-      ctx.fillStyle = "rgba(0,0,0,0.66)";
+      ctx.fillStyle = "rgba(0,0,0,0.65)";
       ctx.fillRect(0, L.uiTop, L.W, L.H - L.uiTop);
       ctx.fillStyle = "#fde68a";
-      ctx.font = "bold 13px 'Trebuchet MS', sans-serif";
+      ctx.font = "bold 12px Trebuchet MS, sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText("Колода → любая клетка сетки (6/6)", 12, L.uiTop + 18);
+      ctx.fillText("Колода → любая клетка (5/5)", 12, L.uiTop + 16);
       s.deck.forEach((c, i) => {
-        const r = this.deckRect(i, api);
-        this.drawChip(ctx, r.x, r.y, r.w, r.h, c, s.selected?.from === "deck" && s.selected.index === i, null);
+        const r = this.deckRect(i);
+        this.drawChip(ctx, r.x, r.y, r.w, r.h, c, s.sel?.from === "deck" && s.sel.i === i, null);
       });
     }
 
     if (s.phase === "shop") {
-      ctx.fillStyle = "rgba(0,0,0,0.66)";
+      ctx.fillStyle = "rgba(0,0,0,0.65)";
       ctx.fillRect(0, L.uiTop, L.W, L.H - L.uiTop);
       ctx.fillStyle = "#e2e8f0";
-      ctx.font = "bold 12px 'Trebuchet MS', sans-serif";
+      ctx.font = "bold 12px Trebuchet MS, sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText("Скамейка " + s.bench.length + "/" + this.BENCH_MAX, 12, L.uiTop + 16);
+      ctx.fillText("Скамейка " + s.bench.length + "/" + this.BENCH, 12, L.uiTop + 16);
       s.bench.forEach((c, i) => {
-        const r = this.benchRect(i, api);
-        this.drawChip(ctx, r.x, r.y, r.w, r.h, c, s.selected?.from === "bench" && s.selected.index === i, null);
+        const r = this.benchRect(i);
+        this.drawChip(ctx, r.x, r.y, r.w, r.h, c, s.sel?.from === "bench" && s.sel.i === i, null);
       });
       ctx.fillStyle = "#fde68a";
-      ctx.font = "bold 13px 'Trebuchet MS', sans-serif";
-      ctx.fillText("Витрина (равномерно из колоды)", 12, L.uiTop + 116);
-      for (let i = 0; i < this.SHOP_SIZE; i++) {
-        const r = this.shopRect(i, api);
+      ctx.font = "bold 12px Trebuchet MS, sans-serif";
+      ctx.fillText("Витрина", 12, L.uiTop + 108);
+      for (let i = 0; i < this.SHOP; i++) {
+        const r = this.shopRect(i);
         if (s.shop[i]) this.drawChip(ctx, r.x, r.y, r.w, r.h, s.shop[i].card, false, s.shop[i].price);
         else {
-          this.roundRect(ctx, r.x, r.y, r.w, r.h, 8);
+          this.rr(ctx, r.x, r.y, r.w, r.h, 8);
           ctx.fillStyle = "#334155";
           ctx.fill();
         }
@@ -1781,20 +1363,19 @@ window.FEEL_DEMOS["legends-of-the-pitch"] = {
     }
 
     if (s.bannerT > 0 && s.banner) {
-      this.roundRect(ctx, 36, L.originY + L.cellH * 2 - 28, L.W - 72, 52, 12);
+      this.rr(ctx, 40, L.oy + L.ch * 2 - 26, L.W - 80, 48, 12);
       ctx.fillStyle = "rgba(0,0,0,0.55)";
       ctx.fill();
-      ctx.fillStyle = s.bannerColor;
-      ctx.font = "bold 28px 'Trebuchet MS', sans-serif";
+      ctx.fillStyle = s.bannerC;
+      ctx.font = "bold 26px Trebuchet MS, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(s.banner, L.W / 2, L.originY + L.cellH * 2 + 6);
+      ctx.fillText(s.banner, L.W / 2, L.oy + L.ch * 2 + 6);
     }
 
     if (s.phase === "done") {
       const map = { win: ["ПОБЕДА", "#fbbf24"], lose: ["ПОРАЖЕНИЕ", "#f07178"], draw: ["НИЧЬЯ", "#94a3b8"] };
-      const r = map[s.lastResult] || map.lose;
-      api.drawBanner(ctx, r[0] + " " + s.myGoals + ":" + s.oppGoals, r[1]);
+      const r = map[s.result] || map.lose;
+      api.drawBanner(ctx, r[0] + " " + s.gh + ":" + s.ga, r[1]);
     }
   },
 };
-   
