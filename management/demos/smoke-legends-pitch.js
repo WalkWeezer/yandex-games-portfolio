@@ -15,6 +15,12 @@ if (!Smoke) {
 const api = Smoke.createMockApi();
 const s = Smoke.demo.create(api);
 
+if (s.oppField && s.oppField.length) {
+  console.error("FAIL: opponent visible before fight", s.oppField.length);
+  process.exit(1);
+}
+console.log("OK opponent hidden pre-fight");
+
 // Placement on corners of full 3×5 — must accept (0,0) and (2,4)
 const p0 = Smoke.placeOnCell(s, api, 0, 0, 0);
 const p1 = Smoke.placeOnCell(s, api, 0, 2, 4); // after first place, next bench[0]
