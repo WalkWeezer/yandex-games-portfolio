@@ -1,11 +1,10 @@
 /**
  * Работник месяца — finished Beta UI shell
  * All MVP screens, Yandex Games portrait contract.
- * Debug controls live OUTSIDE the phone (#mu-debug).
  * Mounts into #mu-app. No games/.../src while design REVIEW.
  */
 (function () {
-  const BUILD = "mu250720b";
+  const BUILD = "mu250720c";
   const STORAGE_KEY = "deadline-escape-mock-ui-v2";
 
   const COPY = {
@@ -179,26 +178,13 @@
         </div>
         <aside class="mu-side">
           <h4>Бета-тест · UI shell</h4>
-          <p>Полный поток экранов MVP. Внутри телефона — только продуктовый UI. Отладка рана — блок ниже, <strong>вне</strong> телефона.</p>
+          <p>Полный поток экранов MVP. Только продуктовый UI в портретном шелле.</p>
           <ul class="mu-checks">
             <li>Boot → Menu → Hub → Daily?/Run</li>
             <li>Pause / Caught(RV) / Result / Shop / Settings</li>
             <li>Copy: ЗАСТАВИЛИ / ПОВЫШЕНИЕ</li>
             <li>Yandex: LoadingAPI · GameplayAPI · RV · interstitial</li>
           </ul>
-
-          <div class="mu-debug" id="mu-debug">
-            <h5>Отладка (вне UI)</h5>
-            <div class="mu-debug-row">
-              <button type="button" data-dbg="caught" title="Только во время Run">Поимка</button>
-              <button type="button" data-dbg="promote">До 18:00</button>
-              <button type="button" data-dbg="coffee">+ кофе</button>
-              <button type="button" data-dbg="badge">+ бейдж</button>
-              <button type="button" data-dbg="coins">+50🪙</button>
-              <button type="button" data-dbg="reset">Сброс сейва</button>
-            </div>
-            <div class="hint">Кнопки не входят в продукт и не рисуются в портретном шелле.</div>
-          </div>
 
           <div class="mu-sdk-bar" id="mu-sdk-bar"></div>
           <div class="mu-log" id="mu-log" aria-label="SDK log"></div>
@@ -209,7 +195,6 @@
     const phone = root.querySelector("#mu-phone");
     logEl.current = root.querySelector("#mu-log");
     const sdkBar = root.querySelector("#mu-sdk-bar");
-    const debugRoot = root.querySelector("#mu-debug");
 
     root.querySelector("#mu-open-feel").addEventListener("click", () => {
       const tab = document.querySelector('.tab[data-tab="demo"]');
@@ -233,16 +218,10 @@
       `;
     }
 
-    function updateDebugEnabled() {
-      const inRun = !!(run && !run.over && (screen === "run" || screen === "pause"));
-      debugRoot.querySelectorAll("[data-dbg]").forEach((btn) => {
-        const id = btn.getAttribute("data-dbg");
-        if (id === "reset" || id === "coins") {
-          btn.disabled = false;
-          return;
-        }
-        btn.disabled = !inRun;
-      });
+    function dist(a, b) {
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      return Math.hypot(dx, dy);
     }
 
     function stopRunLoop() {
@@ -272,6 +251,35 @@
           b.x = 18 + ((Math.sin(t * (1.05 + i * 0.22)) + 1) / 2) * 64;
           b.y = 22 + ((Math.cos(t * (0.88 + i * 0.18)) + 1) / 2) * 52;
         });
+        // Ally offer → coffee; badge drops once after a short walk.
+        if (!run.coffee && dist(run.player, run.ally) < 9) {
+          run.coffee = true;
+          run.coffeeUntil = run.gameMin + 54; // ~3s world at default pace
+          sdkLog("info", "coffee slow-mo");
+        }
+        if (run.coffee && run.gameMin >= (run.coffeeUntil || 0)) run.coffee = false;
+        if (!run.badgeDropped && run.gameMin > 40) {
+          run.badgeDropped = true;
+          run.badge = { x: run.ally.x + 6, y: run.ally.y + 8 };
+        }
+        if (run.badge && !run.shield && dist(run.player, run.badge) < 8) {
+          run.shield = true;
+          run.badge = null;
+          sdkLog("info", "badge pickup");
+        }
+        const hit = run.bosses.some((b) => dist(run.player, b) < 7.5);
+        if (hit) {
+          if (run.shield) {
+            run.shield = false;
+            run.iframesUntil = run.gameMin + 12;
+            sdkLog("ok", "shield_break");
+          } else if (run.gameMin >= (run.iframesUntil || 0)) {
+            run.over = true;
+            run.win = false;
+            endRun(false);
+            return;
+          }
+        }
         paintRunHud();
         raf = requestAnimationFrame(tick);
       };
@@ -315,6 +323,10 @@
         daily: !!opts.daily,
         shield: false,
         coffee: false,
+        coffeeUntil: 0,
+        iframesUntil: 0,
+        badgeDropped: false,
+        badge: null,
         showTut: !state.tutSeen,
         player: { x: 50, y: 62 },
         bosses: [{ x: 22, y: 28 }, { x: 70, y: 40 }],
@@ -343,6 +355,7 @@
           ${run.showTut ? `<div class="mu-tut">${COPY.tut}</div>` : ""}
           <div class="mu-dot" style="left:${run.player.x}%;top:${run.player.y}%"></div>
           <div class="mu-dot ally" style="left:${run.ally.x}%;top:${run.ally.y}%"></div>
+          ${run.badge ? `<div class="mu-dot badge" style="left:${run.badge.x}%;top:${run.badge.y}%"></div>` : ""}
           ${run.bosses.map((b) => `<div class="mu-dot boss" style="left:${b.x}%;top:${b.y}%"></div>`).join("")}
           <div class="mu-stick" aria-hidden="true"></div>
         `;
@@ -357,7 +370,6 @@
       const coffee = phone.querySelector("[data-mu-coffee]");
       if (shield) shield.classList.toggle("on", !!run.shield);
       if (coffee) coffee.classList.toggle("on", !!run.coffee);
-      updateDebugEnabled();
       updateSdkBar();
     }
 
@@ -714,62 +726,12 @@
       go("shop");
     }
 
-    debugRoot.querySelectorAll("[data-dbg]").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        const id = btn.getAttribute("data-dbg");
-        if (id === "reset") {
-          Object.assign(state, defaultState());
-          persist(state);
-          stopRunLoop();
-          ysdk.gameplayStop();
-          run = null;
-          sdkLog("warn", "save reset");
-          go("boot");
-          return;
-        }
-        if (id === "coins") {
-          state.coins += 50;
-          persist(state);
-          sdkLog("info", "+50 coins");
-          updateSdkBar();
-          if (["menu", "hub", "shop"].includes(screen)) go(screen);
-          return;
-        }
-        if (!run || run.over) return;
-        if (id === "caught") {
-          if (run.shield) {
-            run.shield = false;
-            sdkLog("ok", "shield_break");
-            paintRunHud();
-            return;
-          }
-          run.over = true;
-          run.win = false;
-          endRun(false);
-        } else if (id === "promote") {
-          run.gameMin = 540;
-          run.over = true;
-          run.win = true;
-          endRun(true);
-        } else if (id === "coffee") {
-          run.coffee = true;
-          sdkLog("info", "coffee ON");
-          paintRunHud();
-        } else if (id === "badge") {
-          run.shield = true;
-          sdkLog("info", "badge ON");
-          paintRunHud();
-        }
-      });
-    });
-
     async function go(id) {
       screen = id;
       if (id !== "run" && id !== "pause") stopRunLoop();
       phone.innerHTML = `<div class="mu-safe">${htmlFor(id)}</div>`;
       bindPhone();
       updateSdkBar();
-      updateDebugEnabled();
       if (id === "run") paintRunHud();
       if (id === "boot") await runBoot();
     }
@@ -790,7 +752,6 @@
     }
 
     updateSdkBar();
-    updateDebugEnabled();
     go("boot");
 
     return {

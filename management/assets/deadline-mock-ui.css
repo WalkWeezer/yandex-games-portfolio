@@ -347,6 +347,13 @@
 }
 .mu-dot.boss { background: var(--mu-danger); width: 16px; height: 16px; }
 .mu-dot.ally { background: var(--mu-ok); width: 14px; height: 14px; }
+.mu-dot.badge {
+  background: var(--mu-cta);
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--mu-cta-ink);
+  box-sizing: border-box;
+}
 .mu-tut {
   position: absolute;
   left: 8px;
@@ -479,46 +486,6 @@
   padding: 8px 10px;
 }
 .mu-checks li::before { content: "✓ "; color: var(--ok); font-weight: 700; }
-
-.mu-debug {
-  margin: 12px 0;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px dashed #8a6d1d;
-  background: #2a2414;
-}
-.mu-debug h5 {
-  margin: 0 0 8px;
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #f5c542;
-}
-.mu-debug .mu-debug-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.mu-debug button {
-  appearance: none;
-  border: 1px solid #8a6d1d;
-  background: #3d3415;
-  color: #f5c542;
-  border-radius: 8px;
-  padding: 7px 10px;
-  font: inherit;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-.mu-debug button:hover { filter: brightness(1.08); }
-.mu-debug button:disabled { opacity: 0.4; cursor: default; }
-.mu-debug .hint {
-  margin-top: 8px;
-  font-size: 0.72rem;
-  color: #b7a46a;
-  line-height: 1.35;
-}
 
 .mu-sdk-bar {
   display: flex;
