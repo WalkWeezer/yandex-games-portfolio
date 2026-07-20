@@ -3219,25 +3219,47 @@ window.FEEL_DEMOS["deadline-escape"] = {
   },
   /**
    * Какие стороны клетки рисуем стеной (прямоугольники).
-   * Всегда — внутреннее ребро к play.
-   * + боковые торцы к соседу, который НЕ стена (проход/туман) → часто 2–3 стороны.
-   * Угол карты: сразу два внутренних ребра.
-   * Стороны: n/s/w/e = полоса у соответствующего края КЛЕТКИ
-   *   (для каркаса N play снизу клетки → сторона "s" клетки, и т.д.)
+   * Стороны n/s/w/e = полоса у края клетки (к play: N-каркас → "s", и т.д.).
+   *
+   * Угол карты: полоса только вдоль тех рёбер, где реально есть стена-сосед.
+   *   стена с одной стороны + проход с другой → 1 полоса (не L).
+   *   стены с обеих → L (2).
+   * Ребро: лицо к play + торцы к открытому туману → 1 / 2 / 3.
    */
   wallSidesOf(s, col, row) {
     const sides = [];
     const push = (side) => { if (!sides.includes(side)) sides.push(side); };
     const corner = this.mapCornerOf(s, col, row);
+
+    if (corner === "nw") {
+      // N-ребро продолжается на восток → низ клетки; W-ребро на юг → право
+      if (this.frameSolidAt(s, col + 1, row)) push("s");
+      if (this.frameSolidAt(s, col, row + 1)) push("e");
+      return sides;
+    }
+    if (corner === "ne") {
+      if (this.frameSolidAt(s, col - 1, row)) push("s");
+      if (this.frameSolidAt(s, col, row + 1)) push("w");
+      return sides;
+    }
+    if (corner === "sw") {
+      if (this.frameSolidAt(s, col + 1, row)) push("n");
+      if (this.frameSolidAt(s, col, row - 1)) push("e");
+      return sides;
+    }
+    if (corner === "se") {
+      if (this.frameSolidAt(s, col - 1, row)) push("n");
+      if (this.frameSolidAt(s, col, row - 1)) push("w");
+      return sides;
+    }
+
     const edge = this.fogEdgeOf(s, col, row);
+    if (edge === "n") push("s");
+    if (edge === "s") push("n");
+    if (edge === "w") push("e");
+    if (edge === "e") push("w");
 
-    // внутреннее ребро к play (противоположно внешнему краю сетки)
-    if (edge === "n" || corner === "nw" || corner === "ne") push("s"); // низ клетки
-    if (edge === "s" || corner === "sw" || corner === "se") push("n"); // верх
-    if (edge === "w" || corner === "nw" || corner === "sw") push("e"); // право
-    if (edge === "e" || corner === "ne" || corner === "se") push("w"); // лево
-
-    // торцы только к соседу НА карте, который не стена (проход в тумане)
+    // торцы к открытому туману на карте (не play, не за сеткой)
     const neigh = [
       { dc: -1, dr: 0, side: "w" },
       { dc: 1, dr: 0, side: "e" },
@@ -3246,8 +3268,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
     ];
     for (const n of neigh) {
       const nc = col + n.dc, nr = row + n.dr;
-      if (nc < 0 || nr < 0 || nc >= s.cols || nr >= s.rows) continue; // за сеткой — не рисуем
-      if (this.inPlayArea(s, nc, nr)) continue; // play — это «лицо» стены, не торец
+      if (nc < 0 || nr < 0 || nc >= s.cols || nr >= s.rows) continue;
+      if (this.inPlayArea(s, nc, nr)) continue;
       if (!this.frameSolidAt(s, nc, nr)) push(n.side);
     }
     return sides;
