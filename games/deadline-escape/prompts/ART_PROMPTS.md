@@ -77,7 +77,7 @@ Top-down cartoon 7 by 9 office floor plan illustration: border walls, desks bloc
 | `tile_wall_{n,s,e,w}_{prop}` | композит стена+проп |
 | `tile_window_{n,s,e,w}_{prop}` | композит окно+проп |
 
-Сборка: `python management/tools/build_wall_prop_tiles.py`
+Сборка: `python management/tools/process_styled_walls.py` (стены в стиле desk/cooler)
 
 ## DoD
 
