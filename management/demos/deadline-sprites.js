@@ -11,7 +11,7 @@
   const APPROVED_FILE = "style-seed-hero.APPROVED.json";
   const REJECTED_FILE = "style-seed-hero.REJECTED.json";
   const LS_KEY = "deadline-escape.style-seed";
-  const BUST = "w250722c";
+  const BUST = "w250722d";
 
   const CHECKER = "background:repeating-conic-gradient(#2a3340 0% 25%, #1a222c 0% 50%) 50%/12px 12px";
 
@@ -330,15 +330,12 @@
       html: () =>
         card(
           "Мебель и пропы play",
-          "Отдельные пропы на play. Композиты стена+проп архивированы: <code>archive/2026-07-20-wall-prop-composites/</code>.",
+          "Отдельные пропы на play: desk / plant / cooler.",
           pngRow([
             ["frames/tile_desk.png", "desk"],
             ["frames/tile_desk2.png", "desk2"],
             ["frames/tile_plant.png", "plant"],
             ["frames/tile_cooler.png", "cooler"],
-            ["frames/tile_cabinet.png", "cabinet"],
-            ["frames/tile_printer.png", "printer"],
-            ["frames/tile_trash.png", "trash"],
           ])
         ),
     },
@@ -423,7 +420,6 @@
           <p class="sp-desc">
             Всё, что не style-seed / ГГ carrier / актуальный env, перенесено в архив.
             <br/>• <code>archive/2026-07-18-pipeline-v1-reset/</code> — art, boss sheets, HR, концепты, chroma…
-            <br/>• <code>archive/2026-07-20-wall-prop-composites/</code> — стена+проп композиты (N+plant и т.п.)
             <br/>• <code>archive/2026-07-20-broken-lu-corners/</code> — L/U «перекрестья» (сняты с каталога)
             <br/>Не использовать как SoT.
           </p>

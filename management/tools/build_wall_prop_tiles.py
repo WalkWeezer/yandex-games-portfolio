@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Build beautiful wall/window + prop composite tiles for deadline-escape.
+"""Build wall/window + prop composite tiles for deadline-escape.
 
-Uses AI-cleaned prop sprites + painted edge-flush wall bands.
+Uses prop sprites + painted edge-flush wall bands.
 Outputs:
-  frames/tile_{wall,window}_{n,s,e,w}_{plant,cooler,cabinet,printer,trash}.png
-  updates frames/tile_{cabinet,printer,trash,plant,cooler}.png
+  frames/tile_{wall,window}_{n,s,e,w}_{plant,cooler}.png
   border_wall_props_preview.png
 """
 from __future__ import annotations
@@ -21,7 +20,7 @@ SPRITES = FRAMES.parent
 SIDE = 256
 BAND = 112  # wall thickness flush to outer edge
 
-PROPS = ("plant", "cooler", "cabinet", "printer", "trash")
+PROPS = ("plant", "cooler")
 EDGES = ("n", "s", "e", "w")
 
 # staging dirs for generated AI props (optional)
@@ -262,13 +261,8 @@ def main() -> int:
     props: dict[str, Image.Image] = {}
     for name in PROPS:
         im = load_prop(name)
-        if name in ("cabinet", "printer", "trash"):
-            im = ImageEnhance.Sharpness(im).enhance(1.12)
-            im.save(FRAMES / f"tile_{name}.png")
-            print(f"  tile_{name}.png (updated)")
-        else:
-            # keep authored plant/cooler frames as-is
-            print(f"  tile_{name}.png (keep)")
+        # keep authored plant/cooler frames as-is
+        print(f"  tile_{name}.png (keep)")
         props[name] = im
 
     # base walls/windows (no prop)

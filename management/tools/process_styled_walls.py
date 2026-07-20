@@ -21,7 +21,7 @@ ART = Path("/opt/cursor/artifacts/assets")
 SIDE = 256
 BAND = 118
 
-PROPS = ("plant", "cooler", "cabinet", "printer", "trash")
+PROPS = ("plant", "cooler")
 EDGES = ("n", "s", "e", "w")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))

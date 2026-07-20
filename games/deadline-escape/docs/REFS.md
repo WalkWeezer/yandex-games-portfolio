@@ -28,9 +28,8 @@
 | `frames/tile_wall_{nwe,nsw,nse,swe}.png` | U |
 | `frames/tile_wall_stub_{nw,ne,sw,se}.png` | stub угла карты |
 | `art/wall-option-a-cream-wood.png` · `wall-option-a-window.png` | **APPROVED** masters стен |
-| `frames/tile_cabinet.png` · `tile_printer.png` · `tile_trash.png` | пропы (AI) |
 | `frames/pu_*` · `vfx_*` | пикапы / VFX scaffolding |
-| `art/ai-wall-n-layoutfeel.png` · `ai-window-n-layoutfeel.png` | AI masters стен |
+| `art/ai-wall-n-layoutfeel.png` · `ai-window-n-layoutfeel.png` | AI masters стен (legacy) |
 
 Motion tutorial: [Slynyrd Pixelblog 55](https://www.slynyrd.com/blog/2025/3/24/pixelblog-55-top-down-character-animation)
 
@@ -38,7 +37,6 @@ Motion tutorial: [Slynyrd Pixelblog 55](https://www.slynyrd.com/blog/2025/3/24/p
 
 | Path | Contents |
 |------|----------|
-| `archive/2026-07-20-wall-prop-composites/` | `tile_wall/window_*_{prop}` + border props preview |
 | `archive/2026-07-18-pipeline-v1-reset/` | концепты, HR, боссы, chroma/sheets — вынесены из `refs/` |
 | `archive/2026-07-18-sprites-cleanup/` | более ранний cleanup |
 | `archive/2026-07-17-pre-feel-sync/` | pre-feel пакет |
