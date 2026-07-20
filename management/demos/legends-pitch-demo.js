@@ -13,7 +13,11 @@
   const MAX_FIELD = 6;
   const BENCH_SLOTS = 7;
   const SHOP_SLOTS = 3;
-  const SEGMENTS = 7;
+  const ROUNDS = 9;
+  const MATCH_MINUTES = 90;
+  const MIN_PER_ROUND = MATCH_MINUTES / ROUNDS; // 10'
+  /** Wall-clock seconds per round at ×1 (~22s of play per 10') */
+  const ROUND_WALL_SEC = 22;
   const COPIES_PER_NAME = 3;
   const MERGE_NEED = 3;
 
@@ -122,6 +126,12 @@
 
   function clamp(v, a, b) {
     return Math.max(a, Math.min(b, v));
+  }
+  function formatMatchClock(min) {
+    const clamped = clamp(min, 0, MATCH_MINUTES);
+    const m = Math.floor(clamped);
+    const sec = Math.floor((clamped - m) * 60);
+    return m + "'" + (sec < 10 ? "0" : "") + sec;
   }
   function lerp(a, b, t) {
     return a + (b - a) * t;
@@ -729,16 +739,17 @@
       return;
     }
 
-    s.matchTime += dt * speed * 3; // ~30s wall @×1 for 90' segment
+    s.clock += dt * speed * (MIN_PER_ROUND / ROUND_WALL_SEC);
     s.thinkT -= dt * speed;
     if (s.thinkT <= 0) {
       s.thinkT = rand(0.45, 0.85);
       decideAction(s);
     }
 
-    // Full segment ≈ 90 match-minutes
-    if (s.matchTime >= 90) {
-      endSegment(s, api);
+    // End round when football clock hits this round's slice (10', 20', … 90')
+    if (s.clock >= s.round * MIN_PER_ROUND - 0.0001) {
+      s.clock = Math.min(MATCH_MINUTES, s.round * MIN_PER_ROUND);
+      endRound(s, api);
     }
   }
 
@@ -772,20 +783,26 @@
     }
   }
 
-  function endSegment(s, api) {
-    s.segment += 1;
-    if (s.segment > SEGMENTS) {
+  function endRound(s, api) {
+    if (s.round >= ROUNDS) {
       s.phase = "result";
+      s.clock = MATCH_MINUTES;
       s.btnFight.label = "Заново";
+      s.flash = "Финал " + formatMatchClock(s.clock);
+      s.flashT = 1.6;
+      s.oppField = [];
+      s.ball.holderId = null;
+      s.ball.flight = null;
       return;
     }
+    // Между раундами — закупка
     s.phase = "shop";
-    s.gold += 4 + ((s.segment) | 0);
+    s.round += 1;
+    s.gold += 3 + s.round;
     returnShopToBag(s);
     rollShop(s);
-    s.flash = `Сегмент ${s.segment - 1} · магазин`;
-    s.flashT = 1.4;
-    // Hide opponent between segments
+    s.flash = `Закупка · раунд ${s.round}/${ROUNDS} · ${formatMatchClock(s.clock)}`;
+    s.flashT = 1.5;
     s.oppField = [];
     s.ball.holderId = null;
     s.ball.flight = null;
@@ -804,7 +821,6 @@
     seedOpponent(s);
     applyCellOffsets([...s.field, ...s.oppField]);
     s.phase = "fight";
-    s.matchTime = 0;
     s.thinkT = 1.1;
     s.beat = 0;
     s.beatLabel = "";
@@ -819,6 +835,10 @@
     }
     startBall(s, pr);
     s._koTeam = "opp";
+    const from = formatMatchClock((s.round - 1) * MIN_PER_ROUND);
+    const to = formatMatchClock(s.round * MIN_PER_ROUND);
+    s.flash = `Раунд ${s.round}/${ROUNDS} · ${from}–${to}`;
+    s.flashT = 1.2;
   }
 
   function placeSelected(s, col, row) {
@@ -912,7 +932,7 @@
 
     const s = {
       phase: "lineup", // lineup | shop | fight | result
-      segment: 1,
+      round: 1,
       gold: 6,
       bag: buildBag(),
       shop: [],
@@ -922,7 +942,7 @@
       selected: null,
       scoreYou: 0,
       scoreOpp: 0,
-      matchTime: 0,
+      clock: 0,
       speed: 1,
       speedBtn,
       btnFight,
@@ -989,7 +1009,7 @@
   }
 
   const demo = {
-    hint: "Состав (позиция ВР/ЗЩ/ПЗ/КР/НП) → клетка 3×5 · магазин · матч ×7",
+    hint: "Состав → закупка → 9 раундов матча (0'–90') · магазин между раундами",
 
     create(api) {
       // force canvas logical size for hires if needed
@@ -1031,9 +1051,9 @@
         const tacs = activeTactics(s.field)
           .map((t) => `${t.name}×${t.n}`)
           .join(" ");
-        const min = Math.floor(s.matchTime);
+        const clock = formatMatchClock(s.clock);
         api.setHud(
-          `${s.scoreYou}:${s.scoreOpp} · ${min}' · seg ${s.segment}/${SEGMENTS}` + (tacs ? " · " + tacs : "")
+          `${s.scoreYou}:${s.scoreOpp} · ${clock} · раунд ${s.round}/${ROUNDS}` + (tacs ? " · " + tacs : "")
         );
         return;
       }
@@ -1050,7 +1070,7 @@
       }
       if (s.btnReady.clicked && s.phase === "lineup") {
         s.phase = "shop";
-        s.flash = "Магазин";
+        s.flash = `Закупка перед раундом ${s.round}`;
         s.flashT = 1;
       }
       if (s.btnFight.clicked) {
@@ -1088,7 +1108,7 @@
         .map((t) => `${t.name}×${t.n}`)
         .join(" ");
       api.setHud(
-        `${s.phase === "lineup" ? "Состав" : "Магазин"} · 💰${s.gold} · поле ${placed}/${MAX_FIELD} · seg ${s.segment}/${SEGMENTS}` +
+        `${s.phase === "lineup" ? "Состав" : "Закупка"} · 💰${s.gold} · поле ${placed}/${MAX_FIELD} · раунд ${s.round}/${ROUNDS} · ${formatMatchClock(s.clock)}` +
           (tacs ? " · " + tacs : "") +
           (s.selected ? ` · ${s.selected.name}` : "")
       );
@@ -1123,15 +1143,21 @@
       // fx
       for (const f of s.fx) drawFx(ctx, f);
 
-      // HUD score
+      // HUD score + football clock
       ctx.fillStyle = "rgba(0,0,0,0.45)";
-      roundRect(ctx, w / 2 - 70, 10, 140, 36, 8);
+      roundRect(ctx, w / 2 - 110, 8, 220, 42, 8);
       ctx.fill();
       ctx.fillStyle = "#f0f4f0";
       ctx.font = "bold 20px Trebuchet MS, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(`${s.scoreYou} : ${s.scoreOpp}`, w / 2, 28);
+      ctx.fillText(`${s.scoreYou} : ${s.scoreOpp}`, w / 2 - 48, 22);
+      ctx.fillStyle = "#ffe08a";
+      ctx.font = "bold 16px Trebuchet MS, sans-serif";
+      ctx.fillText(formatMatchClock(s.clock), w / 2 + 52, 22);
+      ctx.fillStyle = "rgba(220,230,220,0.75)";
+      ctx.font = "11px Trebuchet MS, sans-serif";
+      ctx.fillText(`R${s.round}/${ROUNDS}`, w / 2 + 52, 38);
 
       // tactics chips top-left
       const tacs = activeTactics(s.field);
@@ -1189,13 +1215,19 @@
         const title = s.scoreYou > s.scoreOpp ? "ПОБЕДА" : s.scoreYou < s.scoreOpp ? "ПОРАЖЕНИЕ" : "НИЧЬЯ";
         ctx.fillText(title, w / 2, h / 2 - 20);
         ctx.font = "20px Trebuchet MS, sans-serif";
-        ctx.fillText(`${s.scoreYou} : ${s.scoreOpp}`, w / 2, h / 2 + 16);
+        ctx.fillText(`${s.scoreYou} : ${s.scoreOpp}  ·  ${formatMatchClock(s.clock)}`, w / 2, h / 2 + 16);
+        ctx.font = "14px Trebuchet MS, sans-serif";
+        ctx.fillStyle = "#b8c8b8";
+        ctx.fillText(`${ROUNDS} раундов`, w / 2, h / 2 + 42);
       }
 
       // hide unused buttons visually by phase — engine still draws them; adjust labels
       s.btnReroll.label = s.phase === "fight" || s.phase === "result" ? "" : "Реролл 1";
       s.btnReady.label = s.phase === "lineup" ? "Готово" : "";
-      s.btnFight.label = s.phase === "fight" ? "×" + s.speed : s.phase === "result" ? "Заново" : "В матч";
+      if (s.phase === "fight") s.btnFight.label = "×" + s.speed;
+      else if (s.phase === "result") s.btnFight.label = "Заново";
+      else if (s.phase === "shop") s.btnFight.label = `Раунд ${s.round}`;
+      else s.btnFight.label = "В матч";
     },
   };
 
