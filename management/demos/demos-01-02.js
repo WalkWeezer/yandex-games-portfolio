@@ -1263,11 +1263,21 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallinner1`));
-    // каркас: стена/окно flush к внутреннему краю (к play), почти чёрная подложка снаружи
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=wallcorn1`));
+    // каркас: прямые + L(2) + U(3) + stub у угла арены
     ["n", "s", "e", "w"].forEach((d) => {
-      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallinner1`);
-      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallinner1`);
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallcorn1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallcorn1`);
+    });
+    ["nw", "ne", "sw", "se"].forEach((d) => {
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallcorn1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallcorn1`);
+      tryLoad("tile_wall_stub_" + d, `frames/tile_wall_stub_${d}.png?v=wallcorn1`);
+      tryLoad("tile_window_stub_" + d, `frames/tile_window_stub_${d}.png?v=wallcorn1`);
+    });
+    ["nwe", "nsw", "nse", "swe"].forEach((d) => {
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png?v=wallcorn1`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png?v=wallcorn1`);
     });
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
     ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png`));
@@ -1647,16 +1657,75 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (col === s.cols - b) return "e";
     return null;
   },
+  /** Угол карты на полосе тумана: nw|ne|sw|se|null. */
+  mapCornerOf(s, col, row) {
+    const b = s.border | 0;
+    const onN = row === b - 1;
+    const onS = row === s.rows - b;
+    const onW = col === b - 1;
+    const onE = col === s.cols - b;
+    if (onN && onW) return "nw";
+    if (onN && onE) return "ne";
+    if (onS && onW) return "sw";
+    if (onS && onE) return "se";
+    return null;
+  },
+  frameSolidAt(s, col, row) {
+    if (col < 0 || row < 0 || col >= s.cols || row >= s.rows) return false;
+    return this.isFrameSolid(s.map[row][col]);
+  },
   /**
-   * Стены/окна на полосе тумана — препятствия на рёбрах (без углов).
-   * Пропы у стен не ставятся. wallDecor остаётся пустым (совместимость state).
+   * Ключ спрайта стены: прямая / L (2) / U (3) / stub у угла арены.
+   * Полосы на внутреннем краю (к play).
+   */
+  wallTileKey(s, col, row) {
+    const isWin = s.map[row][col] === 7;
+    const prefix = isWin ? "tile_window_" : "tile_wall_";
+    const corner = this.mapCornerOf(s, col, row);
+    if (corner) {
+      // руки вдоль двух рёбер от угла
+      let arm1 = false, arm2 = false, long1 = false, long2 = false;
+      if (corner === "nw") {
+        arm1 = this.frameSolidAt(s, col + 1, row);      // восток по N
+        arm2 = this.frameSolidAt(s, col, row + 1);      // юг по W
+        long1 = arm1 && this.frameSolidAt(s, col + 2, row);
+        long2 = arm2 && this.frameSolidAt(s, col, row + 2);
+      } else if (corner === "ne") {
+        arm1 = this.frameSolidAt(s, col - 1, row);
+        arm2 = this.frameSolidAt(s, col, row + 1);
+        long1 = arm1 && this.frameSolidAt(s, col - 2, row);
+        long2 = arm2 && this.frameSolidAt(s, col, row + 2);
+      } else if (corner === "sw") {
+        arm1 = this.frameSolidAt(s, col + 1, row);
+        arm2 = this.frameSolidAt(s, col, row - 1);
+        long1 = arm1 && this.frameSolidAt(s, col + 2, row);
+        long2 = arm2 && this.frameSolidAt(s, col, row - 2);
+      } else {
+        arm1 = this.frameSolidAt(s, col - 1, row);
+        arm2 = this.frameSolidAt(s, col, row - 1);
+        long1 = arm1 && this.frameSolidAt(s, col - 2, row);
+        long2 = arm2 && this.frameSolidAt(s, col, row - 2);
+      }
+      if (arm1 && arm2 && long1 && long2) {
+        // глубокий угол — 3 полосы
+        const triple = { nw: "nwe", ne: "nwe", sw: "swe", se: "swe" }[corner];
+        return prefix + triple;
+      }
+      if (arm1 && arm2) return prefix + corner; // L: 2 стены
+      return prefix + "stub_" + corner; // маленький кусок у угла арены
+    }
+    return prefix + (this.fogEdgeOf(s, col, row) || "n");
+  },
+  /**
+   * Стены/окна на полосе тумана — препятствия на рёбрах.
+   * Углы карты тоже могут быть стеной (stub / L / U подбирается при отрисовке).
+   * Пропы у стен не ставятся.
    */
   placeFogDecor(map, border, rnd) {
     const rows = map.length, cols = map[0].length;
     const ring = this.fogFrameRing(cols, rows, border);
     const wallDecor = Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
     if (!ring.length) return wallDecor;
-    // размечаем по рёбрам отдельно — сегменты визуально непрерывны
     for (const side of ["n", "e", "s", "w"]) {
       const idxs = [];
       for (let i = 0; i < ring.length; i++) if (ring[i].edge === side) idxs.push(i);
@@ -1680,7 +1749,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
           placed++;
         }
       }
-      // ≥2 открытых клетки тумана на стороне
       let open = marks.filter((m) => !m).length;
       while (open < Math.min(2, idxs.length)) {
         const blocked = [];
@@ -1695,7 +1763,22 @@ window.FEEL_DEMOS["deadline-escape"] = {
         map[r][c] = marks[i] === 2 ? 7 : 2;
       }
     }
-    // пропы у стен отключены — только чистая стена/окно на почти чёрной подложке
+    // если стена доходит до угла арены — угол тоже стена (для stub/L)
+    const b = border | 0;
+    const corners = [
+      [b - 1, b - 1],
+      [cols - b, b - 1],
+      [b - 1, rows - b],
+      [cols - b, rows - b],
+    ];
+    for (const [c, r] of corners) {
+      if (c < 0 || r < 0 || c >= cols || r >= rows) continue;
+      if (map[r][c] !== 0) continue;
+      const near = [
+        [c + 1, r], [c - 1, r], [c, r + 1], [c, r - 1],
+      ].some(([nc, nr]) => nr >= 0 && nc >= 0 && nr < rows && nc < cols && (map[nr][nc] === 2 || map[nr][nc] === 7));
+      if (near) map[r][c] = 2;
+    }
     return wallDecor;
   },
   /**
@@ -3135,44 +3218,33 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return true;
   },
   /**
-   * Стена/окно: полоса вплотную к ВНУТРЕННЕМУ краю клетки (к play),
-   * противоположно внешнему краю сетки. Снаружи клетки — почти чёрная подложка.
-   * Без предметов/пропов.
+   * Стена/окно: полоса на внутреннем краю (к play). Углы — stub / L / U.
+   * Снаружи клетки — почти чёрная подложка. Без пропов.
    */
   drawWallAt(ctx, s, col, row, x, y, w, h) {
     const isWin = s.map[row][col] === 7;
     const edge = this.fogEdgeOf(s, col, row) || "n";
-    // подложка почти чёрная на всю клетку
     ctx.fillStyle = "#020308";
     ctx.fillRect(x, y, w, h);
-    const key = isWin ? `tile_window_${edge}` : `tile_wall_${edge}`;
+    const key = this.wallTileKey(s, col, row);
     let drawn = this.drawTile(ctx, key, x, y, w, h);
+    if (!drawn && isWin) drawn = this.drawTile(ctx, "tile_window_" + edge, x, y, w, h);
+    if (!drawn) drawn = this.drawTile(ctx, "tile_wall_" + edge, x, y, w, h);
     if (!drawn && isWin) drawn = this.drawTile(ctx, "tile_window", x, y, w, h);
     if (!drawn) drawn = this.drawTile(ctx, "tile_wall", x, y, w, h);
     if (!drawn) {
-      // procedural: полоса flush к внутреннему краю (к play), не к внешнему
       const band = Math.max(10, Math.round((edge === "n" || edge === "s" ? h : w) * 0.34));
       ctx.fillStyle = "#343944";
-      if (edge === "n") ctx.fillRect(x, y + h - band, w, band);       // N-каркас → низ клетки
-      else if (edge === "s") ctx.fillRect(x, y, w, band);              // S-каркас → верх
-      else if (edge === "w") ctx.fillRect(x + w - band, y, band, h);   // W-каркас → право
-      else ctx.fillRect(x, y, band, h);                                // E-каркас → лево
+      if (edge === "n") ctx.fillRect(x, y + h - band, w, band);
+      else if (edge === "s") ctx.fillRect(x, y, w, band);
+      else if (edge === "w") ctx.fillRect(x + w - band, y, band, h);
+      else ctx.fillRect(x, y, band, h);
       ctx.fillStyle = "#b8a990";
       const face = Math.max(4, (band * 0.22) | 0);
       if (edge === "n") ctx.fillRect(x, y + h - band, w, face);
       else if (edge === "s") ctx.fillRect(x, y + band - face, w, face);
       else if (edge === "w") ctx.fillRect(x + w - band, y, face, h);
       else ctx.fillRect(x + band - face, y, face, h);
-      if (isWin) {
-        ctx.fillStyle = "rgba(110, 185, 215, 0.8)";
-        if (edge === "n" || edge === "s") {
-          const yy = edge === "n" ? y + h - band + 6 : y + 6;
-          ctx.fillRect(x + w * 0.12, yy, w * 0.76, Math.max(6, band - 16));
-        } else {
-          const xx = edge === "w" ? x + w - band + 6 : x + 6;
-          ctx.fillRect(xx, y + h * 0.12, Math.max(6, band - 16), h * 0.76);
-        }
-      }
     }
   },
   drawProp(ctx, x, y, w, h, cell) {
@@ -3219,10 +3291,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
     ctx.fillStyle = "#c9a66b"; ctx.fillRect(x + 3, y + 5, w - 6, 8);
   },
   /**
-   * Туман войны по клеткам каркаса.
-   * Обычная клетка края — один линейный градиент (чёрный у внешнего края).
-   * Угол или сосед со стеной — два линейных градиента, чёрный у обоих краёв.
-   * Клетки стен: без FoW (подложка уже почти чёрная).
+   * Туман войны: один линейный градиент на клетку края (внешний край → к play).
+   * Клетки стен/окон — без FoW (почти чёрная подложка + спрайт).
    */
   drawFogOfWar(ctx, s, api) {
     const { w, h } = api;
@@ -3239,62 +3309,33 @@ window.FEEL_DEMOS["deadline-escape"] = {
     ctx.fillRect(gx + gw, gy, w - (gx + gw), gh);
 
     const fogStops = (g) => {
-      g.addColorStop(0, "rgba(2,3,8,0.96)");
-      g.addColorStop(0.4, "rgba(6,8,16,0.68)");
-      g.addColorStop(0.78, "rgba(8,10,20,0.26)");
+      g.addColorStop(0, "rgba(2,3,8,0.94)");
+      g.addColorStop(0.45, "rgba(6,8,16,0.62)");
+      g.addColorStop(0.82, "rgba(8,10,20,0.22)");
       g.addColorStop(1, "rgba(8,10,20,0)");
     };
 
-    /** Один линейный градиент: чёрный у указанного края клетки → прозрачный к противоположному. */
-    const paintEdgeGrad = (c, r, edge) => {
+    const paintCellFog = (c, r, edge) => {
       const x = gx + c * cw;
       const y = gy + r * ch;
       let g;
       if (edge === "n") g = ctx.createLinearGradient(0, y, 0, y + ch);
       else if (edge === "s") g = ctx.createLinearGradient(0, y + ch, 0, y);
       else if (edge === "w") g = ctx.createLinearGradient(x, 0, x + cw, 0);
-      else g = ctx.createLinearGradient(x + cw, 0, x, 0); // e
+      else g = ctx.createLinearGradient(x + cw, 0, x, 0);
       fogStops(g);
       ctx.fillStyle = g;
       ctx.fillRect(x, y, cw, ch);
     };
 
-    /** Какие края клетки должны быть чёрными (1 или 2). */
-    const fogDarkEdges = (c, r, primary) => {
-      const edges = [];
-      const push = (e) => { if (e && !edges.includes(e)) edges.push(e); };
-      push(primary);
-      const onN = r === b - 1;
-      const onS = r === s.rows - b;
-      const onW = c === b - 1;
-      const onE = c === s.cols - b;
-      // угол карты — два внешних края
-      if ((onN || onS) && (onW || onE)) {
-        if (onN) push("n");
-        if (onS) push("s");
-        if (onW) push("w");
-        if (onE) push("e");
-        return edges;
-      }
-      // сосед со стеной/окном — доп. градиент от стороны стены (чёрный у стыка)
-      const neigh = [[1, 0, "e"], [-1, 0, "w"], [0, 1, "s"], [0, -1, "n"]];
-      for (const [dc, dr, ed] of neigh) {
-        const nc = c + dc, nr = r + dr;
-        if (nc < 0 || nr < 0 || nc >= s.cols || nr >= s.rows) continue;
-        if (this.isFrameSolid(s.map[nr][nc])) push(ed);
-      }
-      return edges;
-    };
-
     const ring = this.fogFrameRing(s.cols, s.rows, b);
     for (const { c, r, edge } of ring) {
-      if (this.isFrameSolid(s.map[r][c])) continue; // стена: только чёрная подложка + спрайт
-      const dark = fogDarkEdges(c, r, edge);
-      for (const e of dark) paintEdgeGrad(c, r, e);
+      if (this.isFrameSolid(s.map[r][c])) continue;
+      paintCellFog(c, r, edge);
     }
 
     if (fog && fog.complete && fog.naturalWidth) {
-      ctx.globalAlpha = 0.22;
+      ctx.globalAlpha = 0.28;
       ctx.drawImage(fog, 0, 0, w, gy);
       ctx.drawImage(fog, 0, gy + gh, w, h - (gy + gh));
       ctx.globalAlpha = 1;
