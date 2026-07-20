@@ -153,7 +153,7 @@ fog  = 1–2 cell band each side (not walkable for player)
 
 **Rules:** fog band depth **always 1** cell each side; strong FoW gradient (outer≈black → play=0) drawn over entities so spawns are visible silhouettes; walls/windows seeded on fog frame like furniture; props only in play; enemies enter from open fog cells; play aisles connected; Hit = body overlap.
 
-**Required env sprites:** floors/props/fog + **`tile_wall` / `tile_window`** (simple full-cell; no corners yet) — DESIGN.md §8.
+**Required env sprites:** floors/props/fog + **`tile_wall_{n,s,e,w}` / `tile_window_{n,s,e,w}`** (edge-flush bands; no corners yet) — DESIGN.md §8.
 
 **Forbidden in MVP maps:** hideZones, LOS cones as primary verb, free-move navmesh chase.
 

@@ -1263,8 +1263,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    // каркас полосы тумана: только прямые wall/window (без углов — later)
     ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "wall", "window"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png`));
+    // каркас: стена/окно прижаты к внешнему краю клетки (n/s/w/e), без углов
+    ["n", "s", "e", "w"].forEach((d) => {
+      tryLoad("tile_wall_" + d, `frames/tile_wall_${d}.png`);
+      tryLoad("tile_window_" + d, `frames/tile_window_${d}.png`);
+    });
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
     ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png`));
     this._art = art;
@@ -1603,9 +1607,18 @@ window.FEEL_DEMOS["deadline-escape"] = {
   isFrameSolid(cell) {
     return cell === 2 || cell === 7;
   },
+  /** Какое ребро полосы тумана: n/s/w/e. */
+  fogEdgeOf(s, col, row) {
+    const b = s.border | 0;
+    if (row === b - 1) return "n";
+    if (row === s.rows - b) return "s";
+    if (col === b - 1) return "w";
+    if (col === s.cols - b) return "e";
+    return null;
+  },
   /**
    * Стены/окна на полосе тумана — доп. препятствия для красоты.
-   * Пока только прямые тайлы (без углов/end-cap).
+   * Прямые тайлы по ребру (без углов): n/s — на всю ширину; w/e — боковые.
    */
   placeFogDecor(map, border, rnd) {
     const rows = map.length, cols = map[0].length;
@@ -2975,18 +2988,39 @@ window.FEEL_DEMOS["deadline-escape"] = {
     ctx.drawImage(img, x, y, w, h);
     return true;
   },
-  /** Прямой тайл на всю клетку: wall или window. Без углов. */
+  /**
+   * Стена/окно по ребру: на всю ширину/высоту клетки, вплотную к внешнему краю.
+   * Юг → полоса снизу; север → сверху; бока → боковые спрайты. Без углов.
+   */
   drawWallAt(ctx, s, col, row, x, y, w, h) {
     const isWin = s.map[row][col] === 7;
+    const edge = this.fogEdgeOf(s, col, row) || "n";
+    const key = isWin ? `tile_window_${edge}` : `tile_wall_${edge}`;
+    if (this.drawTile(ctx, key, x, y, w, h)) return;
     if (isWin && this.drawTile(ctx, "tile_window", x, y, w, h)) return;
     if (this.drawTile(ctx, "tile_wall", x, y, w, h)) return;
-    ctx.fillStyle = "#3a3f48";
-    ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
-    ctx.fillStyle = "#b4a898";
-    ctx.fillRect(x + 4, y + h - 14, w - 8, 8);
+    // procedural fallback — flush to outer edge
+    const band = Math.max(10, Math.round((edge === "n" || edge === "s" ? h : w) * 0.46));
+    ctx.fillStyle = "#343944";
+    if (edge === "n") ctx.fillRect(x, y, w, band);
+    else if (edge === "s") ctx.fillRect(x, y + h - band, w, band);
+    else if (edge === "w") ctx.fillRect(x, y, band, h);
+    else ctx.fillRect(x + w - band, y, band, h);
+    ctx.fillStyle = "#b8a990";
+    const face = Math.max(4, (band * 0.2) | 0);
+    if (edge === "n") ctx.fillRect(x, y + band - face, w, face);
+    else if (edge === "s") ctx.fillRect(x, y + h - band, w, face);
+    else if (edge === "w") ctx.fillRect(x + band - face, y, face, h);
+    else ctx.fillRect(x + w - band, y, face, h);
     if (isWin) {
-      ctx.fillStyle = "rgba(120, 190, 220, 0.75)";
-      ctx.fillRect(x + w * 0.22, y + h * 0.2, w * 0.56, h * 0.42);
+      ctx.fillStyle = "rgba(110, 185, 215, 0.8)";
+      if (edge === "n" || edge === "s") {
+        const yy = edge === "n" ? y + 8 : y + h - band + 8;
+        ctx.fillRect(x + w * 0.12, yy, w * 0.76, band - 20);
+      } else {
+        const xx = edge === "w" ? x + 8 : x + w - band + 8;
+        ctx.fillRect(xx, y + h * 0.12, band - 20, h * 0.76);
+      }
     }
   },
   drawProp(ctx, x, y, w, h, cell) {
