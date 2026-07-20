@@ -3218,39 +3218,50 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return true;
   },
   /**
-   * Какие стороны клетки рисуем стеной (прямоугольники).
-   * Стороны n/s/w/e = полоса у края клетки (к play: N-каркас → "s", и т.д.).
+   * Геометрия proof-стены в клетке.
+   * { sides: n/s/w/e[], square: nw|ne|sw|se|null }
    *
-   * Угол карты: полоса только вдоль тех рёбер, где реально есть стена-сосед.
-   *   стена с одной стороны + проход с другой → 1 полоса (не L).
-   *   стены с обеих → L (2).
+   * Угол карты:
+   *   одна стена-сосед → одна полоса;
+   *   две стены-соседа → маленький квадрат у стыка к play (не L в пустоту).
    * Ребро: лицо к play + торцы к открытому туману → 1 / 2 / 3.
    */
-  wallSidesOf(s, col, row) {
+  wallGeomOf(s, col, row) {
     const sides = [];
     const push = (side) => { if (!sides.includes(side)) sides.push(side); };
     const corner = this.mapCornerOf(s, col, row);
 
     if (corner === "nw") {
-      // N-ребро продолжается на восток → низ клетки; W-ребро на юг → право
-      if (this.frameSolidAt(s, col + 1, row)) push("s");
-      if (this.frameSolidAt(s, col, row + 1)) push("e");
-      return sides;
+      const a = this.frameSolidAt(s, col + 1, row);
+      const b = this.frameSolidAt(s, col, row + 1);
+      if (a && b) return { sides: [], square: "se" };
+      if (a) push("s");
+      if (b) push("e");
+      return { sides, square: null };
     }
     if (corner === "ne") {
-      if (this.frameSolidAt(s, col - 1, row)) push("s");
-      if (this.frameSolidAt(s, col, row + 1)) push("w");
-      return sides;
+      const a = this.frameSolidAt(s, col - 1, row);
+      const b = this.frameSolidAt(s, col, row + 1);
+      if (a && b) return { sides: [], square: "sw" };
+      if (a) push("s");
+      if (b) push("w");
+      return { sides, square: null };
     }
     if (corner === "sw") {
-      if (this.frameSolidAt(s, col + 1, row)) push("n");
-      if (this.frameSolidAt(s, col, row - 1)) push("e");
-      return sides;
+      const a = this.frameSolidAt(s, col + 1, row);
+      const b = this.frameSolidAt(s, col, row - 1);
+      if (a && b) return { sides: [], square: "ne" };
+      if (a) push("n");
+      if (b) push("e");
+      return { sides, square: null };
     }
     if (corner === "se") {
-      if (this.frameSolidAt(s, col - 1, row)) push("n");
-      if (this.frameSolidAt(s, col, row - 1)) push("w");
-      return sides;
+      const a = this.frameSolidAt(s, col - 1, row);
+      const b = this.frameSolidAt(s, col, row - 1);
+      if (a && b) return { sides: [], square: "nw" };
+      if (a) push("n");
+      if (b) push("w");
+      return { sides, square: null };
     }
 
     const edge = this.fogEdgeOf(s, col, row);
@@ -3272,34 +3283,51 @@ window.FEEL_DEMOS["deadline-escape"] = {
       if (this.inPlayArea(s, nc, nr)) continue;
       if (!this.frameSolidAt(s, nc, nr)) push(n.side);
     }
-    return sides;
+    return { sides, square: null };
   },
   /**
    * PROOF: только простые прямоугольники, без спрайтов.
    * Без гэпов: полосы flush к краю клетки, соседние клетки стыкуются вплотную.
-   * 1 / 2 / 3 стороны по wallSidesOf.
+   * Угол карты при двух стенах — квадрат толщины полосы у стыка к play.
    */
   drawWallAt(ctx, s, col, row, x, y, w, h) {
     const isWin = s.map[row][col] === 7;
     ctx.fillStyle = "#020308";
     ctx.fillRect(x, y, w, h);
 
-    const sides = this.wallSidesOf(s, col, row);
+    const { sides, square } = this.wallGeomOf(s, col, row);
     const band = Math.max(10, Math.round(Math.min(w, h) * 0.42));
     const body = isWin ? "#7aa8c4" : "#c4a882";
     const edgeCol = isWin ? "#3d6f8c" : "#6b4a2e";
+    const lip = Math.max(3, (band * 0.18) | 0);
 
-    // сначала все полосы — без inset, чтобы не было щелей между клетками
     ctx.fillStyle = body;
+    if (square === "se") ctx.fillRect(x + w - band, y + h - band, band, band);
+    else if (square === "sw") ctx.fillRect(x, y + h - band, band, band);
+    else if (square === "ne") ctx.fillRect(x + w - band, y, band, band);
+    else if (square === "nw") ctx.fillRect(x, y, band, band);
     for (const side of sides) {
       if (side === "n") ctx.fillRect(x, y, w, band);
       else if (side === "s") ctx.fillRect(x, y + h - band, w, band);
       else if (side === "w") ctx.fillRect(x, y, band, h);
       else if (side === "e") ctx.fillRect(x + w - band, y, band, h);
     }
-    // тёмный кант с внутренней стороны каждой полосы (к центру клетки)
+
+    // тёмный кант с внутренней стороны (к центру клетки / в пустоту)
     ctx.fillStyle = edgeCol;
-    const lip = Math.max(3, (band * 0.18) | 0);
+    if (square === "se") {
+      ctx.fillRect(x + w - band, y + h - band, band, lip);
+      ctx.fillRect(x + w - band, y + h - band, lip, band);
+    } else if (square === "sw") {
+      ctx.fillRect(x, y + h - band, band, lip);
+      ctx.fillRect(x + band - lip, y + h - band, lip, band);
+    } else if (square === "ne") {
+      ctx.fillRect(x + w - band, y + band - lip, band, lip);
+      ctx.fillRect(x + w - band, y, lip, band);
+    } else if (square === "nw") {
+      ctx.fillRect(x, y + band - lip, band, lip);
+      ctx.fillRect(x + band - lip, y, lip, band);
+    }
     for (const side of sides) {
       if (side === "n") ctx.fillRect(x, y + band - lip, w, lip);
       else if (side === "s") ctx.fillRect(x, y + h - band, w, lip);
