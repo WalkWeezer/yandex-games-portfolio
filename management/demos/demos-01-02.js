@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
   /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250720u",
+  ART_BUST: "w250720v",
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
@@ -1265,10 +1265,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250720u`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250720v`));
     // стены — proof-геометрия без спрайтов (wall/window tiles не грузим)
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250720u`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250720v`));
     this._art = art;
     return art;
   },
@@ -3276,26 +3276,47 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return { sides, square: null };
   },
   /**
-   * Стены — proof-прямоугольники по wallGeomOf (1/2/3 стороны или stub-квадрат).
+   * Стены — бесшовные proof-полосы (без крестов и пиксельного сдвига толщины).
+   * mid: одна полоса к play; торец/одиночка — короткие stub на концах полосы;
+   * угол арены между двумя стенами — квадрат у стыка к play.
    */
   drawWallAt(ctx, s, col, row, x, y, w, h) {
     const { sides, square } = this.wallGeomOf(s, col, row);
-    const band = Math.max(10, Math.round(Math.min(w, h) * 0.42));
+    // Толщина одна на всю карту — иначе Math.round(min(w,h)*…) пляшет на ±1px между клетками
+    const band = Math.max(10, Math.round(Math.min(s.cellW, s.cellH) * 0.42));
     const body = "#c4a882";
     const edgeCol = "#6b4a2e";
     const lip = Math.max(3, (band * 0.18) | 0);
 
-    const fillSide = (side) => {
-      if (side === "n") ctx.fillRect(x, y, w, band);
-      else if (side === "s") ctx.fillRect(x, y + h - band, w, band);
-      else if (side === "w") ctx.fillRect(x, y, band, h);
-      else if (side === "e") ctx.fillRect(x + w - band, y, band, h);
+    const fillFace = (face) => {
+      if (face === "n") ctx.fillRect(x, y, w, band);
+      else if (face === "s") ctx.fillRect(x, y + h - band, w, band);
+      else if (face === "w") ctx.fillRect(x, y, band, h);
+      else if (face === "e") ctx.fillRect(x + w - band, y, band, h);
     };
-    const fillLip = (side) => {
-      if (side === "n") ctx.fillRect(x, y + band - lip, w, lip);
-      else if (side === "s") ctx.fillRect(x, y + h - band, w, lip);
-      else if (side === "w") ctx.fillRect(x + band - lip, y, lip, h);
-      else if (side === "e") ctx.fillRect(x + w - band, y, lip, h);
+    /** Lip только на стороне к play — сплошная кромка без поперечных полос. */
+    const fillFaceLip = (face) => {
+      if (face === "n") ctx.fillRect(x, y, w, lip);
+      else if (face === "s") ctx.fillRect(x, y + h - lip, w, lip);
+      else if (face === "w") ctx.fillRect(x, y, lip, h);
+      else if (face === "e") ctx.fillRect(x + w - lip, y, lip, h);
+    };
+    /**
+     * Торец: квадрат band×band у края лицевой полосы, внутрь клетки (в туман),
+     * а не на всю высоту/ширину — иначе получается крест.
+     */
+    const fillEndStub = (face, end) => {
+      let sx = x, sy = y;
+      if (face === "s" && end === "w") { sx = x; sy = y + h - 2 * band; }
+      else if (face === "s" && end === "e") { sx = x + w - band; sy = y + h - 2 * band; }
+      else if (face === "n" && end === "w") { sx = x; sy = y + band; }
+      else if (face === "n" && end === "e") { sx = x + w - band; sy = y + band; }
+      else if (face === "e" && end === "n") { sx = x + w - 2 * band; sy = y; }
+      else if (face === "e" && end === "s") { sx = x + w - 2 * band; sy = y + h - band; }
+      else if (face === "w" && end === "n") { sx = x + band; sy = y; }
+      else if (face === "w" && end === "s") { sx = x + band; sy = y + h - band; }
+      else return;
+      ctx.fillRect(sx, sy, band, band);
     };
     const fillSquare = (sq) => {
       if (sq === "se") ctx.fillRect(x + w - band, y + h - band, band, band);
@@ -3319,13 +3340,26 @@ window.FEEL_DEMOS["deadline-escape"] = {
       }
     };
 
+    if (square) {
+      ctx.fillStyle = body;
+      fillSquare(square);
+      ctx.fillStyle = edgeCol;
+      fillSquareLip(square);
+      return;
+    }
+    if (!sides.length) return;
+
+    const edge = this.fogEdgeOf(s, col, row);
+    const faceByEdge = { n: "s", s: "n", w: "e", e: "w" };
+    const face = (edge && faceByEdge[edge]) || sides[0];
+    const ends = sides.filter((side) => side !== face);
+
     ctx.fillStyle = body;
-    if (square) fillSquare(square);
-    for (const side of sides) fillSide(side);
+    fillFace(face);
+    for (const end of ends) fillEndStub(face, end);
 
     ctx.fillStyle = edgeCol;
-    if (square) fillSquareLip(square);
-    for (const side of sides) fillLip(side);
+    fillFaceLip(face);
   },
   drawProp(ctx, x, y, w, h, cell) {
     if (cell === 2 || cell === 7) return;
