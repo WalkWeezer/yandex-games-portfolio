@@ -1542,14 +1542,37 @@ window.FEEL_DEMOS["deadline-escape"] = {
     if (!this.inPlayArea(s, col, row)) return false;
     return s.map[row][col] === 0;
   },
-  /** Открытая клетка края: только вход/выход на арену (не walk-граф). */
+  /**
+   * Открытая клетка полосы тумана: маркер спавна/коридора входа.
+   * Стоять и ходить по ней нельзя никому — только перескок off-map ↔ play.
+   */
   edgeTransitOk(s, col, row) {
     if (!this.inFogBorder(s, col, row)) return false;
     return s.map[row][col] === 0;
   },
-  /** Спавн на краю — открытый вход. */
+  /** Спавн на краю — открытый вход (метка лайна, не клетка ходьбы). */
   spawnCellOpen(s, col, row) {
     return this.edgeTransitOk(s, col, row);
+  },
+  /**
+   * Один шаг моба/коллеги. Клетки тени (fog) недоступны: открытый лайн
+   * перескакивается в том же шаге (off-map ↔ play), стена на каркасе — стоп.
+   */
+  tryMoverStep(s, col, row, dc, dr) {
+    let c = col + dc, r = row + dr;
+    for (let hops = 0; hops < 4; hops++) {
+      if (c < -2 || r < -2 || c > s.cols + 1 || r > s.rows + 1) return null;
+      if (c < 0 || r < 0 || c >= s.cols || r >= s.rows) return { col: c, row: r };
+      if (this.inFogBorder(s, c, r)) {
+        if (s.map[r][c] !== 0) return null; // стена/окно на каркасе
+        c += dc;
+        r += dr;
+        continue;
+      }
+      if (s.map[r][c] !== 0) return null;
+      return { col: c, row: r };
+    }
+    return null;
   },
   findStart(map, border = 1) {
     const rows = map.length, cols = map[0].length;
@@ -2076,12 +2099,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
     const d = this.DIRS[dir];
     return { col: pick.col - d.dc * 2, row: pick.row - d.dr * 2 };
   },
-  /** Проход моба: off-map / вход-выход края / пол арены. Край не walk-граф. */
+  /** Проход: off-map / пол арены. Полоса тумана — недоступна всем. */
   moverPassable(s, col, row) {
     if (col < -2 || row < -2 || col > s.cols + 1 || row > s.rows + 1) return false;
     if (col < 0 || row < 0 || col >= s.cols || row >= s.rows) return true; // за сеткой
-    if (this.inPlayArea(s, col, row)) return s.map[row][col] === 0;
-    return this.edgeTransitOk(s, col, row); // край = только транзит вход/выход
+    if (this.inFogBorder(s, col, row)) return false; // тень — нельзя никому
+    return s.map[row][col] === 0;
   },
   onPlayFloor(s, col, row) {
     return this.walkable(s, col, row);
@@ -2197,9 +2220,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     c.frac += speed * dt;
     while (c.frac >= 1) {
       c.frac -= 1;
-      const nc = c.col + c.dc, nr = c.row + c.dr;
-      if (!this.moverPassable(s, nc, nr)) { c._dead = true; return; }
-      c.col = nc; c.row = nr;
+      const land = this.tryMoverStep(s, c.col, c.row, c.dc, c.dr);
+      if (!land) { c._dead = true; return; }
+      c.col = land.col; c.row = land.row;
       if (c.bonus === "shield" && !c.dropped && this.onPlayFloor(s, c.col, c.row)) {
         c.floorSteps = (c.floorSteps || 0) + 1;
         if (c.floorSteps >= (c.dropAfter || 1)) this.dropBadge(s, c);
@@ -2452,15 +2475,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     t.frac += cellsPerSec * (speedMul || 0.9) * dt;
     while (t.frac >= 1) {
       t.frac -= 1;
-      const nc = t.col + t.dc, nr = t.row + t.dr;
-      if (!this.moverPassable(s, nc, nr) && !this.walkable(s, nc, nr)) {
-        // за краем — туман (можно идти); проп — стоп
-        if (nc < 0 || nr < 0 || nc >= s.cols || nr >= s.rows) {
-          t.col = nc; t.row = nr;
-        } else { t._dead = true; return true; }
-      } else {
-        t.col = nc; t.row = nr;
-      }
+      const land = this.tryMoverStep(s, t.col, t.row, t.dc, t.dr);
+      if (!land) { t._dead = true; return true; }
+      t.col = land.col; t.row = land.row;
       this.threatFlipWalkStride(t);
       if (this.onPlayFloor(s, t.col, t.row)) { t.entered = true; return false; }
     }
@@ -2470,14 +2487,14 @@ window.FEEL_DEMOS["deadline-escape"] = {
     t.frac += cellsPerSec * speedMul * dt;
     while (t.frac >= 1) {
       t.frac -= 1;
-      const nc = t.col + t.dc, nr = t.row + t.dr;
-      if (!this.moverPassable(s, nc, nr)) { t._dead = true; return; }
-      t.col = nc; t.row = nr;
+      const land = this.tryMoverStep(s, t.col, t.row, t.dc, t.dr);
+      if (!land) { t._dead = true; return; }
+      t.col = land.col; t.row = land.row;
       if (this.onPlayFloor(s, t.col, t.row)) t.entered = true;
     }
     if (t.entered && (t.col < 0 || t.row < 0 || t.col >= s.cols || t.row >= s.rows)) t._dead = true;
   },
-  /** Дир: прямо, сквозь столы/пропы; в препятствии ~×0.5 */
+  /** Дир: прямо, сквозь столы/пропы; в препятствии ~×0.5. Тень (fog) — не стоит. */
   advanceGhost(s, t, cellsPerSec, dt) {
     let remain = dt;
     while (remain > 0.00005) {
@@ -2491,6 +2508,15 @@ window.FEEL_DEMOS["deadline-escape"] = {
         t.frac = 0;
         t.col += t.dc;
         t.row += t.dr;
+        // открытая полоса тумана — перескок, не стоять
+        while (
+          t.col >= 0 && t.row >= 0 && t.col < s.cols && t.row < s.rows
+          && this.inFogBorder(s, t.col, t.row)
+          && s.map[t.row][t.col] === 0
+        ) {
+          t.col += t.dc;
+          t.row += t.dr;
+        }
         if (t.col >= 0 && t.row >= 0 && t.col < s.cols && t.row < s.rows) t.entered = true;
         const cx = t.col, cy = t.row;
         if (t.entered && (cx < -1.5 || cy < -1.5 || cx > s.cols + 0.5 || cy > s.rows + 0.5)) {
@@ -2552,20 +2578,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
     return { col: cur.c, row: cur.r };
   },
   weavePickNext(s, t) {
-    // уже на клетке выхода (край) — только уход за карту
-    if (t.entered && this.edgeTransitOk(s, t.col, t.row)) {
-      const ex = this.hrExitOff(s, t);
-      t.dc = Math.sign(ex.col - t.col) || (t.homeDir === "right" ? 1 : t.homeDir === "left" ? -1 : 0);
-      t.dr = Math.sign(ex.row - t.row) || (t.homeDir === "down" ? 1 : t.homeDir === "up" ? -1 : 0);
-      if (!t.dc && !t.dr) {
-        if (t.homeDir === "down") t.dr = 1;
-        else if (t.homeDir === "up") t.dr = -1;
-        else if (t.homeDir === "right") t.dc = 1;
-        else t.dc = -1;
-      }
-      t.dir = t.dc === 1 ? "right" : t.dc === -1 ? "left" : t.dr === 1 ? "down" : "up";
-      return;
-    }
     const goal = this.hrGoal(s, t);
     if (t.col === goal.col && t.row === goal.row) {
       const ex = this.hrExitOff(s, t);
@@ -2585,7 +2597,6 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const opts = [[1, 0], [-1, 0], [0, 1], [0, -1]]
         .map(([dc, dr]) => ({ col: t.col + dc, row: t.row + dr }))
         .filter((n) => this.threatStepOk(s, n.col, n.row)
-          || this.edgeTransitOk(s, n.col, n.row)
           || n.col < 0 || n.row < 0 || n.col >= s.cols || n.row >= s.rows);
       if (!opts.length) { t._dead = true; return; }
       opts.sort((a, b) => {
@@ -2610,31 +2621,19 @@ window.FEEL_DEMOS["deadline-escape"] = {
     t.frac += speed * dt;
     while (t.frac >= 1) {
       t.frac -= 1;
-      const nc = t.col + t.dc, nr = t.row + t.dr;
-      const off = nc < 0 || nr < 0 || nc >= s.cols || nr >= s.rows;
-      if (off) {
-        t.col = nc; t.row = nr;
+      const land = this.tryMoverStep(s, t.col, t.row, t.dc, t.dr);
+      if (!land) {
+        this.weavePickNext(s, t);
+        if (t._dead) return;
+        const land2 = this.tryMoverStep(s, t.col, t.row, t.dc, t.dr);
+        if (!land2) { t._dead = true; return; }
+        t.col = land2.col; t.row = land2.row;
+      } else {
+        t.col = land.col; t.row = land.row;
+      }
+      if (t.col < 0 || t.row < 0 || t.col >= s.cols || t.row >= s.rows) {
         t._dead = true;
         return;
-      }
-      if (!this.walkable(s, nc, nr)) {
-        // выход через клетку края (транзит) или пересчёт пути
-        if (this.edgeTransitOk(s, nc, nr)) {
-          t.col = nc; t.row = nr;
-        } else {
-          this.weavePickNext(s, t);
-          if (t._dead) return;
-          const nc2 = t.col + t.dc, nr2 = t.row + t.dr;
-          const off2 = nc2 < 0 || nr2 < 0 || nc2 >= s.cols || nr2 >= s.rows;
-          if (!this.walkable(s, nc2, nr2) && !this.edgeTransitOk(s, nc2, nr2) && !off2) {
-            t._dead = true;
-            return;
-          }
-          t.col = nc2; t.row = nr2;
-          if (off2) { t._dead = true; return; }
-        }
-      } else {
-        t.col = nc; t.row = nr;
       }
       this.threatFlipWalkStride(t);
       this.weavePickNext(s, t);
@@ -2659,9 +2658,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     t.frac += speed * dt;
     while (t.frac >= 1) {
       t.frac -= 1;
-      const nc = t.col + t.dc, nr = t.row + t.dr;
-      if (!this.moverPassable(s, nc, nr)) { t._dead = true; return; }
-      t.col = nc; t.row = nr;
+      const land = this.tryMoverStep(s, t.col, t.row, t.dc, t.dr);
+      if (!land) { t._dead = true; return; }
+      t.col = land.col; t.row = land.row;
       if (this.onPlayFloor(s, t.col, t.row)) {
         t.entered = true;
         if (t.peekPhase === "in") {
@@ -2698,9 +2697,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     t.frac += cellsPerSec * 0.88 * dt;
     while (t.frac >= 1) {
       t.frac -= 1;
-      const nc = t.col + t.dc, nr = t.row + t.dr;
-      if (!this.moverPassable(s, nc, nr)) { t._dead = true; return; }
-      t.col = nc; t.row = nr;
+      const land = this.tryMoverStep(s, t.col, t.row, t.dc, t.dr);
+      if (!land) { t._dead = true; return; }
+      t.col = land.col; t.row = land.row;
       if (this.onPlayFloor(s, t.col, t.row)) {
         t.entered = true;
         if (t.peekPhase === "in") {
@@ -2856,9 +2855,9 @@ window.FEEL_DEMOS["deadline-escape"] = {
     t.frac += cellsPerSec * 0.7 * dt;
     while (t.frac >= 1) {
       t.frac -= 1;
-      const nc = t.col + t.dc, nr = t.row + t.dr;
-      if (!this.moverPassable(s, nc, nr)) { t._dead = true; return; }
-      t.col = nc; t.row = nr;
+      const land = this.tryMoverStep(s, t.col, t.row, t.dc, t.dr);
+      if (!land) { t._dead = true; return; }
+      t.col = land.col; t.row = land.row;
       if (this.onPlayFloor(s, t.col, t.row) && t.dropT <= 0) {
         s.zones.push({
           col: t.col, row: t.row,
@@ -2884,13 +2883,13 @@ window.FEEL_DEMOS["deadline-escape"] = {
     t.frac += speed * dt;
     while (t.frac >= 1) {
       t.frac -= 1;
-      const nc = t.col + t.dc, nr = t.row + t.dr;
-      if (!this.moverPassable(s, nc, nr)) {
+      const land = this.tryMoverStep(s, t.col, t.row, t.dc, t.dr);
+      if (!land) {
         t.dashLeft = 0;
         t._dead = true;
         return;
       }
-      t.col = nc; t.row = nr;
+      t.col = land.col; t.row = land.row;
       if (dashing) {
         t.dashLeft -= 1;
         if (t.dashLeft <= 0) {
@@ -2900,12 +2899,13 @@ window.FEEL_DEMOS["deadline-escape"] = {
       }
     }
     if (!dashing && t.blinkT <= 0) {
-      // старт плавного рывка на 2 клетки
+      // старт плавного рывка на 2 клетки (play only; тень не считается)
       let can = 0;
       let c = t.col, r = t.row;
       for (let i = 0; i < 2; i++) {
-        c += t.dc; r += t.dr;
-        if (!this.moverPassable(s, c, r)) break;
+        const land = this.tryMoverStep(s, c, r, t.dc, t.dr);
+        if (!land || !this.onPlayFloor(s, land.col, land.row)) break;
+        c = land.col; r = land.row;
         can++;
       }
       if (can > 0) {
@@ -3290,7 +3290,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /**
    * Туман войны: отдельно на каждую клетку края полосы.
    * Градиент внутри клетки: внешний край → к play.
-   * Для клеток со стеной/окном (2/7) туман отключён.
+   * Стены/окна: короткий мягкий градиент с внешнего края (без резкого стыка с тенью).
    */
   drawFogOfWar(ctx, s, api) {
     const { w, h } = api;
@@ -3328,10 +3328,42 @@ window.FEEL_DEMOS["deadline-escape"] = {
       ctx.fillRect(x, y, cw, ch);
     };
 
-    // все клетки каркаса по одной; стены/окна — без тумана
+    /** Короткий мягкий край на стене/окне — сгладить стык тень→яркая стена. */
+    const paintWallFogSoft = (c, r, edge) => {
+      const x = gx + c * cw;
+      const y = gy + r * ch;
+      const frac = 0.34;
+      let g, rx, ry, rw, rh;
+      if (edge === "n") {
+        rh = ch * frac;
+        g = ctx.createLinearGradient(0, y, 0, y + rh);
+        rx = x; ry = y; rw = cw;
+      } else if (edge === "s") {
+        rh = ch * frac;
+        g = ctx.createLinearGradient(0, y + ch, 0, y + ch - rh);
+        rx = x; ry = y + ch - rh; rw = cw;
+      } else if (edge === "w") {
+        rw = cw * frac;
+        g = ctx.createLinearGradient(x, 0, x + rw, 0);
+        rx = x; ry = y; rh = ch;
+      } else {
+        rw = cw * frac;
+        g = ctx.createLinearGradient(x + cw, 0, x + cw - rw, 0);
+        rx = x + cw - rw; ry = y; rh = ch;
+      }
+      g.addColorStop(0, "rgba(2,3,8,0.78)");
+      g.addColorStop(0.5, "rgba(6,8,16,0.32)");
+      g.addColorStop(1, "rgba(8,10,20,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(rx, ry, rw, rh);
+    };
+
     const ring = this.fogFrameRing(s.cols, s.rows, b);
     for (const { c, r, edge } of ring) {
-      if (this.isFrameSolid(s.map[r][c])) continue; // отключить туман для стен
+      if (this.isFrameSolid(s.map[r][c])) {
+        paintWallFogSoft(c, r, edge);
+        continue;
+      }
       paintCellFog(c, r, edge);
     }
 
