@@ -4,7 +4,7 @@
  * Mounts into #mu-app. No games/.../src while design REVIEW.
  */
 (function () {
-  const BUILD = "mu250720d";
+  const BUILD = "mu250720e";
   const STORAGE_KEY = "deadline-escape-mock-ui-v2";
 
   const COPY = {
@@ -177,15 +177,15 @@
           <div class="mu-phone" id="mu-phone" aria-live="polite"></div>
           <div class="mu-caption">Portrait UI · 360×640 (logical 720×1280) · ${BUILD}</div>
           <div class="mu-actions">
-            <button type="button" class="btn ghost" id="mu-open-feel">Feel-демка</button>
+            <button type="button" class="btn ghost" id="mu-open-feel">Демка (DEV)</button>
           </div>
         </div>
         <aside class="mu-side">
-          <h4>Бета-тест · UI shell</h4>
-          <p>Полный поток экранов MVP. Только продуктовый UI в портретном шелле.</p>
+          <h4>Бета-тест · UI + Feel</h4>
+          <p>Shell экранов MVP. В <strong>Run</strong> — канон feel SoT (сетка, боссы, кофе/бейдж).</p>
           <ul class="mu-checks">
-            <li>Boot → Menu → Hub → Daily?/Run</li>
-            <li>Pause / Caught(RV) / Result / Shop / Settings</li>
+            <li>Boot → Menu → Hub → Daily?/Run(feel)</li>
+            <li>Pause overlay / Caught(RV) / Result / Shop</li>
             <li>Copy: ЗАСТАВИЛИ / ПОВЫШЕНИЕ</li>
             <li>Yandex: LoadingAPI · GameplayAPI · RV · interstitial</li>
           </ul>
@@ -206,28 +206,17 @@
       else location.hash = "demo";
     });
 
-    const KEY_STEP = {
-      KeyW: [0, -10], ArrowUp: [0, -10],
-      KeyS: [0, 10], ArrowDown: [0, 10],
-      KeyA: [-10, 0], ArrowLeft: [-10, 0],
-      KeyD: [10, 0], ArrowRight: [10, 0],
-    };
-    const onKey = (ev) => {
-      if (screen !== "run" || !run || run.paused || run.over || run.showTut) return;
-      const delta = KEY_STEP[ev.code];
-      if (!delta) return;
-      ev.preventDefault();
-      run.player.x = Math.max(12, Math.min(88, run.player.x + delta[0]));
-      run.player.y = Math.max(18, Math.min(86, run.player.y + delta[1]));
-      paintRunHud();
-    };
-    window.addEventListener("keydown", onKey);
-
     let screen = "boot";
     let run = null;
-    let raf = 0;
-    let lastTs = 0;
+    let feelHandle = null;
     let settingsReturn = "menu";
+
+    function destroyFeel() {
+      if (feelHandle) {
+        try { feelHandle.destroy(); } catch (_) {}
+        feelHandle = null;
+      }
+    }
 
     function updateSdkBar() {
       sdkBar.innerHTML = `
@@ -237,79 +226,6 @@
         <span class="mu-sdk-pill">${state.mute ? "🔇" : "🔊"}</span>
         <span class="mu-sdk-pill">${state.removeAds ? "no ads" : `ads ${Math.max(0, 2 - state.runsSinceInterstitial)}`}</span>
       `;
-    }
-
-    function dist(a, b) {
-      const dx = a.x - b.x;
-      const dy = a.y - b.y;
-      return Math.hypot(dx, dy);
-    }
-
-    function stopRunLoop() {
-      if (raf) cancelAnimationFrame(raf);
-      raf = 0;
-      lastTs = 0;
-    }
-
-    function startRunLoop() {
-      stopRunLoop();
-      lastTs = 0;
-      const tick = (ts) => {
-        if (!run || run.paused || run.over) return;
-        if (!lastTs) lastTs = ts;
-        const dt = Math.min(0.05, (ts - lastTs) / 1000);
-        lastTs = ts;
-        const scale = (run.coffee ? 0.42 : 1) * (run.showTut ? 0 : 1);
-        run.gameMin += 18 * 0.5 * dt * scale;
-        if (run.showTut) {
-          paintRunHud();
-          raf = requestAnimationFrame(tick);
-          return;
-        }
-        if (run.gameMin >= 540) {
-          run.over = true;
-          run.win = true;
-          endRun(true);
-          return;
-        }
-        run.bosses.forEach((b, i) => {
-          const t = run.gameMin * 0.02 + i;
-          b.x = 18 + ((Math.sin(t * (1.05 + i * 0.22)) + 1) / 2) * 64;
-          b.y = 22 + ((Math.cos(t * (0.88 + i * 0.18)) + 1) / 2) * 52;
-        });
-        // Ally offer → coffee; badge drops once after a short walk.
-        if (!run.coffee && dist(run.player, run.ally) < 9) {
-          run.coffee = true;
-          run.coffeeUntil = run.gameMin + 54; // ~3s world at default pace
-          sdkLog("info", "coffee slow-mo");
-        }
-        if (run.coffee && run.gameMin >= (run.coffeeUntil || 0)) run.coffee = false;
-        if (!run.badgeDropped && run.gameMin > 40) {
-          run.badgeDropped = true;
-          run.badge = { x: run.ally.x + 6, y: run.ally.y + 8 };
-        }
-        if (run.badge && !run.shield && dist(run.player, run.badge) < 8) {
-          run.shield = true;
-          run.badge = null;
-          sdkLog("info", "badge pickup");
-        }
-        const hit = run.bosses.some((b) => dist(run.player, b) < 7.5);
-        if (hit) {
-          if (run.shield) {
-            run.shield = false;
-            run.iframesUntil = run.gameMin + 12;
-            sdkLog("ok", "shield_break");
-          } else if (run.gameMin >= (run.iframesUntil || 0)) {
-            run.over = true;
-            run.win = false;
-            endRun(false);
-            return;
-          }
-        }
-        paintRunHud();
-        raf = requestAnimationFrame(tick);
-      };
-      raf = requestAnimationFrame(tick);
     }
 
     async function maybeInterstitial(reason) {
@@ -323,10 +239,21 @@
     }
 
     async function endRun(win) {
-      stopRunLoop();
+      if (!run || run.ending) return;
+      run.ending = true;
+      run.over = true;
+      run.win = !!win;
+      if (feelHandle) feelHandle.pause();
       ysdk.gameplayStop();
+      const fs = feelHandle && feelHandle.getState ? feelHandle.getState() : null;
+      if (fs) {
+        run.gameMin = fs.gameMin || run.gameMin;
+        run.coinsEarned = fs.coins || 0;
+      }
+      destroyFeel();
+      closePauseOverlay();
       if (win) {
-        state.coins += 24;
+        state.coins += 24 + (run.coinsEarned || 0);
         state.floor = Math.min(state.floor + 1, 99);
         state.bestFloor = Math.max(state.bestFloor, state.floor);
         state.unlocked = Math.max(state.unlocked, state.floor);
@@ -340,60 +267,126 @@
       }
     }
 
+    function paintRunHud(fs) {
+      if (screen !== "run" && screen !== "pause") return;
+      const s = fs || (feelHandle && feelHandle.getState && feelHandle.getState()) || null;
+      if (s && run) {
+        run.gameMin = s.gameMin || 0;
+        run.shield = !!s.shield;
+        run.coffee = (s.coffeeBoost || 0) > 0;
+      }
+      const clock = phone.querySelector("[data-mu-clock]");
+      const phase = phone.querySelector("[data-mu-phase]");
+      const bar = phone.querySelector("[data-mu-daybar]");
+      const tip = phone.querySelector("[data-mu-tip]");
+      if (clock) clock.textContent = fmtClock(run ? run.gameMin : 0);
+      if (phase) phase.textContent = phaseFor(run ? run.gameMin : 0).label;
+      if (bar) bar.style.width = `${Math.min(100, ((run ? run.gameMin : 0) / 540) * 100)}%`;
+      if (tip) tip.hidden = !(run && run.showTut);
+      const shield = phone.querySelector("[data-mu-shield]");
+      const coffee = phone.querySelector("[data-mu-coffee]");
+      if (shield) shield.classList.toggle("on", !!(run && run.shield));
+      if (coffee) coffee.classList.toggle("on", !!(run && run.coffee));
+      updateSdkBar();
+    }
+
+    function mountFeelIntoField() {
+      destroyFeel();
+      const field = phone.querySelector("[data-mu-field]");
+      if (!field || !window.FeelDemo || !window.FeelDemo.mount) {
+        sdkLog("warn", "FeelDemo missing");
+        return;
+      }
+      const canvas = document.createElement("canvas");
+      const rect = field.getBoundingClientRect();
+      const cssW = Math.max(160, rect.width || 320);
+      const cssH = Math.max(180, rect.height || 360);
+      canvas.width = 360;
+      canvas.height = Math.max(280, Math.round(360 * (cssH / cssW)));
+      canvas.setAttribute("aria-label", "Feel run");
+      field.appendChild(canvas);
+      feelHandle = window.FeelDemo.mount("deadline-escape", canvas, null, {
+        shell: true,
+        floor: state.floor,
+        startPaused: !!(run && run.showTut),
+        onFrame: (s) => paintRunHud(s),
+        onOutcome: ({ win }) => { endRun(win); },
+      });
+      if (feelHandle && feelHandle.setSticksEnabled) feelHandle.setSticksEnabled(false);
+      sdkLog("ok", `Feel mount · эт.${state.floor}`);
+    }
+
     function beginRun(opts) {
+      destroyFeel();
+      closePauseOverlay();
       run = {
         gameMin: 0,
         paused: false,
         over: false,
+        ending: false,
         win: false,
         daily: !!opts.daily,
         shield: false,
         coffee: false,
-        coffeeUntil: 0,
-        iframesUntil: 0,
-        badgeDropped: false,
-        badge: null,
-        showTut: true,
-        player: { x: 50, y: 62 },
-        bosses: [{ x: 22, y: 28 }, { x: 70, y: 40 }],
-        ally: { x: 48, y: 34 },
+        coinsEarned: 0,
+        showTut: !state.tutSeen,
       };
       ysdk.gameplayStart();
       go("run");
-      startRunLoop();
+      requestAnimationFrame(() => {
+        mountFeelIntoField();
+        paintRunHud();
+      });
     }
 
-    function paintRunHud() {
-      if (!run || (screen !== "run" && screen !== "pause")) return;
-      const clock = phone.querySelector("[data-mu-clock]");
-      const phase = phone.querySelector("[data-mu-phase]");
-      const bar = phone.querySelector("[data-mu-daybar]");
-      const field = phone.querySelector("[data-mu-field]");
-      const tip = phone.querySelector("[data-mu-tip]");
-      if (clock) clock.textContent = fmtClock(run.gameMin);
-      if (phase) phase.textContent = phaseFor(run.gameMin).label;
-      if (bar) bar.style.width = `${Math.min(100, (run.gameMin / 540) * 100)}%`;
-      if (tip) tip.hidden = !run.showTut;
-      if (field && screen === "run") {
-        let layer = field.querySelector("[data-mu-entities]");
-        if (!layer) {
-          layer = document.createElement("div");
-          layer.dataset.muEntities = "1";
-          layer.style.cssText = "position:absolute;inset:0;pointer-events:none";
-          field.appendChild(layer);
-        }
-        layer.innerHTML = `
-          <div class="mu-dot" style="left:${run.player.x}%;top:${run.player.y}%"></div>
-          <div class="mu-dot ally" style="left:${run.ally.x}%;top:${run.ally.y}%"></div>
-          ${run.badge ? `<div class="mu-dot badge" style="left:${run.badge.x}%;top:${run.badge.y}%"></div>` : ""}
-          ${run.bosses.map((b) => `<div class="mu-dot boss" style="left:${b.x}%;top:${b.y}%"></div>`).join("")}
-        `;
-      }
-      const shield = phone.querySelector("[data-mu-shield]");
-      const coffee = phone.querySelector("[data-mu-coffee]");
-      if (shield) shield.classList.toggle("on", !!run.shield);
-      if (coffee) coffee.classList.toggle("on", !!run.coffee);
-      updateSdkBar();
+    function closePauseOverlay() {
+      phone.querySelector("[data-mu-pause]")?.remove();
+    }
+
+    function openPauseOverlay() {
+      if (!run || run.over || screen !== "run") return;
+      if (phone.querySelector("[data-mu-pause]")) return;
+      run.paused = true;
+      if (feelHandle) feelHandle.pause();
+      ysdk.gameplayStop();
+      screen = "pause";
+      const dim = document.createElement("div");
+      dim.className = "mu-modal-dim";
+      dim.dataset.muPause = "1";
+      dim.innerHTML = `
+        <div class="mu-modal">
+          <div class="mu-title" style="text-align:center">${COPY.pause}</div>
+          <button type="button" class="mu-btn cta" data-action="resume">${COPY.resume}</button>
+          <button type="button" class="mu-btn" data-action="pause-settings">${COPY.settings}</button>
+          <button type="button" class="mu-btn" data-action="quit-hub">${COPY.toHub}</button>
+        </div>`;
+      const safe = phone.querySelector(".mu-safe") || phone;
+      safe.style.position = "relative";
+      safe.appendChild(dim);
+      dim.querySelectorAll("[data-action]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const act = btn.getAttribute("data-action");
+          if (act === "resume") {
+            closePauseOverlay();
+            run.paused = false;
+            screen = "run";
+            if (feelHandle) feelHandle.resume();
+            ysdk.gameplayStart();
+            paintRunHud();
+          } else if (act === "pause-settings") {
+            settingsReturn = "run-paused";
+            destroyFeel();
+            closePauseOverlay();
+            go("settings");
+          } else if (act === "quit-hub") {
+            destroyFeel();
+            closePauseOverlay();
+            ysdk.gameplayStop();
+            run = null;
+            go("hub");
+          }
+        });
+      });
     }
 
     function htmlFor(id) {
@@ -512,7 +505,7 @@
               </div>
             </div>
             <div class="mu-progress"><i data-mu-daybar style="width:0%"></i></div>
-            <div class="mu-playfield" data-mu-field data-action="step" role="application" aria-label="Игровое поле"></div>
+            <div class="mu-playfield" data-mu-field role="application" aria-label="Игровое поле"></div>
             <div class="mu-tip" data-mu-tip ${run && run.showTut ? "" : "hidden"}>
               <div class="mu-label">${COPY.tutTitle}</div>
               <div class="mu-tip-rules">${COPY.tutRules}</div>
@@ -675,16 +668,16 @@
             persist(state);
             beginRun({ daily: true });
           } else if (act === "pause") {
-            if (!run || run.over) return;
-            run.paused = true;
-            stopRunLoop();
-            go("pause");
+            openPauseOverlay();
           } else if (act === "resume") {
+            closePauseOverlay();
             if (run) run.paused = false;
-            go("run");
-            startRunLoop();
+            screen = "run";
+            if (feelHandle) feelHandle.resume();
+            ysdk.gameplayStart();
           } else if (act === "quit-hub") {
-            stopRunLoop();
+            destroyFeel();
+            closePauseOverlay();
             ysdk.gameplayStop();
             run = null;
             go("hub");
@@ -692,32 +685,40 @@
             const ok = await ysdk.showRewarded("revive");
             if (ok && run) {
               run.over = false;
+              run.ending = false;
               run.paused = false;
-              run.shield = true;
+              run.showTut = false;
               ysdk.gameplayStart();
               go("run");
-              startRunLoop();
+              requestAnimationFrame(() => {
+                mountFeelIntoField();
+                const s = feelHandle && feelHandle.getState && feelHandle.getState();
+                if (s) {
+                  s.shield = true;
+                  s.invuln = 1.5;
+                }
+                if (feelHandle) feelHandle.resume();
+                paintRunHud();
+              });
             }
-          }           else if (act === "step") {
-            if (!run || run.paused || run.over || run.showTut) return;
-            const rect = btn.getBoundingClientRect();
-            const x = ((ev.clientX - rect.left) / rect.width) * 100;
-            const y = ((ev.clientY - rect.top) / rect.height) * 100;
-            run.player.x = Math.max(12, Math.min(88, x));
-            run.player.y = Math.max(18, Math.min(86, y));
-            paintRunHud();
           } else if (act === "dismiss-tut") {
             if (!run) return;
             run.showTut = false;
             state.tutSeen = true;
             persist(state);
             paintRunHud();
+            if (feelHandle) feelHandle.resume();
           } else if (act === "toggle-mute") {
             state.mute = !state.mute;
             persist(state);
             go("settings");
           } else if (act === "settings-back") {
-            go(settingsReturn === "pause" ? "pause" : settingsReturn || "menu");
+            if (settingsReturn === "run-paused") {
+              // remount run paused then overlay
+              go("hub");
+              return;
+            }
+            go(settingsReturn === "pause" ? "hub" : settingsReturn || "menu");
           } else if (act === "buy") {
             buySelected();
           }
@@ -762,8 +763,16 @@
     }
 
     async function go(id) {
+      if (id !== "run") {
+        closePauseOverlay();
+        if (id !== "caught" && id !== "result_win" && id !== "result_fail") {
+          /* keep run meta for result screens; feel already destroyed in endRun */
+        }
+        if (id !== "caught" && id !== "result_win" && id !== "result_fail" && id !== "run") {
+          if (screen === "run" || screen === "pause") destroyFeel();
+        }
+      }
       screen = id;
-      if (id !== "run" && id !== "pause") stopRunLoop();
       phone.innerHTML = `<div class="mu-safe">${htmlFor(id)}</div>`;
       bindPhone();
       updateSdkBar();
@@ -791,8 +800,8 @@
 
     return {
       destroy() {
-        stopRunLoop();
-        window.removeEventListener("keydown", onKey);
+        destroyFeel();
+        closePauseOverlay();
         root.innerHTML = "";
       },
     };

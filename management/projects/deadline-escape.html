@@ -11,8 +11,9 @@
 <link rel="stylesheet" href="../assets/sprite-catalog.css?v=w250722d"/>
 <link rel="stylesheet" href="../assets/sprite-demo.css?v=w250722d"/>
 <link rel="stylesheet" href="../assets/sfx-catalog.css?v=w250722d"/>
-<link rel="stylesheet" href="../assets/deadline-mock-ui.css?v=mu250720d"/>
+<link rel="stylesheet" href="../assets/deadline-mock-ui.css?v=mu250720e"/>
 </head>
+
 <body>
 <div class="layout">
   <aside class="sidebar">
@@ -70,14 +71,14 @@
         <div class="panel">
           <h3>Что смотреть</h3>
           <ul class="checklist-static">
-            <li><strong>Бета-тест</strong> — мок UI шелл (экраны)</li>
-            <li><strong>Демка</strong> — feel (DEV только с <code>?dev=1</code>)</li>
-            <li><strong>Clean play</strong> — <code>games/deadline-escape/play/</code> · билд без читов</li>
+            <li><strong>Бета-тест</strong> — UI shell + feel SoT в Run</li>
+            <li><strong>Демка</strong> — feel отдельно (DEV <code>?dev=1</code>)</li>
+            <li><strong>Clean play</strong> — <code>games/deadline-escape/play/</code> · feel без читов</li>
             <li><strong>Wireframe / Спрайты / SFX</strong> — сверка</li>
             <li>GDD / LLM / PORT.md — канон переноса</li>
           </ul>
           <h3>Правило</h3>
-          <p class="warn">Пока статус не <strong>Подтверждён</strong>, папку <code>src/</code> не создавать. CONFIRM только после playtest демки (F1→F2). См. <code>docs/METHODOLOGY.md</code>.</p>
+          <p class="warn">Пока статус не <strong>Подтверждён</strong>, папку <code>src/</code> не создавать. CONFIRM только после playtest. См. <code>docs/STATUS.md</code> · <code>docs/PORT.md</code>.</p>
         </div>
         <div class="panel">
           <h3>Файлы проекта</h3>
@@ -99,9 +100,9 @@
 
     <section class="tab-panel" id="tab-beta">
       <div class="panel">
-        <h3>Бета-тест — UI shell</h3>
-        <p class="lead">Сверка экранов MVP. Игровой билд без читов: <a href="../../games/deadline-escape/play/index.html" target="_blank" rel="noopener"><code>games/deadline-escape/play/</code></a>. Порт: <code>docs/PORT.md</code>.</p>
-        <div class="lan-box">Play (production): открой <code>/games/deadline-escape/play/</code>. Демка с DEV: вкладка Демка + <code>?dev=1</code>.</div>
+        <h3>Бета-тест — UI + Feel</h3>
+        <p class="lead">Shell экранов MVP. В <strong>Run</strong> — канон FeelDemo. Clean play: <a href="../../games/deadline-escape/play/index.html" target="_blank" rel="noopener"><code>play/</code></a>. Порт: <code>docs/PORT.md</code>.</p>
+        <div class="lan-box">Бета Run = feel SoT. Вкладка Демка — отдельный canvas (DEV). Production: <code>/games/deadline-escape/play/</code>.</div>
         <div id="mu-app"></div>
       </div>
     </section>
@@ -275,12 +276,12 @@ window.PORTFOLIO_GAMES = [{"id": "01", "slug": "neon-bullet", "name": "Neon Bull
 window.CURRENT_SLUG = "deadline-escape";
 </script>
 <script src="../demos/deadline-sfx-lib.js?v=w250722d"></script>
-<script src="../demos/demo-engine.js?v=w250722d"></script>
-<script src="../demos/demos-01-02.js?v=w250722d"></script>
+<script src="../demos/demo-engine.js?v=w250720e"></script>
+<script src="../demos/demos-01-02.js?v=w250720e"></script>
 <script src="../demos/demos-03-06.js?v=w250722d"></script>
 <script src="../demos/demos-07-10.js?v=w250722d"></script>
 <script src="../demos/deadline-wireframes.js?v=w250722d"></script>
-<script src="../demos/deadline-mock-ui.js?v=mu250720d"></script>
+<script src="../demos/deadline-mock-ui.js?v=mu250720e"></script>
 <script src="../demos/deadline-sprites.js?v=w250722d"></script>
 <script src="../demos/deadline-sfx.js?v=w250722d"></script>
 <script src="../assets/deadline-docs-bundle.js?v=w250722d"></script>

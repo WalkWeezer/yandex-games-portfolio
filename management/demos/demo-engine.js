@@ -298,7 +298,8 @@
     };
   }
 
-  function mount(slug, canvas, hudEl) {
+  function mount(slug, canvas, hudEl, opts) {
+    const options = opts || {};
     const demo = global.FEEL_DEMOS?.[slug];
     if (!demo) {
       if (hudEl) hudEl.textContent = "Демка не найдена: " + slug;
@@ -308,6 +309,8 @@
     const input = createInput(canvas);
     let last = performance.now();
     let raf = 0;
+    let paused = !!options.startPaused;
+    let outcomeSent = false;
     const api = {
       canvas,
       ctx,
@@ -318,6 +321,8 @@
       pick,
       w: canvas.width,
       h: canvas.height,
+      shell: !!options.shell,
+      startFloor: Math.max(1, options.floor | 0 || 1),
       setHud(text) {
         if (hudEl) hudEl.textContent = text;
       },
@@ -337,14 +342,35 @@
     let state = demo.create(api);
     api.setHud(demo.hint || "Играй");
 
+    function emitOutcome() {
+      if (outcomeSent || typeof options.onOutcome !== "function") return;
+      if (state && state.alive === false) {
+        outcomeSent = true;
+        options.onOutcome({ win: false, state });
+      } else if (state && state.won) {
+        outcomeSent = true;
+        options.onOutcome({ win: true, state });
+      }
+    }
+
     function frame(now) {
-      const dt = Math.min(0.05, (now - last) / 1000);
-      last = now;
-      demo.update(state, api, dt);
+      if (!paused) {
+        const dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        demo.update(state, api, dt);
+        if (typeof options.onFrame === "function") options.onFrame(state);
+        emitOutcome();
+      } else {
+        last = now;
+      }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       demo.draw(state, api);
-      input.drawStick(ctx);
-      input.drawButtons(ctx);
+      if (!api.shell) {
+        input.drawStick(ctx);
+        input.drawButtons(ctx);
+      } else {
+        input.drawButtons(ctx);
+      }
       raf = requestAnimationFrame(frame);
     }
     raf = requestAnimationFrame(frame);
@@ -352,16 +378,31 @@
     return {
       destroy() {
         cancelAnimationFrame(raf);
+        raf = 0;
       },
       restart() {
+        outcomeSent = false;
         state = demo.create(api);
         api.setHud(demo.hint || "Играй");
+      },
+      pause() {
+        paused = true;
+      },
+      resume() {
+        paused = false;
+        last = performance.now();
+      },
+      getState() {
+        return state;
       },
       setSticksEnabled(on) {
         input.setSticksEnabled(on);
       },
       get sticksEnabled() {
         return input.sticksEnabled;
+      },
+      get paused() {
+        return paused;
       },
     };
   }

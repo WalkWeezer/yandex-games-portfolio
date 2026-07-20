@@ -1444,16 +1444,20 @@ window.FEEL_DEMOS["deadline-escape"] = {
       }
     }
     const prod = this.isProd();
-    const floor = 1;
+    const shell = !!api.shell;
+    const floor = Math.max(1, (api.startFloor | 0) || 1);
     const grid = this.gridSizeForFloor(floor);
     const { cols, rows, border, playCols, playRows } = grid;
-    const padT = 96, padB = 125, padX = 14;
+    // shell = beta phone playfield: no internal HUD strip / stick gutter
+    const padT = shell ? 10 : 96;
+    const padB = shell ? 10 : 125;
+    const padX = shell ? 8 : 14;
     const built = this.buildMap(floor, grid);
     const map = built.map;
     const wallDecor = built.wallDecor;
     const start = this.findStart(map, border);
     let bGod = null, bFloorDown = null, bFloorUp = null;
-    if (!prod) {
+    if (!prod && !shell) {
       const yDev = 86;
       const dev = this.ensureDev();
       bGod = api.input.addButton({ x: api.w - 72, y: yDev, w: 58, h: 36, label: "DEV∞", color: dev.immortal ? "#22c55e" : "#64748b" });
@@ -1474,12 +1478,13 @@ window.FEEL_DEMOS["deadline-escape"] = {
       threats: [], pickups: [], zones: [], spawnT: 1.2,
       alive: true, won: false, invuln: 1.5,
       coffeeBoost: 0, shield: false, coins: 0, floor, bestFloor: floor,
-      nearMiss: 0, tutorial: 3.2, pendingClick: null,
+      nearMiss: 0, tutorial: shell ? 0 : 3.2, pendingClick: null,
       allyFlash: 0, allyFlashText: "",
       facing: "down",
       _axisLatch: false, _keyLatch: false,
       bGod, bFloorDown, bFloorUp,
       prod,
+      shell,
     };
   },
   ensureDev() {
@@ -3084,6 +3089,8 @@ window.FEEL_DEMOS["deadline-escape"] = {
     const move = (dc, dr) => this.tryMove(s, dc, dr);
     if (!s.alive || s.won) {
       this.syncBgm(s);
+      // Beta shell owns Caught/Result — do not auto-restart on tap
+      if (api.shell || s.shell) return;
       if (api.input.consumeTap() || api.input.keys.KeyR || api.input.keys.Space) {
         const startF = (s.prod || this.isProd()) ? 1 : this.ensureDev().startFloor;
         // смерть → обратно на стартовый этаж (по умолчанию 1); победа уже подняла s.floor
@@ -3753,30 +3760,32 @@ window.FEEL_DEMOS["deadline-escape"] = {
     // туман поклеточно на крае; стены без тумана (уже нарисованы ниже)
     this.drawFogOfWar(ctx, s, api);
 
-    ctx.fillStyle = "rgba(30,27,75,0.92)"; ctx.fillRect(10, 10, w - 20, 72);
-    ctx.strokeStyle = coffee ? "#fbbf24" : shield ? "#38bdf8" : "#22d3a8"; ctx.strokeRect(10, 10, w - 20, 72);
-    ctx.fillStyle = "#fffef9"; ctx.font = "bold 22px Segoe UI"; ctx.textAlign = "left";
-    ctx.fillText(this.clock(s.gameMin), 22, 40);
-    ctx.fillStyle = coffee ? "#fbbf24" : shield ? "#7dd3fc" : "#c4b5fd"; ctx.font = "13px Segoe UI";
-    let status = `${ph.label} · этаж ${s.floor}`;
-    if (coffee) status = `${ph.label} · КОФЕ · мир тормозит`;
-    else if (shield) status = `${ph.label} · ЩИТ · 1 удар`;
-    else if (this.isImmortal(s)) {
-      const d = this.ensureDev();
-      status = `${ph.label} · GOD · 💀${d.deaths}` + (d.lastFloor ? ` · посл.э${d.lastFloor}` : "");
-    }
-    ctx.fillText(status, 22, 62);
-    const prog = Math.min(1, s.gameMin / s.totalMin);
-    ctx.fillStyle = "#312e81"; ctx.fillRect(140, 28, w - 170, 10);
-    ctx.fillStyle = coffee ? "#fbbf24" : shield ? "#38bdf8" : "#22d3a8";
-    ctx.fillRect(140, 28, (w - 170) * prog, 10);
-    if (coffee) {
-      const left = Math.min(1, s.coffeeBoost / 3);
-      ctx.fillStyle = "rgba(251,191,36,0.25)"; ctx.fillRect(140, 44, w - 170, 6);
-      ctx.fillStyle = "#f59e0b"; ctx.fillRect(140, 44, (w - 170) * left, 6);
-    } else if (shield) {
-      ctx.fillStyle = "rgba(56,189,248,0.3)"; ctx.fillRect(140, 44, w - 170, 6);
-      ctx.fillStyle = "#0ea5e9"; ctx.fillRect(140, 44, w - 170, 6);
+    if (!(api.shell || s.shell)) {
+      ctx.fillStyle = "rgba(30,27,75,0.92)"; ctx.fillRect(10, 10, w - 20, 72);
+      ctx.strokeStyle = coffee ? "#fbbf24" : shield ? "#38bdf8" : "#22d3a8"; ctx.strokeRect(10, 10, w - 20, 72);
+      ctx.fillStyle = "#fffef9"; ctx.font = "bold 22px Segoe UI"; ctx.textAlign = "left";
+      ctx.fillText(this.clock(s.gameMin), 22, 40);
+      ctx.fillStyle = coffee ? "#fbbf24" : shield ? "#7dd3fc" : "#c4b5fd"; ctx.font = "13px Segoe UI";
+      let status = `${ph.label} · этаж ${s.floor}`;
+      if (coffee) status = `${ph.label} · КОФЕ · мир тормозит`;
+      else if (shield) status = `${ph.label} · ЩИТ · 1 удар`;
+      else if (this.isImmortal(s)) {
+        const d = this.ensureDev();
+        status = `${ph.label} · GOD · 💀${d.deaths}` + (d.lastFloor ? ` · посл.э${d.lastFloor}` : "");
+      }
+      ctx.fillText(status, 22, 62);
+      const prog = Math.min(1, s.gameMin / s.totalMin);
+      ctx.fillStyle = "#312e81"; ctx.fillRect(140, 28, w - 170, 10);
+      ctx.fillStyle = coffee ? "#fbbf24" : shield ? "#38bdf8" : "#22d3a8";
+      ctx.fillRect(140, 28, (w - 170) * prog, 10);
+      if (coffee) {
+        const left = Math.min(1, s.coffeeBoost / 3);
+        ctx.fillStyle = "rgba(251,191,36,0.25)"; ctx.fillRect(140, 44, w - 170, 6);
+        ctx.fillStyle = "#f59e0b"; ctx.fillRect(140, 44, (w - 170) * left, 6);
+      } else if (shield) {
+        ctx.fillStyle = "rgba(56,189,248,0.3)"; ctx.fillRect(140, 44, w - 170, 6);
+        ctx.fillStyle = "#0ea5e9"; ctx.fillRect(140, 44, w - 170, 6);
+      }
     }
 
     if (coffee) {
@@ -3793,14 +3802,16 @@ window.FEEL_DEMOS["deadline-escape"] = {
       ctx.fillRect(0, 0, w, h);
     }
 
-    if (!s.alive) api.drawBanner(ctx, "ЗАСТАВИЛИ РАБОТАТЬ!", "#fb7185");
-    if (s.won) api.drawBanner(ctx, "ПОВЫШЕНИЕ!", "#fbbf24");
-    if (s.tutorial > 0 && s.alive) {
-      ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(18, h / 2 - 48, w - 36, 96);
-      ctx.fillStyle = "#fff"; ctx.font = "14px Segoe UI"; ctx.textAlign = "center";
-      ctx.fillText("Тап по клетке — один шаг", w / 2, h / 2 - 14);
-      ctx.fillText("Коллега — друг: подойди за кофе · бейдж сам падает на пол", w / 2, h / 2 + 8);
-      ctx.fillText("Доживи до 18:00 → повышение", w / 2, h / 2 + 30);
+    if (!(api.shell || s.shell)) {
+      if (!s.alive) api.drawBanner(ctx, "ЗАСТАВИЛИ РАБОТАТЬ!", "#fb7185");
+      if (s.won) api.drawBanner(ctx, "ПОВЫШЕНИЕ!", "#fbbf24");
+      if (s.tutorial > 0 && s.alive) {
+        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(18, h / 2 - 48, w - 36, 96);
+        ctx.fillStyle = "#fff"; ctx.font = "14px Segoe UI"; ctx.textAlign = "center";
+        ctx.fillText("Тап по клетке — один шаг", w / 2, h / 2 - 14);
+        ctx.fillText("Коллега — друг: подойди за кофе · бейдж сам падает на пол", w / 2, h / 2 + 8);
+        ctx.fillText("Доживи до 18:00 → повышение", w / 2, h / 2 + 30);
+      }
     }
   },
 };
