@@ -1,23 +1,32 @@
 /**
- * Работник месяца — Beta mock UI
- * Interactive shell: Boot → Menu → Hub → Daily/Run → Pause/Caught/Result → Shop
- * Yandex Games constraints baked in (portrait, LoadingAPI, GameplayAPI, RV, interstitial).
- * Mounts into #mu-app. No games/.../src (design still REVIEW).
+ * Работник месяца — finished Beta UI shell
+ * All MVP screens, Yandex Games portrait contract.
+ * Debug controls live OUTSIDE the phone (#mu-debug).
+ * Mounts into #mu-app. No games/.../src while design REVIEW.
  */
 (function () {
-  const BUILD = "mu250720a";
-  const STORAGE_KEY = "deadline-escape-mock-ui-v1";
+  const BUILD = "mu250720b";
+  const STORAGE_KEY = "deadline-escape-mock-ui-v2";
 
   const COPY = {
     brand: "РАБОТНИК МЕСЯЦА",
     play: "Играть",
+    settings: "Настройки",
+    shop: "Магазин",
     toWork: "На работу",
     caught: "ЗАСТАВИЛИ РАБОТАТЬ",
     promote: "ПОВЫШЕНИЕ!",
+    failTitle: "Смена сорвана",
     rv: "Продолжить (реклама)",
-    skip: "В результат",
-    daily: "Daily · побег из планёрки",
+    caughtSkip: "В меню",
+    dailyTitle: "Побег из планёрки",
+    dailyHub: "Daily · побег из планёрки",
     tut: "Ходи по светлым · избегай боссов · доживи до 18:00",
+    nextFloor: "Следующий этаж",
+    again: "Ещё раз",
+    toHub: "В хаб",
+    resume: "Продолжить",
+    pause: "ПАУЗА",
   };
 
   const PHASES = [
@@ -25,6 +34,13 @@
     { id: "work", label: "Работа", at: 80 },
     { id: "crunch", label: "Аврал", at: 280 },
     { id: "ot", label: "Переработка", at: 430 },
+  ];
+
+  const SHOP = [
+    { id: "skin_a", title: "Скин A", price: 50, kind: "soft" },
+    { id: "skin_b", title: "Скин B", price: 80, kind: "soft" },
+    { id: "starter_pack", title: "Стартер", price: 0, kind: "iap", label: "IAP" },
+    { id: "remove_ads", title: "Убрать рекламу", price: 0, kind: "iap", label: "IAP" },
   ];
 
   function loadState() {
@@ -45,10 +61,15 @@
       dailyClaimed: false,
       runsSinceInterstitial: 0,
       removeAds: false,
+      ownedSkins: [],
+      selectedSkin: null,
+      shopPick: "skin_a",
+      dailyPick: "meeting",
+      tutSeen: false,
     };
   }
 
-  function saveState(s) {
+  function persist(s) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         coins: s.coins,
@@ -59,11 +80,13 @@
         dailyClaimed: s.dailyClaimed,
         runsSinceInterstitial: s.runsSinceInterstitial,
         removeAds: s.removeAds,
+        ownedSkins: s.ownedSkins,
+        selectedSkin: s.selectedSkin,
+        tutSeen: s.tutSeen,
       }));
     } catch (_) {}
   }
 
-  /** DEV_MOCK of Yandex Games SDK — same call sites as production facade. */
   function createYandexMock(log) {
     let ready = false;
     let gameplay = false;
@@ -72,7 +95,7 @@
       isGameplay: () => gameplay,
       async init() {
         log("info", "YaGames.init()…");
-        await wait(400);
+        await wait(380);
         log("ok", "ysdk ready (DEV_MOCK)");
         return this;
       },
@@ -93,22 +116,22 @@
       },
       async showRewarded(placement) {
         log("warn", `RewardedVideo.show(${placement})`);
-        await wait(700);
+        await wait(650);
         log("ok", `RewardedVideo rewarded · ${placement}`);
         return true;
       },
       async showInterstitial(reason) {
         log("warn", `Interstitial.show(${reason})`);
-        await wait(500);
+        await wait(480);
         log("ok", "Interstitial closed");
         return true;
       },
       async getPlayerData() {
-        log("info", "player.getData() cloud save");
+        log("info", "player.getData()");
         return {};
       },
       async setPlayerData(data) {
-        log("info", "player.setData() " + JSON.stringify(data).slice(0, 80));
+        log("info", "player.setData() " + JSON.stringify(data).slice(0, 72));
       },
     };
   }
@@ -149,23 +172,34 @@
       <div class="mu-layout">
         <div class="mu-phone-wrap">
           <div class="mu-phone" id="mu-phone" aria-live="polite"></div>
-          <div class="mu-caption">Portrait 360×640 · logical 720×1280 · build ${BUILD}</div>
+          <div class="mu-caption">Portrait UI · 360×640 (logical 720×1280) · ${BUILD}</div>
           <div class="mu-actions">
-            <button type="button" class="btn" id="mu-reset">Сброс прогресса</button>
-            <button type="button" class="btn ghost" id="mu-open-feel">Открыть Feel-демку</button>
+            <button type="button" class="btn ghost" id="mu-open-feel">Feel-демка</button>
           </div>
         </div>
         <aside class="mu-side">
-          <h4>Бета-тест · мок UI</h4>
-          <p>Кликай по экранам как в билде. Слева — портретный шелл под Яндекс Игры. Лог SDK справа — проверка ready / gameplay / RV / interstitial.</p>
-          <ul class="mu-checks" id="mu-checks">
-            <li>Portrait-primary, без landscape MVP</li>
-            <li>LoadingAPI.ready до Menu</li>
-            <li>GameplayAPI start/stop вокруг Run</li>
-            <li>RV только на Caught · interstitial после 1–2 ранов</li>
-            <li>Copy: ЗАСТАВИЛИ / ПОВЫШЕНИЕ · без hide</li>
-            <li>Daily только с хаба</li>
+          <h4>Бета-тест · UI shell</h4>
+          <p>Полный поток экранов MVP. Внутри телефона — только продуктовый UI. Отладка рана — блок ниже, <strong>вне</strong> телефона.</p>
+          <ul class="mu-checks">
+            <li>Boot → Menu → Hub → Daily?/Run</li>
+            <li>Pause / Caught(RV) / Result / Shop / Settings</li>
+            <li>Copy: ЗАСТАВИЛИ / ПОВЫШЕНИЕ</li>
+            <li>Yandex: LoadingAPI · GameplayAPI · RV · interstitial</li>
           </ul>
+
+          <div class="mu-debug" id="mu-debug">
+            <h5>Отладка (вне UI)</h5>
+            <div class="mu-debug-row">
+              <button type="button" data-dbg="caught" title="Только во время Run">Поимка</button>
+              <button type="button" data-dbg="promote">До 18:00</button>
+              <button type="button" data-dbg="coffee">+ кофе</button>
+              <button type="button" data-dbg="badge">+ бейдж</button>
+              <button type="button" data-dbg="coins">+50🪙</button>
+              <button type="button" data-dbg="reset">Сброс сейва</button>
+            </div>
+            <div class="hint">Кнопки не входят в продукт и не рисуются в портретном шелле.</div>
+          </div>
+
           <div class="mu-sdk-bar" id="mu-sdk-bar"></div>
           <div class="mu-log" id="mu-log" aria-label="SDK log"></div>
         </aside>
@@ -175,13 +209,8 @@
     const phone = root.querySelector("#mu-phone");
     logEl.current = root.querySelector("#mu-log");
     const sdkBar = root.querySelector("#mu-sdk-bar");
+    const debugRoot = root.querySelector("#mu-debug");
 
-    root.querySelector("#mu-reset").addEventListener("click", () => {
-      Object.assign(state, defaultState());
-      saveState(state);
-      sdkLog("warn", "mock progress reset");
-      go("boot");
-    });
     root.querySelector("#mu-open-feel").addEventListener("click", () => {
       const tab = document.querySelector('.tab[data-tab="demo"]');
       if (tab) tab.click();
@@ -192,15 +221,28 @@
     let run = null;
     let raf = 0;
     let lastTs = 0;
+    let settingsReturn = "menu";
 
     function updateSdkBar() {
       sdkBar.innerHTML = `
         <span class="mu-sdk-pill ${ysdk.isReady() ? "ok" : "warn"}">LoadingAPI ${ysdk.isReady() ? "ready" : "…"}</span>
         <span class="mu-sdk-pill ${ysdk.isGameplay() ? "ok" : ""}">Gameplay ${ysdk.isGameplay() ? "ON" : "off"}</span>
         <span class="mu-sdk-pill">эт.${state.floor} · 🪙${state.coins}</span>
-        <span class="mu-sdk-pill">${state.mute ? "🔇 mute" : "🔊 sfx"}</span>
-        <span class="mu-sdk-pill">${state.removeAds ? "no ads" : `ads in ${Math.max(0, 2 - state.runsSinceInterstitial)}`}</span>
+        <span class="mu-sdk-pill">${state.mute ? "🔇" : "🔊"}</span>
+        <span class="mu-sdk-pill">${state.removeAds ? "no ads" : `ads ${Math.max(0, 2 - state.runsSinceInterstitial)}`}</span>
       `;
+    }
+
+    function updateDebugEnabled() {
+      const inRun = !!(run && !run.over && (screen === "run" || screen === "pause"));
+      debugRoot.querySelectorAll("[data-dbg]").forEach((btn) => {
+        const id = btn.getAttribute("data-dbg");
+        if (id === "reset" || id === "coins") {
+          btn.disabled = false;
+          return;
+        }
+        btn.disabled = !inRun;
+      });
     }
 
     function stopRunLoop() {
@@ -217,19 +259,18 @@
         if (!lastTs) lastTs = ts;
         const dt = Math.min(0.05, (ts - lastTs) / 1000);
         lastTs = ts;
-        // Feel numbers: minutesPerSecond 18 * TIME_SCALE 0.5 → ~9 game-min / real-sec → ~60s day
-        run.gameMin += 18 * 0.5 * dt;
+        const scale = run.coffee ? 0.42 : 1;
+        run.gameMin += 18 * 0.5 * dt * scale;
         if (run.gameMin >= 540) {
           run.over = true;
           run.win = true;
           endRun(true);
           return;
         }
-        // mock boss drift
         run.bosses.forEach((b, i) => {
           const t = run.gameMin * 0.02 + i;
-          b.x = 20 + ((Math.sin(t * (1.1 + i * 0.2)) + 1) / 2) * 60;
-          b.y = 18 + ((Math.cos(t * (0.9 + i * 0.15)) + 1) / 2) * 55;
+          b.x = 18 + ((Math.sin(t * (1.05 + i * 0.22)) + 1) / 2) * 64;
+          b.y = 22 + ((Math.cos(t * (0.88 + i * 0.18)) + 1) / 2) * 52;
         });
         paintRunHud();
         raf = requestAnimationFrame(tick);
@@ -244,7 +285,7 @@
         state.runsSinceInterstitial = 0;
         await ysdk.showInterstitial(reason);
       }
-      saveState(state);
+      persist(state);
     }
 
     async function endRun(win) {
@@ -255,7 +296,8 @@
         state.floor = Math.min(state.floor + 1, 99);
         state.bestFloor = Math.max(state.bestFloor, state.floor);
         state.unlocked = Math.max(state.unlocked, state.floor);
-        saveState(state);
+        persist(state);
+        await ysdk.setPlayerData({ bestFloor: state.bestFloor, coins: state.coins });
         await maybeInterstitial("between_runs");
         go("result_win");
       } else {
@@ -273,40 +315,50 @@
         daily: !!opts.daily,
         shield: false,
         coffee: false,
+        showTut: !state.tutSeen,
         player: { x: 50, y: 62 },
-        bosses: [
-          { x: 22, y: 28 },
-          { x: 70, y: 40 },
-        ],
+        bosses: [{ x: 22, y: 28 }, { x: 70, y: 40 }],
         ally: { x: 48, y: 34 },
       };
+      if (!state.tutSeen) {
+        state.tutSeen = true;
+        persist(state);
+      }
       ysdk.gameplayStart();
       go("run");
       startRunLoop();
     }
 
     function paintRunHud() {
+      if (!run || (screen !== "run" && screen !== "pause")) return;
       const clock = phone.querySelector("[data-mu-clock]");
       const phase = phone.querySelector("[data-mu-phase]");
       const bar = phone.querySelector("[data-mu-daybar]");
       const field = phone.querySelector("[data-mu-field]");
-      if (!clock || !run) return;
-      clock.textContent = fmtClock(run.gameMin);
-      const ph = phaseFor(run.gameMin);
-      phase.textContent = ph.label;
+      if (clock) clock.textContent = fmtClock(run.gameMin);
+      if (phase) phase.textContent = phaseFor(run.gameMin).label;
       if (bar) bar.style.width = `${Math.min(100, (run.gameMin / 540) * 100)}%`;
-      if (field) {
+      if (field && screen === "run") {
         field.innerHTML = `
+          ${run.showTut ? `<div class="mu-tut">${COPY.tut}</div>` : ""}
           <div class="mu-dot" style="left:${run.player.x}%;top:${run.player.y}%"></div>
           <div class="mu-dot ally" style="left:${run.ally.x}%;top:${run.ally.y}%"></div>
           ${run.bosses.map((b) => `<div class="mu-dot boss" style="left:${b.x}%;top:${b.y}%"></div>`).join("")}
-          <div class="mu-run-hint">${COPY.tut}<br/><span style="opacity:.8">мок-ран · тап по полю = шаг · ⏸ пауза · ☕/ID баффы</span></div>
+          <div class="mu-stick" aria-hidden="true"></div>
         `;
+        if (run.showTut) {
+          clearTimeout(run._tutTimer);
+          run._tutTimer = setTimeout(() => {
+            if (run) run.showTut = false;
+          }, 3500);
+        }
       }
       const shield = phone.querySelector("[data-mu-shield]");
       const coffee = phone.querySelector("[data-mu-coffee]");
-      if (shield) shield.classList.toggle("cta", run.shield);
-      if (coffee) coffee.classList.toggle("cta", run.coffee);
+      if (shield) shield.classList.toggle("on", !!run.shield);
+      if (coffee) coffee.classList.toggle("on", !!run.coffee);
+      updateDebugEnabled();
+      updateSdkBar();
     }
 
     function htmlFor(id) {
@@ -315,10 +367,10 @@
           <div class="mu-screen active" data-id="boot">
             <div class="mu-grow mu-center">
               <div class="mu-brand">${COPY.brand}<small>Yandex Games · HTML5</small></div>
-              <div class="mu-panel tight" style="width:82%;margin-top:18px">
+              <div class="mu-panel tight" style="width:86%;margin-top:18px">
                 <div class="mu-label">LoadingAPI</div>
                 <div class="mu-sub" id="mu-boot-msg">Инициализация SDK…</div>
-                <div class="mu-progress" style="margin-top:10px"><i id="mu-boot-bar" style="width:12%"></i></div>
+                <div class="mu-progress" style="margin-top:10px"><i id="mu-boot-bar" style="width:10%"></i></div>
               </div>
             </div>
             <div class="mu-sub" style="text-align:center">portrait-primary · 720×1280</div>
@@ -328,15 +380,15 @@
         return `
           <div class="mu-screen active" data-id="menu">
             <div class="mu-brand">${COPY.brand}<small>Employee of the Month</small></div>
-            <div class="mu-art" role="img" aria-label="Style seed"></div>
+            <div class="mu-art" data-caption="офис · top-down" role="img" aria-label="Style seed"></div>
             <div class="mu-row">
               <div class="mu-chip">🪙 ${state.coins}</div>
               <div class="mu-chip">best эт.${state.bestFloor}</div>
             </div>
             <button type="button" class="mu-btn cta" data-go="hub">${COPY.play}</button>
             <div class="mu-row">
-              <button type="button" class="mu-btn" data-go="shop">Магазин</button>
-              <button type="button" class="mu-btn" data-go="settings">Настройки</button>
+              <button type="button" class="mu-btn" data-go="shop">${COPY.shop}</button>
+              <button type="button" class="mu-btn" data-go="settings">${COPY.settings}</button>
             </div>
           </div>`;
       }
@@ -345,7 +397,12 @@
         for (let i = 1; i <= 6; i++) {
           const locked = i > state.unlocked;
           const current = i === state.floor;
-          floors.push(`<button type="button" class="mu-floor ${locked ? "locked" : ""} ${current ? "current" : ""}" data-floor="${i}" ${locked ? "disabled" : ""}>${locked ? "🔒" : i}</button>`);
+          floors.push(`
+            <button type="button" class="mu-floor ${locked ? "locked" : ""} ${current ? "current" : ""}"
+              data-floor="${i}" ${locked ? "disabled" : ""}>
+              ${locked ? "🔒" : i}
+              <small>${locked ? "closed" : current ? "сейчас" : "эт."}</small>
+            </button>`);
         }
         return `
           <div class="mu-screen active" data-id="hub">
@@ -357,10 +414,10 @@
               <div class="mu-chip">🪙 ${state.coins}</div>
               <div class="mu-chip">best эт.${state.bestFloor}</div>
             </div>
-            <button type="button" class="mu-btn cta" data-go="daily" ${state.dailyClaimed ? "disabled" : ""} style="text-align:left">
+            <button type="button" class="mu-btn cta mu-daily-card" data-go="daily" ${state.dailyClaimed ? "disabled" : ""}>
               <div class="mu-label" style="color:#115e59">${state.dailyClaimed ? "Daily · завтра" : "Daily · сегодня"}</div>
-              <div style="font-weight:800;margin-top:2px">${COPY.daily}</div>
-              <div class="mu-sub">${state.dailyClaimed ? "Награда уже получена" : "1/день · тап → выбор смены"}</div>
+              <div style="font-weight:800;margin-top:2px">${COPY.dailyHub}</div>
+              <div class="mu-sub">${state.dailyClaimed ? "Награда уже получена" : "1/день · выбор смены"}</div>
             </button>
             <div class="mu-grow">
               <div class="mu-label">Этажи</div>
@@ -369,12 +426,14 @@
             <div class="mu-panel tight"><div class="mu-sub">Боссы этажа ${state.floor}: HR · Дир · ГЛЯД</div></div>
             <button type="button" class="mu-btn cta" data-action="work">${COPY.toWork} · эт.${state.floor} →</button>
             <div class="mu-row">
-              <button type="button" class="mu-btn" data-go="shop">Магазин</button>
+              <button type="button" class="mu-btn" data-go="shop">${COPY.shop}</button>
               <button type="button" class="mu-btn" data-go="menu">← Меню</button>
             </div>
           </div>`;
       }
       if (id === "daily") {
+        const meetingSel = state.dailyPick === "meeting" ? "selected" : "";
+        const quietSel = state.dailyPick === "quiet" ? "selected" : "";
         return `
           <div class="mu-screen active" data-id="daily">
             <div class="mu-row">
@@ -386,16 +445,16 @@
             </div>
             <div class="mu-sub">Сегодня · сброс 00:00 · 1 попытка награды</div>
             <div class="mu-grow">
-              <div class="mu-panel ok">
+              <button type="button" class="mu-panel ok mu-daily-card ${meetingSel}" data-daily="meeting">
                 <div class="mu-label">выбрано</div>
-                <div class="mu-title" style="font-size:1rem">Побег из планёрки</div>
+                <div class="mu-title" style="font-size:1rem">${COPY.dailyTitle}</div>
                 <div class="mu-sub">Дожить до 15:00 · без кофе · 🎁 🪙40 + бейдж</div>
-              </div>
-              <div class="mu-panel tight">
+              </button>
+              <button type="button" class="mu-panel tight mu-daily-card ${quietSel}" data-daily="quiet">
                 <div class="mu-label">альтернатива</div>
-                <div style="font-weight:700">Тихий этаж</div>
+                <div style="font-weight:800">Тихий этаж</div>
                 <div class="mu-sub">Только HR · до 18:00 · 🎁 🪙25</div>
-              </div>
+              </button>
             </div>
             <button type="button" class="mu-btn cta" data-action="daily-start">Взять смену →</button>
             <button type="button" class="mu-btn" data-go="hub">Обычный этаж (хаб)</button>
@@ -405,34 +464,38 @@
         return `
           <div class="mu-screen active" data-id="run">
             <div class="mu-hud">
-              <span data-mu-clock>09:00</span>
+              <span class="mu-clock" data-mu-clock>09:00</span>
               <span>эт.${state.floor}</span>
               <span>🪙${state.coins}</span>
-              <button type="button" class="mu-btn icon" data-action="pause" title="Пауза">⏸</button>
+              <button type="button" class="mu-btn icon" data-action="pause" title="Пауза" aria-label="Пауза">⏸</button>
             </div>
-            <div class="mu-phase" data-mu-phase>Утро</div>
+            <div class="mu-phase-row">
+              <span class="mu-phase" data-mu-phase>Утро</span>
+              <div class="mu-buffs">
+                <div class="mu-buff" data-mu-coffee title="Кофе">☕</div>
+                <div class="mu-buff" data-mu-shield title="Бейдж">🪪</div>
+              </div>
+            </div>
             <div class="mu-progress"><i data-mu-daybar style="width:0%"></i></div>
-            <div class="mu-playfield" data-mu-field data-action="step"></div>
-            <div class="mu-row">
-              <button type="button" class="mu-btn" data-mu-coffee data-action="coffee">☕ кофе</button>
-              <button type="button" class="mu-btn" data-mu-shield data-action="badge">ID бейдж</button>
-              <button type="button" class="mu-btn danger" data-action="caught">удар</button>
-            </div>
+            <div class="mu-playfield" data-mu-field data-action="step" role="application" aria-label="Игровое поле"></div>
           </div>`;
       }
       if (id === "pause") {
         return `
           <div class="mu-screen active" data-id="pause" style="position:relative">
-            <div class="mu-hud" style="opacity:.5"><span>${run ? fmtClock(run.gameMin) : "09:00"}</span><span>эт.${state.floor}</span><span>🪙${state.coins}</span><span>⏸</span></div>
+            <div class="mu-hud" style="opacity:.55">
+              <span class="mu-clock">${run ? fmtClock(run.gameMin) : "09:00"}</span>
+              <span>эт.${state.floor}</span>
+              <span>🪙${state.coins}</span>
+              <span>⏸</span>
+            </div>
             <div class="mu-playfield" style="opacity:.35"></div>
             <div class="mu-modal-dim">
               <div class="mu-modal">
-                <div class="mu-title" style="text-align:center">ПАУЗА</div>
-                <div class="mu-sub" style="text-align:center">GameplayAPI остаётся ON до выхода в хаб</div>
-                <button type="button" class="mu-btn cta" data-action="resume">Продолжить</button>
-                <button type="button" class="mu-btn" data-go="settings">Настройки</button>
-                <button type="button" class="mu-btn" data-action="quit-hub">В хаб</button>
-                <div class="mu-panel tight"><div class="mu-sub">Interstitial — не на паузе (слот после рана)</div></div>
+                <div class="mu-title" style="text-align:center">${COPY.pause}</div>
+                <button type="button" class="mu-btn cta" data-action="resume">${COPY.resume}</button>
+                <button type="button" class="mu-btn" data-go="settings">${COPY.settings}</button>
+                <button type="button" class="mu-btn" data-action="quit-hub">${COPY.toHub}</button>
               </div>
             </div>
           </div>`;
@@ -446,8 +509,8 @@
                 <div class="mu-sub">эт.${state.floor} · ${run ? fmtClock(run.gameMin) : "—"}</div>
               </div>
             </div>
-            <button type="button" class="mu-btn cta" data-action="rv">▶ ${COPY.rv}</button>
-            <button type="button" class="mu-btn" data-go="result_fail">${COPY.skip}</button>
+            <button type="button" class="mu-btn cta rv" data-action="rv">${COPY.rv}</button>
+            <button type="button" class="mu-btn" data-go="result_fail">${COPY.caughtSkip}</button>
           </div>`;
       }
       if (id === "result_win") {
@@ -461,10 +524,9 @@
               <div class="mu-panel tight">Этаж → ${state.floor}</div>
               <div class="mu-panel tight">Время до 18:00 ✓</div>
               <div class="mu-panel tight">🪙 +24 · итого ${state.coins}</div>
-              <div class="mu-panel tight"><div class="mu-sub">Leaderboard / share — later</div></div>
             </div>
-            <button type="button" class="mu-btn cta" data-action="work">Следующий этаж</button>
-            <button type="button" class="mu-btn" data-go="hub">В хаб</button>
+            <button type="button" class="mu-btn cta" data-action="work">${COPY.nextFloor}</button>
+            <button type="button" class="mu-btn" data-go="hub">${COPY.toHub}</button>
           </div>`;
       }
       if (id === "result_fail") {
@@ -472,35 +534,39 @@
           <div class="mu-screen active" data-id="result_fail">
             <div class="mu-panel danger">
               <div class="mu-label">Result</div>
-              <div class="mu-title">Смена сорвана</div>
+              <div class="mu-title">${COPY.failTitle}</div>
             </div>
             <div class="mu-grow">
               <div class="mu-panel tight">Этаж ${state.floor}</div>
               <div class="mu-panel tight">Время ${run ? fmtClock(run.gameMin) : "—"}</div>
               <div class="mu-panel tight">🪙 ${state.coins}</div>
             </div>
-            <button type="button" class="mu-btn cta" data-action="work">Ещё раз</button>
-            <button type="button" class="mu-btn" data-go="hub">В хаб</button>
+            <button type="button" class="mu-btn cta" data-action="work">${COPY.again}</button>
+            <button type="button" class="mu-btn" data-go="hub">${COPY.toHub}</button>
           </div>`;
       }
       if (id === "shop") {
+        const cards = SHOP.map((item) => {
+          const owned = item.id === "remove_ads" ? state.removeAds : state.ownedSkins.includes(item.id);
+          const selected = state.shopPick === item.id;
+          const price = item.kind === "iap" ? (item.label || "IAP") : `${item.price}🪙`;
+          return `
+            <button type="button" class="mu-shop-card ${selected ? "selected" : ""} ${owned ? "locked" : ""}"
+              data-shop="${item.id}" ${owned && item.id === "remove_ads" ? "disabled" : ""}>
+              ${item.title}${owned ? " ✓" : ""}
+              <div class="price">${owned && item.id !== "remove_ads" ? "куплено" : price}</div>
+            </button>`;
+        }).join("");
         return `
           <div class="mu-screen active" data-id="shop">
             <div class="mu-row">
               <button type="button" class="mu-btn icon" data-go="hub">←</button>
-              <div class="mu-panel tight mu-grow"><div class="mu-title">Магазин</div></div>
+              <div class="mu-panel tight mu-grow"><div class="mu-title">${COPY.shop}</div></div>
               <div class="mu-chip">🪙 ${state.coins}</div>
             </div>
-            <div class="mu-grow">
-              <div class="mu-shop-grid">
-                <div class="mu-shop-card">Скин A<br/>50🪙</div>
-                <div class="mu-shop-card">Скин B<br/>80🪙</div>
-                <div class="mu-shop-card">Стартер<br/>IAP</div>
-                <div class="mu-shop-card ${state.removeAds ? "locked" : ""}">${state.removeAds ? "No ads ✓" : "Убрать рекламу<br/>IAP"}</div>
-              </div>
-            </div>
-            <button type="button" class="mu-btn cta" data-action="buy-noads" ${state.removeAds ? "disabled" : ""}>Купить · remove ads</button>
-            <div class="mu-sub">IAP ids: remove_ads · starter_pack · skin_*</div>
+            <div class="mu-grow"><div class="mu-shop-grid">${cards}</div></div>
+            <button type="button" class="mu-btn cta" data-action="buy">Купить</button>
+            <div class="mu-sub">IAP: remove_ads · starter_pack · skin_*</div>
           </div>`;
       }
       if (id === "settings") {
@@ -508,25 +574,26 @@
           <div class="mu-screen active" data-id="settings">
             <div class="mu-row">
               <button type="button" class="mu-btn icon" data-action="settings-back">←</button>
-              <div class="mu-panel tight mu-grow"><div class="mu-title">Настройки</div></div>
+              <div class="mu-panel tight mu-grow"><div class="mu-title">${COPY.settings}</div></div>
             </div>
             <div class="mu-grow">
-              <button type="button" class="mu-btn" data-action="toggle-mute">${state.mute ? "🔇 Звук выкл" : "🔊 Звук вкл"}</button>
+              <button type="button" class="mu-toggle" data-action="toggle-mute">
+                <span>Звук</span>
+                <span>${state.mute ? "Выкл" : "Вкл"}</span>
+              </button>
               <div class="mu-panel tight">
                 <div class="mu-label">Яндекс Игры</div>
-                <div class="mu-sub">Cloud save · язык RU · портрет · SDK DEV_MOCK</div>
+                <div class="mu-sub">Cloud save · RU · portrait · SDK DEV_MOCK</div>
               </div>
               <div class="mu-panel tight">
-                <div class="mu-label">Сборка</div>
-                <div class="mu-sub">${BUILD} · feel SoT в вкладке Демка</div>
+                <div class="mu-label">Сборка UI</div>
+                <div class="mu-sub">${BUILD} · feel — вкладка Демка</div>
               </div>
             </div>
           </div>`;
       }
-      return `<div class="mu-screen active"><div class="mu-panel">Unknown screen</div></div>`;
+      return `<div class="mu-screen active"><div class="mu-panel">Unknown</div></div>`;
     }
-
-    let settingsReturn = "menu";
 
     function bindPhone() {
       phone.querySelectorAll("[data-go]").forEach((btn) => {
@@ -541,9 +608,21 @@
           const n = Number(btn.getAttribute("data-floor"));
           if (n >= 1 && n <= state.unlocked) {
             state.floor = n;
-            saveState(state);
+            persist(state);
             go("hub");
           }
+        });
+      });
+      phone.querySelectorAll("[data-daily]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.dailyPick = btn.getAttribute("data-daily");
+          go("daily");
+        });
+      });
+      phone.querySelectorAll("[data-shop]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.shopPick = btn.getAttribute("data-shop");
+          go("shop");
         });
       });
       phone.querySelectorAll("[data-action]").forEach((btn) => {
@@ -552,10 +631,11 @@
           if (act === "work") beginRun({ daily: false });
           else if (act === "daily-start") {
             state.dailyClaimed = true;
-            saveState(state);
+            persist(state);
             beginRun({ daily: true });
           } else if (act === "pause") {
-            if (run) run.paused = true;
+            if (!run || run.over) return;
+            run.paused = true;
             stopRunLoop();
             go("pause");
           } else if (act === "resume") {
@@ -567,17 +647,6 @@
             ysdk.gameplayStop();
             run = null;
             go("hub");
-          } else if (act === "caught") {
-            if (!run || run.over) return;
-            if (run.shield) {
-              run.shield = false;
-              sdkLog("ok", "shield_break · i-frames");
-              paintRunHud();
-              return;
-            }
-            run.over = true;
-            run.win = false;
-            endRun(false);
           } else if (act === "rv") {
             const ok = await ysdk.showRewarded("revive");
             if (ok && run) {
@@ -588,42 +657,111 @@
               go("run");
               startRunLoop();
             }
-          } else if (act === "coffee") {
-            if (!run) return;
-            run.coffee = !run.coffee;
-            sdkLog("info", run.coffee ? "coffee slow-mo ON (world 0.42)" : "coffee OFF");
-            paintRunHud();
-          } else if (act === "badge") {
-            if (!run) return;
-            run.shield = !run.shield;
-            sdkLog("info", run.shield ? "badge shield ON" : "badge OFF");
-            paintRunHud();
           } else if (act === "step") {
             if (!run || run.paused || run.over) return;
-            // mock one step toward click
             const rect = btn.getBoundingClientRect();
             const x = ((ev.clientX - rect.left) / rect.width) * 100;
             const y = ((ev.clientY - rect.top) / rect.height) * 100;
             run.player.x = Math.max(12, Math.min(88, x));
-            run.player.y = Math.max(14, Math.min(86, y));
-            sdkLog("info", "GridMove step (mock)");
+            run.player.y = Math.max(18, Math.min(86, y));
             paintRunHud();
           } else if (act === "toggle-mute") {
             state.mute = !state.mute;
-            saveState(state);
+            persist(state);
             go("settings");
           } else if (act === "settings-back") {
             go(settingsReturn === "pause" ? "pause" : settingsReturn || "menu");
-          } else if (act === "buy-noads") {
-            state.removeAds = true;
-            state.coins = Math.max(0, state.coins - 0);
-            saveState(state);
-            sdkLog("ok", "payments.purchase(remove_ads) DEV_MOCK");
-            go("shop");
+          } else if (act === "buy") {
+            buySelected();
           }
         });
       });
     }
+
+    function buySelected() {
+      const item = SHOP.find((x) => x.id === state.shopPick) || SHOP[0];
+      if (item.id === "remove_ads") {
+        if (state.removeAds) return;
+        state.removeAds = true;
+        sdkLog("ok", "payments.purchase(remove_ads)");
+        persist(state);
+        go("shop");
+        return;
+      }
+      if (item.id === "starter_pack") {
+        state.coins += 100;
+        if (!state.ownedSkins.includes("skin_a")) state.ownedSkins.push("skin_a");
+        sdkLog("ok", "payments.purchase(starter_pack)");
+        persist(state);
+        go("shop");
+        return;
+      }
+      if (state.ownedSkins.includes(item.id)) {
+        state.selectedSkin = item.id;
+        persist(state);
+        go("shop");
+        return;
+      }
+      if (state.coins < item.price) {
+        sdkLog("warn", "not enough coins");
+        return;
+      }
+      state.coins -= item.price;
+      state.ownedSkins.push(item.id);
+      state.selectedSkin = item.id;
+      persist(state);
+      sdkLog("ok", `buy ${item.id}`);
+      go("shop");
+    }
+
+    debugRoot.querySelectorAll("[data-dbg]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-dbg");
+        if (id === "reset") {
+          Object.assign(state, defaultState());
+          persist(state);
+          stopRunLoop();
+          ysdk.gameplayStop();
+          run = null;
+          sdkLog("warn", "save reset");
+          go("boot");
+          return;
+        }
+        if (id === "coins") {
+          state.coins += 50;
+          persist(state);
+          sdkLog("info", "+50 coins");
+          updateSdkBar();
+          if (["menu", "hub", "shop"].includes(screen)) go(screen);
+          return;
+        }
+        if (!run || run.over) return;
+        if (id === "caught") {
+          if (run.shield) {
+            run.shield = false;
+            sdkLog("ok", "shield_break");
+            paintRunHud();
+            return;
+          }
+          run.over = true;
+          run.win = false;
+          endRun(false);
+        } else if (id === "promote") {
+          run.gameMin = 540;
+          run.over = true;
+          run.win = true;
+          endRun(true);
+        } else if (id === "coffee") {
+          run.coffee = true;
+          sdkLog("info", "coffee ON");
+          paintRunHud();
+        } else if (id === "badge") {
+          run.shield = true;
+          sdkLog("info", "badge ON");
+          paintRunHud();
+        }
+      });
+    });
 
     async function go(id) {
       screen = id;
@@ -631,6 +769,7 @@
       phone.innerHTML = `<div class="mu-safe">${htmlFor(id)}</div>`;
       bindPhone();
       updateSdkBar();
+      updateDebugEnabled();
       if (id === "run") paintRunHud();
       if (id === "boot") await runBoot();
     }
@@ -639,18 +778,19 @@
       const bar = phone.querySelector("#mu-boot-bar");
       const msg = phone.querySelector("#mu-boot-msg");
       await ysdk.init();
-      if (bar) bar.style.width = "55%";
+      if (bar) bar.style.width = "48%";
       if (msg) msg.textContent = "Cloud save / player…";
       await ysdk.getPlayerData();
-      if (bar) bar.style.width = "88%";
+      if (bar) bar.style.width = "86%";
       if (msg) msg.textContent = "LoadingAPI.ready()";
       ysdk.loadingReady();
       if (bar) bar.style.width = "100%";
-      await wait(280);
+      await wait(260);
       go("menu");
     }
 
     updateSdkBar();
+    updateDebugEnabled();
     go("boot");
 
     return {

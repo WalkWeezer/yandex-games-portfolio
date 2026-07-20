@@ -1,23 +1,29 @@
-/* Работник месяца — Beta mock UI (Yandex Games portrait shell) */
+/* Работник месяца — finished Beta UI shell (Yandex Games portrait) */
 :root {
-  --mu-bg: #d8e2ee;
+  --mu-bg0: #c5d0df;
+  --mu-bg1: #dce5f0;
   --mu-panel: #e8eef5;
-  --mu-panel-strong: #f4f7fb;
+  --mu-panel-hi: #f7fafc;
   --mu-ink: #1d3557;
   --mu-muted: #5b6b82;
-  --mu-line: #b8c5d6;
+  --mu-line: #b7c4d4;
   --mu-cta: #e9c46a;
+  --mu-cta-hi: #f3d78a;
+  --mu-cta-lo: #b8903a;
   --mu-cta-ink: #3d2e0a;
   --mu-danger: #e63946;
+  --mu-danger-bg: #ffe8ea;
   --mu-ok: #2a9d8f;
+  --mu-ok-bg: #e6f6f3;
   --mu-carpet: #c8d2e0;
-  --mu-shadow: 0 8px 20px rgba(29, 53, 87, 0.12);
+  --mu-shadow: 0 10px 24px rgba(29, 53, 87, 0.14);
+  --mu-radius: 16px;
 }
 
 .mu-layout {
   display: grid;
-  grid-template-columns: minmax(280px, 360px) minmax(240px, 1fr);
-  gap: 20px;
+  grid-template-columns: minmax(280px, 360px) minmax(260px, 1fr);
+  gap: 22px;
   align-items: start;
   margin-top: 12px;
 }
@@ -34,11 +40,11 @@
   aspect-ratio: 360 / 640;
   border-radius: 28px;
   border: 2px solid #7f8ea3;
-  background: var(--mu-bg);
+  background: var(--mu-bg1);
   box-shadow: 0 0 0 6px #243041, var(--mu-shadow);
   overflow: hidden;
   position: relative;
-  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-family: "Trebuchet MS", "Avenir Next", "Segoe UI", sans-serif;
   color: var(--mu-ink);
   user-select: none;
   touch-action: manipulation;
@@ -49,64 +55,74 @@
   inset: 0;
   display: flex;
   flex-direction: column;
-  padding: 18px 12px 12px;
+  padding: 16px 12px 12px;
   box-sizing: border-box;
   background:
-    radial-gradient(120% 80% at 50% -10%, #f7fafc 0%, transparent 55%),
-    linear-gradient(180deg, #e4ebf4 0%, var(--mu-bg) 40%, #cfd9e8 100%);
+    radial-gradient(120% 70% at 50% -8%, #ffffff 0%, transparent 52%),
+    linear-gradient(180deg, #eaf0f7 0%, var(--mu-bg1) 42%, var(--mu-bg0) 100%);
 }
 
-.mu-screen { display: none; flex: 1; flex-direction: column; gap: 8px; min-height: 0; }
-.mu-screen.active { display: flex; }
+.mu-screen {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+.mu-screen.active { display: flex; animation: muIn 0.22s ease; }
+
+@keyframes muIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
 
 .mu-brand {
   text-align: center;
   font-weight: 800;
-  letter-spacing: 0.04em;
-  font-size: 1.05rem;
-  line-height: 1.2;
-  color: var(--mu-ink);
+  letter-spacing: 0.035em;
+  font-size: 1.08rem;
+  line-height: 1.15;
 }
 .mu-brand small {
   display: block;
   margin-top: 4px;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--mu-muted);
 }
 
 .mu-panel {
-  background: var(--mu-panel-strong);
+  background: var(--mu-panel-hi);
   border: 1px solid var(--mu-line);
-  border-radius: 14px;
+  border-radius: var(--mu-radius);
   padding: 10px 12px;
   box-shadow: var(--mu-shadow);
 }
 .mu-panel.tight { padding: 8px 10px; }
 .mu-panel.danger {
-  background: #ffe8ea;
+  background: var(--mu-danger-bg);
   border-color: #f1a0a6;
   color: #7a1520;
 }
 .mu-panel.ok {
-  background: #e7f7f4;
+  background: var(--mu-ok-bg);
   border-color: #9ed9d0;
 }
 
 .mu-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--mu-muted);
 }
 .mu-title {
-  font-size: 1.15rem;
+  font-size: 1.18rem;
   font-weight: 800;
   margin: 2px 0 0;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 .mu-sub {
   font-size: 0.78rem;
@@ -124,80 +140,88 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 5px;
   background: var(--mu-panel);
   border: 1px solid var(--mu-line);
   border-radius: 999px;
-  padding: 6px 10px;
+  padding: 7px 11px;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--mu-ink);
+  box-shadow: 0 2px 0 rgba(29, 53, 87, 0.06);
 }
 
 .mu-btn {
   appearance: none;
   border: 1px solid var(--mu-line);
-  background: var(--mu-panel-strong);
+  background: var(--mu-panel-hi);
   color: var(--mu-ink);
-  border-radius: 12px;
-  padding: 11px 12px;
+  border-radius: 14px;
+  padding: 12px 12px;
   font: inherit;
-  font-weight: 700;
-  font-size: 0.88rem;
+  font-weight: 800;
+  font-size: 0.9rem;
   cursor: pointer;
   text-align: center;
-  transition: transform 0.12s ease, filter 0.12s ease;
+  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 2px 0 rgba(29, 53, 87, 0.08);
 }
 .mu-btn:active { transform: scale(0.98); }
-.mu-btn:disabled { opacity: 0.45; cursor: default; transform: none; }
+.mu-btn:disabled { opacity: 0.42; cursor: default; transform: none; box-shadow: none; }
 .mu-btn.cta {
-  background: linear-gradient(180deg, #f3d78a 0%, var(--mu-cta) 100%);
+  background: linear-gradient(180deg, var(--mu-cta-hi) 0%, var(--mu-cta) 100%);
   border-color: #c9a24a;
   color: var(--mu-cta-ink);
-  box-shadow: 0 4px 0 #b8903a;
+  box-shadow: 0 4px 0 var(--mu-cta-lo);
 }
-.mu-btn.cta:active { box-shadow: 0 1px 0 #b8903a; transform: translateY(2px); }
-.mu-btn.ghost { background: transparent; }
+.mu-btn.cta:active { box-shadow: 0 1px 0 var(--mu-cta-lo); transform: translateY(2px); }
+.mu-btn.ghost { background: rgba(247, 250, 252, 0.55); }
 .mu-btn.danger {
   background: #fff;
   border-color: #f1a0a6;
   color: #7a1520;
 }
 .mu-btn.icon {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   padding: 0;
   flex: 0 0 auto;
-  border-radius: 12px;
+  border-radius: 14px;
+  font-size: 1rem;
+}
+.mu-btn.rv::before {
+  content: "▶ ";
+  font-size: 0.85em;
 }
 
 .mu-art {
   flex: 1;
-  min-height: 120px;
-  border-radius: 16px;
+  min-height: 132px;
+  border-radius: 18px;
   border: 1px solid var(--mu-line);
   background:
-    linear-gradient(180deg, rgba(232, 238, 245, 0.2), rgba(29, 53, 87, 0.08)),
-    url("../../games/deadline-escape/refs/art/style-seed-hero.png") center/contain no-repeat,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(29, 53, 87, 0.1)),
+    url("../../games/deadline-escape/refs/art/style-seed-hero.png") center 42%/62% no-repeat,
     linear-gradient(160deg, #eef3f8, #c5d0df);
   position: relative;
   overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 .mu-art::after {
-  content: "офис · top-down";
+  content: attr(data-caption);
   position: absolute;
   left: 10px;
   bottom: 8px;
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-size: 0.66rem;
+  font-weight: 800;
   color: var(--mu-muted);
-  background: rgba(244, 247, 251, 0.85);
-  padding: 3px 8px;
+  background: rgba(247, 250, 252, 0.9);
+  padding: 4px 9px;
   border-radius: 999px;
 }
 
 .mu-progress {
-  height: 10px;
+  height: 11px;
   border-radius: 999px;
   background: #c5d0df;
   overflow: hidden;
@@ -208,7 +232,7 @@
   height: 100%;
   width: 0;
   background: linear-gradient(90deg, #2a9d8f, #e9c46a);
-  transition: width 0.2s ease;
+  transition: width 0.18s linear;
 }
 
 .mu-floors {
@@ -218,20 +242,24 @@
 }
 .mu-floor {
   aspect-ratio: 1;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid var(--mu-line);
   background: var(--mu-panel);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
   font-weight: 800;
   cursor: pointer;
   color: var(--mu-ink);
+  box-shadow: 0 2px 0 rgba(29, 53, 87, 0.06);
 }
+.mu-floor small { font-size: 0.62rem; color: var(--mu-muted); font-weight: 700; }
 .mu-floor.current {
-  background: linear-gradient(180deg, #f3d78a, var(--mu-cta));
+  background: linear-gradient(180deg, var(--mu-cta-hi), var(--mu-cta));
   border-color: #c9a24a;
-  box-shadow: 0 3px 0 #b8903a;
+  box-shadow: 0 3px 0 var(--mu-cta-lo);
 }
 .mu-floor.locked {
   opacity: 0.45;
@@ -240,37 +268,73 @@
 }
 
 .mu-hud {
+  display: grid;
+  grid-template-columns: 1.1fr 0.7fr 0.9fr auto;
+  align-items: center;
+  gap: 6px;
+  background: rgba(247, 250, 252, 0.96);
+  border: 1px solid var(--mu-line);
+  border-radius: 14px;
+  padding: 8px 8px 8px 10px;
+  font-weight: 800;
+  font-size: 0.84rem;
+  box-shadow: var(--mu-shadow);
+}
+.mu-hud .mu-clock { font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.mu-phase-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
-  background: rgba(244, 247, 251, 0.95);
-  border: 1px solid var(--mu-line);
-  border-radius: 12px;
-  padding: 8px 10px;
-  font-weight: 800;
-  font-size: 0.82rem;
+  gap: 8px;
 }
 .mu-phase {
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-size: 0.7rem;
+  font-weight: 800;
   color: var(--mu-muted);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+.mu-buffs {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.mu-buff {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid var(--mu-line);
+  background: var(--mu-panel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  opacity: 0.35;
+  filter: grayscale(0.4);
+  transition: opacity 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+.mu-buff.on {
+  opacity: 1;
+  filter: none;
+  box-shadow: 0 0 0 2px rgba(233, 196, 106, 0.55);
+  background: #fff8e6;
+  border-color: #c9a24a;
 }
 
 .mu-playfield {
   flex: 1;
   min-height: 0;
-  border-radius: 14px;
+  border-radius: 16px;
   border: 1px solid var(--mu-line);
   background:
-    linear-gradient(90deg, rgba(148, 163, 184, 0.25) 12%, transparent 12%),
-    linear-gradient(0deg, rgba(148, 163, 184, 0.25) 12%, transparent 12%),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.22) 12%, transparent 12%),
+    linear-gradient(0deg, rgba(148, 163, 184, 0.22) 12%, transparent 12%),
     var(--mu-carpet);
   background-size: 28px 28px;
   position: relative;
   overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
 }
 .mu-dot {
   position: absolute;
@@ -278,37 +342,55 @@
   height: 18px;
   border-radius: 50%;
   background: var(--mu-ink);
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
   transform: translate(-50%, -50%);
 }
-.mu-dot.boss {
-  background: var(--mu-danger);
-  width: 16px;
-  height: 16px;
-}
-.mu-dot.ally {
-  background: var(--mu-ok);
-  width: 14px;
-  height: 14px;
-}
-.mu-run-hint {
+.mu-dot.boss { background: var(--mu-danger); width: 16px; height: 16px; }
+.mu-dot.ally { background: var(--mu-ok); width: 14px; height: 14px; }
+.mu-tut {
   position: absolute;
   left: 8px;
   right: 8px;
-  bottom: 8px;
-  background: rgba(244, 247, 251, 0.92);
-  border-radius: 10px;
+  top: 8px;
+  background: rgba(247, 250, 252, 0.94);
+  border: 1px solid var(--mu-line);
+  border-radius: 12px;
   padding: 8px 10px;
   font-size: 0.72rem;
-  color: var(--mu-muted);
+  color: var(--mu-ink);
   text-align: center;
-  font-weight: 600;
+  font-weight: 700;
+  line-height: 1.35;
+  box-shadow: var(--mu-shadow);
+  pointer-events: none;
+}
+.mu-stick {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: rgba(247, 250, 252, 0.55);
+  border: 2px solid rgba(91, 107, 130, 0.35);
+  pointer-events: none;
+}
+.mu-stick::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border-radius: 50%;
+  background: rgba(29, 53, 87, 0.35);
 }
 
 .mu-modal-dim {
   position: absolute;
   inset: 0;
-  background: rgba(29, 53, 87, 0.45);
+  background: rgba(29, 53, 87, 0.48);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -317,9 +399,9 @@
 }
 .mu-modal {
   width: 100%;
-  background: var(--mu-panel-strong);
+  background: var(--mu-panel-hi);
   border: 1px solid var(--mu-line);
-  border-radius: 16px;
+  border-radius: 18px;
   padding: 14px;
   box-shadow: var(--mu-shadow);
   display: flex;
@@ -335,13 +417,108 @@
 .mu-shop-card {
   background: var(--mu-panel);
   border: 1px solid var(--mu-line);
-  border-radius: 12px;
-  padding: 10px;
+  border-radius: 14px;
+  padding: 12px 10px;
   text-align: center;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 800;
+  box-shadow: 0 2px 0 rgba(29, 53, 87, 0.06);
+  cursor: pointer;
 }
-.mu-shop-card.locked { opacity: 0.5; }
+.mu-shop-card.selected {
+  border-color: #c9a24a;
+  background: #fff8e6;
+  box-shadow: 0 0 0 2px rgba(233, 196, 106, 0.35);
+}
+.mu-shop-card.locked { opacity: 0.5; cursor: default; }
+.mu-shop-card .price { margin-top: 6px; color: var(--mu-muted); font-weight: 700; }
+
+.mu-daily-card {
+  text-align: left;
+  padding: 12px;
+}
+.mu-daily-card.selected {
+  border-color: #2a9d8f;
+  background: var(--mu-ok-bg);
+}
+
+.mu-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--mu-panel-hi);
+  border: 1px solid var(--mu-line);
+  border-radius: 14px;
+  padding: 12px;
+  font-weight: 800;
+}
+
+.mu-side {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.mu-side h4 { margin: 0 0 8px; font-size: 0.95rem; }
+.mu-side p { margin: 0 0 10px; color: var(--muted); font-size: 0.86rem; line-height: 1.45; }
+.mu-checks {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mu-checks li {
+  font-size: 0.82rem;
+  color: var(--text);
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.mu-checks li::before { content: "✓ "; color: var(--ok); font-weight: 700; }
+
+.mu-debug {
+  margin: 12px 0;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px dashed #8a6d1d;
+  background: #2a2414;
+}
+.mu-debug h5 {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #f5c542;
+}
+.mu-debug .mu-debug-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.mu-debug button {
+  appearance: none;
+  border: 1px solid #8a6d1d;
+  background: #3d3415;
+  color: #f5c542;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mu-debug button:hover { filter: brightness(1.08); }
+.mu-debug button:disabled { opacity: 0.4; cursor: default; }
+.mu-debug .hint {
+  margin-top: 8px;
+  font-size: 0.72rem;
+  color: #b7a46a;
+  line-height: 1.35;
+}
 
 .mu-sdk-bar {
   display: flex;
@@ -361,38 +538,9 @@
 .mu-sdk-pill.warn { background: #3d3415; color: #f5c542; border-color: #8a6d1d; }
 .mu-sdk-pill.ok { background: #163528; color: #3dd68c; border-color: #2a6b4a; }
 
-.mu-side {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 14px 16px;
-}
-.mu-side h4 { margin: 0 0 8px; font-size: 0.95rem; }
-.mu-side p { margin: 0 0 10px; color: var(--muted); font-size: 0.86rem; line-height: 1.45; }
-.mu-checks {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.mu-checks li {
-  font-size: 0.82rem;
-  color: var(--text);
-  background: var(--panel2);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 8px 10px;
-}
-.mu-checks li::before {
-  content: "✓ ";
-  color: var(--ok);
-  font-weight: 700;
-}
 .mu-log {
   margin-top: 12px;
-  max-height: 220px;
+  max-height: 200px;
   overflow: auto;
   background: #0b0f14;
   border: 1px solid var(--line);
@@ -417,7 +565,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 4px;
+  justify-content: center;
 }
 
 @media (max-width: 860px) {
