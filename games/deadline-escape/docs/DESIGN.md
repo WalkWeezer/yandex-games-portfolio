@@ -167,11 +167,10 @@ boot → menu → hub → (daily) → run HUD ↔ pause
 | `frames/tile_wall_{n,s,e,w}.png` | `2` стена: полоса ~42% к play · **Option A** | **есть** |
 | `frames/tile_window_{n,s,e,w}.png` | `7` окно | **есть** |
 | `frames/tile_wall_{nw,ne,sw,se}` · `*_stub_*` · `*_{nwe,…}` | L / stub / U (solid rim) | **есть** |
-| `frames/tile_cabinet.png` · `tile_printer.png` · `tile_trash.png` | пропы (AI) | **есть** |
 
 - `n`/`s` — горизонтальная полоса (юг = вплотную **снизу** клетки)  
 - `w`/`e` — **боковые** спрайты (вплотную слева/справа)  
-- Пропы play — отдельные клетки; композиты стена+проп в архиве  
+- Пропы play: desk / plant / cooler  
 - Стиль: cream panels + wood baseboard (Option A APPROVED)  
 - Сборка: `python management/tools/build_layoutfeel_walls.py`  
 Концепт-якорь: `refs/art/wall-option-a-cream-wood.png`.
