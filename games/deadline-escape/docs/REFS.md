@@ -22,10 +22,14 @@
 | `frames/tile_desk.png` · `tile_desk2.png` | столы |
 | `frames/tile_plant.png` · `tile_cooler.png` | пропы |
 | `frames/tile_fog.png` | текстура FoW |
-| `frames/tile_wall_{n,s,e,w}.png` | стена у внешнего края клетки |
-| `frames/tile_window_{n,s,e,w}.png` | окно у внешнего края |
+| `frames/tile_wall_{n,s,e,w}.png` | прямая стена (layout-feel, полоса к play) |
+| `frames/tile_window_{n,s,e,w}.png` | окно на прямой |
+| `frames/tile_wall_{nw,ne,sw,se}.png` | L-угол |
+| `frames/tile_wall_{nwe,nsw,nse,swe}.png` | U |
+| `frames/tile_wall_stub_{nw,ne,sw,se}.png` | stub угла карты |
 | `frames/tile_cabinet.png` · `tile_printer.png` · `tile_trash.png` | пропы (AI) |
 | `frames/pu_*` · `vfx_*` | пикапы / VFX scaffolding |
+| `art/ai-wall-n-layoutfeel.png` · `ai-window-n-layoutfeel.png` | AI masters стен |
 
 Motion tutorial: [Slynyrd Pixelblog 55](https://www.slynyrd.com/blog/2025/3/24/pixelblog-55-top-down-character-animation)
 
@@ -43,10 +47,11 @@ Motion tutorial: [Slynyrd Pixelblog 55](https://www.slynyrd.com/blog/2025/3/24/p
 | File | Role |
 |------|------|
 | `refs/ui/tone-ui.png` | UI tone |
-| `refs/levels/layout-feel.png` | сетка 7×9 mood |
+| `refs/levels/layout-feel.png` | сетка 7×9 mood · якорь стен |
 
 ## Rebuild
 
 ```bash
+python management/tools/build_layoutfeel_walls.py
 python management/tools/sync-deadline-docs-bundle.py
 ```

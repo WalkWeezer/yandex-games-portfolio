@@ -82,8 +82,9 @@ L / U / stub-квадрат на углах. Окно только на один
 
 ~~`tile_wall/window_{edge}_{prop}`~~ → архив `archive/2026-07-20-wall-prop-composites/`
 
-Сборка стен: `python management/tools/build_seamless_wall_set.py`  
-(старое: `process_styled_walls.py` / `build_wall_corner_tiles.py`)
+Сборка стен: `python management/tools/build_layoutfeel_walls.py`  
+(якорь: `refs/levels/layout-feel.png` + AI masters `ai-*-layoutfeel.png`;  
+старое: `build_seamless_wall_set.py` / `process_styled_walls.py`)
 
 ## DoD
 
