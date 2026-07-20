@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
   /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250721c",
+  ART_BUST: "w250721d",
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
@@ -1265,10 +1265,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721c`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721d`));
     // стены — proof-геометрия без спрайтов (wall/window tiles не грузим)
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721c`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721d`));
     this._art = art;
     return art;
   },
@@ -3329,19 +3329,20 @@ window.FEEL_DEMOS["deadline-escape"] = {
       else if (sq === "ne") ctx.fillRect(x + w - band, y, band, band);
       else if (sq === "nw") ctx.fillRect(x, y, band, band);
     };
+    /** Кайма квадратика — к play (walkable), как у лицевой полосы. */
     const fillSquareLip = (sq) => {
       if (sq === "se") {
-        ctx.fillRect(x + w - band, y + h - band, band, lip);
-        ctx.fillRect(x + w - band, y + h - band, lip, band);
+        ctx.fillRect(x + w - band, y + h - lip, band, lip);
+        ctx.fillRect(x + w - lip, y + h - band, lip, band);
       } else if (sq === "sw") {
-        ctx.fillRect(x, y + h - band, band, lip);
-        ctx.fillRect(x + band - lip, y + h - band, lip, band);
+        ctx.fillRect(x, y + h - lip, band, lip);
+        ctx.fillRect(x, y + h - band, lip, band);
       } else if (sq === "ne") {
-        ctx.fillRect(x + w - band, y + band - lip, band, lip);
-        ctx.fillRect(x + w - band, y, lip, band);
+        ctx.fillRect(x + w - band, y, band, lip);
+        ctx.fillRect(x + w - lip, y, lip, band);
       } else if (sq === "nw") {
-        ctx.fillRect(x, y + band - lip, band, lip);
-        ctx.fillRect(x + band - lip, y, lip, band);
+        ctx.fillRect(x, y, band, lip);
+        ctx.fillRect(x, y, lip, band);
       }
     };
 
