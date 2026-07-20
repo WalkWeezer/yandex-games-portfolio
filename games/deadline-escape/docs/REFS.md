@@ -22,11 +22,12 @@
 | `frames/tile_desk.png` · `tile_desk2.png` | столы |
 | `frames/tile_plant.png` · `tile_cooler.png` | пропы |
 | `frames/tile_fog.png` | текстура FoW |
-| `frames/tile_wall_{n,s,e,w}.png` | прямая стена (layout-feel, полоса к play) |
+| `frames/tile_wall_{n,s,e,w}.png` | прямая стена (Option A, полоса к play) |
 | `frames/tile_window_{n,s,e,w}.png` | окно на прямой |
-| `frames/tile_wall_{nw,ne,sw,se}.png` | L-угол |
+| `frames/tile_wall_{nw,ne,sw,se}.png` | L-угол (solid rim) |
 | `frames/tile_wall_{nwe,nsw,nse,swe}.png` | U |
 | `frames/tile_wall_stub_{nw,ne,sw,se}.png` | stub угла карты |
+| `art/wall-option-a-cream-wood.png` · `wall-option-a-window.png` | **APPROVED** masters стен |
 | `frames/tile_cabinet.png` · `tile_printer.png` · `tile_trash.png` | пропы (AI) |
 | `frames/pu_*` · `vfx_*` | пикапы / VFX scaffolding |
 | `art/ai-wall-n-layoutfeel.png` · `ai-window-n-layoutfeel.png` | AI masters стен |

@@ -11,7 +11,7 @@
   const APPROVED_FILE = "style-seed-hero.APPROVED.json";
   const REJECTED_FILE = "style-seed-hero.REJECTED.json";
   const LS_KEY = "deadline-escape.style-seed";
-  const BUST = "w250722a";
+  const BUST = "w250722c";
 
   const CHECKER = "background:repeating-conic-gradient(#2a3340 0% 25%, #1a222c 0% 50%) 50%/12px 12px";
 
@@ -311,9 +311,16 @@
       nav: "Стены",
       html: () =>
         card(
-          "Каркас · procedural-заглушки",
-          "Feel-демка рисует только геометрические заглушки через <code>wallPictureOf</code> / <code>drawWallAt</code> (полосы, L, U, stub).",
-          `<p class="sp-desc" style="margin:0">Отдельных ассетов для стен в каталоге нет.</p>`
+          "Стены Option A · cream + wood",
+          "Feel рисует <code>tile_wall_*</code> / <code>tile_window_*</code> через <code>wallTileKey</code>. Masters: <code>art/wall-option-a-*.png</code>. L/U/stub — solid rim (без panel-cross).",
+          pngRow([
+            ["frames/tile_wall_n.png", "wall_n"],
+            ["frames/tile_window_n.png", "window_n"],
+            ["frames/tile_wall_e.png", "wall_e"],
+            ["frames/tile_wall_sw.png", "L sw"],
+            ["frames/tile_wall_nwe.png", "U nwe"],
+            ["frames/tile_wall_stub_nw.png", "stub"],
+          ])
         ),
     },
     {
