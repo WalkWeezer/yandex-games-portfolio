@@ -152,7 +152,7 @@ fog  = 1 cell band each side (not walkable for player)
 wallDecor = visual-only prop IN the same wall/window cell → draws tile_wall_{edge}_{prop}
 ```
 
-**Rules:** fog band depth **always 1** cell each side; strong FoW gradient (outer≈black → play=0) drawn over entities so spawns are visible silhouettes; walls/windows on fog frame; **wall props are baked composites in the same `2`/`7` cell** (do not occupy extra cells, do not change spawn/collision); desks/props solid only in play; enemies enter from open fog cells; play aisles connected; Hit = body overlap.
+**Rules:** fog band depth **always 1** cell each side; strong FoW gradient on **open** fog cells only (outer≈black → play=0) so spawns are visible silhouettes; **wall/window cells (`2`/`7`) have no FoW gradient**; wall props are baked composites in the same cell; desks/props solid only in play; enemies enter from open fog cells; play aisles connected; Hit = body overlap.
 
 **Required env sprites:** floors/props/fog + **`tile_wall_{n,s,e,w}` / `tile_window_{n,s,e,w}`** + **`tile_wall_{edge}_{prop}` / `tile_window_{edge}_{prop}`** — DESIGN.md §8.
 
