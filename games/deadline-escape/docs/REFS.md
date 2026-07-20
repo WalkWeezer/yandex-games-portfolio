@@ -18,7 +18,13 @@
 | `rig/pose_idle_4x4.png` | POSE LOCK idle |
 | `rig/pose_caught_1x4.png` | POSE LOCK caught |
 | `frames/char_hero/*` | кадры ГГ для демки |
-| `frames/tile_*` · `pu_*` · `vfx_*` | scaffolding feel demo |
+| `frames/tile_floor_a.png` · `tile_floor_b.png` | пол |
+| `frames/tile_desk.png` · `tile_desk2.png` | столы |
+| `frames/tile_plant.png` · `tile_cooler.png` | пропы |
+| `frames/tile_fog.png` | текстура FoW |
+| `frames/tile_wall.png` | **стена** (полоса тумана, клетка `2`) |
+| `frames/tile_window.png` | **окно** (полоса тумана, клетка `7`) — нужен production |
+| `frames/pu_*` · `vfx_*` | пикапы / VFX scaffolding |
 
 Motion tutorial: [Slynyrd Pixelblog 55](https://www.slynyrd.com/blog/2025/3/24/pixelblog-55-top-down-character-animation)
 

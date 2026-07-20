@@ -151,7 +151,9 @@ fog  = 1–2 cell band each side (not walkable for player)
 # / W = decorative wall/window on fog band (obstacles, beauty)
 ```
 
-**Rules:** fog band depth 1|2 by floor; strong FoW gradient (outer≈black → play=0) drawn over entities so spawns are visible silhouettes; walls/windows seeded on fog frame like furniture; props only in play; enemies enter from open fog cells; play aisles connected; Hit = body overlap.
+**Rules:** fog band depth **always 1** cell each side; strong FoW gradient (outer≈black → play=0) drawn over entities so spawns are visible silhouettes; walls/windows seeded on fog frame like furniture; props only in play; enemies enter from open fog cells; play aisles connected; Hit = body overlap.
+
+**Required env sprites:** `tile_floor_a/b`, `tile_desk`, `tile_desk2`, `tile_plant`, `tile_cooler`, `tile_fog`, **`tile_wall`**, **`tile_window`** (see DESIGN.md §8).
 
 **Forbidden in MVP maps:** hideZones, LOS cones as primary verb, free-move navmesh chase.
 
@@ -185,10 +187,10 @@ Tone: office comedy, short, no horror.
 | No | horror, gore, purple glow spam, cream+terracotta serif cliché, hide-shimmer as core VFX identity |
 | Priority | hero → HR+director → tiles → pickups → other bosses → VFX |
 | **ART_STATUS** | `FROZEN_CONCEPTS` — paint-over only; no open-ended regen |
-| MVP scope | hero idle+walk+caught; HR idle+walk; other bosses **4-dir only** |
+| MVP scope | hero idle+walk+caught; HR idle+walk; other bosses **4-dir only**; env tiles incl. **wall + window** |
 
-Sprite inventory: `management/demos/deadline-sprites.js`.  
-Look SoT: `docs/STYLE_LOCK.md` + `docs/REFS.md` (`art/boss-hr.png`, `art/concept-boss-*`).  
+Sprite inventory: `management/demos/deadline-sprites.js` + DESIGN.md §8 env table.  
+Look SoT: `docs/STYLE_LOCK.md` + `docs/REFS.md` (`art/boss-hr.png`, `art/concept-boss-*`, `levels/layout-feel.png`).  
 CONFIRM = feel playtest, not perfect roster art.
 
 ---
