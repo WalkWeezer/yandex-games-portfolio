@@ -211,7 +211,7 @@
         <h3>Необходимые env-спрайты · каркас</h3>
         <p class="sp-desc">
           Полоса на всю ширину/высоту, вплотную к краю: <code>n/s</code> гориз., <code>w/e</code> боковые.
-          Без углов. Сборка: <code>build_border_tiles.py</code>.
+          Рядом со стеной — 1×1 пропы (<code>cabinet/printer/trash</code> + plant/cooler). Без углов.
         </p>
         ${pngRow([
           ["frames/tile_wall_n.png", "wall N"],
@@ -220,6 +220,12 @@
           ["frames/tile_wall_e.png", "wall E"],
           ["frames/tile_window_n.png", "window N"],
           ["border_wall_preview.png", "preview", true],
+        ], SP)}
+        ${pngRow([
+          ["frames/tile_cabinet.png", "cabinet 1×1"],
+          ["frames/tile_printer.png", "printer 1×1"],
+          ["frames/tile_trash.png", "trash 1×1"],
+          ["border_props_preview.png", "props preview", true],
         ], SP)}
       </div>
     `;

@@ -165,10 +165,14 @@ boot → menu → hub → (daily) → run HUD ↔ pause
 | `frames/tile_fog.png` | туман / FoW текстура | scaffolding |
 | `frames/tile_wall_{n,s,e,w}.png` | `2` стена: на всю ширину/высоту, **вплотную к внешнему краю** | **есть** |
 | `frames/tile_window_{n,s,e,w}.png` | `7` окно, та же геометрия | **есть** |
+| `frames/tile_cabinet.png` | `8` шкаф 1×1 у стены (fog) | **есть** |
+| `frames/tile_printer.png` | `9` принтер 1×1 у стены | **есть** |
+| `frames/tile_trash.png` | `10` урна 1×1 у стены | **есть** |
 
 - `n`/`s` — горизонтальная полоса (юг = вплотную **снизу** клетки)  
 - `w`/`e` — **боковые** спрайты (вплотную слева/справа)  
-- Пока **без углов**. Сборка: `python management/tools/build_border_tiles.py`  
+- У стен на кольце тумана — **1×1** пропы (`3`/`4`/`8`/`9`/`10`), не шире клетки; ≥2 открытых спавна на стороне  
+- Пока **без углов**. Сборка: `python management/tools/build_border_tiles.py` · `build_border_props.py`  
 Концепт-якорь: `refs/levels/layout-feel.png`.
 
 **CONFIRM дизайна** = human playtest feel на телефоне, не идеальный roster арта.
