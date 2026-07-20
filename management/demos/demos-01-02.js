@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
   /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250721n",
+  ART_BUST: "w250721q",
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
@@ -1265,10 +1265,21 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721n`));
-    // стены — proof-геометрия без спрайтов (wall/window tiles не грузим)
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721q`));
+    // стены layout-feel: mid / L / U / stub (+ window)
+    [
+      "wall_n", "wall_s", "wall_e", "wall_w",
+      "wall_nw", "wall_ne", "wall_sw", "wall_se",
+      "wall_nwe", "wall_nsw", "wall_nse", "wall_swe",
+      "wall_stub_nw", "wall_stub_ne", "wall_stub_sw", "wall_stub_se",
+      "window_n", "window_s", "window_e", "window_w",
+      "window_nw", "window_ne", "window_sw", "window_se",
+      "window_nwe", "window_nsw", "window_nse", "window_swe",
+      "window_stub_nw", "window_stub_ne", "window_stub_sw", "window_stub_se",
+      "wall", "window",
+    ].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721q`));
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721n`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721q`));
     this._art = art;
     return art;
   },
@@ -3292,43 +3303,87 @@ window.FEEL_DEMOS["deadline-escape"] = {
       return { sides, square: null };
     }
 
-    // Ребро: лицо к play + торец в каждую пустую клетку вдоль кольца
+    // Ребро: лицо к play + торец только на разрыве вдоль mid-edge.
+    // Пустой угол карты — не разрыв: иначе прямая у угла рисуется как L
+    // (хвостик «отворачивается» от границы). Угол трактуем отдельно (stub/face).
     const edge = this.fogEdgeOf(s, col, row);
-    const openAlong = (nc, nr) => {
+    const endCap = (nc, nr) => {
       if (nc < 0 || nr < 0 || nc >= s.cols || nr >= s.rows) return false;
-      return !this.frameSolidAt(s, nc, nr);
+      if (this.frameSolidAt(s, nc, nr)) return false;
+      if (this.mapCornerOf(s, nc, nr)) return false;
+      return true;
     };
     if (edge === "n") {
       push("s");
-      if (openAlong(col - 1, row)) push("w");
-      if (openAlong(col + 1, row)) push("e");
+      if (endCap(col - 1, row)) push("w");
+      if (endCap(col + 1, row)) push("e");
     } else if (edge === "s") {
       push("n");
-      if (openAlong(col - 1, row)) push("w");
-      if (openAlong(col + 1, row)) push("e");
+      if (endCap(col - 1, row)) push("w");
+      if (endCap(col + 1, row)) push("e");
     } else if (edge === "w") {
       push("e");
-      if (openAlong(col, row - 1)) push("n");
-      if (openAlong(col, row + 1)) push("s");
+      if (endCap(col, row - 1)) push("n");
+      if (endCap(col, row + 1)) push("s");
     } else if (edge === "e") {
       push("w");
-      if (openAlong(col, row - 1)) push("n");
-      if (openAlong(col, row + 1)) push("s");
+      if (endCap(col, row - 1)) push("n");
+      if (endCap(col, row + 1)) push("s");
     }
     return { sides, square: null };
   },
   /**
-   * Стены — proof по wallPictureOf (битмап → mid/L/U/stub/face).
+   * Ключ спрайта стены из wallPictureOf (layout-feel tiles).
+   * sides = направления полос в клетке; имена тайлов — рёбра карты (n/s/e/w).
+   */
+  wallTileKey(s, col, row) {
+    const pic = this.wallPictureOf(s, col, row);
+    const { kind, sides, square } = pic;
+    if (kind === "empty") return null;
+    const win = s.map[row][col] === 7;
+    const pref = win ? "tile_window_" : "tile_wall_";
+    const faceToEdge = { s: "n", n: "s", e: "w", w: "e" };
+    if (kind === "stub" && square) {
+      const bySq = { se: "nw", sw: "ne", ne: "sw", nw: "se" };
+      return pref + "stub_" + (bySq[square] || "nw");
+    }
+    if (kind === "mid" || kind === "face") {
+      if (sides.length !== 1) return null;
+      const edge = faceToEdge[sides[0]];
+      return edge ? pref + edge : null;
+    }
+    if (kind === "L") {
+      const set = new Set(sides);
+      if (set.has("s") && set.has("e")) return pref + "nw";
+      if (set.has("s") && set.has("w")) return pref + "ne";
+      if (set.has("n") && set.has("e")) return pref + "sw";
+      if (set.has("n") && set.has("w")) return pref + "se";
+      return null;
+    }
+    if (kind === "U") {
+      const eSet = new Set(sides.map((f) => faceToEdge[f]));
+      if (eSet.has("n") && eSet.has("w") && eSet.has("e")) return pref + "nwe";
+      if (eSet.has("n") && eSet.has("s") && eSet.has("w")) return pref + "nsw";
+      if (eSet.has("n") && eSet.has("s") && eSet.has("e")) return pref + "nse";
+      if (eSet.has("s") && eSet.has("w") && eSet.has("e")) return pref + "swe";
+      return null;
+    }
+    return null;
+  },
+  /**
+   * Стены — спрайты layout-feel по wallPictureOf; fallback — proof-геометрия.
    */
   drawWallAt(ctx, s, col, row, x, y, w, h) {
     ctx.fillStyle = "#020308";
     ctx.fillRect(x, y, w, h);
+    const key = this.wallTileKey(s, col, row);
+    if (key && this.drawTile(ctx, key, x, y, w, h)) return;
     const pic = this.wallPictureOf(s, col, row);
     const { sides, square, kind } = pic;
     if (kind === "empty") return;
     const band = Math.max(10, Math.round(Math.min(s.cellW, s.cellH) * 0.42));
-    const body = "#c4a882";
-    const edgeCol = "#6b4a2e";
+    const body = "#a8acb2";
+    const edgeCol = "#3a3e44";
     const lip = Math.max(3, (band * 0.18) | 0);
 
     const fillFace = (face) => {

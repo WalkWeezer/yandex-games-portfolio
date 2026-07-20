@@ -11,7 +11,7 @@
   const APPROVED_FILE = "style-seed-hero.APPROVED.json";
   const REJECTED_FILE = "style-seed-hero.REJECTED.json";
   const LS_KEY = "deadline-escape.style-seed";
-  const BUST = "w250721o";
+  const BUST = "w250721q";
 
   const CHECKER = "background:repeating-conic-gradient(#2a3340 0% 25%, #1a222c 0% 50%) 50%/12px 12px";
 
@@ -311,14 +311,14 @@
       nav: "Стены / окна",
       html: () =>
         card(
-          "Каркас · полосы + цельные L/U (одна заливка)",
-          "Прямые: <code>build_wall_break_set.py</code>. Углы L/U: <code>build_solid_lu_tiles.py</code> — " +
-            "руки из прямых полос (стык без щели). Окно только на прямой стене ребра (50%), не на углах.",
+          "Каркас · layout-feel mid / L / U / stub",
+          "Сборка: <code>build_layoutfeel_walls.py</code> от <code>refs/levels/layout-feel.png</code> + AI masters. " +
+            "Демка рисует спрайты через <code>wallTileKey</code> ← <code>wallPictureOf</code>.",
           pngRow([
-            ["ai-set-wall-n.png", "AI master wall", true, ART],
-            ["ai-set-window-n.png", "AI master window", true, ART],
-            ["ai-set-corner-nw.png", "L master", true, ART],
-            ["wall_lu_solid_preview.png", "L/U preview", true],
+            ["ai-wall-n-layoutfeel.png", "AI wall N", true, ART],
+            ["ai-window-n-layoutfeel.png", "AI window N", true, ART],
+            ["ai-set-wall-n.png", "band master", true, ART],
+            ["wall_layoutfeel_preview.png", "set preview", true],
           ]) +
             pngRow([
               ["frames/tile_wall_n.png", "wall N"],
