@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
   /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250721k",
+  ART_BUST: "w250721m",
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
@@ -1265,10 +1265,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721k`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721m`));
     // стены — proof-геометрия без спрайтов (wall/window tiles не грузим)
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721k`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721m`));
     this._art = art;
     return art;
   },
@@ -1664,8 +1664,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   },
   /**
    * Стены на рёбрах (без клеток угла карты) + углы карты.
-   * Даёт все 4 геометрии wallGeomOf:
-   *   одиночка (3 стороны), торец (2), середина ряда (1), угол арены stub (квадрат).
+   * Цель: ≥70% проходных клеток на кольце границы (спавн-проходы).
    * Окна временно отключены.
    */
   placeFogDecor(map, border, rnd) {
@@ -1680,6 +1679,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
       return (onN || onS) && (onW || onE);
     };
 
+    // sparse walls on mid-edge (~22% бюджет), остальное — проходы
     for (const side of ["n", "e", "s", "w"]) {
       const idxs = [];
       for (let i = 0; i < ring.length; i++) {
@@ -1689,13 +1689,12 @@ window.FEEL_DEMOS["deadline-escape"] = {
       }
       if (!idxs.length) continue;
       const marks = Array(idxs.length).fill(0);
-      const budget = Math.max(1, Math.round(idxs.length * 0.48));
+      const budget = Math.max(0, Math.round(idxs.length * 0.22));
       let placed = 0, guard = 0;
       while (placed < budget && guard < 120) {
         guard++;
         const start = (rnd() * idxs.length) | 0;
-        // 1 = одиночная U; 2+ = ряд с торцами L и серединой 1-side
-        const maxLen = Math.min(4, idxs.length - start);
+        const maxLen = Math.min(3, idxs.length - start);
         if (maxLen < 1) continue;
         const len = 1 + ((rnd() * maxLen) | 0);
         let ok = true;
@@ -1708,19 +1707,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
           placed++;
         }
       }
-      // гарантируем хотя бы одну одиночку на длинном ребре
-      if (idxs.length >= 3 && !marks.some((m, i) => m && (i === 0 || !marks[i - 1]) && (i === marks.length - 1 || !marks[i + 1]))) {
-        const gaps = [];
-        for (let i = 0; i < marks.length; i++) {
-          if (marks[i]) continue;
-          if (i > 0 && marks[i - 1]) continue;
-          if (i + 1 < marks.length && marks[i + 1]) continue;
-          gaps.push(i);
-        }
-        if (gaps.length) marks[gaps[(rnd() * gaps.length) | 0]] = 1;
-      }
+      // на ребре оставляем ≥55% открытых
       let open = marks.filter((m) => !m).length;
-      while (open < Math.min(2, idxs.length)) {
+      const minOpenSide = Math.max(1, Math.ceil(idxs.length * 0.55));
+      while (open < minOpenSide) {
         const blocked = [];
         for (let i = 0; i < marks.length; i++) if (marks[i]) blocked.push(i);
         if (!blocked.length) break;
@@ -1741,23 +1731,39 @@ window.FEEL_DEMOS["deadline-escape"] = {
       { c: b - 1, r: rows - b, d1: [1, 0], d2: [0, -1] },
       { c: cols - b, r: rows - b, d1: [-1, 0], d2: [0, -1] },
     ];
-    // ~половина углов — stub между двумя руками (форсим оба соседа)
+    // углы без форса соседей: stub только если уже есть обе руки; 1 рука — редко
     for (const corner of corners) {
       const { c, r, d1, d2 } = corner;
       if (c < 0 || r < 0 || c >= cols || r >= rows) continue;
-      if (rnd() < 0.55) {
-        const a = { c: c + d1[0], r: r + d1[1] };
-        const b2 = { c: c + d2[0], r: r + d2[1] };
-        if (a.r >= 0 && a.c >= 0 && a.r < rows && a.c < cols) map[a.r][a.c] = 2;
-        if (b2.r >= 0 && b2.c >= 0 && b2.r < rows && b2.c < cols) map[b2.r][b2.c] = 2;
-        map[r][c] = 2;
-        continue;
-      }
       const solid = (dc, dr) => {
         const nc = c + dc, nr = r + dr;
         return nr >= 0 && nc >= 0 && nr < rows && nc < cols && map[nr][nc] === 2;
       };
-      if (solid(d1[0], d1[1]) || solid(d2[0], d2[1])) map[r][c] = 2;
+      const a = solid(d1[0], d1[1]), b2 = solid(d2[0], d2[1]);
+      if (a && b2) map[r][c] = 2;
+      else if ((a || b2) && rnd() < 0.20) map[r][c] = 2;
+    }
+
+    // жёсткий пол: ≥70% проходных на всём кольце
+    const needOpen = Math.ceil(ring.length * 0.70);
+    const walls = [];
+    for (const { c, r } of ring) if (map[r][c] === 2) walls.push({ c, r });
+    let openCount = ring.length - walls.length;
+    for (let i = walls.length - 1; i > 0; i--) {
+      const j = (rnd() * (i + 1)) | 0;
+      const tmp = walls[i]; walls[i] = walls[j]; walls[j] = tmp;
+    }
+    for (const cell of walls) {
+      if (openCount >= needOpen) break;
+      if (isRingCorner(cell.c, cell.r)) continue;
+      map[cell.r][cell.c] = 0;
+      openCount++;
+    }
+    for (const cell of walls) {
+      if (openCount >= needOpen) break;
+      if (map[cell.r][cell.c] !== 2) continue;
+      map[cell.r][cell.c] = 0;
+      openCount++;
     }
     return wallDecor;
   },
