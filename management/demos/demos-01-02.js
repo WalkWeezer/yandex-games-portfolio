@@ -1213,7 +1213,7 @@ window.FEEL_DEMOS["deadline-escape"] = {
   /** Глобальное замедление симуляции (1 = норма, 0.5 = в 2 раза медленнее) */
   TIME_SCALE: 0.5,
   /** Меняй при выкладке стен — сбрасывает кэш ensureArt + видно в HUD */
-  ART_BUST: "w250721i",
+  ART_BUST: "w250721j",
   ART_BASES: [
     "../../games/deadline-escape/refs/sprites/",
     "/games/deadline-escape/refs/sprites/",
@@ -1265,10 +1265,10 @@ window.FEEL_DEMOS["deadline-escape"] = {
       const bust = (id === "it" || id === "kpi" || id === "hr") ? "?v=recolor2" : "";
       ["s", "e", "n", "w"].forEach((d) => tryLoad(`boss_${id}_${d}`, `frames/boss_${id}_sheet/${d}.png${bust}`));
     });
-    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721i`));
+    ["floor_a", "floor_b", "desk", "desk2", "plant", "cooler", "fog", "cabinet", "printer", "trash"].forEach((t) => tryLoad("tile_" + t, `frames/tile_${t}.png?v=w250721j`));
     // стены — proof-геометрия без спрайтов (wall/window tiles не грузим)
     ["coin", "coffee", "badge"].forEach((p) => tryLoad("pu_" + p, `frames/pu_${p}.png`));
-    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721i`));
+    ["shield", "steam", "invuln", "near_miss", "report", "dash", "slam", "confetti"].forEach((v) => tryLoad("vfx_" + v, `frames/vfx_${v}.png?v=w250721j`));
     this._art = art;
     return art;
   },
@@ -3254,24 +3254,31 @@ window.FEEL_DEMOS["deadline-escape"] = {
       return { sides, square: null };
     }
 
-    // Ребро: полоса к play + торцы, если нет соседа вдоль кольца
+    // Ребро: полоса к play + торцы, если разрыв вдоль кольца.
+    // У края арены (сосед = угол карты) хвостик не ставим — стена остаётся прямой.
     const edge = this.fogEdgeOf(s, col, row);
+    const endCap = (nc, nr) => {
+      if (this.frameSolidAt(s, nc, nr)) return false;
+      if (nc < 0 || nr < 0 || nc >= s.cols || nr >= s.rows) return false;
+      if (this.mapCornerOf(s, nc, nr)) return false;
+      return true;
+    };
     if (edge === "n") {
       push("s");
-      if (!this.frameSolidAt(s, col - 1, row)) push("w");
-      if (!this.frameSolidAt(s, col + 1, row)) push("e");
+      if (endCap(col - 1, row)) push("w");
+      if (endCap(col + 1, row)) push("e");
     } else if (edge === "s") {
       push("n");
-      if (!this.frameSolidAt(s, col - 1, row)) push("w");
-      if (!this.frameSolidAt(s, col + 1, row)) push("e");
+      if (endCap(col - 1, row)) push("w");
+      if (endCap(col + 1, row)) push("e");
     } else if (edge === "w") {
       push("e");
-      if (!this.frameSolidAt(s, col, row - 1)) push("n");
-      if (!this.frameSolidAt(s, col, row + 1)) push("s");
+      if (endCap(col, row - 1)) push("n");
+      if (endCap(col, row + 1)) push("s");
     } else if (edge === "e") {
       push("w");
-      if (!this.frameSolidAt(s, col, row - 1)) push("n");
-      if (!this.frameSolidAt(s, col, row + 1)) push("s");
+      if (endCap(col, row - 1)) push("n");
+      if (endCap(col, row + 1)) push("s");
     }
     return { sides, square: null };
   },
