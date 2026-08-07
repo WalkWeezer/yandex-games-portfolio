@@ -217,6 +217,8 @@ function summarize(result) {
       : null,
     hotCells: result.hotCells,
     topPassLinks: result.topPassLinks,
+    roleShape: result.roleShape || (result.advanced && result.advanced.roleShape) || null,
+    passDirectionShare: result.passDirectionShare || (result.advanced && result.advanced.passDirectionShare) || null,
     quality: result.quality,
     qualityNotes: result.quality && result.quality.notes ? result.quality.notes : [],
     elapsedMs: result.elapsedMs,

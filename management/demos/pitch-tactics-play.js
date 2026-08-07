@@ -666,8 +666,8 @@
    * Не магнит «все к мячу» — глубина по роли.
    */
   const FORM_DEPTH = {
-    A: { Z: -3, OP1: -2, OP2: -2, NAP: 1 },
-    B: { Z: 3, OP1: 2, OP2: 2, NAP: -1 },
+    A: { Z: -3, OP1: -1, OP2: -1, NAP: 3 },
+    B: { Z: 3, OP1: 1, OP2: 1, NAP: -3 },
   };
 
   function formationAnchor(p, side) {
@@ -703,7 +703,7 @@
   }
 
   /** Неактивные 0–2 гекса к якорю на линии мяча.
-   *  Только в конце полного хода тренера (все AP), не после каждого действия. */
+   *  В конце хода тренера + лёгкий оффбол: НП не залипает в своей штрафной. */
   function holdFormation(side, skipIds, quiet) {
     const squad = side === "A" ? state.you : state.them;
     if (!squad) return;
@@ -714,27 +714,55 @@
       if (state.ballOwner === p.id) return;
       const anchor = formationAnchor(p, side);
       const dist = hexDist(p.pos, anchor);
+      // НП/атака: тянем сильнее, если отстали от мяча
+      const ballRow = state.ball[1];
+      const lagging =
+        (side === "A" && p.role === "NAP" && p.pos[1] < ballRow - 1) ||
+        (side === "B" && p.role === "NAP" && p.pos[1] > ballRow + 1) ||
+        (side === "A" && p.pos[1] <= 5 && ballRow >= HALF_ROW - 1) ||
+        (side === "B" && p.pos[1] >= ROWS - 6 && ballRow <= HALF_ROW + 1);
+      const maxStep = lagging ? Math.min(3, Math.max(2, dist)) : Math.min(2, dist);
       if (dist <= 0) return;
-      const step = Math.min(2, dist);
+      const step = maxStep;
       let opts = cellsInRange(p.pos, step).filter((pos) => canStandOn(pos, p.id));
-      if (p.role === "OP1") opts = opts.filter((pos) => pos[0] <= CENTER_COL);
-      if (p.role === "OP2") opts = opts.filter((pos) => pos[0] >= CENTER_COL);
+      if (p.role === "OP1") opts = opts.filter((pos) => pos[0] <= CENTER_COL + 1);
+      if (p.role === "OP2") opts = opts.filter((pos) => pos[0] >= CENTER_COL - 1);
       if (p.role === "GK") {
         opts = opts.filter((pos) => (side === "A" ? pos[1] <= 3 : pos[1] >= ROWS - 4));
       }
+      // НП дома: не оставляем в своей штрафной, если мяч ушёл вперёд
+      if (p.role === "NAP" && side === "A" && ballRow >= HALF_ROW - 2) {
+        opts = opts.filter((pos) => pos[1] >= Math.min(ballRow - 1, HALF_ROW - 1));
+        if (!opts.length) {
+          opts = cellsInRange(p.pos, step).filter((pos) => canStandOn(pos, p.id) && pos[1] > p.pos[1]);
+        }
+      }
+      if (p.role === "NAP" && side === "B" && ballRow <= HALF_ROW + 2) {
+        opts = opts.filter((pos) => pos[1] <= Math.max(ballRow + 1, HALF_ROW + 1));
+        if (!opts.length) {
+          opts = cellsInRange(p.pos, step).filter((pos) => canStandOn(pos, p.id) && pos[1] < p.pos[1]);
+        }
+      }
       opts.sort((a, b) => hexDist(a, anchor) - hexDist(b, anchor));
       if (!opts.length) return;
-      if (hexDist(opts[0], anchor) >= dist) return;
+      if (hexDist(opts[0], anchor) >= dist && !lagging) return;
       p.pos = opts[0];
       moved++;
     });
     if (moved && !quiet) {
       pushLog(
         side === "A"
-          ? "Форма по линии мяча (" + moved + ")"
-          : "ПК держит форму по линии мяча (" + moved + ")"
+          ? "Оффбол: форма к мячу (" + moved + ")"
+          : "ПК оффбол: форма к мячу (" + moved + ")"
       );
     }
+  }
+
+  function skipBallOwnerIds(side) {
+    if (!state.ballOwner) return [];
+    if (side === "A" && String(state.ballOwner).charAt(0) === "A") return [state.ballOwner];
+    if (side === "B" && String(state.ballOwner).charAt(0) === "B") return [state.ballOwner];
+    return [];
   }
 
   function inActionRange(from, to, mode) {
@@ -1078,7 +1106,7 @@
       '<div class="skills-side" id="skillsSide"></div></div>' +
       '<div class="lineup-actions"><button class="btn btn-ghost" id="back">← Назад</button>' +
       '<button class="btn btn-primary" id="kick">Начать матч</button></div>' +
-      '<div class="hint-box">Ход как в XCOM: <b>жёлтый</b>/<b>золотой</b> радиус. Игроки стоят где оставили — без автосдвига формы. С мячом −дебафф владения.</div></section>';
+      '<div class="hint-box">Ход как в XCOM: <b>жёлтый</b>/<b>золотой</b> радиус. В конце хода партнёры слегка подтягиваются к линии мяча (оффбол). С мячом −дебафф владения.</div></section>';
 
     drawLineupPitch();
     fillSkillsSide();
@@ -2301,7 +2329,31 @@
       bySide: { A: emptySideStats(), B: emptySideStats() },
       shotLog: [],
       lastPass: null,
+      rolePos: {
+        A: { NAP: { sumR: 0, n: 0, ownBox: 0 }, OP1: { sumR: 0, n: 0 }, OP2: { sumR: 0, n: 0 }, Z: { sumR: 0, n: 0 } },
+        B: { NAP: { sumR: 0, n: 0, ownBox: 0 }, OP1: { sumR: 0, n: 0 }, OP2: { sumR: 0, n: 0 }, Z: { sumR: 0, n: 0 } },
+      },
     };
+  }
+
+  function noteRolePositions() {
+    if (!state.stats || !state.stats.rolePos) return;
+    const track = (side, squad) => {
+      if (!squad) return;
+      Object.values(squad).forEach((p) => {
+        if (!p || p.role === "GK") return;
+        const bucket = state.stats.rolePos[side][p.role];
+        if (!bucket) return;
+        bucket.sumR += p.pos[1];
+        bucket.n += 1;
+        if (p.role === "NAP") {
+          if (side === "A" && p.pos[1] <= 5) bucket.ownBox++;
+          if (side === "B" && p.pos[1] >= ROWS - 6) bucket.ownBox++;
+        }
+      });
+    };
+    track("A", state.you);
+    track("B", state.them);
   }
 
   function attackChannel(col) {
@@ -2328,6 +2380,8 @@
     // направление атак: мяч в финальной трети владеющей стороны
     if (ow && ow.side === "A" && r >= 14) state.stats.attackDir.A[attackChannel(c)]++;
     if (ow && ow.side === "B" && r <= 6) state.stats.attackDir.B[attackChannel(c)]++;
+
+    noteRolePositions();
 
     if (state.stats.lastPass && state.stats.lastPass.ttl > 0) state.stats.lastPass.ttl -= 1;
     else state.stats.lastPass = null;
@@ -2557,6 +2611,22 @@
     };
     const heatMap = buildHeatMap(st);
     const passMap = buildPassMap(st);
+    const roleShape = {};
+    ["A", "B"].forEach((side) => {
+      const pack = (st.rolePos && st.rolePos[side]) || {};
+      roleShape[side] = {};
+      Object.keys(pack).forEach((role) => {
+        const b = pack[role];
+        const n = Math.max(1, b.n || 0);
+        roleShape[side][role] = {
+          avgRow: +(b.sumR / n).toFixed(2),
+          samples: b.n || 0,
+          ownBoxShare: b.ownBox != null ? +(b.ownBox / n).toFixed(3) : null,
+        };
+      });
+    });
+    const passZones = passMap.zones || {};
+    const passTotal = Math.max(1, (passZones.towardA || 0) + (passZones.towardB || 0) + (passZones.lateral || 0));
     return {
       possessionPct: {
         A: +((100 * (st.possession.A || 0)) / ballSum).toFixed(1),
@@ -2575,6 +2645,12 @@
       shotLog: (st.shotLog || []).slice(-20),
       heatMap,
       passMap,
+      roleShape,
+      passDirectionShare: {
+        towardA: +((passZones.towardA || 0) / passTotal).toFixed(3),
+        towardB: +((passZones.towardB || 0) / passTotal).toFixed(3),
+        lateral: +((passZones.lateral || 0) / passTotal).toFixed(3),
+      },
     };
   }
 
@@ -2771,7 +2847,8 @@
     state.mode = null;
     state.reachable = [];
     state.targets = [];
-    // без авто-подтягивания формы — только явные команды
+    // пассивный оффбол: партнёры подтягиваются к линии мяча (НП не остаётся в своей штрафной)
+    holdFormation("A", skipBallOwnerIds("A"), !!state.watchPlay);
     state.turn = "B";
     pushLog("— Ход соперника —");
     renderLeft();
@@ -2783,7 +2860,8 @@
   }
 
   function endAITurn() {
-    // без авто-формы у ПК
+    // пассивный оффбол у ПК
+    holdFormation("B", skipBallOwnerIds("B"), !!state.watchPlay);
     noteBallHeat();
     state.turn = "A";
     state.ap = COACH_AP;
@@ -2811,13 +2889,57 @@
   function endMatch() {
     state.over = true;
     const msg =
-      state.score[0] > state.score[1] ? "Победа!" : state.score[0] < state.score[1] ? "Поражение" : "Ничья";
+      state.score[0] > state.score[1]
+        ? state.watchPlay
+          ? "Победа дома"
+          : "Победа!"
+        : state.score[0] < state.score[1]
+          ? state.watchPlay
+            ? "Победа гостей"
+            : "Поражение"
+          : "Ничья";
     pushLog("Финал " + state.score[0] + ":" + state.score[1] + " — " + msg, true);
     toast(msg + " " + state.score[0] + ":" + state.score[1]);
     if (!state.autoPlay) {
       renderLeft();
       renderRight();
+      if (state.watchPlay && state.stats) showWatchMapsOverlay();
     }
+  }
+
+  function showWatchMapsOverlay() {
+    const advanced = buildAdvancedReport(state.stats);
+    let pre = document.getElementById("watch-maps");
+    if (pre) pre.remove();
+    pre = document.createElement("pre");
+    pre.id = "watch-maps";
+    pre.style.cssText =
+      "position:fixed;right:8px;bottom:8px;left:auto;top:auto;max-width:min(520px,46vw);max-height:58vh;overflow:auto;background:#0b100eee;color:#d7e8dc;z-index:80;padding:10px 12px;font:11px/1.35 ui-monospace,monospace;border:1px solid #2a3d32;border-radius:8px";
+    const napA = advanced.roleShape && advanced.roleShape.A && advanced.roleShape.A.NAP;
+    const napB = advanced.roleShape && advanced.roleShape.B && advanced.roleShape.B.NAP;
+    pre.textContent = [
+      "Тепло / пасы · " + state.score[0] + ":" + state.score[1],
+      "НП дом avgRow=" + (napA ? napA.avgRow : "?") + " ownBox=" + (napA ? napA.ownBoxShare : "?"),
+      "НП гости avgRow=" + (napB ? napB.avgRow : "?") + " ownBox=" + (napB ? napB.ownBoxShare : "?"),
+      "пасы →B/→A/lat " +
+        (advanced.passDirectionShare
+          ? advanced.passDirectionShare.towardB +
+            "/" +
+            advanced.passDirectionShare.towardA +
+            "/" +
+            advanced.passDirectionShare.lateral
+          : "?"),
+      "",
+      "HEAT",
+      advanced.heatMap.ascii || "",
+      "",
+      "PASS",
+      advanced.passMap.ascii || "",
+      "",
+      "клик = закрыть",
+    ].join("\n");
+    pre.onclick = () => pre.remove();
+    document.body.appendChild(pre);
   }
 
   function runAI() {
@@ -2903,6 +3025,19 @@
     }
     const ow = ownerPlayer();
     if (ow && ow.side === "B") {
+      const nap = state.them.NAP;
+      const napStuck =
+        nap &&
+        (state.aiLocked || []).indexOf(nap.id) < 0 &&
+        (nap.pos[1] >= Math.max(ow.pos[1], HALF_ROW + 1) || (nap.pos[1] >= ROWS - 8 && ow.pos[1] <= HALF_ROW + 2));
+      if (napStuck && (ow.role === "OP1" || ow.role === "OP2" || ow.role === "Z") && Math.random() < 0.82) {
+        aiMoveToward(nap, [
+          clamp(ow.pos[0] + (Math.random() < 0.5 ? -1 : 1), 3, 9),
+          Math.max(2, Math.min(ow.pos[1] - 2, HALF_ROW - 1)),
+        ]);
+        return;
+      }
+      if (napStuck && Math.random() < 0.55 && aiSupportRun(ow)) return;
       const ch = chanceShot(ow, [CENTER_COL, GOAL_A_ROW], null);
       // бьём раньше и чаще — иначе матч вязнет в центре
       if (ow.pos[1] <= 8 && !ch.outOfRange && ch.chance >= 12 && ch.pressure < 3) {
@@ -2971,6 +3106,8 @@
       const wide = Math.abs(t.pos[0] - CENTER_COL);
       let s = -pr * 4 + forward * 5 + (preferWide ? wide * 1.5 : -wide * 0.35);
       if (forward <= 0) s -= 6;
+      if (t.role === "NAP" && forward >= 1) s += 5;
+      if (t.role === "NAP" && t.pos[1] <= HALF_ROW) s += 3;
       if (s > bestS) {
         bestS = s;
         best = t;
@@ -3007,16 +3144,34 @@
     return true;
   }
 
+  function aiSupportNeed(p, ballOw) {
+    const ballRow = ballOw.pos[1];
+    let need = 0;
+    if (p.pos[1] > ballRow + 1) need += (p.pos[1] - ballRow) * 3;
+    if (p.role === "NAP" && p.pos[1] >= ballRow) need += 14;
+    if (p.role === "NAP" && p.pos[1] >= ROWS - 7) need += 10;
+    if (p.pos[1] >= ROWS - 6 && ballRow <= HALF_ROW + 1) need += 9;
+    const anchor = formationAnchor(p, "B");
+    if (p.pos[1] > anchor[1] + 1) need += (p.pos[1] - anchor[1]) * 2;
+    return need;
+  }
+
   function aiSupportRun(ballOw) {
     const runners = Object.values(state.them).filter(
       (p) => p.id !== ballOw.id && p.role !== "GK" && (state.aiLocked || []).indexOf(p.id) < 0
     );
-    runners.sort((a, b) => a.pos[1] - b.pos[1]);
+    if (!runners.length) return false;
+    runners.sort((a, b) => aiSupportNeed(b, ballOw) - aiSupportNeed(a, ballOw));
     const r = runners[0];
-    if (!r) return false;
-    const targetRow = Math.max(2, Math.min(ballOw.pos[1] - 2, r.pos[1] - 2));
+    if (aiSupportNeed(r, ballOw) < 2) return false;
+    const anchor = formationAnchor(r, "B");
+    const targetRow = Math.max(2, Math.min(ballOw.pos[1] - 2, anchor[1]));
     const col =
-      r.role === "OP1" ? clamp(r.home[0], 0, 4) : r.role === "OP2" ? clamp(r.home[0], 8, 12) : clamp(ballOw.pos[0], 3, 9);
+      r.role === "OP1"
+        ? clamp(r.home[0], 0, 4)
+        : r.role === "OP2"
+          ? clamp(r.home[0], 8, 12)
+          : clamp(ballOw.pos[0], 3, 9);
     aiMoveToward(r, [col, targetRow]);
     return true;
   }
@@ -3111,7 +3266,7 @@
   function aiSmart(ow) {
     if (ow.pos[1] <= 7 && tryAiShot(ow, 18)) return;
     if (ow.pos[1] > HALF_ROW + 1 && aiEscapeOwnHalf(ow)) return;
-    if (Math.random() < 0.35 && aiSupportRun(ow)) return;
+    if (Math.random() < 0.48 && aiSupportRun(ow)) return;
     const recv = freest(ow, true, { needForward: true });
     if (recv && pressureOn(recv.pos, "B").pts <= 1) {
       aiPass(ow, recv, hexDist(ow.pos, recv.pos) > actionRange(ow, "pass"));
@@ -3126,7 +3281,7 @@
       aiMoveToward(ow, [CENTER_COL, Math.max(2, ow.pos[1] - 3)]);
       return;
     }
-    if (Math.random() < 0.3 && aiSupportRun(ow)) return;
+    if (Math.random() < 0.45 && aiSupportRun(ow)) return;
     // у бровки — режь к центру/воротам, не крути A7↔B7
     if (Math.abs(ow.pos[0] - CENTER_COL) >= 4 && ow.pos[1] <= HALF_ROW) {
       if (tryAiShot(ow, 10)) return;
@@ -3182,7 +3337,7 @@
       return;
     }
     const press = pressureOn(ow.pos, "B").pts;
-    if (Math.random() < 0.32 && press < 2 && aiSupportRun(ow)) return;
+    if (Math.random() < 0.45 && press < 3 && aiSupportRun(ow)) return;
     const fwd = freest(ow, false, { needForward: true });
     if (fwd && hexDist(ow.pos, fwd.pos) <= actionRange(ow, "pass")) {
       aiPass(ow, fwd, false);
@@ -3207,7 +3362,7 @@
       aiMoveToward(ow, [CENTER_COL, Math.max(1, ow.pos[1] - 4)]);
       return;
     }
-    if (Math.random() < 0.28 && aiSupportRun(ow)) return;
+    if (Math.random() < 0.42 && aiSupportRun(ow)) return;
     const recv = freest(ow, false, { needForward: true });
     if (recv && recv.pos[1] < ow.pos[1] - 1) {
       aiPass(ow, recv, hexDist(ow.pos, recv.pos) > actionRange(ow, "pass"));
@@ -3219,7 +3374,7 @@
   function aiPressAttack(ow) {
     if (ow.pos[1] <= 7 && tryAiShot(ow, 16)) return;
     if (ow.pos[1] > HALF_ROW + 1 && aiEscapeOwnHalf(ow)) return;
-    if (Math.random() < 0.25 && aiSupportRun(ow)) return;
+    if (Math.random() < 0.4 && aiSupportRun(ow)) return;
     const recv = freest(ow, true, { needForward: true });
     if (recv) {
       aiPass(ow, recv, hexDist(ow.pos, recv.pos) > actionRange(ow, "pass"));
@@ -3295,6 +3450,8 @@
       if (needForward && forward < 1) return;
       let s = -pr * 4 + forward * 5 - Math.abs(t.pos[0] - from.pos[0]) * 0.15;
       if (forward <= 0) s -= 6;
+      if (t.role === "NAP" && forward >= 1) s += 5;
+      if (t.role === "NAP" && t.pos[1] >= HALF_ROW) s += 3;
       if (s > bestS) {
         bestS = s;
         best = t;
@@ -3303,16 +3460,34 @@
     return best;
   }
 
+  function playerSupportNeed(p, ballOw) {
+    const ballRow = ballOw.pos[1];
+    let need = 0;
+    if (p.pos[1] < ballRow - 1) need += (ballRow - p.pos[1]) * 3;
+    if (p.role === "NAP" && p.pos[1] <= ballRow) need += 14;
+    if (p.role === "NAP" && p.pos[1] <= 7) need += 10;
+    if (p.pos[1] <= 5 && ballRow >= HALF_ROW - 1) need += 9;
+    const anchor = formationAnchor(p, "A");
+    if (p.pos[1] < anchor[1] - 1) need += (anchor[1] - p.pos[1]) * 2;
+    return need;
+  }
+
   function playerSupportRun(ballOw) {
     const runners = Object.values(state.you).filter(
       (p) => p.id !== ballOw.id && p.role !== "GK" && !isLocked(p.id)
     );
-    runners.sort((a, b) => b.pos[1] - a.pos[1]);
-    const r = runners.find((p) => p.pos[1] <= ballOw.pos[1] + 1) || runners[0];
-    if (!r) return false;
-    const targetRow = Math.min(GOAL_B_ROW - 2, Math.max(ballOw.pos[1] + 2, r.pos[1] + 2));
+    if (!runners.length) return false;
+    runners.sort((a, b) => playerSupportNeed(b, ballOw) - playerSupportNeed(a, ballOw));
+    const r = runners[0];
+    if (playerSupportNeed(r, ballOw) < 2) return false;
+    const anchor = formationAnchor(r, "A");
+    const targetRow = Math.min(GOAL_B_ROW - 2, Math.max(ballOw.pos[1] + 2, anchor[1]));
     const col =
-      r.role === "OP1" ? clamp(r.home[0], 0, 4) : r.role === "OP2" ? clamp(r.home[0], 8, 12) : clamp(ballOw.pos[0], 3, 9);
+      r.role === "OP1"
+        ? clamp(r.home[0], 0, 4)
+        : r.role === "OP2"
+          ? clamp(r.home[0], 8, 12)
+          : clamp(ballOw.pos[0], 3, 9);
     playerMoveToward(r, [col, targetRow]);
     return true;
   }
@@ -3376,6 +3551,21 @@
     const ow = ownerPlayer();
     if (ow && ow.side === "A" && !isLocked(ow.id)) {
       const press = pressureOn(ow.pos, "A").pts;
+      const nap = state.you.NAP;
+      const napStuck =
+        nap &&
+        !isLocked(nap.id) &&
+        (nap.pos[1] <= Math.min(ow.pos[1], HALF_ROW - 1) || (nap.pos[1] <= 7 && ow.pos[1] >= HALF_ROW - 2));
+
+      // критично: НП застрял сзади — сначала выдвижение, не пас ОП↔ОП
+      if (napStuck && (ow.role === "OP1" || ow.role === "OP2" || ow.role === "Z") && Math.random() < 0.82) {
+        playerMoveToward(nap, [
+          clamp(ow.pos[0] + (Math.random() < 0.5 ? -1 : 1), 3, 9),
+          Math.min(GOAL_B_ROW - 2, Math.max(ow.pos[1] + 2, HALF_ROW + 1)),
+        ]);
+        return true;
+      }
+
       // анти-залипание: из центральной полосы чаще нести/бить вперёд, не крутить поперечный пас
       const midBand = ow.pos[1] >= 8 && ow.pos[1] <= 13;
       if (midBand && press < 2 && Math.random() < 0.55) {
@@ -3391,7 +3581,7 @@
         return true;
       }
       // подтяни партнёра вперёд чаще — иначе нет адресата паса
-      if (Math.random() < 0.38 && press < 2 && playerSupportRun(ow)) return true;
+      if ((napStuck || Math.random() < 0.52) && press < 3 && playerSupportRun(ow)) return true;
 
       const shotRow = style === "possess" ? GOAL_B_ROW - 7 : style === "width" ? GOAL_B_ROW - 9 : GOAL_B_ROW - 9;
       const minChance = style === "possess" ? 14 : style === "width" ? 9 : 10;
@@ -3417,8 +3607,11 @@
       }
 
       const fwd = playerFreest(ow, { needForward: true });
+      // не кормить поперечный ОП↔ОП, если НП свободен впереди
       const wantPass =
-        (fwd && (style === "possess" || press >= 1 || fwd.pos[1] > ow.pos[1] + 1)) ||
+        (fwd &&
+          !(fwd.role !== "NAP" && napStuck) &&
+          (style === "possess" || press >= 1 || fwd.pos[1] > ow.pos[1] + 1 || fwd.role === "NAP")) ||
         (style === "width" && fwd && Math.abs(fwd.pos[0] - CENTER_COL) >= 3);
       if (wantPass && fwd) {
         const isCross = hexDist(ow.pos, fwd.pos) > actionRange(ow, "pass");
@@ -3473,6 +3666,7 @@
   }
 
   function endAITurnSync() {
+    holdFormation("B", skipBallOwnerIds("B"), true);
     state.turn = "A";
     state.ap = COACH_AP;
     state.lockedIds = [];
@@ -3556,6 +3750,7 @@
           if (stuck > 6) break;
         } else stuck = 0;
       }
+      holdFormation("A", skipBallOwnerIds("A"), true);
       if (state.over) break;
       runAISync();
       noteBallHeat();
@@ -3595,6 +3790,8 @@
       sot: advanced.sot,
       heatMap: advanced.heatMap,
       passMap: advanced.passMap,
+      roleShape: advanced.roleShape,
+      passDirectionShare: advanced.passDirectionShare,
       passPct: state.stats.passAtt ? +((100 * state.stats.passComp) / state.stats.passAtt).toFixed(1) : 0,
       goals: archive.filter((x) => /ГОЛ/i.test(x.msg)),
       saves: state.stats.gkSaves || 0,
@@ -3668,7 +3865,9 @@
     else if (softMismatch && weakShots <= 1 && shots >= 6 && totalGoals / shots > 0.85)
       notes.push("высокая реализация в матче с подавляющим контролем");
 
-    if (mid > 0.84) issues.push("залипание в центре (>84%)");
+    if (mid > 0.88) issues.push("залипание в центре (>88%)");
+    else if (mid > 0.84 && !softMismatch) issues.push("залипание в центре (>84%)");
+    else if (mid > 0.84 && softMismatch) notes.push("центр при контроле/разнице классов (" + mid.toFixed(2) + ")");
     else if (mid > 0.8 && equalish && shots < 5) issues.push("залипание в центре (>80%)");
     if (att < 0.1) issues.push("мало игры в финальных третях");
     else if (att < 0.14 && equalish && !softMismatch) issues.push("мало игры в финальных третях");
@@ -3689,7 +3888,7 @@
     else if ((st.passAtt || 0) >= 35 && passPct > 92 && softMismatch) notes.push("высокий % паса у контролирующей стороны");
 
     const pressy = result.awayAi === "press" || result.homeStyle === "press";
-    const tackleCap = pressy || softMismatch ? 110 : 92;
+    const tackleCap = pressy || softMismatch ? 130 : 92;
     if ((st.tackles || 0) > tackleCap) issues.push("спам отборов");
 
     // one-sided shots
@@ -3706,6 +3905,20 @@
     }
 
     if (mismatch && dominantShots < 2 && totalGoals < 2) issues.push("фаворит почти не создаёт моменты");
+
+    // оффбол / НП: не залипать в своей штрафной; пасы не должны быть почти все поперечные
+    const rs = (result.advanced && result.advanced.roleShape) || result.roleShape || {};
+    const napA = rs.A && rs.A.NAP;
+    const napB = rs.B && rs.B.NAP;
+    if (napA && napA.samples >= 40 && napA.ownBoxShare != null && napA.ownBoxShare > 0.42)
+      issues.push("НП дома слишком часто в своей штрафной");
+    else if (napA && napA.samples >= 40 && napA.avgRow < 7.5) notes.push("НП дома глубоко (avgRow " + napA.avgRow + ")");
+    if (napB && napB.samples >= 40 && napB.ownBoxShare != null && napB.ownBoxShare > 0.42)
+      issues.push("НП гостей слишком часто в своей штрафной");
+    else if (napB && napB.samples >= 40 && napB.avgRow > 13.5) notes.push("НП гостей глубоко (avgRow " + napB.avgRow + ")");
+    const pdir = (result.advanced && result.advanced.passDirectionShare) || result.passDirectionShare;
+    if (pdir && pdir.lateral > 0.55 && equalish) issues.push("слишком много поперечных передач");
+    else if (pdir && pdir.lateral > 0.48) notes.push("много поперечных пасов (" + pdir.lateral + ")");
 
     return {
       ok: issues.length === 0,
@@ -3731,6 +3944,7 @@
 
   function finishHomeWatchTurn() {
     if (!state.watchPlay || state.over) return;
+    holdFormation("A", skipBallOwnerIds("A"), true);
     noteBallHeat();
     state.turn = "B";
     state.mode = null;
