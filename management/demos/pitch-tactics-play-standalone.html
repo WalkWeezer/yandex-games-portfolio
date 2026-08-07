@@ -1093,8 +1093,9 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
    * С мячом: дебафф к дистанции от низкого владения + усталость ведения режет % удержания.
    */
   function carrySpeedDebuff(control) {
-    // control 5→0, 4→0, 3→1, 2→1, 1→2 — слабое владение режет, но не убивает рывок
-    return Math.max(0, Math.floor((5 - clamp(control, 1, 5)) / 2));
+    // было floor((5−c)/2); режем в ~3 раза → почти не режет ход, control 1 даёт −1
+    const raw = Math.max(0, Math.floor((5 - clamp(control, 1, 5)) / 2));
+    return Math.max(0, Math.round(raw / 3));
   }
 
   function moveBudget(p) {
@@ -1318,7 +1319,8 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   function keepChanceOnCell(p, hex, fatBefore) {
     const pr = pressureOn(hex, p.side);
     const ctrl = p.control || 1;
-    const perHex = Math.max(4, 14 - ctrl * 2);
+    // усталость ведения − в ~3 раза слабее прежнего perHex
+    const perHex = Math.max(1, Math.round(Math.max(4, 14 - ctrl * 2) / 3));
     // Пустое поле: без давления почти надёжно; риск копится от усталости ведения.
     // Давление Σ1+ — основная угроза потери.
     let keep = 100 - fatBefore * perHex;
