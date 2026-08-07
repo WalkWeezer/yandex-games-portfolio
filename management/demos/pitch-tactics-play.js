@@ -104,16 +104,42 @@
     return el;
   }
 
-  /** Stage matches viewBox aspect so HTML pieces sit on the same hex centers as SVG. */
+  /** Stage matches viewBox aspect; sized to fit host without page scroll. */
   function createPitchStage(host) {
     host.innerHTML = "";
     const stage = document.createElement("div");
     stage.className = "pitch-stage";
-    const ar = VB_W / VB_H;
     stage.style.aspectRatio = VB_W + " / " + VB_H;
-    stage.style.width = "min(100%, 420px, calc((100vh - 150px) * " + ar.toFixed(5) + "))";
     host.appendChild(stage);
+    sizePitchStage(stage, host);
     return stage;
+  }
+
+  function sizePitchStage(stage, host) {
+    if (!stage || !host) return;
+    const ar = VB_W / VB_H;
+    const pad = 8;
+    const availW = Math.max(40, host.clientWidth - pad);
+    const availH = Math.max(40, host.clientHeight - pad);
+    let w = availW;
+    let h = w / ar;
+    if (h > availH) {
+      h = availH;
+      w = h * ar;
+    }
+    stage.style.width = Math.floor(w) + "px";
+    stage.style.height = Math.floor(h) + "px";
+  }
+
+  let pitchResizeBound = false;
+  function bindPitchResize() {
+    if (pitchResizeBound) return;
+    pitchResizeBound = true;
+    window.addEventListener("resize", () => {
+      const host = app.querySelector("#pitch") || app.querySelector("#lineupPitch");
+      const stage = host && host.querySelector(".pitch-stage");
+      if (stage && host) sizePitchStage(stage, host);
+    });
   }
 
   function pitchBounds() {
@@ -676,6 +702,12 @@
 
     drawLineupPitch();
     fillSkillsSide();
+    bindPitchResize();
+    requestAnimationFrame(() => {
+      const host = app.querySelector("#lineupPitch");
+      const stage = host && host.querySelector(".pitch-stage");
+      if (stage) sizePitchStage(stage, host);
+    });
     app.querySelector("#back").onclick = () => {
       state.screen = "lobby";
       render();
@@ -873,6 +905,14 @@
     renderLeft();
     renderRight();
     ensurePitch();
+    bindPitchResize();
+    requestAnimationFrame(() => {
+      const host = app.querySelector("#pitch");
+      const stage = host && host.querySelector(".pitch-stage");
+      if (stage) sizePitchStage(stage, host);
+      syncPieces(false);
+      paintBoard();
+    });
     syncPieces(false);
     paintBoard();
   }
