@@ -2678,11 +2678,10 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     opts.sort((a, b) => {
       const da = hexDist(a, target) - hexDist(b, target);
       if (!carrying) return da;
-      const pa = pressureOn(a, p.side).pts;
-      const pb = pressureOn(b, p.side).pts;
-      const ra = pa >= 2 ? 100 : pa;
-      const rb = pb >= 2 ? 100 : pb;
-      return ra - rb || da;
+      const pa = previewCarryPath(p, from, a);
+      const pb = previewCarryPath(p, from, b);
+      // сначала безопасный коридор, потом ближе к цели
+      return pb.combined - pa.combined || pa.maxPr - pb.maxPr || da;
     });
     const to = opts[0];
     const steps = hexDist(from, to);
