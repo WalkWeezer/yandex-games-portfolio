@@ -1288,7 +1288,7 @@
         "</span>";
       b.onclick = () => {
         if (isLocked(p.id)) {
-          toast("Игрок уже отбирал — ход для него закрыт");
+          toast("Игрок исчерпан после неудачного отбора");
           return;
         }
         if (state.turn === "A" && !state.waiting && !state.over) openRadial(p.id);
@@ -1474,7 +1474,7 @@
         "/A" +
         p.accel +
         (p.burst && state.ballOwner === p.id ? " · рывок" : "") +
-        (isLocked(p.id) ? " · исчерпан после отбора" : "");
+        (isLocked(p.id) ? " · исчерпан после отбора мимо" : "");
       const label = ROLE_LABEL[p.role];
       if (el.dataset.baseLabel !== label) {
         el.dataset.baseLabel = label;
@@ -1548,7 +1548,7 @@
     const p = byId(playerId);
     if (!p || p.side !== "A" || state.turn !== "A" || state.waiting || state.over) return;
     if (isLocked(playerId)) {
-      toast("После отбора этому игроку больше нельзя отдавать команды в этом ходу");
+      toast("После неудачного отбора этому игроку больше нельзя отдавать команды в этом ходу");
       return;
     }
     state.selectedId = playerId;
@@ -2205,7 +2205,7 @@
 
   function doTackle(p, victim) {
     if (isLocked(p.id)) {
-      toast("Игрок уже отбирал в этом ходу");
+      toast("Игрок исчерпан после неудачного отбора");
       return;
     }
     const range = actionRange(p, "tackle");
@@ -2227,11 +2227,12 @@
       p.burst = true;
       victim.burst = false;
       resetCarryFatigue();
-      pushLog("Мяч отобран!", true);
+      pushLog("Мяч отобран! Можно продолжать на оставшихся AP.", true);
+      toast("Отбор успешен — действуйте дальше");
     } else {
       pushLog("Отбор не вышел — мяч у " + victim.name, true);
+      lockPlayer(p.id, "отбор мимо");
     }
-    lockPlayer(p.id, "отбор");
     spendAP(p.id);
   }
 
@@ -2594,11 +2595,12 @@
         h.burst = true;
         resetCarryFatigue();
         pushLog("ПК отобрал!", true);
+        // успешный отбор — можно продолжать на следующих AP
       } else {
         pushLog("ПК отбор мимо — мяч у " + ow.name);
+        state.aiLocked = state.aiLocked || [];
+        state.aiLocked.push(h.id);
       }
-      state.aiLocked = state.aiLocked || [];
-      state.aiLocked.push(h.id);
       return;
     }
     aiMoveToward(h, target);
