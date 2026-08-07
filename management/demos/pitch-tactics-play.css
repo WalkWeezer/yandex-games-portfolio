@@ -419,7 +419,8 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   z-index: 20;
   pointer-events: none;
 }
-.radial.open { pointer-events: auto; }
+.radial.open,
+.radial.cancel-only { pointer-events: auto; }
 .radial-btn {
   position: absolute;
   width: 52px; height: 52px;
@@ -439,10 +440,18 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   transform: scale(0.4);
   opacity: 0;
   transition: transform 0.18s ease, opacity 0.18s ease;
+  pointer-events: none;
 }
 .radial.open .radial-btn {
   transform: scale(1);
   opacity: 1;
+  pointer-events: auto;
+}
+.radial.cancel-only .radial-btn {
+  transform: scale(0.2);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
 }
 .radial-btn:hover { background: #24362a; color: var(--accent); }
 .radial-center {
@@ -454,8 +463,19 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   background: #0c140f;
   color: var(--muted);
   font-size: 0.65rem;
-  display: grid; place-items: center;
+  display: none;
+  place-items: center;
   cursor: pointer;
+  z-index: 2;
+}
+.radial.open .radial-center,
+.radial.cancel-only .radial-center {
+  display: grid;
+}
+.radial.cancel-only .radial-center {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 .preview .pct {

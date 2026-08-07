@@ -1158,7 +1158,7 @@
     stage.appendChild(radialEl);
     radialEl.querySelector("#radialClose").onclick = (e) => {
       e.stopPropagation();
-      closeRadial();
+      cancelRadialOrMode();
     };
     radialEl.querySelectorAll(".radial-btn").forEach((btn) => {
       const i = RADIAL.findIndex((r) => r.mode === btn.dataset.mode);
