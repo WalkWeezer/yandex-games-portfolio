@@ -427,7 +427,8 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   z-index: 20;
   pointer-events: none;
 }
-.radial.open { pointer-events: auto; }
+.radial.open,
+.radial.cancel-only { pointer-events: auto; }
 .radial-btn {
   position: absolute;
   width: 52px; height: 52px;
@@ -447,10 +448,18 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   transform: scale(0.4);
   opacity: 0;
   transition: transform 0.18s ease, opacity 0.18s ease;
+  pointer-events: none;
 }
 .radial.open .radial-btn {
   transform: scale(1);
   opacity: 1;
+  pointer-events: auto;
+}
+.radial.cancel-only .radial-btn {
+  transform: scale(0.2);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
 }
 .radial-btn:hover { background: #24362a; color: var(--accent); }
 .radial-center {
@@ -462,8 +471,19 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   background: #0c140f;
   color: var(--muted);
   font-size: 0.65rem;
-  display: grid; place-items: center;
+  display: none;
+  place-items: center;
   cursor: pointer;
+  z-index: 2;
+}
+.radial.open .radial-center,
+.radial.cancel-only .radial-center {
+  display: grid;
+}
+.radial.cancel-only .radial-center {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 .preview .pct {
@@ -1659,7 +1679,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     stage.appendChild(radialEl);
     radialEl.querySelector("#radialClose").onclick = (e) => {
       e.stopPropagation();
-      closeRadial();
+      cancelRadialOrMode();
     };
     radialEl.querySelectorAll(".radial-btn").forEach((btn) => {
       const i = RADIAL.findIndex((r) => r.mode === btn.dataset.mode);
@@ -1776,6 +1796,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     radialEl.style.left = pt.left + "%";
     radialEl.style.top = pt.top + "%";
     radialEl.classList.add("open");
+    radialEl.classList.remove("cancel-only");
     // disable actions that don't apply
     radialEl.querySelectorAll(".radial-btn").forEach((btn) => {
       const m = btn.dataset.mode;
@@ -1794,23 +1815,54 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     });
     syncPieces(false);
     paintBoard();
-    renderRight();
+    renderLeft();
     updatePreview();
   }
 
   function closeRadial() {
     state.radialOpen = false;
-    if (radialEl) radialEl.classList.remove("open");
+    if (radialEl) {
+      radialEl.classList.remove("open");
+      radialEl.classList.remove("cancel-only");
+    }
+  }
+
+  function cancelRadialOrMode() {
+    if (state.mode) {
+      state.mode = null;
+      state.reachable = [];
+      state.targets = [];
+      closeRadial();
+      paintBoard();
+      renderLeft();
+      updatePreview();
+      toast("Действие отменено");
+      return;
+    }
+    closeRadial();
+    updatePreview();
+  }
+
+  function showRadialCancelOnly() {
+    if (!radialEl || !state.selectedId) return;
+    const p = byId(state.selectedId);
+    if (!p) return;
+    const pt = pctFromHex(p.pos[0], p.pos[1]);
+    radialEl.style.left = pt.left + "%";
+    radialEl.style.top = pt.top + "%";
+    radialEl.classList.remove("open");
+    radialEl.classList.add("cancel-only");
+    state.radialOpen = false;
   }
 
   function chooseRadial(mode) {
     const p = byId(state.selectedId);
     if (!p) return;
-    closeRadial();
     state.mode = mode;
     state.reachable = [];
     state.targets = [];
-    if (state.mode === "move") {
+    showRadialCancelOnly();
+    if (mode === "move") {
       const bud = actionRange(p, "move");
       state.reachable = cellsInRange(p.pos, bud).filter((pos) => canStandOn(pos, p.id));
       if (state.loose) {
@@ -1848,8 +1900,8 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     } else if (mode === "tackle") {
       const range = actionRange(p, "tackle");
       if (state.loose && hexDist(p.pos, state.ball) <= range) {
-        // мяч под ногами — сразу подбор (клик по клетке с фигуркой иначе не проходит)
         if (hexDist(p.pos, state.ball) === 0) {
+          closeRadial();
           doPickup(p, true);
           return;
         }
