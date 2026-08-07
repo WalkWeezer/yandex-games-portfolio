@@ -55,6 +55,13 @@ body {
   font-size: 1.35rem; font-weight: 600; letter-spacing: -0.02em;
 }
 .tag { margin: 2px 0 0; color: var(--muted); font-size: 0.85rem; }
+.phone-tip {
+  display: none;
+  margin: 0;
+  width: 100%;
+  color: var(--accent);
+  font-size: 0.8rem;
+}
 
 .match-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
 .tab {
@@ -373,4 +380,67 @@ body {
   .stage { grid-template-columns: 1fr; }
   .pitch { min-height: 420px; }
   .panel { max-height: 320px; }
+}
+
+/* Phone-first replay */
+@media (max-width: 720px) {
+  .app {
+    padding: 10px 10px 88px;
+    gap: 8px;
+  }
+  .brand h1 { font-size: 1.1rem; }
+  .tag { font-size: 0.75rem; }
+  .match-tabs {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    font-size: 0.8rem;
+  }
+  .meta { font-size: 0.82rem; padding: 8px 10px; }
+  .stage {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .panel-left { order: 2; max-height: none; }
+  .pitch-wrap { order: 1; }
+  .panel-right { order: 3; max-height: none; }
+  .pitch {
+    min-height: min(62vh, 520px);
+    border-radius: 12px;
+  }
+  .piece {
+    width: 24px;
+    height: 24px;
+    margin: -12px 0 0 -12px;
+    font-size: 0.55rem;
+  }
+  .glossary { display: none; }
+  .panel-left h2:nth-of-type(3),
+  .panel-left .glossary { display: none; }
+  .transport {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    margin: 0 -10px -10px;
+    border-radius: 14px 14px 0 0;
+    padding: 10px;
+    gap: 8px;
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.35);
+  }
+  .btn {
+    padding: 12px 14px;
+    min-height: 44px;
+    flex: 1 1 auto;
+  }
+  .btn-primary { flex: 1.4 1 auto; }
+  #scrubber { width: 100%; flex: 1 0 100%; order: 5; }
+  .step-count { width: 100%; text-align: center; order: 6; }
+  .pitch-hint { font-size: 0.7rem; }
 }
