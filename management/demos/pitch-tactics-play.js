@@ -925,7 +925,7 @@
       '<div class="scoreline"><span>Вы ' +
       state.score[0] +
       '</span><span class="clock">' +
-      String(state.minute).padStart(2, "0") +
+      String(state.minute) +
       "'</span><span>" +
       state.score[1] +
       " ПК</span></div>" +
@@ -1215,9 +1215,22 @@
     state.mode = mode;
     state.reachable = [];
     state.targets = [];
-    if (mode === "move") {
+    if (state.mode === "move") {
       const bud = actionRange(p, "move");
-      state.reachable = cellsInRange(p.pos, bud).filter((pos) => !occupant(pos));
+      // можно наступить на клетку со свободным мячом
+      state.reachable = cellsInRange(p.pos, bud).filter((pos) => {
+        const occ = occupant(pos);
+        if (!occ) return true;
+        return false;
+      });
+      if (state.loose) {
+        const d = hexDist(p.pos, state.ball);
+        if (d > 0 && d <= bud && !occupant(state.ball)) {
+          if (!state.reachable.some((x) => x[0] === state.ball[0] && x[1] === state.ball[1])) {
+            state.reachable.push(state.ball.slice());
+          }
+        }
+      }
       toast("Ход до " + bud + " гексов (" + (p.burst ? "уск.A" : "скор.S") + ")");
     } else if (mode === "pass" || mode === "cross") {
       const range = actionRange(p, mode);
@@ -1236,7 +1249,14 @@
       else toast("Клетка ворот в радиусе " + range);
     } else if (mode === "tackle") {
       const range = actionRange(p, "tackle");
-      if (state.loose && hexDist(p.pos, state.ball) <= range) state.targets.push(state.ball.slice());
+      if (state.loose && hexDist(p.pos, state.ball) <= range) {
+        // мяч под ногами — сразу подбор (клик по клетке с фигуркой иначе не проходит)
+        if (hexDist(p.pos, state.ball) === 0) {
+          doPickup(p, true);
+          return;
+        }
+        state.targets.push(state.ball.slice());
+      }
       const ow = ownerPlayer();
       if (ow && ow.side === "B" && hexDist(p.pos, ow.pos) <= range) state.targets.push(ow.pos.slice());
       if (!state.targets.length) toast("Цель отбора вне радиуса " + range);
@@ -1342,7 +1362,15 @@
           return;
         }
         if (state.mode === "tackle" && p.side === "B") {
+          if (state.loose && state.ball[0] === p.pos[0] && state.ball[1] === p.pos[1]) {
+            doPickup(sel, false);
+            return;
+          }
           doTackle(sel, p);
+          return;
+        }
+        if (state.mode === "tackle" && state.loose && p.id === sel.id && hexDist(sel.pos, state.ball) === 0) {
+          doPickup(sel, true);
           return;
         }
       }
@@ -1418,22 +1446,57 @@
       }
     } else {
       pushLog(p.name + " → " + cellName(to));
+      // наступил на свободный мяч — забирает
+      if (state.loose && state.ball[0] === to[0] && state.ball[1] === to[1]) {
+        claimLoose(p, true);
+      }
     }
     if (usedBurst) p.burst = false;
     else if (carrying) p.burst = false;
     spendAP();
   }
 
-  function doPickup(p) {
-    const ch = clamp(45 + skillPct(p.tackle) * 0.35, 25, 88);
+  /** sure=true: мяч под ногами / наступил — без провала */
+  function claimLoose(p, sure) {
+    if (!state.loose) return false;
+    const dist = hexDist(p.pos, state.ball);
+    if (dist > actionRange(p, "tackle") && !sure) return false;
+    if (sure || dist === 0) {
+      state.ballOwner = p.id;
+      state.loose = false;
+      state.ball = p.pos.slice();
+      p.burst = true;
+      pushLog(p.name + " подобрал мяч", true);
+      return true;
+    }
+    const ch = clamp(55 + skillPct(p.tackle) * 0.35, 40, 92);
     const roll = rnd();
     if (roll <= ch) {
       state.ballOwner = p.id;
       state.loose = false;
       state.ball = p.pos.slice();
       p.burst = true;
-      pushLog(p.name + " подобрал мяч", true);
-    } else pushLog(p.name + " не зафиксировал мяч");
+      pushLog(p.name + " подобрал мяч (" + ch + "%)", true);
+      return true;
+    }
+    pushLog(p.name + " не зафиксировал мяч (" + ch + "%)");
+    return false;
+  }
+
+  function doPickup(p, sure) {
+    if (!state.loose) {
+      toast("Мяч не свободен");
+      return;
+    }
+    if (hexDist(p.pos, state.ball) > actionRange(p, "tackle")) {
+      toast("Мяч вне радиуса");
+      return;
+    }
+    // подтянуть мяч к игроку при подборе с соседней клетки
+    if (hexDist(p.pos, state.ball) > 0 && (sure || true)) {
+      // остаёмся на своей клетке, мяч к нам
+    }
+    claimLoose(p, !!sure || hexDist(p.pos, state.ball) === 0);
     spendAP();
   }
 
@@ -1587,7 +1650,7 @@
     state.reachable = [];
     state.targets = [];
     state.turn = "B";
-    state.minute = Math.min(MATCH_MINUTES, state.minute + 1);
+    // минута только после полного цикла (игрок+ПК) — иначе 90' сгорали вдвое быстрее
     pushLog("— Ход соперника —");
     renderLeft();
     renderRight();
@@ -1603,7 +1666,7 @@
     state.minute = Math.min(MATCH_MINUTES, state.minute + 1);
     state.waiting = false;
     state.selectedId = null;
-    pushLog("— Ваш ход (2 AP) —", true);
+    pushLog("— Ваш ход (2 AP) — · " + state.minute + "'", true);
     if (state.minute >= MATCH_MINUTES) {
       endMatch();
       return;
@@ -1642,19 +1705,45 @@
 
   function aiAction(style) {
     if (state.loose) {
+      // 1) уже стоит на мяче — всегда забирает
+      const onBall = Object.values(state.them).find(
+        (p) => p.pos[0] === state.ball[0] && p.pos[1] === state.ball[1]
+      );
+      if (onBall) {
+        claimLoose(onBall, true);
+        pushLog("ПК: " + onBall.name + " забрал мяч под ногами");
+        return;
+      }
+      // 2) ближайший бежит на клетку мяча / подбирает
       const near = Object.values(state.them)
-        .filter((p) => hexDist(p.pos, state.ball) <= actionRange(p, "tackle"))
-        .sort((a, b) => hexDist(a.pos, state.ball) - hexDist(b.pos, state.ball) || b.tackle - a.tackle)[0];
+        .filter((p) => p.role !== "GK")
+        .sort((a, b) => hexDist(a.pos, state.ball) - hexDist(b.pos, state.ball))[0];
       if (near) {
-        const ch = clamp(40 + skillPct(near.tackle) * 0.3, 25, 80);
-        if (rnd() <= ch) {
-          state.ballOwner = near.id;
-          state.ball = near.pos.slice();
-          state.loose = false;
-          near.burst = true;
-          pushLog("ПК: " + near.name + " подобрал мяч");
-        } else {
-          pushLog("ПК: " + near.name + " не зафиксировал");
+        const d = hexDist(near.pos, state.ball);
+        const bud = actionRange(near, "move");
+        if (d <= actionRange(near, "tackle") && d > 0 && Math.random() < 0.45) {
+          claimLoose(near, false);
+          if (!state.loose) return;
+        }
+        if (d <= bud && !occupant(state.ball)) {
+          // шаг на мяч
+          const opts = cellsInRange(near.pos, bud)
+            .filter((pos) => !occupant(pos))
+            .sort((a, b) => hexDist(a, state.ball) - hexDist(b, state.ball));
+          // предпочесть саму клетку мяча
+          const onto = opts.find((pos) => pos[0] === state.ball[0] && pos[1] === state.ball[1]) || opts[0];
+          if (onto) {
+            near.pos = onto;
+            pushLog("ПК " + near.name + " → " + cellName(onto));
+            if (onto[0] === state.ball[0] && onto[1] === state.ball[1]) {
+              claimLoose(near, true);
+            }
+            return;
+          }
+        }
+        aiMoveToward(near, state.ball);
+        if (state.loose && near.pos[0] === state.ball[0] && near.pos[1] === state.ball[1]) {
+          claimLoose(near, true);
         }
         return;
       }
