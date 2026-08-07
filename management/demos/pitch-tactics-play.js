@@ -3375,18 +3375,19 @@
 
   function runAISync() {
     const opp = OPPONENTS.find((x) => x.id === state.opponentId);
+    const awayStyle = state.awayAiStyle || (opp && opp.ai) || "direct";
     let ap = COACH_AP;
     state.aiLocked = [];
     state.turn = "B";
     pushLog("— Ход соперника —");
     while (ap > 0 && !state.over) {
-      aiAction(opp.ai);
+      aiAction(awayStyle);
       ap -= 1;
     }
     if (!state.over) endAITurnSync();
   }
 
-  /** ИИ vs ИИ. opts: { awayId, homeStyle, homeMult, awayMult, skillSpread, seedLabel } */
+  /** ИИ vs ИИ. opts: { awayId, homeStyle, awayAi, homeMult, awayMult, skillSpread, homeName, awayName, awayNames } */
   function autoPlayFullMatch(oppIdOrOpts) {
     const opts = typeof oppIdOrOpts === "string" || !oppIdOrOpts ? { awayId: oppIdOrOpts || "academy" } : oppIdOrOpts;
     const awayId = opts.awayId || "academy";
@@ -3398,8 +3399,11 @@
     state.matchArchive = [];
     state.stats = emptyMatchStats();
     state.opponentId = awayId;
-    const opp = OPPONENTS.find((x) => x.id === awayId);
+    const opp = OPPONENTS.find((x) => x.id === awayId) || OPPONENTS[0];
     const awayMult = opts.awayMult != null ? opts.awayMult : opp.mult;
+    const awayAi = opts.awayAi || opp.ai;
+    state.awayAiStyle = awayAi;
+    const awayNames = opts.awayNames || opp.names;
     state.you = buildSquad("A", null, homeMult, skillSpread);
     // лёгкая «неодинаковость» домашнего стиля на равных
     if (homeStyle === "possess") {
@@ -3415,7 +3419,11 @@
       state.you.NAP.accel = clamp(state.you.NAP.accel + 1, 1, 5);
       state.you.NAP.pass = clamp(state.you.NAP.pass, 1, 5);
     }
-    state.them = buildSquad("B", opp.names, awayMult, skillSpread);
+    state.them = buildSquad("B", awayNames, awayMult, skillSpread);
+    if (opts.homeName) {
+      // косметика для отчёта: переименуем NAP как маркер клуба
+      state.you.NAP.name = String(opts.homeName).slice(0, 18);
+    }
     const homeSnap = squadSkillSnapshot(state.you);
     const awaySnap = squadSkillSnapshot(state.them);
     startMatch();
@@ -3452,9 +3460,10 @@
       homeMult,
       awayMult,
       skillSpread,
-      opponent: opp.name,
+      homeName: opts.homeName || "Home",
+      opponent: opts.awayName || opp.name,
       awayId: opp.id,
-      awayAi: opp.ai,
+      awayAi,
       awayTier: opp.tier,
       coachAP: COACH_AP,
       score: state.score.slice(),
