@@ -331,7 +331,17 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
 .hex-cell.mark { fill: #24633d; stroke: rgba(255,255,255,0.32); }
 .hex-cell.goal { fill: #0a1018; stroke: #e8f0ff; stroke-width: 1.6; }
 .hex-cell.goal-dive { stroke: var(--warn); stroke-width: 2; }
-.hex-cell.reachable { fill: #2a6a40; stroke: var(--accent); stroke-width: 1.4; }
+/* XCOM-style move rings: yellow = half, gold = full dash */
+.hex-cell.reach-yellow {
+  fill: #6a5e18;
+  stroke: #f0d35a;
+  stroke-width: 1.55;
+}
+.hex-cell.reach-gold {
+  fill: #5a4210;
+  stroke: #e8a83a;
+  stroke-width: 1.65;
+}
 .hex-cell.carry-risk { fill: #6a5a20; stroke: var(--warn); stroke-width: 1.5; }
 .hex-cell.carry-danger { fill: #6a2820; stroke: var(--danger); stroke-width: 1.7; }
 .hex-cell.target { fill: #3a5a2a; stroke: #9ccfff; stroke-width: 1.5; }

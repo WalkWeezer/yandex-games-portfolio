@@ -322,7 +322,7 @@
         if (interactive) {
           poly.addEventListener("click", () => onHexClick(c, r));
           poly.addEventListener("pointerenter", () => {
-            if (state.mode === "move" && state.ballOwner === state.selectedId) updatePreview([c, r]);
+            if (state.mode === "move") updatePreview([c, r]);
           });
           hexNodes[c + "," + r] = poly;
         }
@@ -469,6 +469,8 @@
     selectedId: null,
     mode: null,
     reachable: [],
+    reachYellow: 0,
+    reachGold: 0,
     targets: [],
     log: [],
     over: false,
@@ -569,6 +571,19 @@
       hexes = Math.max(1, hexes - carrySpeedDebuff(p.control || 1));
     }
     return hexes;
+  }
+
+  /**
+   * Ход как в XCOM: два кольца на одном бюджете.
+   * Жёлтый — половина (короткий шаг), золотой — полный рывок/S.
+   * Любая клетка в золотом (включая 1 гекс) кликабельна.
+   */
+  function moveBands(p) {
+    const gold = moveBudget(p);
+    const yellow = Math.max(1, Math.ceil(gold / 2));
+    const raw = state.ballOwner === p.id && p.burst ? p.accel : p.speed;
+    const tag = state.ballOwner === p.id && p.burst ? "A" + raw : "S" + raw;
+    return { yellow, gold, tag };
   }
 
   function moveMs(from, to) {
@@ -880,7 +895,7 @@
       '<div class="skills-side" id="skillsSide"></div></div>' +
       '<div class="lineup-actions"><button class="btn btn-ghost" id="back">← Назад</button>' +
       '<button class="btn btn-primary" id="kick">Начать матч</button></div>' +
-      '<div class="hint-box">Без мяча — полный S/A (до 5 гекс). С мячом −дебафф от <b>владения</b>; каждая клетка ведения копит риск потери (как усталость). Неактивные сами подтягивают форму.</div></section>';
+      '<div class="hint-box">Ход как в XCOM: <b>жёлтый</b> радиус = полхода, <b>золотой</b> = полный; можно на 1 клетку. С мячом −дебафф <b>владения</b>; давление на пути режет удержание. Неактивные подтягивают форму.</div></section>';
 
     drawLineupPitch();
     fillSkillsSide();
@@ -1231,7 +1246,9 @@
       '</div><div>Влад. <b>' +
       p.control +
       "</b></div><div>Ход <b>" +
-      moveBudget(p) +
+      moveBands(p).yellow +
+      "</b>/<b>" +
+      moveBands(p).gold +
       "</b></div></div>" +
       '<div class="muted" style="font-size:0.75rem">S' +
       p.speed +
@@ -1243,7 +1260,7 @@
       " · устал." +
       (state.ballOwner === p.id ? state.carryFatigue || 0 : 0) +
       "</div>" +
-      '<div class="hint-box">Без мяча — полный S/A. С мячом −дебафф владения; клетки ведения копят риск потери.</div></div>'
+      '<div class="hint-box">Ход как в XCOM: <b>жёлтый</b> = полхода, <b>золотой</b> = полный. Можно на 1 клетку. С мячом −дебафф владения.</div></div>'
     );
   }
 
@@ -1398,10 +1415,12 @@
         n.classList.add(pr.pts >= 2 ? "pressure2" : "pressure1");
       }
     }
+    const mover = state.selectedId ? byId(state.selectedId) : null;
     state.reachable.forEach((pos) => {
       const n = hexNodes[pos[0] + "," + pos[1]];
-      if (!n) return;
-      n.classList.add("reachable");
+      if (!n || !mover) return;
+      const d = hexDist(mover.pos, pos);
+      n.classList.add(d <= state.reachYellow ? "reach-yellow" : "reach-gold");
       if (state.ballOwner === state.selectedId) {
         const pr = pressureOn(pos, "A").pts;
         if (pr >= 2) n.classList.add("carry-danger");
@@ -1429,6 +1448,8 @@
     state.radialOpen = true;
     state.mode = null;
     state.reachable = [];
+    state.reachYellow = 0;
+    state.reachGold = 0;
     state.targets = [];
     const pt = pctFromHex(p.pos[0], p.pos[1]);
     radialEl.style.left = pt.left + "%";
@@ -1498,29 +1519,34 @@
     if (!p) return;
     state.mode = mode;
     state.reachable = [];
+    state.reachYellow = 0;
+    state.reachGold = 0;
     state.targets = [];
     showRadialCancelOnly();
     if (mode === "move") {
-      const bud = actionRange(p, "move");
-      state.reachable = cellsInRange(p.pos, bud).filter((pos) => canStandOn(pos, p.id));
+      const bands = moveBands(p);
+      state.reachYellow = bands.yellow;
+      state.reachGold = bands.gold;
+      state.reachable = cellsInRange(p.pos, bands.gold).filter((pos) => canStandOn(pos, p.id));
       if (state.loose) {
         const d = hexDist(p.pos, state.ball);
-        if (d > 0 && d <= bud && canStandOn(state.ball, p.id)) {
+        if (d > 0 && d <= bands.gold && canStandOn(state.ball, p.id)) {
           if (!state.reachable.some((x) => x[0] === state.ball[0] && x[1] === state.ball[1])) {
             state.reachable.push(state.ball.slice());
           }
         }
       }
-      const raw = state.ballOwner === p.id && p.burst ? p.accel : p.speed;
       const deb = state.ballOwner === p.id ? carrySpeedDebuff(p.control || 1) : 0;
-      const tag =
-        (state.ballOwner === p.id && p.burst ? "рывок A" : "скор. S") +
-        raw +
-        (deb ? "−" + deb : "") +
-        "→" +
-        bud +
-        " гекс";
-      toast("Ход до " + bud + " · " + tag);
+      toast(
+        "Ход XCOM · жёлтый ≤" +
+          bands.yellow +
+          " · золотой ≤" +
+          bands.gold +
+          " · " +
+          bands.tag +
+          (deb ? " −" + deb + " влад." : "") +
+          " · можно на 1 клетку"
+      );
     } else if (mode === "pass" || mode === "cross") {
       const range = actionRange(p, mode);
       Object.values(state.you).forEach((t) => {
@@ -1577,18 +1603,30 @@
       return;
     }
     if (state.mode === "move") {
-      const bud = actionRange(p, "move");
-      const raw = state.ballOwner === p.id && p.burst ? p.accel : p.speed;
+      const bands = moveBands(p);
       const deb = state.ballOwner === p.id ? carrySpeedDebuff(p.control || 1) : 0;
       let html =
-        "<b>Ход</b> до <b>" +
-        bud +
-        "</b> · " +
-        (state.ballOwner === p.id && p.burst ? "A" : "S") +
-        raw +
+        "<b>Ход</b> · <span style=\"color:#f0d35a\">жёлтый ≤" +
+        bands.yellow +
+        "</span> · <span style=\"color:#e8b84a\">золотой ≤" +
+        bands.gold +
+        "</span> · " +
+        bands.tag +
         (deb ? " −" + deb + " (влад." + p.control + ")" : " без мяча") +
-        " · устал." +
+        " · клик любую клетку (хоть 1) · устал." +
         (state.carryFatigue || 0);
+      if (hoverHex) {
+        const d = hexDist(p.pos, hoverHex);
+        if (d > 0 && d <= bands.gold) {
+          html +=
+            " · цель " +
+            cellName(hoverHex) +
+            " · " +
+            d +
+            " гекс · " +
+            (d <= bands.yellow ? "жёлтый" : "золотой");
+        }
+      }
       if (state.ballOwner === p.id && hoverHex) {
         const prev = previewCarryPath(p, p.pos, hoverHex);
         html +=
@@ -1711,6 +1749,8 @@
     state.ap -= 1;
     state.mode = null;
     state.reachable = [];
+    state.reachYellow = 0;
+    state.reachGold = 0;
     state.targets = [];
     closeRadial();
     syncPieces(true, moveId, fromPos);
@@ -1725,10 +1765,10 @@
     const from = p.pos.slice();
     const carrying = state.ballOwner === p.id;
     const usedBurst = carrying && p.burst;
-    const bud = moveBudget(p);
+    const bands = moveBands(p);
     const steps = hexDist(from, to);
-    if (steps > bud) {
-      toast("Дальше лимита хода (" + bud + ")");
+    if (steps > bands.gold) {
+      toast("Дальше золотого радиуса (" + bands.gold + ")");
       return;
     }
     p.pos = to.slice();
@@ -1738,6 +1778,11 @@
         p.name +
           " ведёт → " +
           cellName(to) +
+          " · " +
+          (steps <= bands.yellow ? "жёлт." : "золот.") +
+          steps +
+          "/" +
+          bands.gold +
           " · " +
           (usedBurst ? "A" + p.accel : "S" + p.speed) +
           " · " +
