@@ -438,7 +438,8 @@
     over: false,
     waiting: false,
     radialOpen: false,
-    diveCol: null, // GK dive guess when defending shot at your goal (future PvP); AI picks for B
+    diveCol: null,
+    lockedIds: [], // после отбора игрок недоступен до конца хода тренера
   };
 
   const app = document.getElementById("app");
@@ -458,6 +459,15 @@
   }
   function ownerPlayer() {
     return state.ballOwner ? byId(state.ballOwner) : null;
+  }
+  function isLocked(id) {
+    return state.lockedIds.indexOf(id) >= 0;
+  }
+  function lockPlayer(id, reason) {
+    if (!id || isLocked(id)) return;
+    state.lockedIds.push(id);
+    const p = byId(id);
+    pushLog((p ? p.name : id) + " исчерпан" + (reason ? " (" + reason + ")" : ""), true);
   }
 
   /** Stacked pressure: each enemy adds (pressRadius - dist + 1) if in range */
@@ -923,6 +933,7 @@
     state.over = false;
     state.waiting = false;
     state.radialOpen = false;
+    state.lockedIds = [];
     pushLog("Свисток! Клик по игроку → радиальное меню (5 действий).", true);
     state.screen = "match";
     render();
@@ -987,13 +998,18 @@
     Object.values(state.you).forEach((p) => {
       const b = document.createElement("button");
       b.type = "button";
-      b.className = "player-card" + (state.selectedId === p.id ? " selected" : "") + (state.ballOwner === p.id ? " has-ball" : "");
+      b.className =
+        "player-card" +
+        (state.selectedId === p.id ? " selected" : "") +
+        (state.ballOwner === p.id ? " has-ball" : "") +
+        (isLocked(p.id) ? " locked" : "");
       const pr = pressureOn(p.pos, p.side);
       b.innerHTML =
         '<span class="pc-role">' +
         ROLE_LABEL[p.role] +
         '</span><span class="pc-name">' +
         p.name +
+        (isLocked(p.id) ? " · ✕" : "") +
         '</span><span class="pc-meta">' +
         cellName(p.pos) +
         " · <b>S" +
@@ -1004,6 +1020,10 @@
         pr.pts +
         "</span>";
       b.onclick = () => {
+        if (isLocked(p.id)) {
+          toast("Игрок уже отбирал — ход для него закрыт");
+          return;
+        }
         if (state.turn === "A" && !state.waiting && !state.over) openRadial(p.id);
         else {
           state.selectedId = p.id;
@@ -1167,7 +1187,15 @@
       el.style.top = pt.top + "%";
       el.classList.toggle("selected", state.selectedId === p.id);
       el.classList.toggle("has-ball", state.ballOwner === p.id);
-      el.title = p.name + " · S" + p.speed + "/A" + p.accel + (p.burst && state.ballOwner === p.id ? " · рывок" : "");
+      el.classList.toggle("locked", isLocked(p.id));
+      el.title =
+        p.name +
+        " · S" +
+        p.speed +
+        "/A" +
+        p.accel +
+        (p.burst && state.ballOwner === p.id ? " · рывок" : "") +
+        (isLocked(p.id) ? " · исчерпан после отбора" : "");
       const label = ROLE_LABEL[p.role];
       if (el.dataset.baseLabel !== label) {
         el.dataset.baseLabel = label;
@@ -1234,6 +1262,10 @@
   function openRadial(playerId) {
     const p = byId(playerId);
     if (!p || p.side !== "A" || state.turn !== "A" || state.waiting || state.over) return;
+    if (isLocked(playerId)) {
+      toast("После отбора этому игроку больше нельзя отдавать команды в этом ходу");
+      return;
+    }
     state.selectedId = playerId;
     state.radialOpen = true;
     state.mode = null;
@@ -1682,6 +1714,10 @@
   }
 
   function doTackle(p, victim) {
+    if (isLocked(p.id)) {
+      toast("Игрок уже отбирал в этом ходу");
+      return;
+    }
     const range = actionRange(p, "tackle");
     if (hexDist(p.pos, victim.pos) > range) {
       toast("Вне радиуса отбора " + range);
@@ -1702,9 +1738,9 @@
       victim.burst = false;
       pushLog("Мяч отобран!", true);
     } else {
-      // Промах: владение сохраняется — иначе один НАП вечно подбирает «свободный»
       pushLog("Отбор не вышел — мяч у " + victim.name, true);
     }
+    lockPlayer(p.id, "отбор");
     spendAP();
   }
 
@@ -1747,6 +1783,7 @@
   function endAITurn() {
     state.turn = "A";
     state.ap = COACH_AP;
+    state.lockedIds = [];
     state.minute = Math.min(MATCH_MINUTES, state.minute + 1);
     state.waiting = false;
     state.selectedId = null;
@@ -1771,6 +1808,7 @@
   function runAI() {
     const opp = OPPONENTS.find((x) => x.id === state.opponentId);
     let ap = COACH_AP;
+    state.aiLocked = [];
     const step = () => {
       if (ap <= 0 || state.over) {
         setTimeout(endAITurn, 280);
