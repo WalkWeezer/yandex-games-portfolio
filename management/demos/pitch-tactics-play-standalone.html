@@ -2942,12 +2942,16 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     const total = links.reduce((a, b) => a + b.count, 0);
     // агрегат по зонам: из трети / в треть
     const thirdOf = (r) => (r <= 6 ? "attB" : r >= 14 ? "attA" : "mid");
-    const zones = { attA: 0, mid: 0, attB: 0, progressive: 0, lateral: 0, back: 0 };
+    // dy>0 = к воротам B (низ поля), dy<0 = к воротам A
+    const zones = { toAttA: 0, toMid: 0, toAttB: 0, towardB: 0, towardA: 0, lateral: 0 };
     links.forEach((l) => {
       if (!l.fromPos || !l.toPos) return;
-      zones[thirdOf(l.toPos[1])] += l.count;
-      if (l.dy > 0) zones.progressive += l.count;
-      else if (l.dy < 0) zones.back += l.count;
+      const t = thirdOf(l.toPos[1]);
+      if (t === "attA") zones.toAttA += l.count;
+      else if (t === "attB") zones.toAttB += l.count;
+      else zones.toMid += l.count;
+      if (l.dy > 0) zones.towardB += l.count;
+      else if (l.dy < 0) zones.towardA += l.count;
       else zones.lateral += l.count;
     });
     const ascii = links
