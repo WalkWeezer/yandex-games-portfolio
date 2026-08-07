@@ -2043,7 +2043,7 @@
   function aiDefend() {
     const target = state.loose ? state.ball : ownerPlayer() ? ownerPlayer().pos : state.ball;
     const h = Object.values(state.them)
-      .filter((p) => p.role !== "GK")
+      .filter((p) => p.role !== "GK" && (state.aiLocked || []).indexOf(p.id) < 0)
       .sort((a, b) => hexDist(a.pos, target) - hexDist(b.pos, target))[0];
     if (!h) return;
     const ow = ownerPlayer();
@@ -2061,6 +2061,8 @@
       } else {
         pushLog("ПК отбор мимо — мяч у " + ow.name);
       }
+      state.aiLocked = state.aiLocked || [];
+      state.aiLocked.push(h.id);
       return;
     }
     aiMoveToward(h, target);
