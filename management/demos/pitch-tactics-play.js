@@ -16,7 +16,7 @@
   const GOAL_B_ROW = 20;
   const CENTER_COL = 6;
   const HALF_ROW = 10;
-  const COACH_AP = 2;
+  const COACH_AP = 4;
   const MATCH_MINUTES = 90;
   const ROLE_LABEL = { GK: "ВР", Z: "З", OP1: "О1", OP2: "О2", NAP: "Н" };
   const RADIAL = [
@@ -1118,7 +1118,7 @@
       (state.mode ? ' · <span class="mode-chip">' + modeLabel(state.mode) + "</span>" : "") +
       "</div>" +
       '<div class="ap-pills">' +
-      [0, 1].map((i) => '<div class="ap' + (i < state.ap && state.turn === "A" ? " on" : "") + '"></div>').join("") +
+      Array.from({ length: COACH_AP }, (_, i) => '<div class="ap' + (i < state.ap && state.turn === "A" ? " on" : "") + '"></div>').join("") +
       "</div>" +
       '<div class="muted" style="font-size:0.78rem;margin-bottom:8px">Мяч: ' +
       (state.loose ? "свободный @ " + cellName(state.ball) : state.ballOwner ? byId(state.ballOwner).name : "—") +
@@ -1978,7 +1978,7 @@
     state.minute = Math.min(MATCH_MINUTES, state.minute + 1);
     state.waiting = false;
     state.selectedId = null;
-    pushLog("— Ваш ход (2 AP) — · " + state.minute + "'", true);
+    pushLog("— Ваш ход (" + COACH_AP + " AP) — · " + state.minute + "'", true);
     if (state.minute >= MATCH_MINUTES) {
       endMatch();
       return;
