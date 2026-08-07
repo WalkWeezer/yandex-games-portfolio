@@ -1807,7 +1807,19 @@
         toast("Потеря мяча на пути");
       }
     } else {
-      pushLog(p.name + " → " + cellName(to) + " · S" + p.speed + " (ход " + steps + "/" + bud + ")");
+      pushLog(
+        p.name +
+          " → " +
+          cellName(to) +
+          " · " +
+          (steps <= bands.yellow ? "жёлт." : "золот.") +
+          steps +
+          "/" +
+          bands.gold +
+          " · " +
+          (usedBurst ? "A" : "S") +
+          (usedBurst ? p.accel : p.speed)
+      );
       if (state.loose && state.ball[0] === to[0] && state.ball[1] === to[1]) {
         claimLoose(p, true);
       }
