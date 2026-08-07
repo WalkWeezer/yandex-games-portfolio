@@ -259,6 +259,9 @@
         poly.dataset.r = String(r);
         if (interactive) {
           poly.addEventListener("click", () => onHexClick(c, r));
+          poly.addEventListener("pointerenter", () => {
+            if (state.mode === "move" && state.ballOwner === state.selectedId) updatePreview([c, r]);
+          });
           hexNodes[c + "," + r] = poly;
         }
         svg.appendChild(poly);
@@ -277,29 +280,32 @@
       cross: spec.cross,
       tackle: spec.tackle,
       speed: spec.speed,
+      accel: spec.accel,
       press: spec.press,
+      burst: false, // true = next move uses accel (after touch / pickup)
       pos: spec.pos.slice(),
       home: spec.pos.slice(),
     };
   }
   function scaleSkills(base, mult) {
     const o = {};
-    ["shot", "pass", "cross", "tackle"].forEach((k) => {
-      o[k] = clamp(Math.round(base[k] * mult), 20, 96);
+    ["shot", "pass", "cross", "tackle", "speed", "accel"].forEach((k) => {
+      o[k] = clamp(Math.round(base[k] * mult), 1, 5);
     });
-    o.speed = base.speed;
     o.press = base.press;
     o.name = base.name;
     o.pos = base.pos.slice();
     return o;
   }
 
+  // Атрибуты 1–5: радиус действия скилла.
+  // Пас/удар = значение; отбор = /2; навес = ×2. S/A ≤ 5.
   const YOU_BASE = {
-    GK: { name: "Кольцов", shot: 28, pass: 62, cross: 40, tackle: 35, speed: 3, press: 0, pos: [6, 1] },
-    Z: { name: "Буров", shot: 32, pass: 58, cross: 45, tackle: 78, speed: 3, press: 2, pos: [6, 4] },
-    OP1: { name: "Левин", shot: 48, pass: 74, cross: 60, tackle: 62, speed: 4, press: 1, pos: [2, 6] },
-    OP2: { name: "Райцев", shot: 52, pass: 70, cross: 72, tackle: 55, speed: 4, press: 1, pos: [10, 6] },
-    NAP: { name: "Сомов", shot: 78, pass: 55, cross: 48, tackle: 38, speed: 5, press: 1, pos: [6, 8] },
+    GK: { name: "Кольцов", shot: 1, pass: 3, cross: 1, tackle: 2, speed: 2, accel: 2, press: 0, pos: [6, 1] },
+    Z: { name: "Буров", shot: 1, pass: 3, cross: 2, tackle: 4, speed: 3, accel: 2, press: 2, pos: [6, 4] },
+    OP1: { name: "Левин", shot: 2, pass: 4, cross: 3, tackle: 3, speed: 4, accel: 3, press: 1, pos: [2, 6] },
+    OP2: { name: "Райцев", shot: 2, pass: 4, cross: 4, tackle: 3, speed: 4, accel: 3, press: 1, pos: [10, 6] },
+    NAP: { name: "Сомов", shot: 4, pass: 2, cross: 2, tackle: 2, speed: 5, accel: 4, press: 1, pos: [6, 8] },
   };
   const AWAY_HOME = {
     GK: [6, 19],
@@ -445,17 +451,36 @@
     const dist = Math.abs(goalRow - pos[1]);
     return clamp(1.15 - dist * 0.09, 0.12, 1.2);
   }
-  function passDistanceFactor(dist) {
-    return clamp(1.05 - dist * 0.09, 0.18, 1.05);
+
+  /** 1–5 → базовый % успеха внутри радиуса */
+  function skillPct(attr) {
+    return 18 + attr * 14; // 1→32 … 5→88
+  }
+
+  /** Радиус действия: пас/удар = N, отбор = N/2, навес = N×2 */
+  function actionRange(p, mode) {
+    if (mode === "pass" || mode === "shot") return p[mode];
+    if (mode === "cross") return p.cross * 2;
+    if (mode === "tackle") return Math.max(1, Math.round(p.tackle / 2));
+    if (mode === "move") return p.burst ? p.accel : p.speed;
+    return 1;
+  }
+
+  function inActionRange(from, to, mode) {
+    return hexDist(from.pos, to) <= actionRange(from, mode);
   }
 
   function chanceShot(p, goalHex, gkDiveCol) {
     const pr = pressureOn(p.pos, p.side);
-    let skill = p.shot * Math.max(0, 1 - 0.5 * pr.pts) * shotProximity(p.side, p.pos);
+    const range = actionRange(p, "shot");
+    const dist = goalHex ? hexDist(p.pos, goalHex) : 99;
+    let skill = skillPct(p.shot) * Math.max(0, 1 - 0.5 * pr.pts) * shotProximity(p.side, p.pos);
     let diveNote = "";
+    let outOfRange = dist > range;
+    if (outOfRange) skill *= 0.15;
     if (goalHex && gkDiveCol != null) {
       if (gkDiveCol === goalHex[0]) {
-        skill *= 0.35; // guessed the cell — big save reduction
+        skill *= 0.35;
         diveNote = " · ВР угадал клетку (−65% шанса)";
       } else {
         diveNote = " · ВР прыгнул мимо";
@@ -467,44 +492,104 @@
       pressure: pr.pts,
       pressureParts: pr.parts,
       blockLikely,
+      range,
+      dist,
+      outOfRange,
       detail:
         "Удар " +
         p.shot +
+        "/5 · радиус " +
+        range +
+        " · дист. " +
+        dist +
+        (outOfRange ? " · ВНЕ радиуса" : "") +
         " · Σдавл. " +
         pr.pts +
         (pr.parts.length ? " [" + pr.parts.join(", ") + "]" : "") +
-        " (−50%/пт) · близость ×" +
-        shotProximity(p.side, p.pos).toFixed(2) +
+        " (−50%/пт)" +
         diveNote +
         (blockLikely ? " · плотная сумма → блок/мимо" : ""),
     };
   }
 
-  function chancePassLike(p, target, skillVal, label) {
+  function chancePassLike(p, target, mode) {
     const pr = pressureOn(p.pos, p.side);
     const dist = hexDist(p.pos, target);
-    const skill = skillVal * Math.max(0, 1 - 0.25 * pr.pts) * passDistanceFactor(dist);
+    const range = actionRange(p, mode);
+    const attr = mode === "cross" ? p.cross : p.pass;
+    const label = mode === "cross" ? "Навес" : "Пас";
+    let skill = skillPct(attr) * Math.max(0, 1 - 0.25 * pr.pts);
+    const outOfRange = dist > range;
+    if (outOfRange) skill *= 0.12;
+    // внутри радиуса — «без проблем» по дистанции (штраф только давление)
     return {
       chance: clamp(Math.round(skill), 1, 96),
       pressure: pr.pts,
       dist,
+      range,
+      outOfRange,
       detail:
         label +
         " " +
-        skillVal +
+        attr +
+        "/5 · радиус " +
+        range +
+        " · дист. " +
+        dist +
+        (outOfRange ? " · ВНЕ радиуса" : " · в радиусе") +
         " · Σдавл. " +
         pr.pts +
         (pr.parts.length ? " [" + pr.parts.join("+") + "]" : "") +
-        " (−25%/пт) · дист. " +
-        dist,
+        " (−25%/пт)",
     };
   }
 
   function chanceTackle(p, victim) {
     const pr = pressureOn(victim.pos, victim.side);
+    const range = actionRange(p, "tackle");
+    const dist = hexDist(p.pos, victim.pos);
+    const outOfRange = dist > range;
+    let skill = skillPct(p.tackle) * (0.75 + 0.08 * pr.pts);
+    if (outOfRange) skill *= 0.1;
     return {
-      chance: clamp(Math.round(p.tackle * (0.7 + 0.06 * pr.pts)), 5, 92),
-      detail: "Отбор " + p.tackle + " · жертва под Σдавл. " + pr.pts,
+      chance: clamp(Math.round(skill), 5, 92),
+      range,
+      dist,
+      outOfRange,
+      detail:
+        "Отбор " +
+        p.tackle +
+        "/5 · радиус " +
+        range +
+        " (÷2) · дист. " +
+        dist +
+        (outOfRange ? " · ВНЕ радиуса" : "") +
+        " · жертва Σдавл. " +
+        pr.pts,
+    };
+  }
+
+  /** Ход с мячом под давлением: Σ1 рискованно, Σ≥2 ≈ потеря */
+  function chanceCarry(p, toHex) {
+    const pr = pressureOn(toHex, p.side);
+    let keep;
+    if (pr.pts <= 0) keep = 97;
+    else if (pr.pts === 1) keep = 48;
+    else if (pr.pts === 2) keep = 12;
+    else keep = 4;
+    return {
+      keep,
+      pressure: pr.pts,
+      parts: pr.parts,
+      detail:
+        "Ведение → " +
+        cellName(toHex) +
+        " · удержать " +
+        keep +
+        "% · Σдавл. " +
+        pr.pts +
+        (pr.parts.length ? " [" + pr.parts.join(", ") + "]" : "") +
+        (pr.pts >= 2 ? " · почти гарант. потеря" : pr.pts === 1 ? " · риск" : ""),
     };
   }
 
@@ -567,8 +652,8 @@
       state.them = buildSquad("B", opp.names, opp.mult);
       if (opp.id === "academy") state.them.Z.press = 1;
       if (opp.id === "press" || opp.id === "elite") {
-        state.them.Z.tackle = clamp(state.them.Z.tackle + 4, 20, 98);
-        state.them.NAP.shot = clamp(state.them.NAP.shot + 3, 20, 98);
+        state.them.Z.tackle = clamp(state.them.Z.tackle + 1, 1, 5);
+        state.them.NAP.shot = clamp(state.them.NAP.shot + 1, 1, 5);
       }
       state.screen = "lineup";
       render();
@@ -587,7 +672,7 @@
       '<div class="skills-side" id="skillsSide"></div></div>' +
       '<div class="lineup-actions"><button class="btn btn-ghost" id="back">← Назад</button>' +
       '<button class="btn btn-primary" id="kick">Начать матч</button></div>' +
-      '<div class="hint-box">Игроки строго в центрах гексов. Ворота — 3 клетки (F/G/H). ВР может «прыгнуть» в одну из трёх и сильно снизить удар.</div></section>';
+      '<div class="hint-box">Атрибуты 1–5 = радиус действия: пас/удар = N, отбор = N÷2, навес = N×2. Скор./Уск. ≤5. Внутри радиуса пас без штрафа дистанции.</div></section>';
 
     drawLineupPitch();
     fillSkillsSide();
@@ -718,9 +803,17 @@
           skillCell("Пас", p.pass) +
           skillCell("Навес", p.cross) +
           skillCell("Отбор", p.tackle) +
-          '</div><div class="meta-row">Скор. ' +
+          '</div><div class="meta-row">S' +
           p.speed +
-          " · Давл. r" +
+          "/A" +
+          p.accel +
+          " · радиусы: пас " +
+          actionRange(p, "pass") +
+          " · навес " +
+          actionRange(p, "cross") +
+          " · отбор " +
+          actionRange(p, "tackle") +
+          " · давл.r" +
           p.press +
           " · " +
           cellName(p.pos) +
@@ -743,11 +836,16 @@
     state.ball = [CENTER_COL, HALF_ROW];
     state.you.NAP.pos = [CENTER_COL, HALF_ROW];
     state.you.NAP.home = state.you.NAP.pos.slice();
+    state.you.NAP.burst = true;
     Object.values(state.them).forEach((p) => {
       p.pos = p.home.slice();
+      p.burst = false;
     });
     Object.values(state.you).forEach((p) => {
-      if (p.role !== "NAP") p.home = p.pos.slice();
+      if (p.role !== "NAP") {
+        p.home = p.pos.slice();
+        p.burst = false;
+      }
     });
     state.ballOwner = "A.NAP";
     state.loose = false;
@@ -768,10 +866,10 @@
   function renderMatch() {
     app.innerHTML =
       '<section class="screen active match-layout">' +
-      '<aside class="panel" id="leftPanel"></aside>' +
+      '<aside class="panel panel-cards" id="leftPanel"></aside>' +
       '<section class="pitch-wrap"><div class="pitch" id="pitch"></div>' +
       '<div class="preview" id="preview">Клик по своему игроку — меню из 5 действий, затем клетка цели.</div></section>' +
-      '<aside class="panel" id="rightPanel"></aside></section>';
+      '<aside class="panel panel-log" id="rightPanel"></aside></section>';
     renderLeft();
     renderRight();
     ensurePitch();
@@ -781,6 +879,8 @@
 
   function renderLeft() {
     const el = app.querySelector("#leftPanel");
+    if (!el) return;
+    const sel = state.selectedId ? byId(state.selectedId) : null;
     el.innerHTML =
       '<div class="scoreline"><span>Вы ' +
       state.score[0] +
@@ -797,28 +897,97 @@
       '<div class="ap-pills">' +
       [0, 1].map((i) => '<div class="ap' + (i < state.ap && state.turn === "A" ? " on" : "") + '"></div>').join("") +
       "</div>" +
-      '<div class="muted" style="font-size:0.78rem;margin-bottom:6px">Мяч: ' +
+      '<div class="muted" style="font-size:0.78rem;margin-bottom:8px">Мяч: ' +
       (state.loose ? "свободный @ " + cellName(state.ball) : state.ballOwner ? byId(state.ballOwner).name : "—") +
       "</div>" +
-      '<h3 style="font-size:0.85rem">Лог</h3><div class="log" id="log"></div>' +
-      '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">' +
+      '<h3 style="font-size:0.85rem;margin:0 0 6px">Состав</h3>' +
+      '<div class="card-list" id="cardList"></div>' +
+      (sel ? selectedCardHtml(sel) : '<p class="muted" style="font-size:0.8rem">Клик по игроку на поле или карточке.</p>') +
+      '<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">' +
       '<button class="btn" id="btnEnd" ' +
       (state.turn !== "A" || state.waiting || state.over ? "disabled" : "") +
       ">Конец хода</button>" +
       '<button class="btn btn-ghost" id="btnResign">Выйти</button></div>';
-    const log = el.querySelector("#log");
-    state.log.forEach((e) => {
-      const d = document.createElement("div");
-      if (e.hi) d.className = "hi";
-      d.textContent = e.msg;
-      log.appendChild(d);
+
+    const list = el.querySelector("#cardList");
+    Object.values(state.you).forEach((p) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "player-card" + (state.selectedId === p.id ? " selected" : "") + (state.ballOwner === p.id ? " has-ball" : "");
+      const pr = pressureOn(p.pos, p.side);
+      b.innerHTML =
+        '<span class="pc-role">' +
+        ROLE_LABEL[p.role] +
+        '</span><span class="pc-name">' +
+        p.name +
+        '</span><span class="pc-meta">' +
+        cellName(p.pos) +
+        " · Σ" +
+        pr.pts +
+        "</span>";
+      b.onclick = () => {
+        if (state.turn === "A" && !state.waiting && !state.over) openRadial(p.id);
+        else {
+          state.selectedId = p.id;
+          renderLeft();
+          renderRight();
+          syncPieces(false);
+        }
+      };
+      list.appendChild(b);
     });
+
     el.querySelector("#btnEnd").onclick = () => endPlayerTurn();
     el.querySelector("#btnResign").onclick = () => {
       state.screen = "lobby";
       state.opponentId = null;
       render();
     };
+  }
+
+  function selectedCardHtml(p) {
+    const pr = pressureOn(p.pos, p.side);
+    return (
+      '<div class="sel-card">' +
+      "<h3>" +
+      ROLE_LABEL[p.role] +
+      " · " +
+      p.name +
+      "</h3>" +
+      '<div class="muted">' +
+      cellName(p.pos) +
+      " · Σдавл. <b>" +
+      pr.pts +
+      "</b>" +
+      (pr.parts.length ? " (" + pr.parts.join(", ") + ")" : "") +
+      "</div>" +
+      '<div class="skill-mini"><div>Удар <b>' +
+      p.shot +
+      "</b>→" +
+      actionRange(p, "shot") +
+      '</div><div>Пас <b>' +
+      p.pass +
+      "</b>→" +
+      actionRange(p, "pass") +
+      '</div><div>Навес <b>' +
+      p.cross +
+      "</b>→" +
+      actionRange(p, "cross") +
+      '</div><div>Отбор <b>' +
+      p.tackle +
+      "</b>→" +
+      actionRange(p, "tackle") +
+      "</div></div>" +
+      '<div class="muted" style="font-size:0.75rem">S' +
+      p.speed +
+      " / A" +
+      p.accel +
+      (p.burst ? " · рывок A" : " · ход S") +
+      " · давл.r" +
+      p.press +
+      "</div>" +
+      '<div class="hint-box">Ход с мячом в Σдавл.≥2 ≈ потеря. 1–5 = радиус (отбор÷2, навес×2).</div></div>'
+    );
   }
 
   function modeLabel(m) {
@@ -828,41 +997,17 @@
 
   function renderRight() {
     const el = app.querySelector("#rightPanel");
-    const p = state.selectedId ? byId(state.selectedId) : null;
-    if (!p) {
-      el.innerHTML = '<p class="muted">Клик по игроку → 5 опций вокруг него. Потом выберите клетку цели.</p>' +
-        '<div class="hint-box">Σ давления на клетке = сумма вкладов всех врагов. r2 на дистанции 1 даёт 2 очка. Плотность душит удар, но оставляет пустые фланги.</div>';
-      return;
-    }
-    const pr = pressureOn(p.pos, p.side);
+    if (!el) return;
     el.innerHTML =
-      "<h3>" +
-      ROLE_LABEL[p.role] +
-      " · " +
-      p.name +
-      "</h3>" +
-      '<div class="muted">' +
-      cellName(p.pos) +
-      " · Σдавл. на нём: <b>" +
-      pr.pts +
-      "</b>" +
-      (pr.parts.length ? " (" + pr.parts.join(", ") + ")" : "") +
-      "</div>" +
-      '<div class="skill-mini"><div>Удар <b>' +
-      p.shot +
-      "</b></div><div>Пас <b>" +
-      p.pass +
-      "</b></div><div>Навес <b>" +
-      p.cross +
-      "</b></div><div>Отбор <b>" +
-      p.tackle +
-      "</b></div></div>" +
-      '<div class="muted" style="font-size:0.78rem">Скор. ' +
-      p.speed +
-      " · Давл. r" +
-      p.press +
-      "</div>" +
-      '<div class="hint-box">Ворота 3 гекса. При ударе ВР выбирает 1 из 3 — угадал = сильно режет шанс гола.</div>';
+      '<h3 style="font-size:0.95rem;margin:0 0 8px">Стенограмма</h3>' +
+      '<div class="log log-tall" id="log"></div>';
+    const log = el.querySelector("#log");
+    state.log.forEach((e) => {
+      const d = document.createElement("div");
+      if (e.hi) d.className = "hi";
+      d.textContent = e.msg;
+      log.appendChild(d);
+    });
   }
 
   function ensurePitch() {
@@ -966,7 +1111,13 @@
     }
     state.reachable.forEach((pos) => {
       const n = hexNodes[pos[0] + "," + pos[1]];
-      if (n) n.classList.add("reachable");
+      if (!n) return;
+      n.classList.add("reachable");
+      if (state.ballOwner === state.selectedId) {
+        const pr = pressureOn(pos, "A").pts;
+        if (pr >= 2) n.classList.add("carry-danger");
+        else if (pr === 1) n.classList.add("carry-risk");
+      }
     });
     state.targets.forEach((pos) => {
       const n = hexNodes[pos[0] + "," + pos[1]];
@@ -996,11 +1147,12 @@
       let ok = state.ap > 0;
       if (m === "pass" || m === "cross" || m === "shot") ok = ok && state.ballOwner === p.id;
       if (m === "tackle") {
+        const range = actionRange(p, "tackle");
         ok =
           ok &&
           (state.loose
-            ? hexDist(p.pos, state.ball) <= 1
-            : !!(ownerPlayer() && ownerPlayer().side === "B" && hexDist(p.pos, ownerPlayer().pos) === 1));
+            ? hexDist(p.pos, state.ball) <= range
+            : !!(ownerPlayer() && ownerPlayer().side === "B" && hexDist(p.pos, ownerPlayer().pos) <= range));
       }
       btn.disabled = !ok;
       btn.style.opacity = ok ? "1" : "0.35";
@@ -1024,21 +1176,31 @@
     state.reachable = [];
     state.targets = [];
     if (mode === "move") {
-      state.reachable = cellsInRange(p.pos, p.speed).filter((pos) => !occupant(pos));
-      toast("Выберите клетку хода");
+      const bud = actionRange(p, "move");
+      state.reachable = cellsInRange(p.pos, bud).filter((pos) => !occupant(pos));
+      toast("Ход до " + bud + " гексов (" + (p.burst ? "уск.A" : "скор.S") + ")");
     } else if (mode === "pass" || mode === "cross") {
+      const range = actionRange(p, mode);
       Object.values(state.you).forEach((t) => {
-        if (t.id !== p.id) state.targets.push(t.pos.slice());
+        if (t.id !== p.id && hexDist(p.pos, t.pos) <= range) state.targets.push(t.pos.slice());
       });
-      toast("Выберите партнёра (клетка с игроком)");
+      if (!state.targets.length) toast("Никто не в радиусе " + range);
+      else toast("Партнёры в радиусе " + range);
     } else if (mode === "shot") {
-      GOAL_COLS.forEach((c) => state.targets.push([c, GOAL_B_ROW]));
-      toast("Выберите одну из 3 клеток ворот");
+      const range = actionRange(p, "shot");
+      GOAL_COLS.forEach((c) => {
+        const hex = [c, GOAL_B_ROW];
+        if (hexDist(p.pos, hex) <= range) state.targets.push(hex);
+      });
+      if (!state.targets.length) toast("Ворота вне радиуса удара " + range);
+      else toast("Клетка ворот в радиусе " + range);
     } else if (mode === "tackle") {
-      if (state.loose && hexDist(p.pos, state.ball) <= 1) state.targets.push(state.ball.slice());
+      const range = actionRange(p, "tackle");
+      if (state.loose && hexDist(p.pos, state.ball) <= range) state.targets.push(state.ball.slice());
       const ow = ownerPlayer();
-      if (ow && ow.side === "B" && hexDist(p.pos, ow.pos) === 1) state.targets.push(ow.pos.slice());
-      toast("Выберите цель отбора");
+      if (ow && ow.side === "B" && hexDist(p.pos, ow.pos) <= range) state.targets.push(ow.pos.slice());
+      if (!state.targets.length) toast("Цель отбора вне радиуса " + range);
+      else toast("Отбор · радиус " + range);
     }
     paintBoard();
     renderLeft();
@@ -1066,7 +1228,24 @@
       return;
     }
     if (state.mode === "move") {
-      box.innerHTML = "<b>Ход</b> до " + p.speed + " гексов.";
+      const bud = actionRange(p, "move");
+      let html =
+        "<b>Ход</b> до " +
+        bud +
+        " · " +
+        (p.burst ? "рывок A" + p.accel : "скор. S" + p.speed);
+      if (state.ballOwner === p.id && hoverHex) {
+        const ch = chanceCarry(p, hoverHex);
+        html +=
+          '<div class="pct" style="font-size:1.2rem">' +
+          ch.keep +
+          "%</div><div>" +
+          ch.detail +
+          "</div>";
+      } else if (state.ballOwner === p.id) {
+        html += "<div class='muted'>С мячом: наведите клетку — % удержания под давлением.</div>";
+      }
+      box.innerHTML = html;
       return;
     }
     if (state.mode === "shot") {
@@ -1076,24 +1255,32 @@
       box.innerHTML =
         '<div class="mode-chip">Удар → ' +
         cellName(aim) +
-        " · ВР прыгнет в " +
+        " · ВР → " +
         cellName([dive, GOAL_B_ROW]) +
         '</div><div class="pct">' +
         ch.chance +
         "%</div><div>" +
         ch.detail +
         "</div>";
-      // show dive hint on board
       Object.values(hexNodes).forEach((n) => n.classList.remove("goal-dive"));
       const dn = hexNodes[dive + "," + GOAL_B_ROW];
       if (dn) dn.classList.add("goal-dive");
       return;
     }
     if (state.mode === "pass" || state.mode === "cross") {
-      box.innerHTML = "<b>" + modeLabel(state.mode) + "</b> — клик по партнёру. Дальше и под Σдавл. — хуже. Промах = свободный мяч.";
+      box.innerHTML =
+        "<b>" +
+        modeLabel(state.mode) +
+        "</b> радиус " +
+        actionRange(p, state.mode) +
+        ". В радиусе — без штрафа дистанции. Вне — почти мимо. Промах = свободный мяч.";
       return;
     }
-    if (state.mode === "tackle") box.innerHTML = "<b>Отбор</b> — сосед с мячом или свободный мяч.";
+    if (state.mode === "tackle")
+      box.innerHTML =
+        "<b>Отбор</b> радиус " +
+        actionRange(p, "tackle") +
+        " (атрибут÷2). Промах — мяч остаётся у владельца.";
   }
 
   function aiGkDive(side) {
@@ -1142,11 +1329,15 @@
         toast("Выберите одну из 3 клеток ворот");
         return;
       }
+      if (!state.targets.some((x) => x[0] === c && x[1] === r)) {
+        toast("Вне радиуса удара");
+        return;
+      }
       doShot(p, [c, r]);
       return;
     }
     if (state.mode === "tackle" && state.loose && c === state.ball[0] && r === state.ball[1]) {
-      if (hexDist(p.pos, state.ball) <= 1) doPickup(p);
+      if (hexDist(p.pos, state.ball) <= actionRange(p, "tackle")) doPickup(p);
     }
   }
 
@@ -1167,37 +1358,72 @@
   }
 
   function doMove(p, to) {
+    const carrying = state.ballOwner === p.id;
+    const usedBurst = p.burst;
     p.pos = to.slice();
-    if (state.ballOwner === p.id) {
-      state.ball = to.slice();
-      state.loose = false;
+    if (carrying) {
+      const ch = chanceCarry(p, to);
+      const roll = rnd();
+      pushLog(p.name + " ведёт → " + cellName(to) + " · " + ch.detail + " · бросок " + Math.round(roll));
+      if (roll <= ch.keep) {
+        state.ball = to.slice();
+        state.loose = false;
+        pushLog("Мяч удержан");
+      } else {
+        state.ballOwner = null;
+        state.loose = true;
+        state.ball = to.slice();
+        pushLog("Потеря под давлением! Свободный мяч @ " + cellName(to), true);
+        toast("Потеря мяча");
+      }
+    } else {
+      pushLog(p.name + " → " + cellName(to));
     }
-    pushLog(p.name + " → " + cellName(to));
+    if (usedBurst) p.burst = false;
+    else if (carrying) p.burst = false;
     spendAP();
   }
 
   function doPickup(p) {
-    const ch = clamp(50 + p.tackle * 0.3, 20, 90);
+    const ch = clamp(45 + skillPct(p.tackle) * 0.35, 25, 88);
     const roll = rnd();
     if (roll <= ch) {
       state.ballOwner = p.id;
       state.loose = false;
       state.ball = p.pos.slice();
+      p.burst = true;
       pushLog(p.name + " подобрал мяч", true);
     } else pushLog(p.name + " не зафиксировал мяч");
     spendAP();
   }
 
   function doPass(from, to, isCross) {
-    const skill = isCross ? from.cross : from.pass;
-    const label = isCross ? "Навес" : "Пас";
-    const ch = chancePassLike(from, to.pos, skill, label);
+    const mode = isCross ? "cross" : "pass";
+    if (!inActionRange(from, to.pos, mode)) {
+      toast("Вне радиуса " + actionRange(from, mode));
+      return;
+    }
+    const ch = chancePassLike(from, to.pos, mode);
     const roll = rnd();
-    pushLog(label + " " + from.name + " → " + to.name + " · " + ch.chance + "% (" + Math.round(roll) + ") · " + ch.detail);
+    pushLog(
+      (isCross ? "Навес" : "Пас") +
+        " " +
+        from.name +
+        " → " +
+        to.name +
+        " · " +
+        ch.chance +
+        "% (" +
+        Math.round(roll) +
+        ") · " +
+        ch.detail
+    );
     if (roll <= ch.chance) {
       state.ballOwner = to.id;
       state.ball = to.pos.slice();
       state.loose = false;
+      to.burst = true;
+      from.burst = false;
       pushLog("Точно!", true);
     } else {
       state.ball = [
@@ -1269,23 +1495,28 @@
   }
 
   function doTackle(p, victim) {
-    if (hexDist(p.pos, victim.pos) !== 1) {
-      toast("Нужна соседняя клетка");
+    const range = actionRange(p, "tackle");
+    if (hexDist(p.pos, victim.pos) > range) {
+      toast("Вне радиуса отбора " + range);
+      return;
+    }
+    if (!victim || state.ballOwner !== victim.id) {
+      toast("У цели нет мяча");
       return;
     }
     const ch = chanceTackle(p, victim);
     const roll = rnd();
-    pushLog("Отбор " + p.name + " → " + victim.name + " · " + ch.chance + "%");
+    pushLog("Отбор " + p.name + " → " + victim.name + " · " + ch.chance + "% · " + ch.detail);
     if (roll <= ch.chance) {
       state.ballOwner = p.id;
       state.ball = p.pos.slice();
       state.loose = false;
+      p.burst = true;
+      victim.burst = false;
       pushLog("Мяч отобран!", true);
     } else {
-      state.ballOwner = null;
-      state.loose = true;
-      state.ball = victim.pos.slice();
-      pushLog("Отбор не вышел — свободный мяч", true);
+      // Промах: владение сохраняется — иначе один НАП вечно подбирает «свободный»
+      pushLog("Отбор не вышел — мяч у " + victim.name, true);
     }
     spendAP();
   }
@@ -1297,9 +1528,11 @@
     if (ownerSide === "A") {
       state.you.NAP.pos = [CENTER_COL, HALF_ROW];
       state.ballOwner = "A.NAP";
+      state.you.NAP.burst = true;
     } else {
       state.them.NAP.pos = [CENTER_COL, HALF_ROW];
       state.ballOwner = "B.NAP";
+      state.them.NAP.burst = true;
     }
     state.loose = false;
     pushLog("Розыгрыш с центра.");
@@ -1317,6 +1550,7 @@
     state.minute = Math.min(MATCH_MINUTES, state.minute + 1);
     pushLog("— Ход соперника —");
     renderLeft();
+    renderRight();
     paintBoard();
     syncPieces(true);
     state.waiting = true;
@@ -1344,6 +1578,7 @@
     pushLog("Финал " + state.score[0] + ":" + state.score[1] + " — " + msg, true);
     toast(msg + " " + state.score[0] + ":" + state.score[1]);
     renderLeft();
+    renderRight();
   }
 
   function runAI() {
@@ -1359,6 +1594,7 @@
       syncPieces(true);
       paintBoard();
       renderLeft();
+      renderRight();
       setTimeout(step, 520);
     };
     step();
@@ -1367,20 +1603,26 @@
   function aiAction(style) {
     if (state.loose) {
       const near = Object.values(state.them)
-        .filter((p) => hexDist(p.pos, state.ball) <= 1)
-        .sort((a, b) => b.tackle - a.tackle)[0];
+        .filter((p) => hexDist(p.pos, state.ball) <= actionRange(p, "tackle"))
+        .sort((a, b) => hexDist(a.pos, state.ball) - hexDist(b.pos, state.ball) || b.tackle - a.tackle)[0];
       if (near) {
-        state.ballOwner = near.id;
-        state.ball = near.pos.slice();
-        state.loose = false;
-        pushLog("ПК: " + near.name + " подобрал мяч");
+        const ch = clamp(40 + skillPct(near.tackle) * 0.3, 25, 80);
+        if (rnd() <= ch) {
+          state.ballOwner = near.id;
+          state.ball = near.pos.slice();
+          state.loose = false;
+          near.burst = true;
+          pushLog("ПК: " + near.name + " подобрал мяч");
+        } else {
+          pushLog("ПК: " + near.name + " не зафиксировал");
+        }
         return;
       }
     }
     const ow = ownerPlayer();
     if (ow && ow.side === "B") {
       const ch = chanceShot(ow, [CENTER_COL, GOAL_A_ROW], null);
-      if (ow.pos[1] <= 4 && ch.chance >= 30 && ch.pressure < 2) {
+      if (ow.pos[1] <= 4 && !ch.outOfRange && ch.chance >= 30 && ch.pressure < 2) {
         aiShot(ow);
         return;
       }
@@ -1392,7 +1634,7 @@
   }
 
   function aiShot(ow) {
-    const dive = aiGkDive("A"); // your GK "guess" simplified random for demo fairness use prefer ball col
+    const dive = aiGkDive("A");
     const aim = GOAL_COLS.includes(ow.pos[0]) ? ow.pos[0] : CENTER_COL;
     const goalHex = [aim, GOAL_A_ROW];
     const ch = chanceShot(ow, goalHex, dive);
@@ -1423,6 +1665,8 @@
     let bestS = -999;
     Object.values(state.them).forEach((t) => {
       if (t.id === from.id || t.role === "GK") return;
+      const mode = hexDist(from.pos, t.pos) > actionRange(from, "pass") ? "cross" : "pass";
+      if (hexDist(from.pos, t.pos) > actionRange(from, mode)) return;
       const pr = pressureOn(t.pos, "B").pts;
       const forward = from.pos[1] - t.pos[1];
       const wide = Math.abs(t.pos[0] - CENTER_COL);
@@ -1436,14 +1680,20 @@
   }
 
   function aiPass(from, to, isCross) {
-    const skill = isCross ? from.cross : from.pass;
-    const ch = chancePassLike(from, to.pos, skill, isCross ? "Навес" : "Пас");
+    const mode = isCross ? "cross" : "pass";
+    if (!inActionRange(from, to.pos, mode)) {
+      aiMoveToward(from, to.pos);
+      return;
+    }
+    const ch = chancePassLike(from, to.pos, mode);
     const roll = rnd();
-    pushLog("ПК передача · " + ch.chance + "%");
+    pushLog("ПК передача · " + ch.chance + "% · " + ch.detail);
     if (roll <= ch.chance) {
       state.ballOwner = to.id;
       state.ball = to.pos.slice();
       state.loose = false;
+      to.burst = true;
+      from.burst = false;
     } else {
       state.ballOwner = null;
       state.loose = true;
@@ -1456,21 +1706,51 @@
   }
 
   function aiMoveToward(p, target) {
-    const opts = cellsInRange(p.pos, p.speed).filter((pos) => !occupant(pos));
+    const bud = actionRange(p, "move");
+    const opts = cellsInRange(p.pos, bud).filter((pos) => !occupant(pos));
     if (!opts.length) return;
-    opts.sort((a, b) => hexDist(a, target) - hexDist(b, target));
-    p.pos = opts[0];
-    if (state.ballOwner === p.id) state.ball = p.pos.slice();
-    pushLog("ПК " + p.name + " → " + cellName(p.pos));
+    const carrying = state.ballOwner === p.id;
+    opts.sort((a, b) => {
+      const da = hexDist(a, target) - hexDist(b, target);
+      if (!carrying) return da;
+      // avoid Σ≥2 cells when carrying
+      const pa = pressureOn(a, p.side).pts;
+      const pb = pressureOn(b, p.side).pts;
+      const ra = pa >= 2 ? 100 : pa;
+      const rb = pb >= 2 ? 100 : pb;
+      return ra - rb || da;
+    });
+    const to = opts[0];
+    const usedBurst = p.burst;
+    p.pos = to;
+    if (carrying) {
+      const ch = chanceCarry(p, to);
+      const roll = rnd();
+      pushLog("ПК " + p.name + " ведёт → " + cellName(to) + " · удержать " + ch.keep + "%");
+      if (roll <= ch.keep) {
+        state.ball = to.slice();
+        state.loose = false;
+      } else {
+        state.ballOwner = null;
+        state.loose = true;
+        state.ball = to.slice();
+        pushLog("ПК потерял мяч под давлением!", true);
+      }
+    } else {
+      pushLog("ПК " + p.name + " → " + cellName(p.pos));
+    }
+    if (usedBurst || carrying) p.burst = false;
   }
 
   function aiSmart(ow) {
     const recv = freest(ow, true);
     if (recv && pressureOn(recv.pos, "B").pts === 0 && recv.pos[1] < ow.pos[1]) {
-      aiPass(ow, recv, hexDist(ow.pos, recv.pos) > 5);
+      aiPass(ow, recv, hexDist(ow.pos, recv.pos) > actionRange(ow, "pass"));
       return;
     }
-    aiMoveToward(ow, [CENTER_COL, 2]);
+    // prefer free lane, not into Σ2
+    const safe = [CENTER_COL, 2];
+    aiMoveToward(ow, safe);
   }
   function aiWidth(ow) {
     const recv = freest(ow, true);
@@ -1498,7 +1778,8 @@
       .sort((a, b) => hexDist(a.pos, target) - hexDist(b.pos, target))[0];
     if (!h) return;
     const ow = ownerPlayer();
-    if (ow && ow.side === "A" && hexDist(h.pos, ow.pos) === 1) {
+    const range = actionRange(h, "tackle");
+    if (ow && ow.side === "A" && hexDist(h.pos, ow.pos) <= range) {
       const ch = chanceTackle(h, ow);
       const roll = rnd();
       pushLog("ПК отбор · " + ch.chance + "%");
@@ -1506,11 +1787,10 @@
         state.ballOwner = h.id;
         state.ball = h.pos.slice();
         state.loose = false;
+        h.burst = true;
         pushLog("ПК отобрал!", true);
       } else {
-        state.loose = true;
-        state.ballOwner = null;
-        state.ball = ow.pos.slice();
+        pushLog("ПК отбор мимо — мяч у " + ow.name);
       }
       return;
     }
