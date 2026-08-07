@@ -992,15 +992,33 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     return 1;
   }
 
+  /**
+   * S/A 1–5 → гексы за одно действие (не «перебежать поле»).
+   * 1→1, 2→1, 3→2, 4→2, 5→3. С мячом ещё −1 (мин. 1).
+   */
+  function attrToHexes(attr) {
+    const a = clamp(attr | 0, 1, 5);
+    return [0, 1, 1, 2, 2, 3][a];
+  }
+
   function moveBudget(p) {
-    // С мячом после касания — ускорение; иначе / продолжение — скорость
-    if (state.ballOwner === p.id && p.burst) return p.accel;
-    return p.speed;
+    const raw = state.ballOwner === p.id && p.burst ? p.accel : p.speed;
+    let hexes = attrToHexes(raw);
+    if (state.ballOwner === p.id) hexes = Math.max(1, hexes - 1); // ведение короче спринта без мяча
+    return hexes;
   }
 
   function moveMs(from, to) {
     const d = Math.max(1, hexDist(from, to));
-    return 90 + d * 110; // дальше = дольше на экране, разница S/A видна
+    return 100 + d * 140;
+  }
+
+  function canStandOn(pos, movingId) {
+    if (!inBounds(pos[0], pos[1])) return false;
+    if (isGoalHex(pos[0], pos[1])) return false; // в ворота только ударом
+    const occ = occupant(pos);
+    if (occ && occ.id !== movingId) return false;
+    return true;
   }
 
   function inActionRange(from, to, mode) {
@@ -1209,7 +1227,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       '<div class="skills-side" id="skillsSide"></div></div>' +
       '<div class="lineup-actions"><button class="btn btn-ghost" id="back">← Назад</button>' +
       '<button class="btn btn-primary" id="kick">Начать матч</button></div>' +
-      '<div class="hint-box">Атрибуты 1–5 = радиус (пас/удар = N, отбор÷2, навес×2). <b>S</b> — ход без рывка, <b>A</b> — первый рывок с мячом. Левин A5/S2, Райцев A1/S5, Нап S5/A4.</div></section>';
+      '<div class="hint-box">S/A 1–5 → ход на 1/1/2/2/3 гекса за действие; с мячом ещё −1. За 2 AP быстрый нап проходит ~4 гекса с мячом — не полполя. Левин A5 (рывок 2 с мячом), Райцев S5 (без мяча 3).</div></section>';
 
     drawLineupPitch();
     fillSkillsSide();
@@ -1348,16 +1366,18 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
           skillCell("Отбор", p.tackle) +
           '</div><div class="meta-row"><b>S' +
           p.speed +
+          "→" +
+          attrToHexes(p.speed) +
           " / A" +
           p.accel +
-          "</b> · радиусы: пас " +
+          "→" +
+          attrToHexes(p.accel) +
+          "</b> гекс · пас " +
           actionRange(p, "pass") +
           " · навес " +
           actionRange(p, "cross") +
           " · отбор " +
           actionRange(p, "tackle") +
-          " · давл.r" +
-          p.press +
           " · " +
           cellName(p.pos) +
           "</div>";
@@ -1756,21 +1776,23 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     state.targets = [];
     if (state.mode === "move") {
       const bud = actionRange(p, "move");
-      // можно наступить на клетку со свободным мячом
-      state.reachable = cellsInRange(p.pos, bud).filter((pos) => {
-        const occ = occupant(pos);
-        if (!occ) return true;
-        return false;
-      });
+      state.reachable = cellsInRange(p.pos, bud).filter((pos) => canStandOn(pos, p.id));
       if (state.loose) {
         const d = hexDist(p.pos, state.ball);
-        if (d > 0 && d <= bud && !occupant(state.ball)) {
+        if (d > 0 && d <= bud && canStandOn(state.ball, p.id)) {
           if (!state.reachable.some((x) => x[0] === state.ball[0] && x[1] === state.ball[1])) {
             state.reachable.push(state.ball.slice());
           }
         }
       }
-      const tag = state.ballOwner === p.id && p.burst ? "рывок A" + p.accel : "скор. S" + p.speed;
+      const raw = state.ballOwner === p.id && p.burst ? p.accel : p.speed;
+      const tag =
+        (state.ballOwner === p.id && p.burst ? "рывок A" : "скор. S") +
+        raw +
+        "→" +
+        bud +
+        " гекс" +
+        (state.ballOwner === p.id ? " (с мячом −1)" : "");
       toast("Ход до " + bud + " · " + tag);
     } else if (mode === "pass" || mode === "cross") {
       const range = actionRange(p, mode);
@@ -1829,8 +1851,20 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     }
     if (state.mode === "move") {
       const bud = actionRange(p, "move");
-      const tag = state.ballOwner === p.id && p.burst ? "рывок A" + p.accel : "скор. S" + p.speed;
-      let html = "<b>Ход</b> до <b>" + bud + "</b> гексов · " + tag + " (S" + p.speed + "/A" + p.accel + ")";
+      const raw = state.ballOwner === p.id && p.burst ? p.accel : p.speed;
+      let html =
+        "<b>Ход</b> до <b>" +
+        bud +
+        "</b> гекс · атрибут " +
+        (state.ballOwner === p.id && p.burst ? "A" : "S") +
+        raw +
+        " → " +
+        attrToHexes(raw) +
+        (state.ballOwner === p.id ? " −1 с мячом" : "") +
+        " · S" +
+        p.speed +
+        "/A" +
+        p.accel;
       if (state.ballOwner === p.id && hoverHex) {
         const ch = chanceCarry(p, hoverHex);
         html +=
@@ -1839,10 +1873,9 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
           "%</div><div>" +
           ch.detail +
           "</div>";
-      } else if (state.ballOwner === p.id) {
-        html += "<div class='muted'>С мячом: 1-й ход = A, дальше = S. Наведите клетку — % удержания.</div>";
       } else {
-        html += "<div class='muted'>Без мяча ходит на S. Левин взрывной (A5/S2), Райцев стайер (A1/S5).</div>";
+        html +=
+          "<div class='muted'>S/A 1–5 дают 1/1/2/2/3 гекса за действие; с мячом на гекс меньше. 2 AP ≠ пробег всего поля.</div>";
       }
       box.innerHTML = html;
       return;
@@ -1954,14 +1987,12 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     state.reachable = [];
     state.targets = [];
     closeRadial();
+    syncPieces(true, moveId, fromPos);
+    renderLeft();
+    renderRight();
+    paintBoard();
+    updatePreview();
     if (state.ap <= 0 && !state.over) endPlayerTurn();
-    else {
-      renderLeft();
-      renderRight();
-      paintBoard();
-      updatePreview();
-      syncPieces(true, moveId, fromPos);
-    }
   }
 
   function doMove(p, to) {
@@ -2277,7 +2308,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
         if (d <= bud && !occupant(state.ball)) {
           // шаг на мяч
           const opts = cellsInRange(near.pos, bud)
-            .filter((pos) => !occupant(pos))
+            .filter((pos) => canStandOn(pos, near.id))
             .sort((a, b) => hexDist(a, state.ball) - hexDist(b, state.ball));
           // предпочесть саму клетку мяча
           const onto = opts.find((pos) => pos[0] === state.ball[0] && pos[1] === state.ball[1]) || opts[0];
@@ -2386,7 +2417,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   function aiMoveToward(p, target) {
     const bud = moveBudget(p);
     const from = p.pos.slice();
-    const opts = cellsInRange(p.pos, bud).filter((pos) => !occupant(pos));
+    const opts = cellsInRange(p.pos, bud).filter((pos) => canStandOn(pos, p.id));
     if (!opts.length) return;
     const carrying = state.ballOwner === p.id;
     opts.sort((a, b) => {
