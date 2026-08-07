@@ -1275,6 +1275,7 @@
     radialEl.style.left = pt.left + "%";
     radialEl.style.top = pt.top + "%";
     radialEl.classList.add("open");
+    radialEl.classList.remove("cancel-only");
     // disable actions that don't apply
     radialEl.querySelectorAll(".radial-btn").forEach((btn) => {
       const m = btn.dataset.mode;
@@ -1293,23 +1294,54 @@
     });
     syncPieces(false);
     paintBoard();
-    renderRight();
+    renderLeft();
     updatePreview();
   }
 
   function closeRadial() {
     state.radialOpen = false;
-    if (radialEl) radialEl.classList.remove("open");
+    if (radialEl) {
+      radialEl.classList.remove("open");
+      radialEl.classList.remove("cancel-only");
+    }
+  }
+
+  function cancelRadialOrMode() {
+    if (state.mode) {
+      state.mode = null;
+      state.reachable = [];
+      state.targets = [];
+      closeRadial();
+      paintBoard();
+      renderLeft();
+      updatePreview();
+      toast("Действие отменено");
+      return;
+    }
+    closeRadial();
+    updatePreview();
+  }
+
+  function showRadialCancelOnly() {
+    if (!radialEl || !state.selectedId) return;
+    const p = byId(state.selectedId);
+    if (!p) return;
+    const pt = pctFromHex(p.pos[0], p.pos[1]);
+    radialEl.style.left = pt.left + "%";
+    radialEl.style.top = pt.top + "%";
+    radialEl.classList.remove("open");
+    radialEl.classList.add("cancel-only");
+    state.radialOpen = false;
   }
 
   function chooseRadial(mode) {
     const p = byId(state.selectedId);
     if (!p) return;
-    closeRadial();
     state.mode = mode;
     state.reachable = [];
     state.targets = [];
-    if (state.mode === "move") {
+    showRadialCancelOnly();
+    if (mode === "move") {
       const bud = actionRange(p, "move");
       state.reachable = cellsInRange(p.pos, bud).filter((pos) => canStandOn(pos, p.id));
       if (state.loose) {
@@ -1347,8 +1379,8 @@
     } else if (mode === "tackle") {
       const range = actionRange(p, "tackle");
       if (state.loose && hexDist(p.pos, state.ball) <= range) {
-        // мяч под ногами — сразу подбор (клик по клетке с фигуркой иначе не проходит)
         if (hexDist(p.pos, state.ball) === 0) {
+          closeRadial();
           doPickup(p, true);
           return;
         }
