@@ -2238,7 +2238,11 @@
     state.ballOwner = ownerSide === "A" ? "A.NAP" : "B.NAP";
     state.loose = false;
     resetCarryFatigue();
-    pushLog("Розыгрыш с центра · партнёры у мяча (короткий пас).");
+    pushLog(
+      "Розыгрыш с центра · " +
+        (ownerSide === "A" ? "вы" : "соперник") +
+        " у мяча · принимающий НП за кругом."
+    );
     syncPieces(true);
   }
 
