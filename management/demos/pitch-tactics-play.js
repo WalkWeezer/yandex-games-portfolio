@@ -990,8 +990,9 @@
         .join("") +
       "</select></label>" +
       '<button class="btn btn-primary" id="go" disabled>К расстановке →</button>' +
-      '<button class="btn" id="watch" disabled>▶ Смотреть ИИ vs ИИ</button></div>' +
-      '<div class="hint-box">Выберите соперника и нажмите <b>Смотреть ИИ vs ИИ</b> — оба тренера играют сами, вы только наблюдаете. URL: <code>?watch=rivals&amp;home=direct</code></div></section>';
+      '<button class="btn" id="watch" disabled>▶ Смотреть ИИ vs ИИ</button>' +
+      '<button class="btn" id="watchRandom">🎲 Случайный матч</button></div>' +
+      '<div class="hint-box">Выберите соперника и нажмите <b>Смотреть ИИ vs ИИ</b>, или сразу <b>Случайный матч</b>. URL: <code>?watch=random</code> / <code>?watch=rivals&amp;home=direct</code></div></section>';
     const grid = app.querySelector("#oppGrid");
     OPPONENTS.forEach((o) => {
       const b = document.createElement("button");
@@ -1039,6 +1040,30 @@
         homeStyle: (styleSel && styleSel.value) || state.homeAiStyle || "direct",
       });
     };
+    app.querySelector("#watchRandom").onclick = () => startRandomWatchMatch();
+  }
+
+  function startRandomWatchMatch(extra) {
+    const styles = ["direct", "possess", "width"];
+    const opp = OPPONENTS[Math.floor(Math.random() * OPPONENTS.length)];
+    const homeStyle = styles[Math.floor(Math.random() * styles.length)];
+    const homeMult = 0.75 + Math.random() * 0.55;
+    const awayMult = (opp.mult || 1) * (0.85 + Math.random() * 0.3);
+    startWatchMatch(
+      Object.assign(
+        {
+          awayId: opp.id,
+          homeStyle,
+          homeMult: +homeMult.toFixed(2),
+          awayMult: +awayMult.toFixed(2),
+          skillSpread: 0.35,
+          delay: 280,
+          homeName: "Дом (" + homeStyle + ")",
+          awayName: opp.name,
+        },
+        extra || {}
+      )
+    );
   }
 
   // —— Lineup DnD ——
@@ -3804,14 +3829,17 @@
   if (!globalThis.__PITCH_NODE_AUTOPLAY__) {
     render();
     const autoParam = /(?:\?|&)autoplay=([^&]*)/.exec(location.search || "");
-    const watchParam = /(?:\?|&)watch=([^&]*)/.exec(location.search || "");
+    const watchParam =
+      /(?:\?|&)watch=([^&]*)/.exec(location.search || "") ||
+      /[#&?]watch=([^&]*)/.exec(location.hash || "");
     const homeParam = /(?:\?|&)home=([^&]*)/.exec(location.search || "");
     const delayParam = /(?:\?|&)delay=([^&]*)/.exec(location.search || "");
     if (watchParam) {
       const id = decodeURIComponent(watchParam[1] || "rivals") || "rivals";
       const homeStyle = homeParam ? decodeURIComponent(homeParam[1] || "direct") : "direct";
       const delay = delayParam ? Number(decodeURIComponent(delayParam[1])) : 380;
-      setTimeout(() => startWatchMatch({ awayId: id, homeStyle, delay }), 80);
+      if (id === "random") setTimeout(() => startRandomWatchMatch({ delay }), 80);
+      else setTimeout(() => startWatchMatch({ awayId: id, homeStyle, delay }), 80);
     } else if (autoParam) {
       const id = decodeURIComponent(autoParam[1] || "academy") || "academy";
       try {
