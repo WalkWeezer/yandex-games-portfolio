@@ -406,9 +406,13 @@
       if (side === "B") {
         scaled.name = names[role];
         scaled.pos = AWAY_HOME[role].slice();
-        if (role === "Z") scaled.press = 2;
-        if (role === "GK") scaled.press = 0;
-      } else scaled.pos = src.pos.slice();
+      } else {
+        scaled.pos = src.pos.slice();
+      }
+      // роли → радиус давления (ЗЩ всегда 2)
+      if (role === "Z") scaled.press = 2;
+      else if (role === "OP1" || role === "OP2") scaled.press = 1;
+      else scaled.press = 0;
       squad[role] = makePlayer(side, role, scaled);
     });
     return squad;
