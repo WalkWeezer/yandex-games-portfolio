@@ -54,7 +54,7 @@ const SPREAD_ROTATION = [
   { label: "vs-elite", awayId: "elite", homeStyle: "width", homeMult: 0.85, skillSpread: 1.0 },
   { label: "giant-killing", awayId: "elite", homeStyle: "direct", homeMult: 1.15, skillSpread: 1.1 },
   { label: "academy-crush", awayId: "academy", homeStyle: "possess", homeMult: 1.25, skillSpread: 0.5 },
-  { label: "mirror-chaos", awayId: "rivals", homeStyle: "width", homeMult: 1.0, awayMult: 1.05, skillSpread: 1.2 },
+  { label: "mirror-chaos", awayId: "rivals", homeStyle: "width", homeMult: 1.0, awayMult: 1.05, skillSpread: 0.7 },
   { label: "underdog-width", awayId: "press", homeStyle: "width", homeMult: 0.75, skillSpread: 1.0 },
   { label: "direct-duel", awayId: "vertical", homeStyle: "direct", homeMult: 1.05, awayMult: 0.9, skillSpread: 0.8 },
   { label: "possession-clash", awayId: "rivals", homeStyle: "possess", homeMult: 0.9, awayMult: 1.15, skillSpread: 0.9 },
@@ -218,6 +218,7 @@ function summarize(result) {
     hotCells: result.hotCells,
     topPassLinks: result.topPassLinks,
     quality: result.quality,
+    qualityNotes: result.quality && result.quality.notes ? result.quality.notes : [],
     elapsedMs: result.elapsedMs,
   };
 }

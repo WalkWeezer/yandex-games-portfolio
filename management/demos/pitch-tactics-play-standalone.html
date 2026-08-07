@@ -1354,7 +1354,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     const dist = hexDist(p.pos, victim.pos);
     const outOfRange = dist > range;
     // база ниже — без поддержки отбор реже «ломает» центр
-    let skill = skillPct(p.tackle) * (0.42 + 0.11 * pr.pts);
+    let skill = skillPct(p.tackle) * (0.38 + 0.1 * pr.pts);
     if (outOfRange) skill *= 0.1;
     return {
       chance: clamp(Math.round(skill), 5, 82),
@@ -3544,6 +3544,10 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   function aiWidth(ow) {
     if (ow.pos[1] <= 8 && tryAiShot(ow, 12)) return;
     if (ow.pos[1] > HALF_ROW + 1 && aiEscapeOwnHalf(ow)) return;
+    if (ow.pos[1] >= 8 && ow.pos[1] <= 13 && Math.abs(ow.pos[0] - CENTER_COL) >= 3 && Math.random() < 0.45) {
+      aiMoveToward(ow, [CENTER_COL, Math.max(2, ow.pos[1] - 3)]);
+      return;
+    }
     if (Math.random() < 0.3 && aiSupportRun(ow)) return;
     // у бровки — режь к центру/воротам, не крути A7↔B7
     if (Math.abs(ow.pos[0] - CENTER_COL) >= 4 && ow.pos[1] <= HALF_ROW) {
@@ -3565,7 +3569,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   }
   /** Слабый соперник: почти не тащит сам, пас назад/в ширину, форма не схлопывается */
   function aiShape(ow) {
-    if (ow.pos[1] <= 6 && tryAiShot(ow, 22)) return;
+    if (ow.pos[1] <= 7 && tryAiShot(ow, 14)) return;
     if ((state.carryFatigue || 0) >= 2 || pressureOn(ow.pos, "B").pts >= 2) {
       const safe = Object.values(state.them)
         .filter((t) => t.id !== ow.id && t.role !== "GK")
@@ -3595,6 +3599,10 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   function aiPossess(ow) {
     if (ow.pos[1] <= 6 && tryAiShot(ow, 22)) return;
     if (ow.pos[1] > HALF_ROW + 1 && aiEscapeOwnHalf(ow)) return;
+    if (ow.pos[1] >= 8 && ow.pos[1] <= 13 && Math.random() < 0.5) {
+      aiMoveToward(ow, [clamp(ow.pos[0], 4, 8), Math.max(2, ow.pos[1] - 3)]);
+      return;
+    }
     const press = pressureOn(ow.pos, "B").pts;
     if (Math.random() < 0.32 && press < 2 && aiSupportRun(ow)) return;
     const fwd = freest(ow, false, { needForward: true });
@@ -3617,6 +3625,10 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   function aiDirect(ow) {
     if (ow.pos[1] <= 8 && tryAiShot(ow, 14)) return;
     if (ow.pos[1] > HALF_ROW + 1 && aiEscapeOwnHalf(ow)) return;
+    if (ow.pos[1] >= 8 && ow.pos[1] <= 13 && Math.random() < 0.5) {
+      aiMoveToward(ow, [CENTER_COL, Math.max(1, ow.pos[1] - 4)]);
+      return;
+    }
     if (Math.random() < 0.28 && aiSupportRun(ow)) return;
     const recv = freest(ow, false, { needForward: true });
     if (recv && recv.pos[1] < ow.pos[1] - 1) {
@@ -3662,7 +3674,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       if (state.opponentId === "academy") chance = Math.round(chance * 0.7);
       const pr = pressureOn(ow.pos, "A").pts;
       // чаще опека: без поддержки партнёра не рубим
-      if (pr < 2 && Math.random() < (style === "press" ? 0.35 : 0.72)) {
+      if (pr < 2 && Math.random() < (style === "press" ? 0.48 : 0.82)) {
         const shadow = [
           clamp(ow.pos[0] + (h.role === "OP1" ? -1 : h.role === "OP2" ? 1 : 0), 0, COLS - 1),
           clamp(ow.pos[1] + 1, 0, ROWS - 1),
@@ -3786,6 +3798,20 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     const ow = ownerPlayer();
     if (ow && ow.side === "A" && !isLocked(ow.id)) {
       const press = pressureOn(ow.pos, "A").pts;
+      // анти-залипание: из центральной полосы чаще нести/бить вперёд, не крутить поперечный пас
+      const midBand = ow.pos[1] >= 8 && ow.pos[1] <= 13;
+      if (midBand && press < 2 && Math.random() < 0.55) {
+        if (ow.pos[1] >= GOAL_B_ROW - 9) {
+          const aim = GOAL_COLS.includes(ow.pos[0]) ? ow.pos[0] : CENTER_COL;
+          const ch = chanceShot(ow, [aim, GOAL_B_ROW], null);
+          if (!ch.outOfRange && ch.chance >= 10) {
+            doShot(ow, [aim, GOAL_B_ROW]);
+            return true;
+          }
+        }
+        playerMoveToward(ow, [clamp(ow.pos[0], 4, 8), Math.min(GOAL_B_ROW - 1, ow.pos[1] + 4)]);
+        return true;
+      }
       // подтяни партнёра вперёд чаще — иначе нет адресата паса
       if (Math.random() < 0.38 && press < 2 && playerSupportRun(ow)) return true;
 
@@ -3854,7 +3880,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     if (victim && victim.side === "B" && hexDist(h.pos, victim.pos) <= actionRange(h, "tackle")) {
       const ch = chanceTackle(h, victim);
       const pr = pressureOn(victim.pos, "B").pts;
-      if (pr < 2 && Math.random() < 0.65) {
+      if (pr < 2 && Math.random() < 0.78) {
         playerMoveToward(h, [victim.pos[0], Math.max(1, victim.pos[1] - 1)]);
         return true;
       }
@@ -3992,26 +4018,106 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
 
   function evaluateFootballQuality(result) {
     const issues = [];
+    const notes = [];
     const s = result.score;
     const st = result.stats || {};
     const totalGoals = s[0] + s[1];
-    const shots = (st.shotsFor || 0) + (st.shotsAgainst || 0);
+    const sf = st.shotsFor || 0;
+    const sa = st.shotsAgainst || 0;
+    const shots = sf + sa;
+    const xgA = (result.xg && result.xg.A) || st.xgFor || 0;
+    const xgB = (result.xg && result.xg.B) || st.xgAgainst || 0;
+    const xgSum = xgA + xgB;
     const mid = result.thirdsShare ? result.thirdsShare.mid : 1;
     const att = result.thirdsShare ? result.thirdsShare.attA + result.thirdsShare.attB : 0;
     const passPct = result.passPct || 0;
-    if (totalGoals < 1) issues.push("мало голов (<1)");
-    if (totalGoals > 7) issues.push("много голов (>7)");
-    if (shots < 5) issues.push("мало ударов (<5)");
-    if (shots >= 6 && totalGoals / shots > 0.65) issues.push("слишком высокая реализация");
-    if (mid > 0.74) issues.push("залипание в центре (>74%)");
-    if (att < 0.16) issues.push("мало игры в финальных третях");
-    const equalish = Math.abs((result.homeMult || 1) - (result.awayMult || 1)) < 0.15;
-    if (equalish && Math.abs(s[0] - s[1]) > 4) issues.push("разгром на равных");
-    if ((st.passAtt || 0) >= 25 && passPct < 35) issues.push("пас слишком хаотичный");
-    if ((st.passAtt || 0) >= 25 && passPct > 90) issues.push("пас слишком лёгкий");
-    if ((st.tackles || 0) > 75) issues.push("спам отборов");
-    if ((st.shotsFor || 0) < 1 || (st.shotsAgainst || 0) < 1) issues.push("одна сторона почти не бьёт");
-    return { ok: issues.length === 0, issues };
+    const homeMult = result.homeMult != null ? result.homeMult : 1;
+    const awayMult = result.awayMult != null ? result.awayMult : 1;
+    const homeAvg = result.squads && result.squads.home ? result.squads.home.avg : null;
+    const awayAvg = result.squads && result.squads.away ? result.squads.away.avg : null;
+    const multGap = Math.max(homeMult, awayMult) / Math.max(0.05, Math.min(homeMult, awayMult));
+    const avgGap = homeAvg && awayAvg ? Math.max(homeAvg, awayAvg) / Math.max(0.05, Math.min(homeAvg, awayAvg)) : 1;
+    const gap = Math.max(multGap, avgGap);
+    const mismatch = gap >= 1.18;
+    const bigMismatch = gap >= 1.32;
+    const homeStronger =
+      homeMult > awayMult + 0.04 || (homeAvg != null && awayAvg != null && homeAvg > awayAvg + 0.15);
+    const awayStronger =
+      awayMult > homeMult + 0.04 || (homeAvg != null && awayAvg != null && awayAvg > homeAvg + 0.15);
+    const dominantShots = homeStronger ? sf : awayStronger ? sa : Math.min(sf, sa);
+    const weakShots = homeStronger ? sa : awayStronger ? sf : Math.min(sf, sa);
+    const equalish = !mismatch && Math.abs(homeMult - awayMult) < 0.15;
+
+    // Голы: 0:0 допустим при реальных моментах; на mismatch — осада без гола тоже бывает редко, но xG должен быть
+    if (totalGoals < 1) {
+      if (shots >= 5 && xgSum >= 1.0) notes.push("0:0 при моментах (xG " + xgSum.toFixed(2) + ") — низкая реализация");
+      else if (bigMismatch && dominantShots >= 4 && xgSum >= 1.2)
+        notes.push("безголевая осада при явном превосходстве силы");
+      else issues.push("мало голов (<1)");
+    }
+    const spreadNoise = (result.skillSpread || 0) >= 0.85;
+    if (totalGoals > 12) issues.push("много голов (>12)");
+    else if (totalGoals > 9 && equalish && !spreadNoise) issues.push("много голов на равных (>9)");
+    else if (totalGoals > 8) notes.push("результативный матч (открытый темп / разница классов)");
+
+    // Удары
+    if (shots < 5) {
+      if (bigMismatch && dominantShots >= 3) notes.push("мало ударов суммарно — слабый почти не доходит, сила gap=" + gap.toFixed(2));
+      else if (mismatch && shots >= 3 && dominantShots >= 2) notes.push("мало ударов при перевесе силы");
+      else if (shots >= 3 && sf >= 1 && sa >= 1 && xgSum >= 0.7)
+        notes.push("мало ударов, но обе стороны создали моменты (xG " + xgSum.toFixed(2) + ")");
+      else issues.push("мало ударов (<5)");
+    }
+    if (shots >= 10 && totalGoals / shots > 0.75) issues.push("слишком высокая реализация");
+    else if (shots >= 6 && totalGoals / shots > 0.78 && equalish) issues.push("слишком высокая реализация");
+
+    if (mid > 0.82) issues.push("залипание в центре (>82%)");
+    else if (mid > 0.78 && equalish && shots < 6) issues.push("залипание в центре (>78%)");
+    if (att < 0.12) issues.push("мало игры в финальных третях");
+    else if (att < 0.16 && equalish) issues.push("мало игры в финальных третях");
+
+    const gd = Math.abs(s[0] - s[1]);
+    const xgRatio = Math.max(xgA, xgB) / Math.max(0.35, Math.min(xgA, xgB));
+    if (equalish && gd > 4) {
+      if (spreadNoise && xgRatio >= 2.2)
+        notes.push("разгром при skill-spread: xG " + xgA.toFixed(2) + "-" + xgB.toFixed(2));
+      else if (xgRatio >= 3.0)
+        notes.push("разгром по моментам (xG ratio " + xgRatio.toFixed(1) + "), не по «бумажной» силе");
+      else issues.push("разгром на равных");
+    }
+    if (mismatch && gd >= 4) {
+      const favWon = (homeStronger && s[0] > s[1]) || (awayStronger && s[1] > s[0]);
+      if (favWon) notes.push("разгром оправдан разницей силы (gap=" + gap.toFixed(2) + ")");
+    }
+
+    if ((st.passAtt || 0) >= 30 && passPct < 32) issues.push("пас слишком хаотичный");
+    if ((st.passAtt || 0) >= 30 && passPct > 92) issues.push("пас слишком лёгкий");
+
+    const pressy = result.awayAi === "press" || result.homeStyle === "press";
+    const tackleCap = pressy || mismatch ? 105 : 88;
+    if ((st.tackles || 0) > tackleCap) issues.push("спам отборов");
+
+    // Односторонние удары — только если слабый «задушен» превосходством
+    if (sf < 1 || sa < 1) {
+      if ((homeStronger || awayStronger) && mismatch && weakShots < 1 && dominantShots >= 3) {
+        notes.push(
+          "слабый без ударов оправдан превосходством (gap=" +
+            gap.toFixed(2) +
+            ", удары фаворита " +
+            dominantShots +
+            ")"
+        );
+      } else if ((homeStronger || awayStronger) && bigMismatch && weakShots < 1 && dominantShots >= 2) {
+        notes.push("полный контроль фаворита — ударов у аутсайдера нет");
+      } else {
+        issues.push("одна сторона почти не бьёт");
+      }
+    }
+
+    // Фаворит обязан создавать хоть что-то
+    if (mismatch && dominantShots < 2 && totalGoals < 2) issues.push("фаворит почти не создаёт моменты");
+
+    return { ok: issues.length === 0, issues, notes, strength: { homeMult, awayMult, gap: +gap.toFixed(3), mismatch, bigMismatch } };
   }
 
   window.pitchAutoPlayFullMatch = autoPlayFullMatch;
