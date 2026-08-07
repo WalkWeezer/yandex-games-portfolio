@@ -331,7 +331,7 @@
     Z: { name: "Буров", shot: 1, pass: 3, cross: 2, tackle: 4, speed: 3, accel: 2, press: 2, pos: [6, 4] },
     OP1: { name: "Левин", shot: 2, pass: 4, cross: 3, tackle: 3, speed: 2, accel: 5, press: 1, pos: [2, 6] }, // взрывной
     OP2: { name: "Райцев", shot: 2, pass: 4, cross: 4, tackle: 3, speed: 5, accel: 1, press: 1, pos: [10, 6] }, // стайер
-    NAP: { name: "Сомов", shot: 4, pass: 2, cross: 2, tackle: 2, speed: 5, accel: 4, press: 1, pos: [6, 8] },
+    NAP: { name: "Сомов", shot: 4, pass: 2, cross: 2, tackle: 2, speed: 5, accel: 4, press: 0, pos: [6, 8] },
   };
   const AWAY_HOME = {
     GK: [6, 19],
@@ -709,7 +709,6 @@
       const opp = OPPONENTS.find((x) => x.id === state.opponentId);
       state.you = buildSquad("A", null, 1);
       state.them = buildSquad("B", opp.names, opp.mult);
-      if (opp.id === "academy") state.them.Z.press = 1;
       if (opp.id === "press" || opp.id === "elite") {
         state.them.Z.tackle = clamp(state.them.Z.tackle + 1, 1, 5);
         state.them.NAP.shot = clamp(state.them.NAP.shot + 1, 1, 5);
