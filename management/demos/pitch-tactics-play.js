@@ -529,6 +529,12 @@
     carryFatigue: 0, // клетки, пройденные с мячом за текущее владение
     aiLocked: [],
     stats: null,
+    watchPlay: false,
+    watchDelay: 420,
+    homeAiStyle: "direct",
+    awayAiStyle: null,
+    homeLabel: "Дом",
+    awayLabel: "Гости",
   };
 
   const app = document.getElementById("app");
@@ -957,12 +963,35 @@
 
   // —— Lobby ——
   function renderLobby() {
+    const homeStyles = [
+      { id: "direct", label: "Прямой" },
+      { id: "possess", label: "Владение" },
+      { id: "width", label: "Ширина" },
+    ];
+    if (!state.homeAiStyle) state.homeAiStyle = "direct";
     app.innerHTML =
       '<section class="screen active"><div class="lobby-head"><h1>Pitch Tactics — Play</h1>' +
-      '<p class="muted">5 соперников · DnD расстановка · радиальное меню · давление суммируется · ворота 3 гекса · сейв ВР</p></div>' +
+      '<p class="muted">5 соперников · DnD расстановка · радиальное меню · или <b>ИИ vs ИИ</b> на поле</p></div>' +
       '<div class="opp-grid" id="oppGrid"></div>' +
-      '<div class="lineup-actions"><button class="btn btn-primary" id="go" disabled>К расстановке →</button></div>' +
-      '<div class="hint-box">Давление с нескольких защитников <b>складывается</b> на клетке. Плотность душит удар/пас, но открывает свободные зоны на другом фланге.</div></section>';
+      '<div class="lineup-actions" style="flex-wrap:wrap;gap:8px;align-items:center">' +
+      '<label class="muted" style="font-size:0.82rem">Стиль дома:&nbsp;' +
+      '<select id="homeStyleSel" class="btn" style="padding:6px 10px">' +
+      homeStyles
+        .map(
+          (s) =>
+            '<option value="' +
+            s.id +
+            '"' +
+            (state.homeAiStyle === s.id ? " selected" : "") +
+            ">" +
+            s.label +
+            "</option>"
+        )
+        .join("") +
+      "</select></label>" +
+      '<button class="btn btn-primary" id="go" disabled>К расстановке →</button>' +
+      '<button class="btn" id="watch" disabled>▶ Смотреть ИИ vs ИИ</button></div>' +
+      '<div class="hint-box">Выберите соперника и нажмите <b>Смотреть ИИ vs ИИ</b> — оба тренера играют сами, вы только наблюдаете. URL: <code>?watch=rivals&amp;home=direct</code></div></section>';
     const grid = app.querySelector("#oppGrid");
     OPPONENTS.forEach((o) => {
       const b = document.createElement("button");
@@ -984,10 +1013,17 @@
       };
       grid.appendChild(b);
     });
+    const styleSel = app.querySelector("#homeStyleSel");
+    styleSel.onchange = () => {
+      state.homeAiStyle = styleSel.value;
+    };
     const go = app.querySelector("#go");
+    const watchBtn = app.querySelector("#watch");
     go.disabled = !state.opponentId;
+    watchBtn.disabled = !state.opponentId;
     go.onclick = () => {
       const opp = OPPONENTS.find((x) => x.id === state.opponentId);
+      state.watchPlay = false;
       state.you = buildSquad("A", null, 1);
       state.them = buildSquad("B", opp.names, opp.mult);
       if (opp.id === "press" || opp.id === "elite") {
@@ -996,6 +1032,12 @@
       }
       state.screen = "lineup";
       render();
+    };
+    watchBtn.onclick = () => {
+      startWatchMatch({
+        awayId: state.opponentId,
+        homeStyle: (styleSel && styleSel.value) || state.homeAiStyle || "direct",
+      });
     };
   }
 
@@ -1289,16 +1331,32 @@
     const el = app.querySelector("#leftPanel");
     if (!el) return;
     const sel = state.selectedId ? byId(state.selectedId) : null;
+    const homeName = state.watchPlay ? state.homeLabel || "Дом" : "Вы";
+    const awayName = state.watchPlay ? state.awayLabel || "Гости" : "ПК";
+    const turnLabel = state.watchPlay
+      ? state.turn === "A"
+        ? "ИИ дом (" + (state.homeAiStyle || "direct") + ")"
+        : "ИИ гости (" + (state.awayAiStyle || "—") + ")"
+      : state.turn === "A"
+        ? "Вы"
+        : "Соперник";
     el.innerHTML =
-      '<div class="scoreline"><span>Вы ' +
+      '<div class="scoreline"><span>' +
+      homeName +
+      " " +
       state.score[0] +
       '</span><span class="clock">' +
       String(state.minute) +
       "'</span><span>" +
       state.score[1] +
-      " ПК</span></div>" +
+      " " +
+      awayName +
+      "</span></div>" +
+      (state.watchPlay
+        ? '<div class="mode-chip" style="margin:4px 0 8px;display:inline-block">👁 Просмотр ИИ vs ИИ</div>'
+        : "") +
       '<div class="muted">Ход: <b>' +
-      (state.turn === "A" ? "Вы" : "Соперник") +
+      turnLabel +
       "</b>" +
       (state.mode ? ' · <span class="mode-chip">' + modeLabel(state.mode) + "</span>" : "") +
       "</div>" +
@@ -1310,12 +1368,20 @@
       "</div>" +
       '<h3 style="font-size:0.85rem;margin:0 0 6px">Состав</h3>' +
       '<div class="card-list" id="cardList"></div>' +
-      (sel ? selectedCardHtml(sel) : '<p class="muted" style="font-size:0.8rem">Клик по игроку на поле или карточке.</p>') +
+      (sel
+        ? selectedCardHtml(sel)
+        : '<p class="muted" style="font-size:0.8rem">' +
+          (state.watchPlay ? "ИИ управляет обеими командами." : "Клик по игроку на поле или карточке.") +
+          "</p>") +
       '<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">' +
-      '<button class="btn" id="btnEnd" ' +
-      (state.turn !== "A" || state.waiting || state.over ? "disabled" : "") +
-      ">Конец хода</button>" +
-      '<button class="btn btn-ghost" id="btnResign">Выйти</button></div>';
+      (state.watchPlay
+        ? ""
+        : '<button class="btn" id="btnEnd" ' +
+          (state.turn !== "A" || state.waiting || state.over ? "disabled" : "") +
+          ">Конец хода</button>") +
+      '<button class="btn btn-ghost" id="btnResign">' +
+      (state.watchPlay ? "Стоп" : "Выйти") +
+      "</button></div>";
 
     const list = el.querySelector("#cardList");
     Object.values(state.you).forEach((p) => {
@@ -1358,10 +1424,13 @@
       list.appendChild(b);
     });
 
-    el.querySelector("#btnEnd").onclick = () => endPlayerTurn();
+    const btnEnd = el.querySelector("#btnEnd");
+    if (btnEnd) btnEnd.onclick = () => endPlayerTurn();
     el.querySelector("#btnResign").onclick = () => {
+      stopWatchMatch();
       state.screen = "lobby";
       state.opponentId = null;
+      state.watchPlay = false;
       render();
     };
   }
@@ -2696,13 +2765,21 @@
     state.lockedIds = [];
     state.actedIds = [];
     state.minute = Math.min(MATCH_MINUTES, state.minute + 1);
-    state.waiting = false;
     state.selectedId = null;
-    pushLog("— Ваш ход (" + COACH_AP + " AP) — · " + state.minute + "'", true);
     if (state.minute >= MATCH_MINUTES) {
+      state.waiting = false;
       endMatch();
       return;
     }
+    if (state.watchPlay) {
+      pushLog("— Ход домашнего ИИ (" + COACH_AP + " AP) — · " + state.minute + "'", true);
+      renderLeft();
+      renderRight();
+      scheduleWatch(runHomeAIWatch, Math.max(180, state.watchDelay - 80));
+      return;
+    }
+    state.waiting = false;
+    pushLog("— Ваш ход (" + COACH_AP + " AP) — · " + state.minute + "'", true);
     render();
   }
 
@@ -2720,20 +2797,29 @@
 
   function runAI() {
     const opp = OPPONENTS.find((x) => x.id === state.opponentId);
+    const style = state.awayAiStyle || (opp && opp.ai) || "direct";
     let ap = COACH_AP;
     state.aiLocked = [];
+    const delay = state.watchPlay ? state.watchDelay : 520;
     const step = () => {
-      if (ap <= 0 || state.over) {
+      if (!state.watchPlay && state.over) {
         setTimeout(endAITurn, 280);
         return;
       }
-      aiAction(opp.ai);
+      if (ap <= 0 || state.over) {
+        if (state.watchPlay) scheduleWatch(endAITurn, Math.max(160, delay * 0.55));
+        else setTimeout(endAITurn, 280);
+        return;
+      }
+      if (state.watchPlay === false && state.turn !== "B") return;
+      aiAction(style);
       ap -= 1;
       syncPieces(true);
       paintBoard();
       renderLeft();
       renderRight();
-      setTimeout(step, 520);
+      if (state.watchPlay) scheduleWatch(step, delay);
+      else setTimeout(step, 520);
     };
     step();
   }
@@ -3604,14 +3690,129 @@
     };
   }
 
+  function stopWatchMatch() {
+    state.watchPlay = false;
+    state.waiting = false;
+    if (state._watchTimer) {
+      clearTimeout(state._watchTimer);
+      state._watchTimer = null;
+    }
+  }
+
+  function scheduleWatch(fn, ms) {
+    if (state._watchTimer) clearTimeout(state._watchTimer);
+    state._watchTimer = setTimeout(fn, ms);
+  }
+
+  function finishHomeWatchTurn() {
+    if (!state.watchPlay || state.over) return;
+    noteBallHeat();
+    state.turn = "B";
+    state.mode = null;
+    state.reachable = [];
+    state.targets = [];
+    pushLog("— Ход соперника —");
+    renderLeft();
+    renderRight();
+    paintBoard();
+    syncPieces(true);
+    state.waiting = true;
+    scheduleWatch(runAI, Math.max(200, state.watchDelay - 40));
+  }
+
+  function runHomeAIWatch() {
+    if (!state.watchPlay || state.over) return;
+    state.turn = "A";
+    state.ap = COACH_AP;
+    state.actedIds = [];
+    state.lockedIds = [];
+    state.waiting = true;
+    state.selectedId = null;
+    renderLeft();
+    renderRight();
+    const step = () => {
+      if (!state.watchPlay || state.over) return;
+      if (state.ap <= 0 || state.turn !== "A") {
+        finishHomeWatchTurn();
+        return;
+      }
+      const ap0 = state.ap;
+      playerAutoAction();
+      noteBallHeat();
+      if (state.ap >= ap0) state.ap -= 1;
+      syncPieces(true);
+      paintBoard();
+      renderLeft();
+      renderRight();
+      scheduleWatch(step, state.watchDelay);
+    };
+    scheduleWatch(step, Math.max(160, state.watchDelay * 0.55));
+  }
+
+  /** Визуальный ИИ vs ИИ на поле (не headless). */
+  function startWatchMatch(opts) {
+    opts = opts || {};
+    const awayId = opts.awayId || state.opponentId || "rivals";
+    const homeStyle = opts.homeStyle || "direct";
+    const homeMult = opts.homeMult != null ? opts.homeMult : 1;
+    const skillSpread = opts.skillSpread != null ? opts.skillSpread : 0.35;
+    const delay = opts.delay != null ? opts.delay : state.watchDelay || 420;
+    stopWatchMatch();
+    state.watchPlay = true;
+    state.autoPlay = false;
+    state.watchDelay = Math.max(80, Number(delay) || 420);
+    state.homeAiStyle = homeStyle;
+    state.opponentId = awayId;
+    state.stats = emptyMatchStats();
+    state.matchArchive = [];
+    const opp = OPPONENTS.find((x) => x.id === awayId) || OPPONENTS[0];
+    const awayMult = opts.awayMult != null ? opts.awayMult : opp.mult;
+    const awayAi = opts.awayAi || opp.ai;
+    state.awayAiStyle = awayAi;
+    state.homeLabel = opts.homeName || "Дом (" + homeStyle + ")";
+    state.awayLabel = opts.awayName || opp.name;
+    state.you = buildSquad("A", null, homeMult, skillSpread);
+    if (homeStyle === "possess") {
+      state.you.OP1.pass = clamp(state.you.OP1.pass + 1, 1, 5);
+      state.you.OP2.pass = clamp(state.you.OP2.pass + 1, 1, 5);
+      state.you.NAP.shot = clamp(state.you.NAP.shot - 1, 1, 5);
+    } else if (homeStyle === "width") {
+      state.you.OP1.cross = clamp(state.you.OP1.cross + 1, 1, 5);
+      state.you.OP2.cross = clamp(state.you.OP2.cross + 1, 1, 5);
+      state.you.OP2.speed = clamp(state.you.OP2.speed + 1, 1, 5);
+    } else if (homeStyle === "direct") {
+      state.you.NAP.shot = clamp(state.you.NAP.shot + 1, 1, 5);
+      state.you.NAP.accel = clamp(state.you.NAP.accel + 1, 1, 5);
+    }
+    state.them = buildSquad("B", opts.awayNames || opp.names, awayMult, skillSpread);
+    if (opts.homeName) state.you.NAP.name = String(opts.homeName).slice(0, 18);
+    startMatch();
+    toast("ИИ vs ИИ · " + state.homeLabel + " — " + state.awayLabel);
+    pushLog("Просмотр: оба ИИ · дом=" + homeStyle + " · гости=" + awayAi, true);
+    state.waiting = true;
+    renderLeft();
+    renderRight();
+    scheduleWatch(runHomeAIWatch, 500);
+  }
+
   window.pitchAutoPlayFullMatch = autoPlayFullMatch;
   window.pitchEvaluateFootballQuality = evaluateFootballQuality;
+  window.pitchStartWatchMatch = startWatchMatch;
+  window.pitchStopWatchMatch = stopWatchMatch;
 
   // В Node-прогоне UI не поднимаем — только логика матча
   if (!globalThis.__PITCH_NODE_AUTOPLAY__) {
     render();
     const autoParam = /(?:\?|&)autoplay=([^&]*)/.exec(location.search || "");
-    if (autoParam) {
+    const watchParam = /(?:\?|&)watch=([^&]*)/.exec(location.search || "");
+    const homeParam = /(?:\?|&)home=([^&]*)/.exec(location.search || "");
+    const delayParam = /(?:\?|&)delay=([^&]*)/.exec(location.search || "");
+    if (watchParam) {
+      const id = decodeURIComponent(watchParam[1] || "rivals") || "rivals";
+      const homeStyle = homeParam ? decodeURIComponent(homeParam[1] || "direct") : "direct";
+      const delay = delayParam ? Number(decodeURIComponent(delayParam[1])) : 380;
+      setTimeout(() => startWatchMatch({ awayId: id, homeStyle, delay }), 80);
+    } else if (autoParam) {
       const id = decodeURIComponent(autoParam[1] || "academy") || "academy";
       try {
         const result = autoPlayFullMatch(id);
