@@ -3841,9 +3841,10 @@
 
     // --- goals ---
     if (totalGoals < 1) {
-      if (shots >= 4 && xgSum >= 0.9) notes.push("0:0 при моментах (xG " + xgSum.toFixed(2) + ") — низкая реализация");
+      if (shots >= 3 && xgSum >= 0.7) notes.push("0:0 при моментах (xG " + xgSum.toFixed(2) + ") — низкая реализация");
       else if (softMismatch && dominantShots >= 3 && xgSum >= 0.9)
         notes.push("безголевая осада при контроле/" + "силе");
+      else if (shots >= 2 && xgSum >= 0.55) notes.push("0:0, мало моментов (xG " + xgSum.toFixed(2) + ")");
       else issues.push("мало голов (<1)");
     }
     if (totalGoals > 14) issues.push("много голов (>14)");
