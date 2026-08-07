@@ -94,14 +94,35 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
 @media (max-width: 900px) { .lineup-layout { grid-template-columns: 1fr; } }
 .lineup-pitch {
   position: relative;
-  min-height: 520px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  min-height: 0;
   border-radius: 16px;
   border: 2px solid rgba(220,240,210,0.25);
-  background: linear-gradient(180deg, #143222, #0f2418);
+  background: linear-gradient(180deg, #0d1c14, #0a1510);
   overflow: hidden;
   touch-action: none;
+  padding: 8px;
 }
-.lineup-pitch svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pitch-stage {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #12301f;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+}
+.pitch-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
 .lineup-piece {
   position: absolute;
   width: 34px; height: 34px;
@@ -186,25 +207,64 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
 .pitch-wrap { display: flex; flex-direction: column; gap: 8px; min-width: 0; position: relative; }
 .pitch {
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   flex: 1;
-  min-height: 560px;
+  min-height: 480px;
   border-radius: 16px;
   border: 2px solid rgba(220, 240, 210, 0.25);
-  background: linear-gradient(180deg, #143222, #0f2418);
-  overflow: hidden;
+  background: linear-gradient(180deg, #0d1c14, #0a1510);
+  overflow: auto;
+  padding: 8px;
 }
-.pitch-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.hex-cell { fill: #1a4a2e; stroke: rgba(220,240,210,0.16); stroke-width: 0.7; }
-.hex-cell.alt { fill: #174028; }
-.hex-cell.mark { fill: #1f5536; stroke: rgba(255,255,255,0.22); }
-.hex-cell.goal { fill: #0a1018; stroke: #dce8ff; stroke-width: 1.4; }
+.pitch .pitch-stage {
+  max-width: min(100%, 460px);
+  width: 100%;
+  max-height: calc(100vh - 140px);
+}
+.hex-cell { fill: #1c5234; stroke: rgba(230,245,220,0.28); stroke-width: 0.85; }
+.hex-cell.alt { fill: #18462c; }
+.hex-cell.mark { fill: #24633d; stroke: rgba(255,255,255,0.32); }
+.hex-cell.goal { fill: #0a1018; stroke: #e8f0ff; stroke-width: 1.6; }
 .hex-cell.goal-dive { stroke: var(--warn); stroke-width: 2; }
 .hex-cell.reachable { fill: #2a6a40; stroke: var(--accent); stroke-width: 1.4; }
 .hex-cell.target { fill: #3a5a2a; stroke: #9ccfff; stroke-width: 1.5; }
 .hex-cell.pressure1 { fill: #5a4a20; fill-opacity: 0.7; }
 .hex-cell.pressure2 { fill: #6a3020; fill-opacity: 0.75; }
 .hex-cell.loose { fill: #4a3a60; stroke: #cbbfff; stroke-width: 1.5; }
-.mark-line { fill: none; stroke: rgba(255,255,255,0.28); stroke-width: 1.2; }
+
+.mark-boundary {
+  fill: none;
+  stroke: rgba(255,255,255,0.72);
+  stroke-width: 2.2;
+}
+.mark-line {
+  fill: none;
+  stroke: rgba(255,255,255,0.65);
+  stroke-width: 1.6;
+}
+.mark-circle {
+  fill: none;
+  stroke: rgba(255,255,255,0.55);
+  stroke-width: 1.5;
+}
+.mark-spot { fill: rgba(255,255,255,0.85); stroke: none; }
+.mark-box {
+  fill: none;
+  stroke: rgba(255,255,255,0.5);
+  stroke-width: 1.4;
+}
+.mark-six {
+  fill: none;
+  stroke: rgba(255,255,255,0.45);
+  stroke-width: 1.2;
+}
+.mark-goal-mouth {
+  fill: rgba(220, 235, 255, 0.12);
+  stroke: rgba(230, 240, 255, 0.9);
+  stroke-width: 2;
+}
 
 .piece {
   position: absolute;
@@ -401,8 +461,8 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     if (Math.abs(r - HALF_ROW) <= 1 && Math.abs(c - CENTER_COL) <= 2) return true;
     return false;
   }
-  function nearestHex(px, py, pitchEl) {
-    const rect = pitchEl.getBoundingClientRect();
+  function nearestHex(px, py, stageEl) {
+    const rect = stageEl.getBoundingClientRect();
     const x = ((px - rect.left) / rect.width) * VB_W;
     const y = ((py - rect.top) / rect.height) * VB_H;
     let best = null;
@@ -418,6 +478,176 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       }
     }
     return best;
+  }
+
+  function svgNode(tag, attrs) {
+    const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    if (attrs) {
+      Object.keys(attrs).forEach((k) => el.setAttribute(k, attrs[k]));
+    }
+    return el;
+  }
+
+  /** Stage matches viewBox aspect so HTML pieces sit on the same hex centers as SVG. */
+  function createPitchStage(host) {
+    host.innerHTML = "";
+    const stage = document.createElement("div");
+    stage.className = "pitch-stage";
+    const ar = VB_W / VB_H;
+    stage.style.aspectRatio = VB_W + " / " + VB_H;
+    stage.style.width = "min(100%, 420px, calc((100vh - 150px) * " + ar.toFixed(5) + "))";
+    host.appendChild(stage);
+    return stage;
+  }
+
+  function pitchBounds() {
+    const halfH = HEX * (Math.sqrt(3) / 2);
+    return {
+      left: hexCenter(0, 0).x - HEX,
+      right: hexCenter(COLS - 1, 0).x + HEX,
+      top: hexCenter(0, 0).y - halfH,
+      bottom: hexCenter(0, ROWS - 1).y + halfH,
+    };
+  }
+
+  function drawPitchMarkings(svg) {
+    const g = svgNode("g", { class: "pitch-marks" });
+    const b = pitchBounds();
+    const midY = (hexCenter(0, HALF_ROW - 1).y + hexCenter(0, HALF_ROW).y) / 2;
+    const cx = hexCenter(CENTER_COL, HALF_ROW).x;
+    const cy = midY;
+    const boxPad = HEX * 0.35;
+
+    // Outer touchlines
+    g.appendChild(
+      svgNode("rect", {
+        x: b.left,
+        y: b.top,
+        width: b.right - b.left,
+        height: b.bottom - b.top,
+        class: "mark-boundary",
+      })
+    );
+
+    // Halfway line
+    g.appendChild(
+      svgNode("line", {
+        x1: b.left,
+        x2: b.right,
+        y1: midY,
+        y2: midY,
+        class: "mark-line",
+      })
+    );
+
+    // Center circle + spot
+    const R = STEP_Y * 2.15;
+    g.appendChild(svgNode("circle", { cx: cx, cy: cy, r: R, class: "mark-circle" }));
+    g.appendChild(svgNode("circle", { cx: cx, cy: cy, r: 2.2, class: "mark-spot" }));
+
+    function boxForRows(r0, r1) {
+      const ys = [];
+      const xs = [];
+      for (let c = 3; c <= 9; c++) {
+        for (let r = r0; r <= r1; r++) {
+          const p = hexCenter(c, r);
+          xs.push(p.x);
+          ys.push(p.y);
+        }
+      }
+      const halfH = HEX * (Math.sqrt(3) / 2);
+      return {
+        x: Math.min.apply(null, xs) - HEX * 0.55,
+        y: Math.min.apply(null, ys) - halfH + boxPad * 0.2,
+        w: Math.max.apply(null, xs) - Math.min.apply(null, xs) + HEX * 1.1,
+        h: Math.max.apply(null, ys) - Math.min.apply(null, ys) + halfH * 1.6,
+      };
+    }
+    const boxA = boxForRows(0, 4);
+    const boxB = boxForRows(16, 20);
+    [boxA, boxB].forEach((box) => {
+      g.appendChild(
+        svgNode("rect", {
+          x: box.x,
+          y: box.y,
+          width: box.w,
+          height: box.h,
+          class: "mark-box",
+        })
+      );
+    });
+
+    // 6-yard-ish boxes
+    function six(r0, r1) {
+      const xs = GOAL_COLS.map((c) => hexCenter(c, r0).x);
+      const y0 = hexCenter(CENTER_COL, r0).y;
+      const y1 = hexCenter(CENTER_COL, r1).y;
+      const halfH = HEX * (Math.sqrt(3) / 2);
+      const top = Math.min(y0, y1) - halfH * 0.3;
+      const bot = Math.max(y0, y1) + halfH * 0.3;
+      return {
+        x: Math.min.apply(null, xs) - HEX * 0.7,
+        y: top,
+        w: Math.max.apply(null, xs) - Math.min.apply(null, xs) + HEX * 1.4,
+        h: bot - top,
+      };
+    }
+    [six(0, 2), six(18, 20)].forEach((box) => {
+      g.appendChild(
+        svgNode("rect", {
+          x: box.x,
+          y: box.y,
+          width: box.w,
+          height: box.h,
+          class: "mark-six",
+        })
+      );
+    });
+
+    // Goal mouths on the 3 goal cells (inside field so viewBox does not clip)
+    function goalMouth(row) {
+      const xs = GOAL_COLS.map((c) => hexCenter(c, row).x);
+      const y = hexCenter(CENTER_COL, row).y;
+      const halfH = HEX * (Math.sqrt(3) / 2);
+      const x0 = Math.min.apply(null, xs) - HEX * 0.5;
+      const x1 = Math.max.apply(null, xs) + HEX * 0.5;
+      g.appendChild(
+        svgNode("rect", {
+          x: x0,
+          y: y - halfH * 0.55,
+          width: x1 - x0,
+          height: halfH * 1.1,
+          class: "mark-goal-mouth",
+        })
+      );
+    }
+    goalMouth(GOAL_A_ROW);
+    goalMouth(GOAL_B_ROW);
+
+    svg.appendChild(g);
+  }
+
+  function fillHexGrid(svg, opts) {
+    const interactive = !!(opts && opts.interactive);
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const center = hexCenter(c, r);
+        const poly = svgNode("polygon", {
+          points: hexPoints(center.x, center.y, HEX * 0.92),
+        });
+        let cls = "hex-cell" + ((c + r) % 2 ? " alt" : "");
+        if (isGoalHex(c, r)) cls += " goal";
+        else if (isPenaltyMark(c, r)) cls += " mark";
+        poly.setAttribute("class", cls);
+        poly.dataset.c = String(c);
+        poly.dataset.r = String(r);
+        if (interactive) {
+          poly.addEventListener("click", () => onHexClick(c, r));
+          hexNodes[c + "," + r] = poly;
+        }
+        svg.appendChild(poly);
+      }
+    }
   }
 
   function makePlayer(side, role, spec) {
@@ -753,36 +983,16 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   }
 
   function drawLineupPitch() {
-    const pitch = app.querySelector("#lineupPitch");
-    pitch.innerHTML = "";
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", "0 0 " + VB_W + " " + VB_H);
-    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    svg.style.position = "absolute";
-    svg.style.inset = "0";
-    svg.style.width = "100%";
-    svg.style.height = "100%";
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS; c++) {
-        const center = hexCenter(c, r);
-        const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-        poly.setAttribute("points", hexPoints(center.x, center.y, HEX * 0.92));
-        let cls = "hex-cell" + ((c + r) % 2 ? " alt" : "");
-        if (isGoalHex(c, r)) cls += " goal";
-        else if (isPenaltyMark(c, r)) cls += " mark";
-        poly.setAttribute("class", cls);
-        svg.appendChild(poly);
-      }
-    }
-    const y1 = hexCenter(0, HALF_ROW).y;
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", OX - HEX);
-    line.setAttribute("x2", VB_W - OX + HEX);
-    line.setAttribute("y1", y1);
-    line.setAttribute("y2", y1);
-    line.setAttribute("class", "mark-line");
-    svg.appendChild(line);
-    pitch.appendChild(svg);
+    const host = app.querySelector("#lineupPitch");
+    const stage = createPitchStage(host);
+    const svg = svgNode("svg", {
+      class: "pitch-svg",
+      viewBox: "0 0 " + VB_W + " " + VB_H,
+      preserveAspectRatio: "none",
+    });
+    stage.appendChild(svg);
+    fillHexGrid(svg, { interactive: false });
+    drawPitchMarkings(svg);
 
     allPlayers().forEach((p) => {
       const el = document.createElement("div");
@@ -792,12 +1002,12 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       const pt = pctFromHex(p.pos[0], p.pos[1]);
       el.style.left = pt.left + "%";
       el.style.top = pt.top + "%";
-      if (p.side === "A") enableDrag(el, p, pitch);
-      pitch.appendChild(el);
+      if (p.side === "A") enableDrag(el, p, stage);
+      stage.appendChild(el);
     });
   }
 
-  function enableDrag(el, player, pitch) {
+  function enableDrag(el, player, stage) {
     let dragging = false;
     const onDown = (ev) => {
       ev.preventDefault();
@@ -806,7 +1016,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       const move = (e) => {
         if (!dragging) return;
         const pt = e.touches ? e.touches[0] : e;
-        const rect = pitch.getBoundingClientRect();
+        const rect = stage.getBoundingClientRect();
         el.style.left = ((pt.clientX - rect.left) / rect.width) * 100 + "%";
         el.style.top = ((pt.clientY - rect.top) / rect.height) * 100 + "%";
       };
@@ -818,12 +1028,11 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
         document.removeEventListener("touchmove", move);
         document.removeEventListener("touchend", up);
         const pt = e.changedTouches ? e.changedTouches[0] : e;
-        const hex = nearestHex(pt.clientX, pt.clientY, pitch);
+        const hex = nearestHex(pt.clientX, pt.clientY, stage);
         if (!hex || !inBounds(hex[0], hex[1])) {
           snapPiece(el, player.pos);
           return;
         }
-        // own half preference but allow full pitch for demo flexibility — lock to rows 0-10 for A
         if (hex[1] > HALF_ROW) {
           toast("Ставьте на своей половине");
           snapPiece(el, player.pos);
@@ -836,7 +1045,11 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
         }
         const other = occupant(hex);
         if (other && other.id !== player.id) {
-          // swap
+          if (other.side !== "A") {
+            toast("Клетка занята соперником");
+            snapPiece(el, player.pos);
+            return;
+          }
           const tmp = other.pos.slice();
           other.pos = player.pos.slice();
           other.home = other.pos.slice();
@@ -1037,45 +1250,23 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   }
 
   function ensurePitch() {
-    const pitch = app.querySelector("#pitch");
-    pitch.innerHTML = "";
+    const host = app.querySelector("#pitch");
     hexNodes = {};
     pieceEls = {};
+    const stage = createPitchStage(host);
 
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("class", "pitch-svg");
-    svg.setAttribute("viewBox", "0 0 " + VB_W + " " + VB_H);
-    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    pitch.appendChild(svg);
-
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS; c++) {
-        const center = hexCenter(c, r);
-        const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-        poly.setAttribute("points", hexPoints(center.x, center.y, HEX * 0.92));
-        let cls = "hex-cell" + ((c + r) % 2 ? " alt" : "");
-        if (isGoalHex(c, r)) cls += " goal";
-        else if (isPenaltyMark(c, r)) cls += " mark";
-        poly.setAttribute("class", cls);
-        poly.dataset.c = String(c);
-        poly.dataset.r = String(r);
-        poly.addEventListener("click", () => onHexClick(c, r));
-        svg.appendChild(poly);
-        hexNodes[c + "," + r] = poly;
-      }
-    }
-    const y1 = hexCenter(0, HALF_ROW).y;
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", OX - HEX);
-    line.setAttribute("x2", VB_W - OX + HEX);
-    line.setAttribute("y1", y1);
-    line.setAttribute("y2", y1);
-    line.setAttribute("class", "mark-line");
-    svg.appendChild(line);
+    const svg = svgNode("svg", {
+      class: "pitch-svg",
+      viewBox: "0 0 " + VB_W + " " + VB_H,
+      preserveAspectRatio: "none",
+    });
+    stage.appendChild(svg);
+    fillHexGrid(svg, { interactive: true });
+    drawPitchMarkings(svg);
 
     ballEl = document.createElement("div");
     ballEl.className = "ball";
-    pitch.appendChild(ballEl);
+    stage.appendChild(ballEl);
 
     allPlayers().forEach((p) => {
       const el = document.createElement("button");
@@ -1087,7 +1278,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
         ev.stopPropagation();
         onPieceClick(p.id);
       });
-      pitch.appendChild(el);
+      stage.appendChild(el);
       pieceEls[p.id] = el;
     });
 
@@ -1098,7 +1289,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       RADIAL.map((r, i) =>
         '<button type="button" class="radial-btn" data-mode="' + r.mode + '" style="--i:' + i + '">' + r.label + "</button>"
       ).join("");
-    pitch.appendChild(radialEl);
+    stage.appendChild(radialEl);
     radialEl.querySelector("#radialClose").onclick = (e) => {
       e.stopPropagation();
       closeRadial();
@@ -1106,7 +1297,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     radialEl.querySelectorAll(".radial-btn").forEach((btn) => {
       const i = RADIAL.findIndex((r) => r.mode === btn.dataset.mode);
       const ang = (-90 + i * 72) * (Math.PI / 180);
-      const rad = 70;
+      const rad = 58;
       btn.style.left = Math.cos(ang) * rad + "px";
       btn.style.top = Math.sin(ang) * rad + "px";
       btn.onclick = (e) => {

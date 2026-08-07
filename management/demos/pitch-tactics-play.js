@@ -77,8 +77,8 @@
     if (Math.abs(r - HALF_ROW) <= 1 && Math.abs(c - CENTER_COL) <= 2) return true;
     return false;
   }
-  function nearestHex(px, py, pitchEl) {
-    const rect = pitchEl.getBoundingClientRect();
+  function nearestHex(px, py, stageEl) {
+    const rect = stageEl.getBoundingClientRect();
     const x = ((px - rect.left) / rect.width) * VB_W;
     const y = ((py - rect.top) / rect.height) * VB_H;
     let best = null;
@@ -94,6 +94,176 @@
       }
     }
     return best;
+  }
+
+  function svgNode(tag, attrs) {
+    const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    if (attrs) {
+      Object.keys(attrs).forEach((k) => el.setAttribute(k, attrs[k]));
+    }
+    return el;
+  }
+
+  /** Stage matches viewBox aspect so HTML pieces sit on the same hex centers as SVG. */
+  function createPitchStage(host) {
+    host.innerHTML = "";
+    const stage = document.createElement("div");
+    stage.className = "pitch-stage";
+    const ar = VB_W / VB_H;
+    stage.style.aspectRatio = VB_W + " / " + VB_H;
+    stage.style.width = "min(100%, 420px, calc((100vh - 150px) * " + ar.toFixed(5) + "))";
+    host.appendChild(stage);
+    return stage;
+  }
+
+  function pitchBounds() {
+    const halfH = HEX * (Math.sqrt(3) / 2);
+    return {
+      left: hexCenter(0, 0).x - HEX,
+      right: hexCenter(COLS - 1, 0).x + HEX,
+      top: hexCenter(0, 0).y - halfH,
+      bottom: hexCenter(0, ROWS - 1).y + halfH,
+    };
+  }
+
+  function drawPitchMarkings(svg) {
+    const g = svgNode("g", { class: "pitch-marks" });
+    const b = pitchBounds();
+    const midY = (hexCenter(0, HALF_ROW - 1).y + hexCenter(0, HALF_ROW).y) / 2;
+    const cx = hexCenter(CENTER_COL, HALF_ROW).x;
+    const cy = midY;
+    const boxPad = HEX * 0.35;
+
+    // Outer touchlines
+    g.appendChild(
+      svgNode("rect", {
+        x: b.left,
+        y: b.top,
+        width: b.right - b.left,
+        height: b.bottom - b.top,
+        class: "mark-boundary",
+      })
+    );
+
+    // Halfway line
+    g.appendChild(
+      svgNode("line", {
+        x1: b.left,
+        x2: b.right,
+        y1: midY,
+        y2: midY,
+        class: "mark-line",
+      })
+    );
+
+    // Center circle + spot
+    const R = STEP_Y * 2.15;
+    g.appendChild(svgNode("circle", { cx: cx, cy: cy, r: R, class: "mark-circle" }));
+    g.appendChild(svgNode("circle", { cx: cx, cy: cy, r: 2.2, class: "mark-spot" }));
+
+    function boxForRows(r0, r1) {
+      const ys = [];
+      const xs = [];
+      for (let c = 3; c <= 9; c++) {
+        for (let r = r0; r <= r1; r++) {
+          const p = hexCenter(c, r);
+          xs.push(p.x);
+          ys.push(p.y);
+        }
+      }
+      const halfH = HEX * (Math.sqrt(3) / 2);
+      return {
+        x: Math.min.apply(null, xs) - HEX * 0.55,
+        y: Math.min.apply(null, ys) - halfH + boxPad * 0.2,
+        w: Math.max.apply(null, xs) - Math.min.apply(null, xs) + HEX * 1.1,
+        h: Math.max.apply(null, ys) - Math.min.apply(null, ys) + halfH * 1.6,
+      };
+    }
+    const boxA = boxForRows(0, 4);
+    const boxB = boxForRows(16, 20);
+    [boxA, boxB].forEach((box) => {
+      g.appendChild(
+        svgNode("rect", {
+          x: box.x,
+          y: box.y,
+          width: box.w,
+          height: box.h,
+          class: "mark-box",
+        })
+      );
+    });
+
+    // 6-yard-ish boxes
+    function six(r0, r1) {
+      const xs = GOAL_COLS.map((c) => hexCenter(c, r0).x);
+      const y0 = hexCenter(CENTER_COL, r0).y;
+      const y1 = hexCenter(CENTER_COL, r1).y;
+      const halfH = HEX * (Math.sqrt(3) / 2);
+      const top = Math.min(y0, y1) - halfH * 0.3;
+      const bot = Math.max(y0, y1) + halfH * 0.3;
+      return {
+        x: Math.min.apply(null, xs) - HEX * 0.7,
+        y: top,
+        w: Math.max.apply(null, xs) - Math.min.apply(null, xs) + HEX * 1.4,
+        h: bot - top,
+      };
+    }
+    [six(0, 2), six(18, 20)].forEach((box) => {
+      g.appendChild(
+        svgNode("rect", {
+          x: box.x,
+          y: box.y,
+          width: box.w,
+          height: box.h,
+          class: "mark-six",
+        })
+      );
+    });
+
+    // Goal mouths on the 3 goal cells (inside field so viewBox does not clip)
+    function goalMouth(row) {
+      const xs = GOAL_COLS.map((c) => hexCenter(c, row).x);
+      const y = hexCenter(CENTER_COL, row).y;
+      const halfH = HEX * (Math.sqrt(3) / 2);
+      const x0 = Math.min.apply(null, xs) - HEX * 0.5;
+      const x1 = Math.max.apply(null, xs) + HEX * 0.5;
+      g.appendChild(
+        svgNode("rect", {
+          x: x0,
+          y: y - halfH * 0.55,
+          width: x1 - x0,
+          height: halfH * 1.1,
+          class: "mark-goal-mouth",
+        })
+      );
+    }
+    goalMouth(GOAL_A_ROW);
+    goalMouth(GOAL_B_ROW);
+
+    svg.appendChild(g);
+  }
+
+  function fillHexGrid(svg, opts) {
+    const interactive = !!(opts && opts.interactive);
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const center = hexCenter(c, r);
+        const poly = svgNode("polygon", {
+          points: hexPoints(center.x, center.y, HEX * 0.92),
+        });
+        let cls = "hex-cell" + ((c + r) % 2 ? " alt" : "");
+        if (isGoalHex(c, r)) cls += " goal";
+        else if (isPenaltyMark(c, r)) cls += " mark";
+        poly.setAttribute("class", cls);
+        poly.dataset.c = String(c);
+        poly.dataset.r = String(r);
+        if (interactive) {
+          poly.addEventListener("click", () => onHexClick(c, r));
+          hexNodes[c + "," + r] = poly;
+        }
+        svg.appendChild(poly);
+      }
+    }
   }
 
   function makePlayer(side, role, spec) {
@@ -429,36 +599,16 @@
   }
 
   function drawLineupPitch() {
-    const pitch = app.querySelector("#lineupPitch");
-    pitch.innerHTML = "";
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", "0 0 " + VB_W + " " + VB_H);
-    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    svg.style.position = "absolute";
-    svg.style.inset = "0";
-    svg.style.width = "100%";
-    svg.style.height = "100%";
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS; c++) {
-        const center = hexCenter(c, r);
-        const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-        poly.setAttribute("points", hexPoints(center.x, center.y, HEX * 0.92));
-        let cls = "hex-cell" + ((c + r) % 2 ? " alt" : "");
-        if (isGoalHex(c, r)) cls += " goal";
-        else if (isPenaltyMark(c, r)) cls += " mark";
-        poly.setAttribute("class", cls);
-        svg.appendChild(poly);
-      }
-    }
-    const y1 = hexCenter(0, HALF_ROW).y;
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", OX - HEX);
-    line.setAttribute("x2", VB_W - OX + HEX);
-    line.setAttribute("y1", y1);
-    line.setAttribute("y2", y1);
-    line.setAttribute("class", "mark-line");
-    svg.appendChild(line);
-    pitch.appendChild(svg);
+    const host = app.querySelector("#lineupPitch");
+    const stage = createPitchStage(host);
+    const svg = svgNode("svg", {
+      class: "pitch-svg",
+      viewBox: "0 0 " + VB_W + " " + VB_H,
+      preserveAspectRatio: "none",
+    });
+    stage.appendChild(svg);
+    fillHexGrid(svg, { interactive: false });
+    drawPitchMarkings(svg);
 
     allPlayers().forEach((p) => {
       const el = document.createElement("div");
@@ -468,12 +618,12 @@
       const pt = pctFromHex(p.pos[0], p.pos[1]);
       el.style.left = pt.left + "%";
       el.style.top = pt.top + "%";
-      if (p.side === "A") enableDrag(el, p, pitch);
-      pitch.appendChild(el);
+      if (p.side === "A") enableDrag(el, p, stage);
+      stage.appendChild(el);
     });
   }
 
-  function enableDrag(el, player, pitch) {
+  function enableDrag(el, player, stage) {
     let dragging = false;
     const onDown = (ev) => {
       ev.preventDefault();
@@ -482,7 +632,7 @@
       const move = (e) => {
         if (!dragging) return;
         const pt = e.touches ? e.touches[0] : e;
-        const rect = pitch.getBoundingClientRect();
+        const rect = stage.getBoundingClientRect();
         el.style.left = ((pt.clientX - rect.left) / rect.width) * 100 + "%";
         el.style.top = ((pt.clientY - rect.top) / rect.height) * 100 + "%";
       };
@@ -494,12 +644,11 @@
         document.removeEventListener("touchmove", move);
         document.removeEventListener("touchend", up);
         const pt = e.changedTouches ? e.changedTouches[0] : e;
-        const hex = nearestHex(pt.clientX, pt.clientY, pitch);
+        const hex = nearestHex(pt.clientX, pt.clientY, stage);
         if (!hex || !inBounds(hex[0], hex[1])) {
           snapPiece(el, player.pos);
           return;
         }
-        // own half preference but allow full pitch for demo flexibility — lock to rows 0-10 for A
         if (hex[1] > HALF_ROW) {
           toast("Ставьте на своей половине");
           snapPiece(el, player.pos);
@@ -512,7 +661,11 @@
         }
         const other = occupant(hex);
         if (other && other.id !== player.id) {
-          // swap
+          if (other.side !== "A") {
+            toast("Клетка занята соперником");
+            snapPiece(el, player.pos);
+            return;
+          }
           const tmp = other.pos.slice();
           other.pos = player.pos.slice();
           other.home = other.pos.slice();
@@ -713,45 +866,23 @@
   }
 
   function ensurePitch() {
-    const pitch = app.querySelector("#pitch");
-    pitch.innerHTML = "";
+    const host = app.querySelector("#pitch");
     hexNodes = {};
     pieceEls = {};
+    const stage = createPitchStage(host);
 
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("class", "pitch-svg");
-    svg.setAttribute("viewBox", "0 0 " + VB_W + " " + VB_H);
-    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    pitch.appendChild(svg);
-
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS; c++) {
-        const center = hexCenter(c, r);
-        const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-        poly.setAttribute("points", hexPoints(center.x, center.y, HEX * 0.92));
-        let cls = "hex-cell" + ((c + r) % 2 ? " alt" : "");
-        if (isGoalHex(c, r)) cls += " goal";
-        else if (isPenaltyMark(c, r)) cls += " mark";
-        poly.setAttribute("class", cls);
-        poly.dataset.c = String(c);
-        poly.dataset.r = String(r);
-        poly.addEventListener("click", () => onHexClick(c, r));
-        svg.appendChild(poly);
-        hexNodes[c + "," + r] = poly;
-      }
-    }
-    const y1 = hexCenter(0, HALF_ROW).y;
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", OX - HEX);
-    line.setAttribute("x2", VB_W - OX + HEX);
-    line.setAttribute("y1", y1);
-    line.setAttribute("y2", y1);
-    line.setAttribute("class", "mark-line");
-    svg.appendChild(line);
+    const svg = svgNode("svg", {
+      class: "pitch-svg",
+      viewBox: "0 0 " + VB_W + " " + VB_H,
+      preserveAspectRatio: "none",
+    });
+    stage.appendChild(svg);
+    fillHexGrid(svg, { interactive: true });
+    drawPitchMarkings(svg);
 
     ballEl = document.createElement("div");
     ballEl.className = "ball";
-    pitch.appendChild(ballEl);
+    stage.appendChild(ballEl);
 
     allPlayers().forEach((p) => {
       const el = document.createElement("button");
@@ -763,7 +894,7 @@
         ev.stopPropagation();
         onPieceClick(p.id);
       });
-      pitch.appendChild(el);
+      stage.appendChild(el);
       pieceEls[p.id] = el;
     });
 
@@ -774,7 +905,7 @@
       RADIAL.map((r, i) =>
         '<button type="button" class="radial-btn" data-mode="' + r.mode + '" style="--i:' + i + '">' + r.label + "</button>"
       ).join("");
-    pitch.appendChild(radialEl);
+    stage.appendChild(radialEl);
     radialEl.querySelector("#radialClose").onclick = (e) => {
       e.stopPropagation();
       closeRadial();
@@ -782,7 +913,7 @@
     radialEl.querySelectorAll(".radial-btn").forEach((btn) => {
       const i = RADIAL.findIndex((r) => r.mode === btn.dataset.mode);
       const ang = (-90 + i * 72) * (Math.PI / 180);
-      const rad = 70;
+      const rad = 58;
       btn.style.left = Math.cos(ang) * rad + "px";
       btn.style.top = Math.sin(ang) * rad + "px";
       btn.onclick = (e) => {
