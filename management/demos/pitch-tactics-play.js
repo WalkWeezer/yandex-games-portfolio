@@ -16,7 +16,7 @@
   const GOAL_B_ROW = 20;
   const CENTER_COL = 6;
   const HALF_ROW = 10;
-  const COACH_AP = 4;
+  const COACH_AP = 3;
   const MATCH_MINUTES = 90;
   const ROLE_LABEL = { GK: "ВР", Z: "З", OP1: "О1", OP2: "О2", NAP: "Н" };
   const RADIAL = [
