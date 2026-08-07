@@ -367,7 +367,7 @@
     Z: { name: "Буров", shot: 1, pass: 3, cross: 2, tackle: 4, speed: 3, accel: 2, control: 3, press: 2, pos: [6, 4] },
     OP1: { name: "Левин", shot: 2, pass: 4, cross: 3, tackle: 3, speed: 2, accel: 5, control: 4, press: 1, pos: [2, 6] },
     OP2: { name: "Райцев", shot: 2, pass: 4, cross: 4, tackle: 3, speed: 5, accel: 1, control: 3, press: 1, pos: [10, 6] },
-    NAP: { name: "Сомов", shot: 4, pass: 2, cross: 2, tackle: 2, speed: 5, accel: 4, control: 2, press: 0, pos: [6, 8] },
+    NAP: { name: "Сомов", shot: 4, pass: 2, cross: 2, tackle: 2, speed: 5, accel: 4, control: 3, press: 0, pos: [6, 8] },
   };
   const AWAY_HOME = {
     GK: [6, 19],
@@ -558,8 +558,8 @@
    * С мячом: дебафф к дистанции от низкого владения + усталость ведения режет % удержания.
    */
   function carrySpeedDebuff(control) {
-    // control 5→0, 4→1, 3→1, 2→2, 1→2
-    return Math.max(0, Math.ceil((5 - clamp(control, 1, 5)) / 2));
+    // control 5→0, 4→0, 3→1, 2→1, 1→2 — слабое владение режет, но не убивает рывок
+    return Math.max(0, Math.floor((5 - clamp(control, 1, 5)) / 2));
   }
 
   function moveBudget(p) {
@@ -722,13 +722,15 @@
   function keepChanceOnCell(p, hex, fatBefore) {
     const pr = pressureOn(hex, p.side);
     const ctrl = p.control || 1;
-    const perHex = Math.max(5, 18 - ctrl * 2);
-    let keep = 97 - fatBefore * perHex;
-    if (pr.pts === 1) keep -= 42 - ctrl * 2; // ~40–32
-    else if (pr.pts === 2) keep -= 78 - ctrl; // ~77–73
-    else if (pr.pts >= 3) keep -= 90;
+    const perHex = Math.max(4, 14 - ctrl * 2);
+    // Пустое поле: без давления почти надёжно; риск копится от усталости ведения.
+    // Давление Σ1+ — основная угроза потери.
+    let keep = 100 - fatBefore * perHex;
+    if (pr.pts === 1) keep -= 38 - ctrl * 2;
+    else if (pr.pts === 2) keep -= 72 - ctrl;
+    else if (pr.pts >= 3) keep -= 88;
     return {
-      keep: clamp(Math.round(keep), 2, 97),
+      keep: clamp(Math.round(keep), 2, pr.pts === 0 && fatBefore === 0 ? 100 : 98),
       pressure: pr.pts,
       parts: pr.parts,
     };
@@ -1040,25 +1042,38 @@
     return "<span>" + l + "<b>" + v + "</b></span>";
   }
 
+  /** Партнёры у центра — короткий пас/навес с розыгрыша, якоря схемы (home) не трогаем */
+  function placeKickoffSupport(ownerSide) {
+    const yours = ownerSide === "A";
+    const squad = yours ? state.you : state.them;
+    const back = yours ? -2 : 2;
+    const wingR = yours ? -1 : 1;
+    squad.NAP.pos = [CENTER_COL, HALF_ROW];
+    squad.NAP.burst = true;
+    if (squad.Z) squad.Z.pos = [CENTER_COL, HALF_ROW + back];
+    if (squad.OP1) squad.OP1.pos = [CENTER_COL - 2, HALF_ROW + wingR];
+    if (squad.OP2) squad.OP2.pos = [CENTER_COL + 2, HALF_ROW + wingR];
+    if (squad.GK) squad.GK.pos = squad.GK.home.slice();
+    Object.values(squad).forEach((p) => {
+      if (p.role !== "NAP") p.burst = false;
+    });
+  }
+
   function startMatch() {
     state.minute = 0;
     state.score = [0, 0];
     state.turn = "A";
     state.ap = COACH_AP;
     state.ball = [CENTER_COL, HALF_ROW];
-    state.you.NAP.pos = [CENTER_COL, HALF_ROW];
-    state.you.NAP.home = state.you.NAP.pos.slice();
-    state.you.NAP.burst = true;
+    // Якоря схемы = текущая расстановка; NAP якорь — центр после свистка
+    Object.values(state.you).forEach((p) => {
+      p.home = p.role === "NAP" ? [CENTER_COL, HALF_ROW] : p.pos.slice();
+    });
     Object.values(state.them).forEach((p) => {
       p.pos = p.home.slice();
       p.burst = false;
     });
-    Object.values(state.you).forEach((p) => {
-      if (p.role !== "NAP") {
-        p.home = p.pos.slice();
-        p.burst = false;
-      }
-    });
+    placeKickoffSupport("A");
     state.ballOwner = "A.NAP";
     state.loose = false;
     state.selectedId = null;
@@ -1072,7 +1087,7 @@
     state.lockedIds = [];
     state.actedIds = [];
     resetCarryFatigue();
-    pushLog("Свисток! Клик по игроку → радиальное меню (5 действий).", true);
+    pushLog("Свисток! Партнёры у мяча — короткий пас или ведение. Клик → радиальное меню.", true);
     state.screen = "match";
     render();
   }
@@ -1935,18 +1950,11 @@
     Object.values(state.you).forEach((p) => (p.pos = p.home.slice()));
     Object.values(state.them).forEach((p) => (p.pos = p.home.slice()));
     state.ball = [CENTER_COL, HALF_ROW];
-    if (ownerSide === "A") {
-      state.you.NAP.pos = [CENTER_COL, HALF_ROW];
-      state.ballOwner = "A.NAP";
-      state.you.NAP.burst = true;
-    } else {
-      state.them.NAP.pos = [CENTER_COL, HALF_ROW];
-      state.ballOwner = "B.NAP";
-      state.them.NAP.burst = true;
-    }
+    placeKickoffSupport(ownerSide);
+    state.ballOwner = ownerSide === "A" ? "A.NAP" : "B.NAP";
     state.loose = false;
     resetCarryFatigue();
-    pushLog("Розыгрыш с центра.");
+    pushLog("Розыгрыш с центра · партнёры у мяча (короткий пас).");
     syncPieces(true);
   }
 
