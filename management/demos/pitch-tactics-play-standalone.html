@@ -572,6 +572,42 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     const B = offsetToCube(b[0], b[1]);
     return (Math.abs(A.x - B.x) + Math.abs(A.y - B.y) + Math.abs(A.z - B.z)) / 2;
   }
+  function cubeToOffset(cube) {
+    const c = cube.x;
+    const r = cube.z + ((cube.x - (cube.x & 1)) >> 1);
+    return [c, r];
+  }
+  function cubeRound(frac) {
+    let rx = Math.round(frac.x);
+    let ry = Math.round(frac.y);
+    let rz = Math.round(frac.z);
+    const xDiff = Math.abs(rx - frac.x);
+    const yDiff = Math.abs(ry - frac.y);
+    const zDiff = Math.abs(rz - frac.z);
+    if (xDiff > yDiff && xDiff > zDiff) rx = -ry - rz;
+    else if (yDiff > zDiff) ry = -rx - rz;
+    else rz = -rx - ry;
+    return { x: rx, y: ry, z: rz };
+  }
+  /** Клетки пути from→to (без старта, с финишем) */
+  function hexLine(from, to) {
+    const n = hexDist(from, to);
+    if (n <= 0) return [];
+    const A = offsetToCube(from[0], from[1]);
+    const B = offsetToCube(to[0], to[1]);
+    const Bend = { x: B.x + 1e-6, y: B.y + 2e-6, z: B.z - 3e-6 };
+    const out = [];
+    for (let i = 1; i <= n; i++) {
+      const t = i / n;
+      const frac = {
+        x: A.x + (Bend.x - A.x) * t,
+        y: A.y + (Bend.y - A.y) * t,
+        z: A.z + (Bend.z - A.z) * t,
+      };
+      out.push(cubeToOffset(cubeRound(frac)));
+    }
+    return out;
+  }
   function inBounds(c, r) {
     return c >= 0 && r >= 0 && c < COLS && r < ROWS;
   }
@@ -1197,37 +1233,88 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     };
   }
 
-  /** Ведение: давление + усталость за каждую пройденную с мячом клетку; владение смягчает */
-  function chanceCarry(p, toHex, steps) {
-    const pr = pressureOn(toHex, p.side);
+  /**
+   * Риск на КАЖДОЙ клетке пути (не только финиш).
+   * Σ1 тяжело, Σ≥2 почти смерть — пролезть между ЗЩ опасно.
+   */
+  function keepChanceOnCell(p, hex, fatBefore) {
+    const pr = pressureOn(hex, p.side);
     const ctrl = p.control || 1;
-    const fat = (state.carryFatigue || 0) + (steps || 0);
-    const perHex = Math.max(5, 18 - ctrl * 2); // control5: 8%/гекс, control1: 16%/гекс
-    let keep = 98 - fat * perHex;
-    if (pr.pts === 1) keep -= 32;
-    else if (pr.pts === 2) keep -= 62;
-    else if (pr.pts >= 3) keep -= 78;
-    keep = clamp(Math.round(keep), 4, 97);
+    const perHex = Math.max(5, 18 - ctrl * 2);
+    let keep = 97 - fatBefore * perHex;
+    if (pr.pts === 1) keep -= 42 - ctrl * 2; // ~40–32
+    else if (pr.pts === 2) keep -= 78 - ctrl; // ~77–73
+    else if (pr.pts >= 3) keep -= 90;
     return {
-      keep,
+      keep: clamp(Math.round(keep), 2, 97),
       pressure: pr.pts,
       parts: pr.parts,
-      fatigue: fat,
+    };
+  }
+
+  function previewCarryPath(p, from, to) {
+    const path = hexLine(from, to);
+    let surv = 1;
+    let fat = state.carryFatigue || 0;
+    let maxPr = 0;
+    const bits = [];
+    path.forEach((hex, i) => {
+      const cell = keepChanceOnCell(p, hex, fat);
+      surv *= cell.keep / 100;
+      if (cell.pressure > maxPr) maxPr = cell.pressure;
+      if (cell.pressure > 0) bits.push(cellName(hex) + " Σ" + cell.pressure + "@" + cell.keep + "%");
+      fat += 1;
+    });
+    const combined = clamp(Math.round(surv * 100), 1, 97);
+    return {
+      path,
+      combined,
+      maxPr,
+      fatigueEnd: fat,
       detail:
-        "Ведение → " +
-        cellName(toHex) +
-        " · удержать " +
-        keep +
-        "% · влад." +
-        ctrl +
+        "Путь " +
+        path.map(cellName).join("→") +
+        " · шанс пройти весь " +
+        combined +
+        "%" +
+        (bits.length ? " · риск: " + bits.join(", ") : " · без давления на пути") +
+        " · влад." +
+        (p.control || 1) +
         " · устал." +
-        fat +
-        " (−" +
-        perHex +
-        "%/гекс) · Σдавл. " +
-        pr.pts +
-        (pr.parts.length ? " [" + pr.parts.join(", ") + "]" : "") +
-        (pr.pts >= 2 ? " · плотное давление" : ""),
+        (state.carryFatigue || 0) +
+        "→" +
+        fat,
+    };
+  }
+
+  /** Пошаговый бросок на каждой клетке пути; при провале мяч падает на этой клетке */
+  function resolveCarryPath(p, from, to) {
+    const path = hexLine(from, to);
+    let fat = state.carryFatigue || 0;
+    const logBits = [];
+    for (let i = 0; i < path.length; i++) {
+      const hex = path[i];
+      const cell = keepChanceOnCell(p, hex, fat);
+      const roll = rnd();
+      logBits.push(cellName(hex) + " Σ" + cell.pressure + " " + Math.round(roll) + "/" + cell.keep);
+      if (roll > cell.keep) {
+        return {
+          ok: false,
+          lostAt: hex.slice(),
+          stepsDone: i + 1,
+          path,
+          detail: logBits.join(" · "),
+          pressure: cell.pressure,
+        };
+      }
+      fat += 1;
+    }
+    return {
+      ok: true,
+      stepsDone: path.length,
+      path,
+      fatigue: fat,
+      detail: logBits.join(" · ") || "короткий шаг",
     };
   }
 
@@ -2006,17 +2093,16 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
         " · устал." +
         (state.carryFatigue || 0);
       if (state.ballOwner === p.id && hoverHex) {
-        const steps = hexDist(p.pos, hoverHex);
-        const ch = chanceCarry(p, hoverHex, steps);
+        const prev = previewCarryPath(p, p.pos, hoverHex);
         html +=
           '<div class="pct" style="font-size:1.2rem">' +
-          ch.keep +
+          prev.combined +
           "%</div><div>" +
-          ch.detail +
+          prev.detail +
           "</div>";
       } else {
         html +=
-          "<div class='muted'>Без мяча — полный S/A (до 5). С мячом −дебафф владения; каждая клетка ведения копит риск потери.</div>";
+          "<div class='muted'>Риск на каждой клетке пути. Σ1 опасно, Σ≥2 почти потеря — между ЗЩ без коридора не пройти.</div>";
       }
       box.innerHTML = html;
       return;
@@ -2150,8 +2236,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     }
     p.pos = to.slice();
     if (carrying) {
-      const ch = chanceCarry(p, to, steps);
-      const roll = rnd();
+      const res = resolveCarryPath(p, from, to);
       pushLog(
         p.name +
           " ведёт → " +
@@ -2159,22 +2244,25 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
           " · " +
           (usedBurst ? "A" + p.accel : "S" + p.speed) +
           " · " +
-          ch.detail +
-          " · бросок " +
-          Math.round(roll)
+          res.detail
       );
-      if (roll <= ch.keep) {
+      if (res.ok) {
         state.ball = to.slice();
         state.loose = false;
-        state.carryFatigue = (state.carryFatigue || 0) + steps;
-        pushLog("Мяч удержан · усталость ведения " + state.carryFatigue);
+        state.carryFatigue = res.fatigue;
+        pushLog("Мяч удержан по пути · усталость " + state.carryFatigue);
       } else {
+        // останавливаемся на клетке потери
+        p.pos = res.lostAt.slice();
         state.ballOwner = null;
         state.loose = true;
-        state.ball = to.slice();
+        state.ball = res.lostAt.slice();
         resetCarryFatigue();
-        pushLog("Потеря на ведении! Свободный мяч @ " + cellName(to), true);
-        toast("Потеря мяча");
+        pushLog(
+          "Потеря на пути @ " + cellName(res.lostAt) + (res.pressure ? " · Σдавл." + res.pressure : ""),
+          true
+        );
+        toast("Потеря мяча на пути");
       }
     } else {
       pushLog(p.name + " → " + cellName(to) + " · S" + p.speed + " (ход " + steps + "/" + bud + ")");
@@ -2599,10 +2687,8 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     const to = opts[0];
     const steps = hexDist(from, to);
     const usedBurst = carrying && p.burst;
-    p.pos = to;
     if (carrying) {
-      const ch = chanceCarry(p, to, steps);
-      const roll = rnd();
+      const res = resolveCarryPath(p, from, to);
       pushLog(
         "ПК " +
           p.name +
@@ -2610,23 +2696,24 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
           cellName(to) +
           " · " +
           (usedBurst ? "A" + p.accel : "S" + p.speed) +
-          " · удержать " +
-          ch.keep +
-          "% · устал." +
-          ch.fatigue
+          " · " +
+          res.detail
       );
-      if (roll <= ch.keep) {
+      if (res.ok) {
+        p.pos = to;
         state.ball = to.slice();
         state.loose = false;
-        state.carryFatigue = (state.carryFatigue || 0) + steps;
+        state.carryFatigue = res.fatigue;
       } else {
+        p.pos = res.lostAt.slice();
         state.ballOwner = null;
         state.loose = true;
-        state.ball = to.slice();
+        state.ball = res.lostAt.slice();
         resetCarryFatigue();
-        pushLog("ПК потерял мяч на ведении!", true);
+        pushLog("ПК потерял мяч на пути @ " + cellName(res.lostAt), true);
       }
     } else {
+      p.pos = to;
       pushLog("ПК " + p.name + " → " + cellName(p.pos) + " · S" + p.speed);
       if (state.loose && p.pos[0] === state.ball[0] && p.pos[1] === state.ball[1]) {
         claimLoose(p, true);
@@ -2635,7 +2722,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     if (usedBurst || carrying) p.burst = false;
     const el = pieceEls[p.id];
     if (el) {
-      el.style.transition = "left " + moveMs(from, to) + "ms ease, top " + moveMs(from, to) + "ms ease";
+      el.style.transition = "left " + moveMs(from, p.pos) + "ms ease, top " + moveMs(from, p.pos) + "ms ease";
     }
   }
 
