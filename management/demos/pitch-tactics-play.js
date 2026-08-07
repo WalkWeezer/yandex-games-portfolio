@@ -96,6 +96,15 @@
   function cellName(pos) {
     return String.fromCharCode(65 + pos[0]) + (pos[1] + 1);
   }
+  function parseCellName(name) {
+    if (!name || typeof name !== "string") return null;
+    const m = /^([A-Ma-m])(\d{1,2})$/.exec(name.trim());
+    if (!m) return null;
+    const c = m[1].toUpperCase().charCodeAt(0) - 65;
+    const r = parseInt(m[2], 10) - 1;
+    if (!inBounds(c, r)) return null;
+    return [c, r];
+  }
   function pctFromHex(c, r) {
     const p = hexCenter(c, r);
     return { left: (p.x / VB_W) * 100, top: (p.y / VB_H) * 100 };
@@ -445,11 +454,18 @@
     },
   ];
 
-  function buildSquad(side, names, mult) {
+  function buildSquad(side, names, mult, skillSpread) {
     const squad = {};
+    const spread = skillSpread || 0;
     ["GK", "Z", "OP1", "OP2", "NAP"].forEach((role) => {
       const src = YOU_BASE[role];
-      const scaled = scaleSkills(src, side === "A" ? 1 : mult);
+      const scaled = scaleSkills(src, mult == null ? 1 : mult);
+      if (spread > 0) {
+        ["shot", "pass", "cross", "tackle", "speed", "accel", "control"].forEach((k) => {
+          const jitter = ((Math.random() * 2 - 1) * spread);
+          scaled[k] = clamp(Math.round(scaled[k] + jitter), 1, 5);
+        });
+      }
       if (side === "B") {
         scaled.name = names[role];
         scaled.pos = AWAY_HOME[role].slice();
@@ -463,6 +479,26 @@
       squad[role] = makePlayer(side, role, scaled);
     });
     return squad;
+  }
+
+  function squadSkillSnapshot(squad) {
+    const rows = {};
+    Object.keys(squad || {}).forEach((role) => {
+      const p = squad[role];
+      rows[role] = {
+        name: p.name,
+        shot: p.shot,
+        pass: p.pass,
+        cross: p.cross,
+        tackle: p.tackle,
+        speed: p.speed,
+        accel: p.accel,
+        control: p.control,
+      };
+    });
+    const vals = Object.values(rows).flatMap((r) => [r.shot, r.pass, r.cross, r.tackle, r.speed, r.accel, r.control]);
+    const avg = vals.reduce((a, b) => a + b, 0) / Math.max(1, vals.length);
+    return { avg: +avg.toFixed(2), players: rows };
   }
 
   const state = {
@@ -492,6 +528,7 @@
     actedIds: [],
     carryFatigue: 0, // клетки, пройденные с мячом за текущее владение
     aiLocked: [],
+    stats: null,
   };
 
   const app = document.getElementById("app");
@@ -1219,6 +1256,7 @@
     state.lockedIds = [];
     state.actedIds = [];
     resetCarryFatigue();
+    if (!state.stats) state.stats = emptyMatchStats();
     pushLog("Свисток! Партнёры у мяча — короткий пас или ведение. Клик → радиальное меню.", true);
     state.screen = "match";
     if (!state.autoPlay) render();
@@ -1911,6 +1949,7 @@
     state.reachYellow = 0;
     state.reachGold = 0;
     state.targets = [];
+    noteBallHeat();
     if (!state.autoPlay) {
       closeRadial();
       syncPieces(true, moveId, fromPos);
@@ -2123,6 +2162,60 @@
     return occ.side !== byId(movingId).side;
   }
 
+  function emptySideStats() {
+    return {
+      shots: 0,
+      sot: 0,
+      goals: 0,
+      xg: 0,
+      xa: 0,
+      keyPasses: 0,
+      passAtt: 0,
+      passComp: 0,
+      crosses: 0,
+      tacklesWon: 0,
+      tacklesAtt: 0,
+      saves: 0,
+    };
+  }
+
+  function emptyMatchStats() {
+    return {
+      shotsFor: 0,
+      shotsAgainst: 0,
+      sotFor: 0,
+      sotAgainst: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+      xgFor: 0,
+      xgAgainst: 0,
+      xaFor: 0,
+      xaAgainst: 0,
+      gkSaves: 0,
+      passes: 0,
+      passAtt: 0,
+      passComp: 0,
+      tackles: 0,
+      heat: {},
+      passMap: {},
+      thirds: { attA: 0, mid: 0, attB: 0 },
+      possession: { A: 0, B: 0, loose: 0 },
+      attackDir: {
+        A: { left: 0, center: 0, right: 0 },
+        B: { left: 0, center: 0, right: 0 },
+      },
+      bySide: { A: emptySideStats(), B: emptySideStats() },
+      shotLog: [],
+      lastPass: null,
+    };
+  }
+
+  function attackChannel(col) {
+    if (col <= 3) return "left";
+    if (col >= 9) return "right";
+    return "center";
+  }
+
   function noteBallHeat() {
     if (!state.stats || !state.stats.heat) return;
     const c = state.ball[0];
@@ -2132,16 +2225,263 @@
     if (r <= 6) state.stats.thirds.attB++;
     else if (r >= 14) state.stats.thirds.attA++;
     else state.stats.thirds.mid++;
+
+    const ow = ownerPlayer();
+    if (!ow) state.stats.possession.loose++;
+    else if (ow.side === "A") state.stats.possession.A++;
+    else state.stats.possession.B++;
+
+    // направление атак: мяч в финальной трети владеющей стороны
+    if (ow && ow.side === "A" && r >= 14) state.stats.attackDir.A[attackChannel(c)]++;
+    if (ow && ow.side === "B" && r <= 6) state.stats.attackDir.B[attackChannel(c)]++;
+
+    if (state.stats.lastPass && state.stats.lastPass.ttl > 0) state.stats.lastPass.ttl -= 1;
+    else state.stats.lastPass = null;
   }
 
-  function notePass(from, to, ok) {
+  function notePass(from, to, ok, isCross) {
     if (!state.stats) return;
+    const side = from.side;
+    const bs = state.stats.bySide[side];
     state.stats.passAtt = (state.stats.passAtt || 0) + 1;
+    bs.passAtt++;
+    if (isCross) bs.crosses++;
     if (ok) {
       state.stats.passComp = (state.stats.passComp || 0) + 1;
+      bs.passComp++;
       const key = cellName(from.pos) + "→" + cellName(to.pos);
       state.stats.passMap[key] = (state.stats.passMap[key] || 0) + 1;
+      // ключ для xA: пас «живёт» ~2 касания/сэмпла
+      state.stats.lastPass = {
+        fromId: from.id,
+        toId: to.id,
+        side,
+        ttl: 3,
+        forward: side === "A" ? to.pos[1] - from.pos[1] > 0 : from.pos[1] - to.pos[1] > 0,
+      };
+    } else {
+      state.stats.lastPass = null;
     }
+  }
+
+  function noteTackle(winnerSide, won) {
+    if (!state.stats) return;
+    state.stats.tackles = (state.stats.tackles || 0) + 1;
+    const bs = state.stats.bySide[winnerSide];
+    bs.tacklesAtt++;
+    if (won) bs.tacklesWon++;
+  }
+
+  /** xG без учёта прыжка ВР — качество момента */
+  function rawShotXG(p, goalHex) {
+    return chanceShot(p, goalHex, null).chance / 100;
+  }
+
+  function noteShotEvent(side, p, goalHex, diveCol, scored, onTarget) {
+    if (!state.stats) return 0;
+    const xg = +rawShotXG(p, goalHex).toFixed(3);
+    const bs = state.stats.bySide[side];
+    bs.shots++;
+    bs.xg += xg;
+    if (onTarget) bs.sot++;
+    if (scored) {
+      bs.goals++;
+      if (side === "A") state.stats.goalsFor++;
+      else state.stats.goalsAgainst++;
+    }
+
+    if (side === "A") {
+      state.stats.shotsFor++;
+      state.stats.xgFor += xg;
+      if (onTarget) state.stats.sotFor++;
+    } else {
+      state.stats.shotsAgainst++;
+      state.stats.xgAgainst += xg;
+      if (onTarget) state.stats.sotAgainst++;
+    }
+
+    const lp = state.stats.lastPass;
+    if (lp && lp.side === side && lp.toId === p.id && lp.ttl > 0) {
+      bs.xa += xg;
+      bs.keyPasses++;
+      if (side === "A") state.stats.xaFor += xg;
+      else state.stats.xaAgainst += xg;
+    }
+    state.stats.lastPass = null;
+
+    state.stats.shotLog.push({
+      minute: state.minute,
+      side,
+      player: p.name,
+      role: p.role,
+      from: cellName(p.pos),
+      aim: cellName(goalHex),
+      xg,
+      onTarget: !!onTarget,
+      goal: !!scored,
+      dive: diveCol != null ? cellName([diveCol, side === "A" ? GOAL_B_ROW : GOAL_A_ROW]) : null,
+    });
+    return xg;
+  }
+
+  function shareDir(dir) {
+    const sum = Math.max(1, (dir.left || 0) + (dir.center || 0) + (dir.right || 0));
+    return {
+      left: +((dir.left || 0) / sum).toFixed(3),
+      center: +((dir.center || 0) / sum).toFixed(3),
+      right: +((dir.right || 0) / sum).toFixed(3),
+      samples: (dir.left || 0) + (dir.center || 0) + (dir.right || 0),
+    };
+  }
+
+  function buildHeatMap(st) {
+    const heat = st.heat || {};
+    let max = 1;
+    Object.values(heat).forEach((v) => {
+      if (v > max) max = v;
+    });
+    const cells = Object.entries(heat)
+      .map(([key, count]) => {
+        const [c, r] = key.split(",").map(Number);
+        return {
+          cell: cellName([c, r]),
+          col: c,
+          row: r,
+          count,
+          intensity: +(count / max).toFixed(3),
+        };
+      })
+      .sort((a, b) => b.count - a.count);
+    // сетка: ряды 1..ROWS сверху (ворота A), колонки A..
+    const grid = [];
+    for (let r = 0; r < ROWS; r++) {
+      const row = [];
+      for (let c = 0; c < COLS; c++) {
+        row.push(heat[c + "," + r] || 0);
+      }
+      grid.push(row);
+    }
+    const glyphs = " ·░▒▓█";
+    const asciiRows = grid.map((row, r) => {
+      const cellsTxt = row
+        .map((v) => {
+          if (!v) return "·";
+          const t = v / max;
+          const i = t > 0.85 ? 5 : t > 0.65 ? 4 : t > 0.4 ? 3 : t > 0.2 ? 2 : 1;
+          return glyphs[i];
+        })
+        .join("");
+      return String(r + 1).padStart(2, " ") + " |" + cellsTxt + "|";
+    });
+    const header = "    " + Array.from({ length: COLS }, (_, c) => String.fromCharCode(65 + c)).join("");
+    return {
+      max,
+      samples: Object.values(heat).reduce((a, b) => a + b, 0),
+      top: cells.slice(0, 16).map((x) => x.cell + "×" + x.count),
+      cells: cells.slice(0, 40),
+      grid,
+      ascii: [header, ...asciiRows].join("\n"),
+    };
+  }
+
+  function buildPassMap(st) {
+    const passMap = st.passMap || {};
+    const links = Object.entries(passMap)
+      .map(([k, count]) => {
+        const pair = k.split("→");
+        const fromName = pair[0];
+        const toName = pair[1];
+        const from = parseCellName(fromName);
+        const to = parseCellName(toName);
+        return {
+          from: fromName,
+          to: toName,
+          fromPos: from,
+          toPos: to,
+          count,
+          dx: from && to ? to[0] - from[0] : 0,
+          dy: from && to ? to[1] - from[1] : 0,
+          forward: from && to ? to[1] - from[1] : 0,
+        };
+      })
+      .sort((a, b) => b.count - a.count);
+    const max = links.length ? links[0].count : 0;
+    const total = links.reduce((a, b) => a + b.count, 0);
+    // агрегат по зонам: из трети / в треть
+    const thirdOf = (r) => (r <= 6 ? "attB" : r >= 14 ? "attA" : "mid");
+    // dy>0 = к воротам B (низ поля), dy<0 = к воротам A
+    const zones = { toAttA: 0, toMid: 0, toAttB: 0, towardB: 0, towardA: 0, lateral: 0 };
+    links.forEach((l) => {
+      if (!l.fromPos || !l.toPos) return;
+      const t = thirdOf(l.toPos[1]);
+      if (t === "attA") zones.toAttA += l.count;
+      else if (t === "attB") zones.toAttB += l.count;
+      else zones.toMid += l.count;
+      if (l.dy > 0) zones.towardB += l.count;
+      else if (l.dy < 0) zones.towardA += l.count;
+      else zones.lateral += l.count;
+    });
+    const ascii = links
+      .slice(0, 20)
+      .map((l) => {
+        const bar = "█".repeat(Math.max(1, Math.round((l.count / Math.max(1, max)) * 10)));
+        return (l.from + "→" + l.to).padEnd(12, " ") + " " + String(l.count).padStart(3, " ") + " " + bar;
+      })
+      .join("\n");
+    return {
+      totalCompletedLinks: total,
+      uniqueLinks: links.length,
+      top: links.slice(0, 16).map((l) => l.from + "→" + l.to + "×" + l.count),
+      links: links.slice(0, 40),
+      zones,
+      ascii,
+    };
+  }
+
+  function buildAdvancedReport(st) {
+    const possSum = Math.max(1, (st.possession.A || 0) + (st.possession.B || 0) + (st.possession.loose || 0));
+    const ballSum = Math.max(1, (st.possession.A || 0) + (st.possession.B || 0));
+    const sidePack = (side) => {
+      const s = st.bySide[side];
+      return {
+        shots: s.shots,
+        sot: s.sot,
+        goals: s.goals,
+        xg: +s.xg.toFixed(2),
+        xa: +s.xa.toFixed(2),
+        keyPasses: s.keyPasses,
+        passAtt: s.passAtt,
+        passComp: s.passComp,
+        passPct: s.passAtt ? +((100 * s.passComp) / s.passAtt).toFixed(1) : 0,
+        crosses: s.crosses,
+        tacklesWon: s.tacklesWon,
+        tacklesAtt: s.tacklesAtt,
+        saves: s.saves,
+        conversion: s.shots ? +((100 * s.goals) / s.shots).toFixed(1) : 0,
+        xgOverperform: +(s.goals - s.xg).toFixed(2),
+      };
+    };
+    const heatMap = buildHeatMap(st);
+    const passMap = buildPassMap(st);
+    return {
+      possessionPct: {
+        A: +((100 * (st.possession.A || 0)) / ballSum).toFixed(1),
+        B: +((100 * (st.possession.B || 0)) / ballSum).toFixed(1),
+        looseShare: +((st.possession.loose || 0) / possSum).toFixed(3),
+      },
+      attackDirection: {
+        A: shareDir(st.attackDir.A),
+        B: shareDir(st.attackDir.B),
+      },
+      team: { A: sidePack("A"), B: sidePack("B") },
+      xg: { A: +st.xgFor.toFixed(2), B: +st.xgAgainst.toFixed(2) },
+      xa: { A: +st.xaFor.toFixed(2), B: +st.xaAgainst.toFixed(2) },
+      shots: { A: st.shotsFor, B: st.shotsAgainst },
+      sot: { A: st.sotFor, B: st.sotAgainst },
+      shotLog: (st.shotLog || []).slice(-20),
+      heatMap,
+      passMap,
+    };
   }
 
   function doPass(from, to, isCross) {
@@ -2166,7 +2506,7 @@
         ch.detail
     );
     if (roll <= ch.chance) {
-      notePass(from, to, true);
+      notePass(from, to, true, isCross);
       state.ballOwner = to.id;
       state.ball = to.pos.slice();
       state.loose = false;
@@ -2175,7 +2515,7 @@
       resetCarryFatigue();
       pushLog("Точно!", true);
     } else {
-      notePass(from, to, false);
+      notePass(from, to, false, isCross);
       state.ball = [
         clamp(Math.round((from.pos[0] + to.pos[0]) / 2), 0, COLS - 1),
         clamp(Math.round((from.pos[1] + to.pos[1]) / 2), 0, ROWS - 1),
@@ -2211,13 +2551,14 @@
     state.loose = false;
     state.ball = p.pos.slice();
     resetCarryFatigue();
-    if (state.stats) state.stats.shotsFor++;
+    const scored = roll <= ch.chance;
+    const onTarget = scored || dive === goalHex[0];
+    noteShotEvent("A", p, goalHex, dive, scored, onTarget);
     if (!state.autoPlay) {
       syncPieces(false);
       state.waiting = true;
     }
 
-    const scored = roll <= ch.chance;
     const resolveMissOrSave = () => {
       state.ball = [
         clamp(goalHex[0] + (dive === goalHex[0] ? 0 : goalHex[0] - dive), 0, COLS - 1),
@@ -2228,7 +2569,10 @@
           state.them.GK.pos = [dive, GOAL_B_ROW];
           state.ball = state.them.GK.pos.slice();
           state.loose = false;
-          if (state.stats) state.stats.gkSaves++;
+          if (state.stats) {
+            state.stats.gkSaves++;
+            state.stats.bySide.B.saves++;
+          }
           pushLog("ВР поймал! Угадал клетку.", true);
         } else {
           state.loose = true;
@@ -2245,7 +2589,6 @@
       state.ball = goalHex.slice();
       if (!state.autoPlay) syncPieces(true);
       state.score[0] += 1;
-      if (state.stats) state.stats.goalsFor++;
       pushLog("ГОЛ! Мяч в " + cellName(goalHex), true);
       toast("ГОЛ!");
       resetKickoff("B");
@@ -2263,7 +2606,6 @@
         state.ball = goalHex.slice();
         if (!state.autoPlay) syncPieces(true);
         state.score[0] += 1;
-        if (state.stats) state.stats.goalsFor++;
         pushLog("ГОЛ! Мяч в " + cellName(goalHex), true);
         toast("ГОЛ!");
         setTimeout(() => {
@@ -2301,9 +2643,11 @@
       p.burst = true;
       victim.burst = false;
       resetCarryFatigue();
+      noteTackle(p.side, true);
       pushLog("Мяч отобран! Можно продолжать на оставшихся AP.", true);
       toast("Отбор успешен — действуйте дальше");
     } else {
+      noteTackle(p.side, false);
       pushLog("Отбор не вышел — мяч у " + victim.name, true);
       lockPlayer(p.id, "отбор мимо");
     }
@@ -2346,6 +2690,7 @@
 
   function endAITurn() {
     // без авто-формы у ПК
+    noteBallHeat();
     state.turn = "A";
     state.ap = COACH_AP;
     state.lockedIds = [];
@@ -2470,13 +2815,14 @@
     const goalHex = [aim, GOAL_A_ROW];
     const ch = chanceShot(ow, goalHex, dive);
     const roll = rnd();
-    if (state.stats) state.stats.shotsAgainst = (state.stats.shotsAgainst || 0) + 1;
     pushLog("ПК удар в " + cellName(goalHex) + " · ваш ВР → " + cellName([dive, GOAL_A_ROW]) + " · " + ch.chance + "%");
     state.ballOwner = null;
-    if (roll <= ch.chance && ch.pressure < 3) {
+    const scored = roll <= ch.chance && ch.pressure < 3;
+    const onTarget = scored || dive === aim;
+    noteShotEvent("B", ow, goalHex, dive, scored, onTarget);
+    if (scored) {
       state.ball = goalHex;
       state.score[1] += 1;
-      if (state.stats) state.stats.goalsAgainst++;
       pushLog("ГОЛ соперника!", true);
       toast("Гол ПК");
       resetKickoff("A");
@@ -2486,6 +2832,10 @@
       state.ball = state.you.GK.pos.slice();
       state.loose = false;
       resetCarryFatigue();
+      if (state.stats) {
+        state.stats.gkSaves++;
+        state.stats.bySide.A.saves++;
+      }
       pushLog("Ваш ВР поймал!", true);
     } else {
       state.loose = true;
@@ -2570,7 +2920,7 @@
     const roll = rnd();
     pushLog("ПК передача · " + ch.chance + "% · " + ch.detail);
     if (roll <= ch.chance) {
-      notePass(from, to, true);
+      notePass(from, to, true, isCross);
       state.ballOwner = to.id;
       state.ball = to.pos.slice();
       state.loose = false;
@@ -2578,7 +2928,7 @@
       from.burst = false;
       resetCarryFatigue();
     } else {
-      notePass(from, to, false);
+      notePass(from, to, false, isCross);
       state.ballOwner = null;
       state.loose = true;
       resetCarryFatigue();
@@ -2795,8 +3145,10 @@
         state.loose = false;
         h.burst = true;
         resetCarryFatigue();
+        noteTackle("B", true);
         pushLog("ПК отобрал!", true);
       } else {
+        noteTackle("B", false);
         pushLog("ПК отбор мимо — мяч у " + ow.name);
         state.aiLocked = state.aiLocked || [];
         state.aiLocked.push(h.id);
@@ -2974,7 +3326,6 @@
         return true;
       }
       doTackle(h, victim);
-      if (state.stats) state.stats.tackles++;
       return true;
     }
     playerMoveToward(h, [clamp(target[0], 2, 10), Math.max(2, target[1] - 2)]);
@@ -3006,31 +3357,21 @@
     if (!state.over) endAITurnSync();
   }
 
-  /** ИИ vs ИИ. opts: { awayId, homeStyle, seedLabel } */
+  /** ИИ vs ИИ. opts: { awayId, homeStyle, homeMult, awayMult, skillSpread, seedLabel } */
   function autoPlayFullMatch(oppIdOrOpts) {
     const opts = typeof oppIdOrOpts === "string" || !oppIdOrOpts ? { awayId: oppIdOrOpts || "academy" } : oppIdOrOpts;
     const awayId = opts.awayId || "academy";
     const homeStyle = opts.homeStyle || "direct";
+    const homeMult = opts.homeMult != null ? opts.homeMult : 1;
+    const skillSpread = opts.skillSpread != null ? opts.skillSpread : 0;
     state.autoPlay = true;
     state.homeAiStyle = homeStyle;
     state.matchArchive = [];
-    state.stats = {
-      shotsFor: 0,
-      shotsAgainst: 0,
-      goalsFor: 0,
-      goalsAgainst: 0,
-      gkSaves: 0,
-      passes: 0,
-      passAtt: 0,
-      passComp: 0,
-      tackles: 0,
-      heat: {},
-      passMap: {},
-      thirds: { attA: 0, mid: 0, attB: 0 },
-    };
+    state.stats = emptyMatchStats();
     state.opponentId = awayId;
     const opp = OPPONENTS.find((x) => x.id === awayId);
-    state.you = buildSquad("A", null, 1);
+    const awayMult = opts.awayMult != null ? opts.awayMult : opp.mult;
+    state.you = buildSquad("A", null, homeMult, skillSpread);
     // лёгкая «неодинаковость» домашнего стиля на равных
     if (homeStyle === "possess") {
       state.you.OP1.pass = clamp(state.you.OP1.pass + 1, 1, 5);
@@ -3045,7 +3386,9 @@
       state.you.NAP.accel = clamp(state.you.NAP.accel + 1, 1, 5);
       state.you.NAP.pass = clamp(state.you.NAP.pass, 1, 5);
     }
-    state.them = buildSquad("B", opp.names, opp.mult);
+    state.them = buildSquad("B", opp.names, awayMult, skillSpread);
+    const homeSnap = squadSkillSnapshot(state.you);
+    const awaySnap = squadSkillSnapshot(state.them);
     startMatch();
     noteBallHeat();
     let guard = 0;
@@ -3073,34 +3416,42 @@
     const archive = state.matchArchive || [];
     const thirds = state.stats.thirds;
     const thirdSum = Math.max(1, thirds.attA + thirds.mid + thirds.attB);
+    const advanced = buildAdvancedReport(state.stats);
     const result = {
       mode: "AI vs AI",
       homeStyle,
+      homeMult,
+      awayMult,
+      skillSpread,
       opponent: opp.name,
       awayId: opp.id,
       awayAi: opp.ai,
+      awayTier: opp.tier,
       coachAP: COACH_AP,
       score: state.score.slice(),
       minute: state.minute,
       over: state.over,
+      squads: { home: homeSnap, away: awaySnap },
       stats: state.stats,
+      advanced,
       thirdsShare: {
         attA: +(thirds.attA / thirdSum).toFixed(3),
         mid: +(thirds.mid / thirdSum).toFixed(3),
         attB: +(thirds.attB / thirdSum).toFixed(3),
       },
+      possessionPct: advanced.possessionPct,
+      attackDirection: advanced.attackDirection,
+      xg: advanced.xg,
+      xa: advanced.xa,
+      sot: advanced.sot,
+      heatMap: advanced.heatMap,
+      passMap: advanced.passMap,
       passPct: state.stats.passAtt ? +((100 * state.stats.passComp) / state.stats.passAtt).toFixed(1) : 0,
       goals: archive.filter((x) => /ГОЛ/i.test(x.msg)),
-      saves: archive.filter((x) => /ВР поймал|Сейв/i.test(x.msg)).length,
+      saves: state.stats.gkSaves || 0,
       protocol: archive.map((x) => x.minute + "' " + x.msg),
-      topPassLinks: Object.entries(state.stats.passMap || {})
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 8)
-        .map(([k, v]) => k + "×" + v),
-      hotCells: Object.entries(state.stats.heat || {})
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 8)
-        .map(([k, v]) => cellName(k.split(",").map(Number)) + "×" + v),
+      topPassLinks: advanced.passMap.top.slice(0, 12),
+      hotCells: advanced.heatMap.top.slice(0, 12),
     };
     result.quality = evaluateFootballQuality(result);
     return result;
@@ -3121,7 +3472,8 @@
     if (shots >= 6 && totalGoals / shots > 0.65) issues.push("слишком высокая реализация");
     if (mid > 0.74) issues.push("залипание в центре (>74%)");
     if (att < 0.16) issues.push("мало игры в финальных третях");
-    if (Math.abs(s[0] - s[1]) > 4) issues.push("разгром на равных");
+    const equalish = Math.abs((result.homeMult || 1) - (result.awayMult || 1)) < 0.15;
+    if (equalish && Math.abs(s[0] - s[1]) > 4) issues.push("разгром на равных");
     if ((st.passAtt || 0) >= 25 && passPct < 35) issues.push("пас слишком хаотичный");
     if ((st.passAtt || 0) >= 25 && passPct > 90) issues.push("пас слишком лёгкий");
     if ((st.tackles || 0) > 75) issues.push("спам отборов");

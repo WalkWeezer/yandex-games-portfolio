@@ -5,6 +5,8 @@
  *   node pitch-tactics-autoplay.mjs [awayId=academy]
  *   node pitch-tactics-autoplay.mjs rivals --home direct
  *   node pitch-tactics-autoplay.mjs --batch 5 --out /tmp/pitch-batch.json
+ *   node pitch-tactics-autoplay.mjs --batch 12 --spread --out /tmp/spread.json
+ *   node pitch-tactics-autoplay.mjs elite --home direct --home-mult 0.85 --spread-skill 1.0
  */
 import fs from "fs";
 import path from "path";
@@ -19,11 +21,16 @@ function argVal(flag, fallback) {
   return i >= 0 ? args[i + 1] : fallback;
 }
 
-const positional = args.find((a) => !a.startsWith("--") && args[args.indexOf(a) - 1] !== "--home" && args[args.indexOf(a) - 1] !== "--out" && args[args.indexOf(a) - 1] !== "--batch");
+const flagArgs = new Set(["--home", "--out", "--batch", "--home-mult", "--away-mult", "--spread-skill"]);
+const positional = args.find((a, i) => !a.startsWith("--") && !flagArgs.has(args[i - 1]));
 const awayId = positional || "rivals";
 const homeStyle = argVal("--home", "direct");
 const outPath = argVal("--out", null);
 const batchN = Number(argVal("--batch", "0")) || 0;
+const homeMultArg = argVal("--home-mult", null);
+const awayMultArg = argVal("--away-mult", null);
+const skillSpreadArg = argVal("--spread-skill", null);
+const spreadMode = args.includes("--spread");
 
 const EQUAL_ROTATION = [
   { awayId: "rivals", homeStyle: "direct" },
@@ -35,6 +42,22 @@ const EQUAL_ROTATION = [
   { awayId: "rivals", homeStyle: "possess" },
   { awayId: "wingers", homeStyle: "width" },
   { awayId: "vertical", homeStyle: "direct" },
+];
+
+/** Большой разброс силы команд + джиттер игроков */
+const SPREAD_ROTATION = [
+  { label: "weak-vs-home", awayId: "academy", homeStyle: "direct", homeMult: 1.0, skillSpread: 0.6 },
+  { label: "home-weak-vs-equal", awayId: "rivals", homeStyle: "possess", homeMult: 0.7, skillSpread: 0.8 },
+  { label: "equal-width", awayId: "wingers", homeStyle: "width", homeMult: 1.0, skillSpread: 0.7 },
+  { label: "home-strong-vs-equal", awayId: "vertical", homeStyle: "direct", homeMult: 1.2, skillSpread: 0.9 },
+  { label: "vs-press", awayId: "press", homeStyle: "possess", homeMult: 0.95, skillSpread: 0.7 },
+  { label: "vs-elite", awayId: "elite", homeStyle: "width", homeMult: 0.85, skillSpread: 1.0 },
+  { label: "giant-killing", awayId: "elite", homeStyle: "direct", homeMult: 1.15, skillSpread: 1.1 },
+  { label: "academy-crush", awayId: "academy", homeStyle: "possess", homeMult: 1.25, skillSpread: 0.5 },
+  { label: "mirror-chaos", awayId: "rivals", homeStyle: "width", homeMult: 1.0, awayMult: 1.05, skillSpread: 1.2 },
+  { label: "underdog-width", awayId: "press", homeStyle: "width", homeMult: 0.75, skillSpread: 1.0 },
+  { label: "direct-duel", awayId: "vertical", homeStyle: "direct", homeMult: 1.05, awayMult: 0.9, skillSpread: 0.8 },
+  { label: "possession-clash", awayId: "rivals", homeStyle: "possess", homeMult: 0.9, awayMult: 1.15, skillSpread: 0.9 },
 ];
 
 function stubEl(tag) {
@@ -157,14 +180,41 @@ vm.runInNewContext(code, sandbox, { filename: "pitch-tactics-play.js" });
 
 function summarize(result) {
   return {
+    label: result.label || null,
     homeStyle: result.homeStyle,
+    homeMult: result.homeMult,
+    awayMult: result.awayMult,
+    skillSpread: result.skillSpread,
     opponent: result.opponent,
     awayAi: result.awayAi,
+    awayTier: result.awayTier,
     score: result.score,
     shots: [result.stats.shotsFor, result.stats.shotsAgainst],
+    sot: result.sot,
+    xg: result.xg,
+    xa: result.xa,
+    possessionPct: result.possessionPct,
+    attackDirection: result.attackDirection,
     passPct: result.passPct,
     thirdsShare: result.thirdsShare,
     tackles: result.stats.tackles,
+    squadAvg: {
+      home: result.squads && result.squads.home ? result.squads.home.avg : null,
+      away: result.squads && result.squads.away ? result.squads.away.avg : null,
+    },
+    team: result.advanced ? result.advanced.team : null,
+    heatMap: result.heatMap
+      ? { max: result.heatMap.max, samples: result.heatMap.samples, top: result.heatMap.top, ascii: result.heatMap.ascii }
+      : null,
+    passMap: result.passMap
+      ? {
+          totalCompletedLinks: result.passMap.totalCompletedLinks,
+          uniqueLinks: result.passMap.uniqueLinks,
+          top: result.passMap.top,
+          zones: result.passMap.zones,
+          ascii: result.passMap.ascii,
+        }
+      : null,
     hotCells: result.hotCells,
     topPassLinks: result.topPassLinks,
     quality: result.quality,
@@ -183,18 +233,26 @@ if (batchN > 0) {
   const matches = [];
   let streak = 0;
   let best = 0;
+  const rotation = spreadMode ? SPREAD_ROTATION : EQUAL_ROTATION;
   for (let i = 0; i < batchN; i++) {
-    const opts = EQUAL_ROTATION[i % EQUAL_ROTATION.length];
+    const opts = { ...rotation[i % rotation.length] };
+    if (homeMultArg != null) opts.homeMult = Number(homeMultArg);
+    if (awayMultArg != null) opts.awayMult = Number(awayMultArg);
+    if (skillSpreadArg != null) opts.skillSpread = Number(skillSpreadArg);
     const result = play(opts);
+    result.label = opts.label || null;
     const sum = summarize(result);
     matches.push(sum);
     if (sum.quality.ok) {
       streak++;
       best = Math.max(best, streak);
     } else streak = 0;
+    const xg = sum.xg ? `${sum.xg.A}-${sum.xg.B}` : "?";
+    const poss = sum.possessionPct ? `${sum.possessionPct.A}/${sum.possessionPct.B}` : "?";
     process.stderr.write(
-      `#${i + 1} ${opts.homeStyle} vs ${result.opponent}: ${result.score[0]}:${result.score[1]} ` +
-        `shots ${sum.shots.join("-")} mid ${Math.round(sum.thirdsShare.mid * 100)}% ` +
+      `#${i + 1} ${opts.label || opts.homeStyle} vs ${result.opponent}: ${result.score[0]}:${result.score[1]} ` +
+        `shots ${sum.shots.join("-")} SoT ${(sum.sot && sum.sot.A) || 0}-${(sum.sot && sum.sot.B) || 0} ` +
+        `xG ${xg} poss ${poss} mid ${Math.round(sum.thirdsShare.mid * 100)}% ` +
         `${sum.quality.ok ? "OK" : "FAIL " + sum.quality.issues.join("; ")} (${result.elapsedMs}ms)\n`
     );
   }
@@ -206,7 +264,11 @@ if (batchN > 0) {
   }
   process.stdout.write(json + "\n");
 } else {
-  const result = play({ awayId, homeStyle });
+  const singleOpts = { awayId, homeStyle };
+  if (homeMultArg != null) singleOpts.homeMult = Number(homeMultArg);
+  if (awayMultArg != null) singleOpts.awayMult = Number(awayMultArg);
+  if (skillSpreadArg != null) singleOpts.skillSpread = Number(skillSpreadArg);
+  const result = play(singleOpts);
   const json = JSON.stringify(result, null, 2);
   if (outPath) {
     fs.mkdirSync(path.dirname(path.resolve(outPath)), { recursive: true });
