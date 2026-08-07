@@ -206,6 +206,12 @@ function summarize(result) {
     heatMap: result.heatMap
       ? { max: result.heatMap.max, samples: result.heatMap.samples, top: result.heatMap.top, ascii: result.heatMap.ascii }
       : null,
+    heatMap1st: result.heatMap1st
+      ? { samples: result.heatMap1st.samples, top: result.heatMap1st.top, ascii: result.heatMap1st.ascii }
+      : null,
+    heatMap2nd: result.heatMap2nd
+      ? { samples: result.heatMap2nd.samples, top: result.heatMap2nd.top, ascii: result.heatMap2nd.ascii }
+      : null,
     passMap: result.passMap
       ? {
           totalCompletedLinks: result.passMap.totalCompletedLinks,
