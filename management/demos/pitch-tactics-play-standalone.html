@@ -1413,9 +1413,13 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
 
   function pushLog(msg, hi) {
     state.log.unshift({ msg, hi: !!hi });
-    if (state.log.length > 50) state.log.pop();
+    if (state.log.length > 80) state.log.pop();
+    if (state.autoPlay && state.matchArchive) {
+      state.matchArchive.push({ minute: state.minute, msg: msg, hi: !!hi });
+    }
   }
   function toast(msg) {
+    if (state.autoPlay) return;
     let t = document.querySelector(".toast");
     if (!t) {
       t = document.createElement("div");
@@ -1489,7 +1493,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       '<div class="skills-side" id="skillsSide"></div></div>' +
       '<div class="lineup-actions"><button class="btn btn-ghost" id="back">← Назад</button>' +
       '<button class="btn btn-primary" id="kick">Начать матч</button></div>' +
-      '<div class="hint-box">Ход как в XCOM: <b>жёлтый</b>/<b>золотой</b> радиус. Форма по линии мяча сдвигается <b>один раз после всего хода тренера</b> (не после каждого AP), только у нетронутых.</div></section>';
+      '<div class="hint-box">Ход как в XCOM: <b>жёлтый</b>/<b>золотой</b> радиус. Игроки стоят где оставили — без автосдвига формы. С мячом −дебафф владения.</div></section>';
 
     drawLineupPitch();
     fillSkillsSide();
@@ -1892,7 +1896,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       " · устал." +
       (state.ballOwner === p.id ? state.carryFatigue || 0 : 0) +
       "</div>" +
-      '<div class="hint-box">Ход XCOM: жёлтый/золотой. Форма по линии мяча — <b>один раз после всего хода</b> (не после каждого AP), только нетронутые.</div></div>'
+      '<div class="hint-box">Ход XCOM: жёлтый/золотой. Без автосдвига формы — двигаете только командами.</div></div>'
     );
   }
 
@@ -2426,13 +2430,15 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     state.reachYellow = 0;
     state.reachGold = 0;
     state.targets = [];
-    closeRadial();
-    syncPieces(true, moveId, fromPos);
-    renderLeft();
-    renderRight();
-    paintBoard();
-    updatePreview();
-    if (state.ap <= 0 && !state.over) endPlayerTurn();
+    if (!state.autoPlay) {
+      closeRadial();
+      syncPieces(true, moveId, fromPos);
+      renderLeft();
+      renderRight();
+      paintBoard();
+      updatePreview();
+      if (state.ap <= 0 && !state.over) endPlayerTurn();
+    }
   }
 
   function doMove(p, to) {
@@ -2700,38 +2706,68 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     state.loose = false;
     state.ball = p.pos.slice();
     resetCarryFatigue();
-    syncPieces(false);
-    state.waiting = true;
+    if (state.stats) state.stats.shotsFor++;
+    if (!state.autoPlay) {
+      syncPieces(false);
+      state.waiting = true;
+    }
 
     const scored = roll <= ch.chance && !ch.blockLikely;
+    const resolveMissOrSave = () => {
+      state.ball = [
+        clamp(goalHex[0] + (dive === goalHex[0] ? 0 : goalHex[0] - dive), 0, COLS - 1),
+        clamp(GOAL_B_ROW - 2, 0, ROWS - 1),
+      ];
+      if (dive === goalHex[0] && Math.random() < 0.55) {
+        state.ballOwner = "B.GK";
+        state.them.GK.pos = [dive, GOAL_B_ROW];
+        state.ball = state.them.GK.pos.slice();
+        state.loose = false;
+        if (state.stats) state.stats.gkSaves++;
+        pushLog("ВР поймал! Угадал клетку.", true);
+      } else {
+        state.loose = true;
+        pushLog(
+          ch.blockLikely ? "Блок / Σдавление!" : dive === goalHex[0] ? "Сейв / отбил" : "Мимо — свободный мяч",
+          true
+        );
+      }
+      if (!state.autoPlay) syncPieces(true);
+      state.waiting = false;
+      spendAP(p.id);
+    };
+    const resolveGoal = () => {
+      state.ball = goalHex.slice();
+      if (!state.autoPlay) syncPieces(true);
+      state.score[0] += 1;
+      if (state.stats) state.stats.goalsFor++;
+      pushLog("ГОЛ! Мяч в " + cellName(goalHex), true);
+      toast("ГОЛ!");
+      resetKickoff("B");
+      state.waiting = false;
+      spendAP(p.id);
+    };
+
+    if (state.autoPlay) {
+      if (scored) resolveGoal();
+      else resolveMissOrSave();
+      return;
+    }
     setTimeout(() => {
       if (scored) {
         state.ball = goalHex.slice();
         syncPieces(true);
         state.score[0] += 1;
+        if (state.stats) state.stats.goalsFor++;
         pushLog("ГОЛ! Мяч в " + cellName(goalHex), true);
         toast("ГОЛ!");
         setTimeout(() => {
           resetKickoff("B");
           state.waiting = false;
-          spendAP();
+          spendAP(p.id);
         }, 700);
       } else {
-        state.ball = [clamp(goalHex[0] + (dive === goalHex[0] ? 0 : goalHex[0] - dive), 0, COLS - 1), clamp(GOAL_B_ROW - 2, 0, ROWS - 1)];
-        // if GK guessed, often catch
-        if (dive === goalHex[0] && Math.random() < 0.55) {
-          state.ballOwner = "B.GK";
-          state.them.GK.pos = [dive, GOAL_B_ROW];
-          state.ball = state.them.GK.pos.slice();
-          state.loose = false;
-          pushLog("ВР поймал! Угадал клетку.", true);
-        } else {
-          state.loose = true;
-          pushLog(ch.blockLikely ? "Блок / Σдавление!" : dive === goalHex[0] ? "Сейв / отбил" : "Мимо — свободный мяч", true);
-        }
-        syncPieces(true);
-        state.waiting = false;
-        spendAP();
+        resolveMissOrSave();
       }
     }, 280);
   }
@@ -2792,8 +2828,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     state.mode = null;
     state.reachable = [];
     state.targets = [];
-    // форма один раз: после всех AP, только кого не трогали
-    holdFormation("A", state.actedIds.concat(state.lockedIds));
+    // без авто-подтягивания формы — только явные команды
     state.turn = "B";
     pushLog("— Ход соперника —");
     renderLeft();
@@ -2805,8 +2840,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   }
 
   function endAITurn() {
-    // форма ПК один раз после всех их AP
-    holdFormation("B", state.aiLocked || []);
+    // без авто-формы у ПК
     state.turn = "A";
     state.ap = COACH_AP;
     state.lockedIds = [];
@@ -2930,6 +2964,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     if (roll <= ch.chance && ch.pressure < 2) {
       state.ball = goalHex;
       state.score[1] += 1;
+      if (state.stats) state.stats.goalsAgainst++;
       pushLog("ГОЛ соперника!", true);
       toast("Гол ПК");
       resetKickoff("A");
@@ -3139,7 +3174,214 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     aiMoveToward(h, target);
   }
 
+  function playerFreest(from) {
+    let best = null;
+    let bestS = -999;
+    Object.values(state.you).forEach((t) => {
+      if (t.id === from.id || t.role === "GK") return;
+      const mode = hexDist(from.pos, t.pos) > actionRange(from, "pass") ? "cross" : "pass";
+      if (hexDist(from.pos, t.pos) > actionRange(from, mode)) return;
+      const pr = pressureOn(t.pos, "A").pts;
+      const forward = t.pos[1] - from.pos[1];
+      const s = -pr * 4 + forward * 2.2;
+      if (s > bestS) {
+        bestS = s;
+        best = t;
+      }
+    });
+    return best;
+  }
+
+  function playerMoveToward(p, target) {
+    const bud = moveBudget(p);
+    const from = p.pos.slice();
+    let opts = cellsInRange(p.pos, bud).filter((pos) => canStandOn(pos, p.id));
+    if (state.loose) {
+      const d = hexDist(p.pos, state.ball);
+      if (d > 0 && d <= bud && (canStandOn(state.ball, p.id) || canTargetLooseBall(state.ball, p.id))) {
+        if (!opts.some((x) => x[0] === state.ball[0] && x[1] === state.ball[1])) opts.push(state.ball.slice());
+      }
+    }
+    if (!opts.length) {
+      state.selectedId = p.id;
+      spendAP(p.id);
+      return;
+    }
+    const carrying = state.ballOwner === p.id;
+    opts.sort((a, b) => {
+      const da = hexDist(a, target) - hexDist(b, target);
+      if (!carrying) return da;
+      const pa = previewCarryPath(p, from, a);
+      const pb = previewCarryPath(p, from, b);
+      return pb.combined - pa.combined || pa.maxPr - pb.maxPr || da;
+    });
+    doMove(p, opts[0]);
+  }
+
+  function playerAutoAction() {
+    if (state.over || state.turn !== "A" || state.ap <= 0) return false;
+    if (state.loose) {
+      const onBall = Object.values(state.you).find(
+        (p) => p.pos[0] === state.ball[0] && p.pos[1] === state.ball[1] && !isLocked(p.id)
+      );
+      if (onBall) {
+        claimLoose(onBall, true);
+        spendAP(onBall.id);
+        return true;
+      }
+      const near = Object.values(state.you)
+        .filter((p) => p.role !== "GK" && !isLocked(p.id))
+        .sort((a, b) => hexDist(a.pos, state.ball) - hexDist(b.pos, state.ball))[0];
+      if (near) {
+        const d = hexDist(near.pos, state.ball);
+        const tR = actionRange(near, "tackle");
+        const occ = occupant(state.ball);
+        if (d <= tR && d > 0) {
+          if (occ && occ.side === "B") contestedLoose(near, occ, false);
+          else claimLoose(near, false);
+          spendAP(near.id);
+          return true;
+        }
+        playerMoveToward(near, state.ball);
+        return true;
+      }
+    }
+
+    const ow = ownerPlayer();
+    if (ow && ow.side === "A" && !isLocked(ow.id)) {
+      if (ow.pos[1] >= GOAL_B_ROW - 5) {
+        const aim = GOAL_COLS.includes(ow.pos[0]) ? ow.pos[0] : CENTER_COL;
+        const goalHex = [aim, GOAL_B_ROW];
+        const ch = chanceShot(ow, goalHex, null);
+        if (!ch.outOfRange && ch.chance >= 20 && ch.pressure < 2) {
+          doShot(ow, goalHex);
+          return true;
+        }
+      }
+      const recv = playerFreest(ow);
+      const press = pressureOn(ow.pos, "A").pts;
+      if (recv && (press >= 1 || recv.pos[1] > ow.pos[1])) {
+        const isCross = hexDist(ow.pos, recv.pos) > actionRange(ow, "pass");
+        const mode = isCross ? "cross" : "pass";
+        if (inActionRange(ow, recv.pos, mode)) {
+          doPass(ow, recv, isCross);
+          if (state.stats) state.stats.passes++;
+          return true;
+        }
+      }
+      playerMoveToward(ow, [clamp(ow.pos[0], GOAL_COLS[0], GOAL_COLS[2]), Math.min(GOAL_B_ROW - 1, ow.pos[1] + 4)]);
+      return true;
+    }
+
+    const target = ownerPlayer() && ownerPlayer().side === "B" ? ownerPlayer().pos : state.ball;
+    const hunters = Object.values(state.you)
+      .filter((p) => p.role !== "GK" && !isLocked(p.id))
+      .sort((a, b) => hexDist(a.pos, target) - hexDist(b.pos, target));
+    const h = hunters[0];
+    if (!h) return false;
+    const victim = ownerPlayer();
+    if (victim && victim.side === "B" && hexDist(h.pos, victim.pos) <= actionRange(h, "tackle")) {
+      doTackle(h, victim);
+      if (state.stats) state.stats.tackles++;
+      return true;
+    }
+    playerMoveToward(h, target);
+    return true;
+  }
+
+  function endAITurnSync() {
+    state.turn = "A";
+    state.ap = COACH_AP;
+    state.lockedIds = [];
+    state.actedIds = [];
+    state.minute = Math.min(MATCH_MINUTES, state.minute + 1);
+    state.waiting = false;
+    state.selectedId = null;
+    pushLog("— Ваш ход (" + COACH_AP + " AP) — · " + state.minute + "'", true);
+    if (state.minute >= MATCH_MINUTES) endMatch();
+  }
+
+  function runAISync() {
+    const opp = OPPONENTS.find((x) => x.id === state.opponentId);
+    let ap = COACH_AP;
+    state.aiLocked = [];
+    state.turn = "B";
+    pushLog("— Ход соперника —");
+    while (ap > 0 && !state.over) {
+      aiAction(opp.ai);
+      ap -= 1;
+    }
+    if (!state.over) endAITurnSync();
+  }
+
+  /** ИИ vs ИИ, полный матч 90'. window.pitchAutoPlayFullMatch('academy') */
+  function autoPlayFullMatch(oppId) {
+    state.autoPlay = true;
+    state.matchArchive = [];
+    state.stats = { shotsFor: 0, goalsFor: 0, goalsAgainst: 0, gkSaves: 0, passes: 0, tackles: 0 };
+    state.opponentId = oppId || "academy";
+    const opp = OPPONENTS.find((x) => x.id === state.opponentId);
+    state.you = buildSquad("A", null, 1);
+    state.them = buildSquad("B", opp.names, opp.mult);
+    startMatch();
+    let guard = 0;
+    while (!state.over && state.minute < MATCH_MINUTES && guard++ < 200) {
+      state.turn = "A";
+      state.ap = COACH_AP;
+      state.actedIds = [];
+      state.lockedIds = [];
+      let stuck = 0;
+      while (state.ap > 0 && !state.over && state.turn === "A") {
+        const ap0 = state.ap;
+        playerAutoAction();
+        if (state.ap >= ap0) {
+          stuck++;
+          state.ap -= 1;
+          if (stuck > 6) break;
+        } else stuck = 0;
+      }
+      if (state.over) break;
+      runAISync();
+    }
+    state.autoPlay = false;
+    const archive = state.matchArchive || [];
+    return {
+      mode: "AI vs AI",
+      opponent: opp.name,
+      coachAP: COACH_AP,
+      score: state.score.slice(),
+      minute: state.minute,
+      over: state.over,
+      stats: state.stats,
+      goals: archive.filter((x) => /ГОЛ/i.test(x.msg)),
+      saves: archive.filter((x) => /ВР поймал|Сейв/i.test(x.msg)).length,
+      protocol: archive.map((x) => x.minute + "' " + x.msg),
+    };
+  }
+
+  window.pitchAutoPlayFullMatch = autoPlayFullMatch;
+
   render();
+
+  const autoParam = /(?:\?|&)autoplay=([^&]*)/.exec(location.search || "");
+  if (autoParam) {
+    const id = decodeURIComponent(autoParam[1] || "academy") || "academy";
+    try {
+      const result = autoPlayFullMatch(id);
+      const pre = document.createElement("pre");
+      pre.id = "autoplay-result";
+      pre.style.cssText =
+        "position:fixed;inset:8px;overflow:auto;background:#0b100e;color:#e8f2ea;z-index:99;padding:12px;font:12px/1.4 monospace";
+      pre.textContent = JSON.stringify(result, null, 2);
+      document.body.appendChild(pre);
+      window.__autoplayResult = result;
+    } catch (err) {
+      const pre = document.createElement("pre");
+      pre.id = "autoplay-result";
+      pre.textContent = "ERROR: " + (err && err.stack ? err.stack : err);
+      document.body.appendChild(pre);
+    }
+  }
 })();
 
 </script>
