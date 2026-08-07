@@ -648,7 +648,8 @@
     return [col, row];
   }
 
-  /** Неактивные 0–2 гекса к якорю на линии мяча, сохраняя фланг */
+  /** Неактивные 0–2 гекса к якорю на линии мяча.
+   *  Только в конце полного хода тренера (все AP), не после каждого действия. */
   function holdFormation(side, skipIds, quiet) {
     const squad = side === "A" ? state.you : state.them;
     if (!squad) return;
@@ -955,7 +956,7 @@
       '<div class="skills-side" id="skillsSide"></div></div>' +
       '<div class="lineup-actions"><button class="btn btn-ghost" id="back">← Назад</button>' +
       '<button class="btn btn-primary" id="kick">Начать матч</button></div>' +
-      '<div class="hint-box">Ход как в XCOM: <b>жёлтый</b>/<b>золотой</b> радиус. После вашего хода нетронутые держат <b>форму по линии мяча</b> (фланги не схлопываются). С мячом −дебафф владения.</div></section>';
+      '<div class="hint-box">Ход как в XCOM: <b>жёлтый</b>/<b>золотой</b> радиус. Форма по линии мяча сдвигается <b>один раз после всего хода тренера</b> (не после каждого AP), только у нетронутых.</div></section>';
 
     drawLineupPitch();
     fillSkillsSide();
@@ -1358,7 +1359,7 @@
       " · устал." +
       (state.ballOwner === p.id ? state.carryFatigue || 0 : 0) +
       "</div>" +
-      '<div class="hint-box">Ход XCOM: жёлтый/золотой. После вашего хода нетронутые держат <b>форму по линии мяча</b>. С мячом −дебафф владения.</div></div>'
+      '<div class="hint-box">Ход XCOM: жёлтый/золотой. Форма по линии мяча — <b>один раз после всего хода</b> (не после каждого AP), только нетронутые.</div></div>'
     );
   }
 
@@ -1453,9 +1454,13 @@
       if (!el) return;
       const pt = pctFromHex(p.pos[0], p.pos[1]);
       if (animate && moveId && p.id === moveId && fromPos) {
+        // одно действие — анимируем только эту фишку
         el.style.transition = "left " + moveMs(fromPos, p.pos) + "ms ease, top " + moveMs(fromPos, p.pos) + "ms ease";
+      } else if (animate && !moveId) {
+        // конец хода / розыгрыш — можно двигать всех
+        el.style.transition = "left .28s ease, top .28s ease";
       } else {
-        el.style.transition = animate ? "left .28s ease, top .28s ease" : "none";
+        el.style.transition = "none";
       }
       el.style.left = pt.left + "%";
       el.style.top = pt.top + "%";
@@ -2253,6 +2258,7 @@
     state.mode = null;
     state.reachable = [];
     state.targets = [];
+    // форма один раз: после всех AP, только кого не трогали
     holdFormation("A", state.actedIds.concat(state.lockedIds));
     state.turn = "B";
     pushLog("— Ход соперника —");
@@ -2265,6 +2271,7 @@
   }
 
   function endAITurn() {
+    // форма ПК один раз после всех их AP
     holdFormation("B", state.aiLocked || []);
     state.turn = "A";
     state.ap = COACH_AP;
@@ -2562,12 +2569,13 @@
       .sort((a, b) => hexDist(a.pos, target) - hexDist(b.pos, target));
     const h = hunters[0];
     if (!h) {
-      holdFormation("B", [], true);
+      // нет охотника — один шаг к якорю формы (не сдвиг всей команды)
+      const idle = Object.values(state.them).find((p) => p.role !== "GK");
+      if (idle) aiMoveToward(idle, formationAnchor(idle, "B"));
       return;
     }
     if ((h.role === "OP1" || h.role === "OP2") && Math.abs(h.home[0] - target[0]) > 4) {
-      // крайний не бросает канал ради дальнего мяча — сначала форма
-      holdFormation("B", [], true);
+      // крайний держит канал — идёт к своему якорю, не тащит всю линию
       aiMoveToward(h, formationAnchor(h, "B"));
       return;
     }
@@ -2594,7 +2602,6 @@
       return;
     }
     aiMoveToward(h, target);
-    holdFormation("B", [h.id].concat(state.aiLocked || []), true);
   }
 
   render();
