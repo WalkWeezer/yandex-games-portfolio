@@ -599,7 +599,49 @@
     return true;
   }
 
-  /** Неактивные подтягиваются к якорю схемы (0–2 гекса), сохраняя канал */
+  /**
+   * Якорь схемы относительно линии мяча (ряд мяча).
+   * Канал (колонка home) сохраняем; блок слегка плывёт с мячом по ширине (−2…+2).
+   * Не магнит «все к мячу» — глубина по роли.
+   */
+  const FORM_DEPTH = {
+    A: { Z: -3, OP1: -2, OP2: -2, NAP: 1 },
+    B: { Z: 3, OP1: 2, OP2: 2, NAP: -1 },
+  };
+
+  function formationAnchor(p, side) {
+    const ballCol = state.ball[0];
+    const ballRow = state.ball[1];
+    const blockShift = clamp(ballCol - CENTER_COL, -2, 2);
+    let col = clamp((p.home ? p.home[0] : CENTER_COL) + blockShift, 0, COLS - 1);
+    if (p.role === "OP1") col = clamp(col, 0, CENTER_COL);
+    if (p.role === "OP2") col = clamp(col, CENTER_COL, COLS - 1);
+    if (p.role === "GK") {
+      col = clamp(CENTER_COL + clamp(ballCol - CENTER_COL, -1, 1), GOAL_COLS[0], GOAL_COLS[2]);
+      const row =
+        side === "A"
+          ? clamp(Math.min(2, ballRow - 8), 0, 3)
+          : clamp(Math.max(ROWS - 3, ballRow + 8), ROWS - 4, ROWS - 1);
+      return [col, row];
+    }
+    const depth = (FORM_DEPTH[side] && FORM_DEPTH[side][p.role]) || 0;
+    let row = ballRow + depth;
+    if (side === "A") {
+      row = clamp(row, p.role === "Z" ? 2 : 3, ROWS - 2);
+      // не забегать за линию мяча слишком глубоко в чужую штрафную без смысла
+      if (p.role === "Z" || p.role === "OP1" || p.role === "OP2") {
+        row = Math.min(row, Math.max(ballRow - 1, 2));
+      }
+    } else {
+      row = clamp(row, 1, p.role === "Z" ? ROWS - 3 : ROWS - 4);
+      if (p.role === "Z" || p.role === "OP1" || p.role === "OP2") {
+        row = Math.max(row, Math.min(ballRow + 1, ROWS - 3));
+      }
+    }
+    return [col, row];
+  }
+
+  /** Неактивные 0–2 гекса к якорю на линии мяча, сохраняя фланг */
   function holdFormation(side, skipIds, quiet) {
     const squad = side === "A" ? state.you : state.them;
     if (!squad) return;
@@ -608,22 +650,28 @@
     Object.values(squad).forEach((p) => {
       if (skip.indexOf(p.id) >= 0) return;
       if (state.ballOwner === p.id) return;
-      const home = p.home;
-      const dist = hexDist(p.pos, home);
+      const anchor = formationAnchor(p, side);
+      const dist = hexDist(p.pos, anchor);
       if (dist <= 0) return;
       const step = Math.min(2, dist);
       let opts = cellsInRange(p.pos, step).filter((pos) => canStandOn(pos, p.id));
       if (p.role === "OP1") opts = opts.filter((pos) => pos[0] <= CENTER_COL);
       if (p.role === "OP2") opts = opts.filter((pos) => pos[0] >= CENTER_COL);
-      if (p.role === "GK") opts = opts.filter((pos) => (side === "A" ? pos[1] <= 3 : pos[1] >= ROWS - 4));
-      opts.sort((a, b) => hexDist(a, home) - hexDist(b, home));
+      if (p.role === "GK") {
+        opts = opts.filter((pos) => (side === "A" ? pos[1] <= 3 : pos[1] >= ROWS - 4));
+      }
+      opts.sort((a, b) => hexDist(a, anchor) - hexDist(b, anchor));
       if (!opts.length) return;
-      if (hexDist(opts[0], home) >= dist) return;
+      if (hexDist(opts[0], anchor) >= dist) return;
       p.pos = opts[0];
       moved++;
     });
     if (moved && !quiet) {
-      pushLog(side === "A" ? "Ваши без команды подтянули форму (" + moved + ")" : "ПК держит ширину формы (" + moved + ")");
+      pushLog(
+        side === "A"
+          ? "Форма по линии мяча (" + moved + ")"
+          : "ПК держит форму по линии мяча (" + moved + ")"
+      );
     }
   }
 
@@ -895,7 +943,7 @@
       '<div class="skills-side" id="skillsSide"></div></div>' +
       '<div class="lineup-actions"><button class="btn btn-ghost" id="back">← Назад</button>' +
       '<button class="btn btn-primary" id="kick">Начать матч</button></div>' +
-      '<div class="hint-box">Ход как в XCOM: <b>жёлтый</b> радиус = полхода, <b>золотой</b> = полный; можно на 1 клетку. С мячом −дебафф <b>владения</b>; давление на пути режет удержание. Неактивные подтягивают форму.</div></section>';
+      '<div class="hint-box">Ход как в XCOM: <b>жёлтый</b>/<b>золотой</b> радиус. Неактивные сами держат <b>форму по линии мяча</b> (фланги не схлопываются). С мячом −дебафф владения.</div></section>';
 
     drawLineupPitch();
     fillSkillsSide();
@@ -1260,7 +1308,7 @@
       " · устал." +
       (state.ballOwner === p.id ? state.carryFatigue || 0 : 0) +
       "</div>" +
-      '<div class="hint-box">Ход как в XCOM: <b>жёлтый</b> = полхода, <b>золотой</b> = полный. Можно на 1 клетку. С мячом −дебафф владения.</div></div>'
+      '<div class="hint-box">Ход XCOM: жёлтый/золотой. Форма без команды — <b>по линии мяча</b>. С мячом −дебафф владения.</div></div>'
     );
   }
 
@@ -2465,8 +2513,9 @@
       return;
     }
     if ((h.role === "OP1" || h.role === "OP2") && Math.abs(h.home[0] - target[0]) > 4) {
+      // крайний не бросает канал ради дальнего мяча — сначала форма
       holdFormation("B", [], true);
-      aiMoveToward(h, h.home);
+      aiMoveToward(h, formationAnchor(h, "B"));
       return;
     }
     const ow = ownerPlayer();
