@@ -29,7 +29,11 @@
     receive: "Приём",
   };
   const MOVE_MS = 950;
-  const HOLD_MS = 1700;
+  const BALL_GOAL_MS = 1100;
+  const HOLD_MS = 1800;
+
+  const GOAL_A = { cols: [4, 5, 6, 7], row: 0 }; // B scores here
+  const GOAL_B = { cols: [4, 5, 6, 7], row: 19 }; // A scores here
 
   const matches = window.PITCH_TACTICS_MATCHES || [];
   let matchIndex = 0;
@@ -140,7 +144,10 @@
         const center = hexCenter(c, r);
         const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
         poly.setAttribute("points", hexPoints(center.x, center.y, HEX * 0.92));
-        poly.setAttribute("class", "hex-cell" + ((c + r) % 2 ? " alt" : ""));
+        let cls = "hex-cell" + ((c + r) % 2 ? " alt" : "");
+        const g = isGoalHex(c, r);
+        if (g) cls += " hex-goal hex-goal-" + g.toLowerCase();
+        poly.setAttribute("class", cls);
         poly.dataset.col = String(c);
         poly.dataset.row = String(r);
         hexLayer.appendChild(poly);
@@ -205,6 +212,7 @@
     }
     ballEl.hidden = false;
     const p = pctFromHex(col, row);
+    const ms = ballEl.classList.contains("ball-shot") ? BALL_GOAL_MS : MOVE_MS;
     if (!animate) {
       ballEl.style.transition = "none";
       ballEl.style.left = p.left + "%";
@@ -214,10 +222,12 @@
     } else {
       ballEl.style.transition =
         "left " +
-        MOVE_MS +
-        "ms cubic-bezier(.2,.75,.2,1), top " +
-        MOVE_MS +
-        "ms cubic-bezier(.2,.75,.2,1)";
+        ms +
+        "ms cubic-bezier(.15,.85,.2,1), top " +
+        ms +
+        "ms cubic-bezier(.15,.85,.2,1), transform " +
+        ms +
+        "ms ease";
       ballEl.style.left = p.left + "%";
       ballEl.style.top = p.top + "%";
     }
@@ -271,18 +281,41 @@
     trailLayer.appendChild(path);
   }
 
+  function isGoalHex(col, row) {
+    if (row === GOAL_A.row && GOAL_A.cols.indexOf(col) >= 0) return "A";
+    if (row === GOAL_B.row && GOAL_B.cols.indexOf(col) >= 0) return "B";
+    return null;
+  }
+
+  function paintGoals() {
+    GOAL_A.cols.forEach((c) => {
+      const n = hexNodes[c + "," + GOAL_A.row];
+      if (n) n.classList.add("hex-goal", "hex-goal-a");
+    });
+    GOAL_B.cols.forEach((c) => {
+      const n = hexNodes[c + "," + GOAL_B.row];
+      if (n) n.classList.add("hex-goal", "hex-goal-b");
+    });
+  }
+
   function resetHexClasses() {
     Object.values(hexNodes).forEach((poly) => {
       const c = Number(poly.dataset.col);
       const r = Number(poly.dataset.row);
-      poly.setAttribute("class", "hex-cell" + ((c + r) % 2 ? " alt" : ""));
+      let cls = "hex-cell" + ((c + r) % 2 ? " alt" : "");
+      const g = isGoalHex(c, r);
+      if (g) cls += " hex-goal hex-goal-" + g.toLowerCase();
+      poly.setAttribute("class", cls);
     });
   }
 
   function paintHex(col, row, cls) {
     const n = hexNodes[col + "," + row];
     if (!n) return;
-    n.setAttribute("class", "hex-cell " + cls);
+    const g = isGoalHex(col, row);
+    let base = "hex-cell " + cls;
+    if (g) base += " hex-goal hex-goal-" + g.toLowerCase();
+    n.setAttribute("class", base);
   }
 
   function renderAuras(s) {
@@ -562,16 +595,17 @@
 
     const fakePrev = { players: fromPlayers, actions: [] };
     const moves = collectMoves(fakePrev, s);
+    const isGoal = s.roll && s.roll.result === "goal" && s.goalTo;
+    const shotFrom = s.shotFrom || fromBall;
 
     moves.forEach((mv) => {
       drawArrow(mv.from, mv.to, mv.active ? "active-" + mv.side : "passive");
     });
-    if (fromBall && s.ball) drawBallPath(fromBall, s.ball);
-    if (fromBall && !s.ball) {
-      const flash = document.createElement("div");
-      flash.className = "goal-flash";
-      flash.textContent = "ГОЛ / МЯЧ ВНЕ";
-      fxLayer.appendChild(flash);
+
+    if (isGoal && shotFrom) {
+      drawBallPath(shotFrom, s.goalTo);
+    } else if (fromBall && s.ball) {
+      drawBallPath(fromBall, s.ball);
     }
 
     renderSidePanel(s, moves);
@@ -596,14 +630,33 @@
         }, 350 + idx * 140);
       });
 
+    // First move players; ball waits at shot origin for goals
     requestAnimationFrame(() => {
       ["A", "B"].forEach((side) => {
         Object.entries(s.players[side]).forEach(([role, pos]) => {
           setPiecePos(pieceEls[side + "." + role], pos[0], pos[1], true);
         });
       });
-      if (s.ball) setBallPos(s.ball[0], s.ball[1], true);
-      else setBallPos(null, null, false);
+
+      if (isGoal && shotFrom) {
+        setBallPos(shotFrom[0], shotFrom[1], false);
+        setTimeout(() => {
+          ballEl.classList.add("ball-shot");
+          setBallPos(s.goalTo[0], s.goalTo[1], true);
+          const net = document.createElement("div");
+          net.className = "goal-net-flash";
+          const gp = pctFromHex(s.goalTo[0], s.goalTo[1]);
+          net.style.left = gp.left + "%";
+          net.style.top = gp.top + "%";
+          net.textContent = "⚽";
+          fxLayer.appendChild(net);
+          setTimeout(() => ballEl.classList.remove("ball-shot"), BALL_GOAL_MS + 50);
+        }, Math.min(400, MOVE_MS * 0.45));
+      } else if (s.ball) {
+        setBallPos(s.ball[0], s.ball[1], true);
+      } else {
+        setBallPos(null, null, false);
+      }
     });
 
     setTimeout(() => {
@@ -612,7 +665,7 @@
     }, MOVE_MS);
 
     lastPlayers = JSON.parse(JSON.stringify(s.players));
-    lastBall = s.ball ? s.ball.slice() : null;
+    lastBall = s.ball ? s.ball.slice() : s.goalTo ? s.goalTo.slice() : null;
   }
 
   function render(animate) {
@@ -685,7 +738,7 @@
     }
     stepIndex += 1;
     render(true);
-    playTimer = setTimeout(playNext, MOVE_MS + HOLD_MS);
+    playTimer = setTimeout(playNext, MOVE_MS + HOLD_MS + (step().roll && step().roll.result === "goal" ? 700 : 0));
   }
 
   function startPlay() {

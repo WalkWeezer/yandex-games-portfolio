@@ -229,6 +229,19 @@ body[data-match="J"] { --match-tint: #c8f06a44; }
   stroke-width: 1.6;
   fill-opacity: 0.65;
 }
+.hex-cell.hex-goal {
+  fill: #0a1018;
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 1.4;
+}
+.hex-cell.hex-goal-a {
+  fill: #1a1520;
+  stroke: var(--b);
+}
+.hex-cell.hex-goal-b {
+  fill: #101820;
+  stroke: var(--a);
+}
 .hex-midline { stroke: rgba(255,255,255,0.22); stroke-width: 1.2; fill: none; }
 
 .move-arrow { fill: none; stroke-width: 1.5; stroke-linecap: round; opacity: 0.95; }
@@ -333,6 +346,27 @@ body[data-match="J"] { --match-tint: #c8f06a44; }
   box-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
 
+.ball-shot {
+  transform: scale(1.25);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.65), 0 2px 8px rgba(0,0,0,0.5);
+}
+.goal-net-flash {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  display: grid;
+  place-items: center;
+  font-size: 1.4rem;
+  pointer-events: none;
+  animation: netPop 1.1s ease forwards;
+  z-index: 7;
+}
+@keyframes netPop {
+  0% { transform: scale(0.4); opacity: 0; }
+  35% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.15; }
+}
 .goal-flash {
   position: absolute;
   left: 50%; top: 42%;
