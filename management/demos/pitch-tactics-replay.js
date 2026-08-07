@@ -320,6 +320,9 @@
 
   function renderAuras(s) {
     resetHexClasses();
+    (s.freeZones || []).forEach((pos) => {
+      paintHex(pos[0], pos[1], "hex-free");
+    });
     Object.entries(s.statuses || {}).forEach(([key, st]) => {
       if (!st.defend) return;
       const [side, role] = key.split(".");
@@ -335,7 +338,9 @@
             const d = hexDist(pos, [c, r]);
             if (d > 0 && d <= rad) {
               const n = hexNodes[c + "," + r];
-              if (n && n.getAttribute("class").indexOf("aura-defend") >= 0) continue;
+              if (!n) continue;
+              const cls = n.getAttribute("class") || "";
+              if (cls.indexOf("aura-defend") >= 0 || cls.indexOf("hex-free") >= 0) continue;
               paintHex(c, r, rad >= 2 ? "aura-p2" : "aura-p1");
             }
           }

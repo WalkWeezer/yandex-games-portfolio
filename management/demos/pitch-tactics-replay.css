@@ -242,6 +242,13 @@ body[data-match="J"] { --match-tint: #c8f06a44; }
   fill: #101820;
   stroke: var(--a);
 }
+.hex-cell.hex-free {
+  fill: #2d5a38;
+  stroke: #c8f06a;
+  stroke-width: 1.8;
+  stroke-dasharray: 4 2;
+  fill-opacity: 0.85;
+}
 .hex-midline { stroke: rgba(255,255,255,0.22); stroke-width: 1.2; fill: none; }
 
 .move-arrow { fill: none; stroke-width: 1.5; stroke-linecap: round; opacity: 0.95; }

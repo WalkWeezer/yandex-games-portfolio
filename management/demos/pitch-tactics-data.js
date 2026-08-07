@@ -1,370 +1,334 @@
 /**
- * Pitch Tactics — coherent hex match replays (Freeze v1)
- * Rules baked into scripts:
- * - max move 6 hexes / action
- * - Z pressure r=2, OP r=1, NAP r=0 — нельзя «пройти сквозь» без срыва/%
- * - удар только из ударной зоны (к воротам B: row>=16; к воротам A: row<=3)
- * - гол = мяч улетает в гекс ворот, не абстрактная надпись
- * Coords: [col 0-11, row 0-19], A атакует +row (к 19), B атакует -row (к 0)
+ * Coherent hex replays — space / free zones first.
+ * Principle: width & depth held; goals come from empty channels,
+ * not from everyone magnetizing to the ball.
+ * A attacks +row (goal row 19); B attacks -row (goal row 0).
+ * Shot zone: A row>=16, B row<=3. Z r=2, OP r=1.
  */
 window.PITCH_TACTICS_MATCHES = [
   {
     id: "H",
     theme: "H",
-    title: "Блок → прессинг",
-    subtitle: "Оба низко. Сквозь ауру З не лезем — обход краем. Гол с 17-го ряда.",
-    scoreFinal: "1:1",
-    styles: { A: "Терпеливый низкий блок + правый край", B: "То же → после 0:1 высокий пресс" },
+    title: "Ширина vs схлопывание",
+    subtitle: "Сначала оба жмутся к мячу — атака мертва. Потом A держит край пустым и бьёт оттуда.",
+    scoreFinal: "1:0",
+    styles: {
+      A: "После ошибки начинает держать ширину",
+      B: "Весь матч схлопывается к мячу"
+    },
     uiGlossary: [
-      { key: "Аура З", where: "Оранжевые гексы", text: "Радиус 2. Пас/пронос внутрь = низкий %." },
-      { key: "Ударная зона", where: "Ряды 16–18", text: "Удар легален только отсюда (к воротам B)." },
-      { key: "Гол", where: "Мяч в гексе ворот", text: "Видно, как мяч залетел, не только текст." }
+      { key: "Свободная зона", where: "Подсветка гекса · пунктир", text: "Пустой канал вне аур. Туда и надо пасовать." },
+      { key: "Схлопывание", where: "Все фишки у мяча", text: "Плохо: нет угла для паса, ауры перекрывают всё." },
+      { key: "Ширина", where: "ОП2 остаётся на бровке", text: "Не бежит к мячу — ждёт передачу в пустоту." }
     ],
     steps: [
       {
         min: 0, side: "kick", score: [0, 0],
-        narrative: "Kick-off. Обе команды компактно у своих третей — законный «от обороны».",
+        narrative: "Старт. Форма широкая: OP1 слева, OP2 справа, NAP впереди по центру.",
         ball: [5, 9],
+        freeZones: [[9, 11], [2, 11]],
         players: {
-          A: { GK:[5,1], Z:[5,4], OP1:[3,5], OP2:[7,5], NAP:[5,7] },
-          B: { GK:[5,18], Z:[5,15], OP1:[3,14], OP2:[7,14], NAP:[5,12] }
+          A: { GK:[5,1], Z:[5,4], OP1:[2,6], OP2:[9,6], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,15], OP1:[2,14], OP2:[9,14], NAP:[5,12] }
         },
         statuses: {}, focus: {}, actions: [], roll: null,
-        uiLabels: [{ id: "banner", text: "Kick-off · оба низко" }]
+        uiLabels: [{ id: "banner", text: "Широкая форма · пустые каналы" }]
       },
       {
         min: 1, side: "A", score: [0, 0], ap: 2,
-        narrative: "A: короткий розыгрыш у своей половины. Не прём в центр.",
-        ball: [7, 6],
+        narrative: "Мяч уходит на OP1 (лево). OP2 A пассивом остаётся справа — не бежит к мячу.",
+        ball: [2, 7],
+        freeZones: [[9, 10], [9, 12]],
         players: {
-          A: { GK:[5,1], Z:[5,4], OP1:[4,6], OP2:[7,6], NAP:[5,7] },
-          B: { GK:[5,18], Z:[5,15], OP1:[3,14], OP2:[7,14], NAP:[5,12] }
+          A: { GK:[5,1], Z:[4,5], OP1:[2,7], OP2:[9,7], NAP:[4,8] },
+          B: { GK:[5,18], Z:[5,15], OP1:[2,14], OP2:[9,14], NAP:[5,12] }
         },
         statuses: {}, focus: { "B.NAP": 1 },
         actions: [
-          { who: "A.OP1", kind: "pass", detail: "низом → ОП2" },
-          { who: "A.OP2", kind: "move", detail: "принял на H7" }
+          { who: "A.OP1", kind: "move", detail: "принял на левом канале C8" },
+          { who: "A.Z", kind: "move", detail: "чуть подстраховал" }
         ],
-        roll: { label: "Пас без давления", chance: 92, result: "ok", roll: 40 },
-        uiLabels: [{ id: "roll", text: "Пас 92% → ок" }]
+        roll: null,
+        uiLabels: [{ id: "tip", text: "Свободно справа: J/K — OP2 там ждёт" }]
       },
       {
         min: 2, side: "B", score: [0, 0], ap: 2,
-        narrative: "B ставит Defend на З и чуть сужает канал. Нап B бездействует → Сон.",
-        ball: [7, 6],
+        narrative: "Ошибка B: оба OP и З съезжают к левому мячу. Правый край B оголён.",
+        ball: [2, 7],
+        freeZones: [[9, 12], [10, 13], [9, 14]],
         players: {
-          A: { GK:[5,1], Z:[5,4], OP1:[4,6], OP2:[7,6], NAP:[5,7] },
-          B: { GK:[5,18], Z:[5,15], OP1:[4,14], OP2:[7,14], NAP:[5,12] }
+          A: { GK:[5,1], Z:[4,5], OP1:[2,7], OP2:[9,7], NAP:[4,8] },
+          B: { GK:[5,18], Z:[3,14], OP1:[2,12], OP2:[4,13], NAP:[3,11] }
         },
-        statuses: { "B.Z": { defend: 2 } },
-        focus: { "B.NAP": 1, "B.OP2": 1 },
+        statuses: {}, focus: { "B.NAP": 1 },
         actions: [
-          { who: "B.Z", kind: "defend", detail: "Defend F16" },
-          { who: "B.OP1", kind: "move", detail: "E15" }
+          { who: "B.OP1", kind: "press", detail: "рванул к мячу" },
+          { who: "B.Z", kind: "move", detail: "съехал влево за мячом" }
         ],
         roll: null,
-        uiLabels: [{ id: "defend", text: "Defend · 2" }]
+        uiLabels: [
+          { id: "paradigm", text: "B схлопнулся к мячу" },
+          { id: "tip", text: "Свободная зона: весь правый край B пуст" }
+        ],
+        note: "Плохой паттерн: 3 игрока B у колонок 2–4, справа никого."
       },
       {
         min: 3, side: "A", score: [0, 0], ap: 2,
-        narrative: "A пробует вертикаль в Нап — линия входит в ауру З B (r=2). Срыв.",
-        ball: [5, 6],
+        narrative: "A играет в пустоту: длинный пас на OP2, который не схлопывался.",
+        ball: [9, 10],
+        freeZones: [[9, 12], [10, 14]],
         players: {
-          A: { GK:[5,1], Z:[5,4], OP1:[4,6], OP2:[7,6], NAP:[5,8] },
-          B: { GK:[5,18], Z:[5,15], OP1:[4,14], OP2:[7,14], NAP:[5,12] }
+          A: { GK:[5,1], Z:[5,5], OP1:[3,7], OP2:[9,10], NAP:[6,9] },
+          B: { GK:[5,18], Z:[3,14], OP1:[2,12], OP2:[4,13], NAP:[3,11] }
         },
-        statuses: { "B.Z": { defend: 1 } },
-        focus: { "B.NAP": 2, "B.OP2": 2 },
+        statuses: {}, focus: { "B.NAP": 2 },
         actions: [
-          { who: "A.OP2", kind: "pass", detail: "в Нап через центр" },
-          { who: "A.OP1", kind: "move", detail: "подбор после срыва" }
+          { who: "A.OP1", kind: "pass", detail: "переключение на правый край" },
+          { who: "A.OP2", kind: "move", detail: "принял в свободной зоне J11" }
         ],
-        roll: { label: "Пас в ауру З (r=2)", chance: 28, result: "fail", roll: 71 },
-        uiLabels: [{ id: "roll", text: "28% → срыв · мяч остаётся у A после отскока" }],
-        note: "Не «прошёл сквозь защиту» — пас в ауру закономерно умер."
+        roll: { label: "Пас в свободный край (вне аур)", chance: 76, result: "ok", roll: 28 },
+        uiLabels: [{ id: "roll", text: "В пустоту 76% → ок" }]
       },
       {
         min: 4, side: "B", score: [0, 0], ap: 2,
-        narrative: "B не прессит высоко — только переставил Defend. ОП2 всё ещё в Сне.",
-        ball: [5, 6],
+        narrative: "B поздно бежит на фланг — снова все трое к мячу. Центр и лево B пустые, но A уже справа.",
+        ball: [9, 10],
+        freeZones: [[5, 14], [2, 13]],
         players: {
-          A: { GK:[5,1], Z:[5,4], OP1:[4,6], OP2:[7,6], NAP:[5,8] },
-          B: { GK:[5,18], Z:[6,15], OP1:[4,14], OP2:[7,14], NAP:[5,12] }
+          A: { GK:[5,1], Z:[5,5], OP1:[3,7], OP2:[9,10], NAP:[6,9] },
+          B: { GK:[5,18], Z:[7,14], OP1:[6,12], OP2:[9,13], NAP:[5,12] }
         },
-        statuses: { "B.Z": { defend: 2 } },
-        focus: { "B.NAP": 2, "B.OP2": 2 },
+        statuses: {}, focus: { "B.NAP": 2 },
         actions: [
-          { who: "B.Z", kind: "defend", detail: "переставил на G16" },
-          { who: "B.OP1", kind: "move", detail: "держит середину" }
+          { who: "B.OP2", kind: "move", detail: "догоняет край" },
+          { who: "B.Z", kind: "move", detail: "опять к мячу" }
         ],
         roll: null,
-        uiLabels: [{ id: "focus", text: "Сон на Нап и ОП2 B — их не трогали" }]
+        uiLabels: [{ id: "tip", text: "B снова уплотняется у мяча — опоздал" }]
       },
       {
         min: 5, side: "A", score: [0, 0], ap: 2,
-        narrative: "Обход: не в щит, а на правый край — вне ауры З.",
-        ball: [9, 8],
+        narrative: "Плохой выбор A: NAP и OP1 тоже бегут к мячу на фланг. Скученность — пас вперёд в ауру OP2 B.",
+        ball: [9, 11],
+        freeZones: [[4, 12], [5, 13]],
         players: {
-          A: { GK:[5,1], Z:[5,5], OP1:[5,6], OP2:[9,8], NAP:[7,8] },
-          B: { GK:[5,18], Z:[6,15], OP1:[4,14], OP2:[7,14], NAP:[5,12] }
+          A: { GK:[5,1], Z:[6,6], OP1:[7,9], OP2:[9,11], NAP:[8,10] },
+          B: { GK:[5,18], Z:[7,14], OP1:[6,12], OP2:[9,13], NAP:[5,12] }
         },
-        statuses: { "B.Z": { defend: 1 } },
-        focus: { "B.NAP": 3, "B.OP2": 3 },
+        statuses: {}, focus: { "B.NAP": 3 },
         actions: [
-          { who: "A.OP1", kind: "pass", detail: "диагональ на ОП2 край" },
-          { who: "A.OP2", kind: "move", detail: "J9 с мячом" }
+          { who: "A.OP2", kind: "pass", detail: "вперёд в скученность" },
+          { who: "A.NAP", kind: "move", detail: "притянут к мячу" }
         ],
-        roll: { label: "Пас в свободный край", chance: 78, result: "ok", roll: 22 },
-        uiLabels: [{ id: "paradigm", text: "A: центр закрыт → край" }]
+        roll: { label: "Пас в ауру OP B при скученности", chance: 34, result: "fail", roll: 70 },
+        uiLabels: [
+          { id: "roll", text: "34% → срыв" },
+          { id: "tip", text: "Свободная зона была в центре (E/F) — туда не сыграли" }
+        ],
+        note: "Эпизод-ошибка: даже владея краем, схлопнули свою атаку к мячу."
       },
       {
         min: 6, side: "B", score: [0, 0], ap: 2,
-        narrative: "B тянет ОП2 к флангу (сброс Сна) и З смещается. Поздно для края.",
-        ball: [9, 8],
+        narrative: "B подобрал и… снова все к мячу. Контратака без ширины.",
+        ball: [8, 11],
+        freeZones: [[2, 8], [2, 6]],
         players: {
-          A: { GK:[5,1], Z:[5,5], OP1:[5,6], OP2:[9,8], NAP:[7,8] },
-          B: { GK:[5,18], Z:[7,15], OP1:[5,13], OP2:[9,13], NAP:[5,12] }
+          A: { GK:[5,1], Z:[6,6], OP1:[7,9], OP2:[9,11], NAP:[8,10] },
+          B: { GK:[5,18], Z:[7,13], OP1:[6,11], OP2:[8,11], NAP:[5,11] }
         },
-        statuses: {},
-        focus: { "B.NAP": 3 },
+        statuses: {}, focus: {},
         actions: [
-          { who: "B.OP2", kind: "move", detail: "вышел на фланг · Сон сброшен" },
-          { who: "B.Z", kind: "move", detail: "сместился к краю" }
+          { who: "B.OP2", kind: "move", detail: "подбор у мяча" },
+          { who: "B.OP1", kind: "move", detail: "тоже к мячу" }
         ],
         roll: null,
-        uiLabels: [{ id: "focus", text: "Нап B всё ещё Z3" }]
+        uiLabels: [{ id: "tip", text: "Свободен левый канал A–C — B его не использует" }]
       },
       {
         min: 7, side: "A", score: [0, 0], ap: 2,
-        narrative: "Прогресс по краю: ОП2 → Нап уже на 11-м ряду, всё ещё вне ударной зоны.",
-        ball: [8, 11],
+        narrative: "Отбор. A возвращает ширину: OP1 уходит далеко влево от мяча.",
+        ball: [7, 9],
+        freeZones: [[2, 11], [2, 13]],
         players: {
-          A: { GK:[5,1], Z:[5,6], OP1:[6,8], OP2:[9,10], NAP:[8,11] },
-          B: { GK:[5,18], Z:[7,15], OP1:[5,13], OP2:[9,13], NAP:[5,12] }
+          A: { GK:[5,1], Z:[5,5], OP1:[2,8], OP2:[8,9], NAP:[5,9] },
+          B: { GK:[5,18], Z:[6,13], OP1:[5,11], OP2:[8,12], NAP:[5,11] }
         },
-        statuses: {},
-        focus: { "B.NAP": 3 },
+        statuses: {}, focus: {},
         actions: [
-          { who: "A.OP2", kind: "pass", detail: "в Нап вдоль бровки" },
-          { who: "A.NAP", kind: "move", detail: "I12" }
+          { who: "A.OP2", kind: "move", detail: "отбор" },
+          { who: "A.OP1", kind: "move", detail: "ушёл в широкий канал · не к мячу" }
         ],
-        roll: { label: "Пас по краю (далеко от З)", chance: 74, result: "ok", roll: 51 },
-        uiLabels: [{ id: "tip", text: "До удара ещё далеко — ряд 11" }]
+        roll: { label: "Отбор у скученности B", chance: 55, result: "ok", roll: 40 },
+        uiLabels: [{ id: "paradigm", text: "A снова держит ширину" }],
+        paradigm: "A: ширина важнее бега к мячу."
       },
       {
         min: 8, side: "B", score: [0, 0], ap: 2,
-        narrative: "B наконец двигает Нап (сброс Сна) и ставит Defend на полуфланге.",
-        ball: [8, 11],
+        narrative: "B ставит Defend у центра и жмётся к мячу — левый край B пуст.",
+        ball: [7, 9],
+        freeZones: [[2, 12], [1, 14], [2, 15]],
         players: {
-          A: { GK:[5,1], Z:[5,6], OP1:[6,8], OP2:[9,10], NAP:[8,11] },
-          B: { GK:[5,18], Z:[8,14], OP1:[6,13], OP2:[9,13], NAP:[6,12] }
+          A: { GK:[5,1], Z:[5,5], OP1:[2,8], OP2:[8,9], NAP:[5,9] },
+          B: { GK:[5,18], Z:[6,14], OP1:[5,12], OP2:[7,12], NAP:[5,11] }
         },
         statuses: { "B.Z": { defend: 2 } },
         focus: {},
         actions: [
-          { who: "B.NAP", kind: "move", detail: "вернулся в игру · Сон 0" },
-          { who: "B.Z", kind: "defend", detail: "Defend I15" }
+          { who: "B.Z", kind: "defend", detail: "центр" },
+          { who: "B.OP2", kind: "move", detail: "к мячу" }
         ],
         roll: null,
-        uiLabels: [{ id: "defend", text: "Defend на пути навеса" }]
+        uiLabels: [{ id: "tip", text: "Свободная зона: A–C ряды 12–15" }]
       },
       {
         min: 9, side: "A", score: [0, 0], ap: 2,
-        narrative: "Не в Defend. Нап откатывает мяч, ОП2 заходит ещё выше по краю.",
-        ball: [10, 13],
+        narrative: "Переключение в пустоту на OP1 — он один на всём левом крае.",
+        ball: [2, 12],
+        freeZones: [[2, 15], [3, 16]],
         players: {
-          A: { GK:[5,1], Z:[5,7], OP1:[6,9], OP2:[10,13], NAP:[8,12] },
-          B: { GK:[5,18], Z:[8,14], OP1:[6,13], OP2:[9,13], NAP:[6,12] }
+          A: { GK:[5,1], Z:[5,6], OP1:[2,12], OP2:[8,10], NAP:[4,11] },
+          B: { GK:[5,18], Z:[6,14], OP1:[5,12], OP2:[7,12], NAP:[5,11] }
         },
         statuses: { "B.Z": { defend: 1 } },
         focus: {},
         actions: [
-          { who: "A.NAP", kind: "pass", detail: "назад-вбок ОП2" },
-          { who: "A.OP2", kind: "move", detail: "K14 — уже почти ударная" }
+          { who: "A.OP2", kind: "pass", detail: "длинное переключение в свободную зону" },
+          { who: "A.OP1", kind: "move", detail: "C13 один" }
         ],
-        roll: { label: "Безопасный пас от стойки", chance: 80, result: "ok", roll: 12 },
-        uiLabels: [{ id: "tip", text: "Обход стойки, не лобовой пронос" }]
+        roll: { label: "Пас в свободную зону", chance: 71, result: "ok", roll: 25 },
+        uiLabels: [{ id: "roll", text: "Пустота 71% → ок" }]
       },
       {
         min: 10, side: "B", score: [0, 0], ap: 2,
-        narrative: "B срывает Defend и догоняет край — аура З теперь накрывает K14.",
-        ball: [10, 13],
+        narrative: "B бежит влево пачкой. Правый край B теперь пуст — но мяч уже слева.",
+        ball: [2, 12],
+        freeZones: [[9, 14], [10, 15]],
         players: {
-          A: { GK:[5,1], Z:[5,7], OP1:[6,9], OP2:[10,13], NAP:[8,12] },
-          B: { GK:[5,18], Z:[9,14], OP1:[7,13], OP2:[9,12], NAP:[6,12] }
+          A: { GK:[5,1], Z:[5,6], OP1:[2,12], OP2:[8,10], NAP:[4,11] },
+          B: { GK:[5,18], Z:[3,14], OP1:[2,13], OP2:[4,13], NAP:[4,12] }
         },
-        statuses: {},
-        focus: {},
+        statuses: {}, focus: {},
         actions: [
-          { who: "B.Z", kind: "move", detail: "J15 · аура на край" },
-          { who: "B.OP2", kind: "move", detail: "поджал" }
+          { who: "B.OP1", kind: "move", detail: "к мячу" },
+          { who: "B.Z", kind: "move", detail: "к мячу" }
         ],
         roll: null,
-        uiLabels: [{ id: "aura", text: "ОП2 A под давлением З+ОП" }]
+        uiLabels: [{ id: "tip", text: "Снова схлопывание B · NAP A может диагональ вправо позже" }]
       },
       {
         min: 11, side: "A", score: [0, 0], ap: 2,
-        narrative: "Под давлением не прём. Скидка внутрь на Нап в ряд 16 — ударная зона, но угол острый.",
-        ball: [7, 16],
+        narrative: "Не прём в троих. Пас внутрь-вперёд на NAP в щель между уехавшими.",
+        ball: [4, 15],
+        freeZones: [[4, 16], [5, 17]],
         players: {
-          A: { GK:[5,1], Z:[5,8], OP1:[6,11], OP2:[9,14], NAP:[7,16] },
-          B: { GK:[5,18], Z:[9,14], OP1:[7,13], OP2:[9,12], NAP:[6,12] }
+          A: { GK:[5,1], Z:[5,7], OP1:[2,13], OP2:[7,11], NAP:[4,15] },
+          B: { GK:[5,18], Z:[3,14], OP1:[2,13], OP2:[4,13], NAP:[4,12] }
         },
-        statuses: {},
-        focus: {},
+        statuses: {}, focus: {},
         actions: [
-          { who: "A.OP2", kind: "pass", detail: "прострел/скидка в штрафную" },
-          { who: "A.NAP", kind: "move", detail: "H17 · ряд 16+" }
+          { who: "A.OP1", kind: "pass", detail: "в щель за спину схлопнувшимся" },
+          { who: "A.NAP", kind: "move", detail: "E16 · ударная зона" }
         ],
-        roll: { label: "Скидка под аурой ОП", chance: 52, result: "ok", roll: 44 },
-        uiLabels: [{ id: "tip", text: "Наконец ударная зона (row 16)" }]
+        roll: { label: "Пас в щель (З B уехал влево)", chance: 58, result: "ok", roll: 45 },
+        uiLabels: [{ id: "tip", text: "Ударная зона через пустоту, не через ауру" }]
       },
       {
         min: 12, side: "B", score: [0, 0], ap: 2,
-        narrative: "ВР B выходит, З пытается закрыть. Нап A уже в зоне удара.",
-        ball: [7, 16],
+        narrative: "Поздний Defend — NAP уже в зоне, ВР выходит.",
+        ball: [4, 15],
+        freeZones: [],
         players: {
-          A: { GK:[5,1], Z:[5,8], OP1:[6,11], OP2:[9,14], NAP:[7,16] },
-          B: { GK:[6,17], Z:[8,15], OP1:[7,14], OP2:[9,12], NAP:[6,12] }
+          A: { GK:[5,1], Z:[5,7], OP1:[2,13], OP2:[7,11], NAP:[4,15] },
+          B: { GK:[5,17], Z:[4,16], OP1:[3,14], OP2:[5,14], NAP:[4,12] }
         },
-        statuses: {},
+        statuses: { "B.Z": { defend: 2 } },
         focus: {},
         actions: [
-          { who: "B.GK", kind: "move", detail: "выход G18" },
-          { who: "B.Z", kind: "move", detail: "закрывает" }
+          { who: "B.Z", kind: "defend", detail: "E17" },
+          { who: "B.GK", kind: "move", detail: "выход" }
         ],
         roll: null,
-        uiLabels: [{ id: "banner", text: "Ударный момент" }]
+        uiLabels: [{ id: "defend", text: "Поздняя стойка" }]
       },
       {
         min: 13, side: "A", score: [1, 0], ap: 2,
-        narrative: "Удар с H17. Мяч в створ ворот B (гекс F20).",
+        narrative: "Смещение с линии Defend в свободный гекс F17 + удар. Мяч в ворота.",
         ball: [5, 19],
-        shotFrom: [7, 16],
+        shotFrom: [5, 16],
         goalTo: [5, 19],
+        freeZones: [[5, 16]],
         players: {
-          A: { GK:[5,1], Z:[5,8], OP1:[6,11], OP2:[9,14], NAP:[7,16] },
-          B: { GK:[6,17], Z:[8,15], OP1:[7,14], OP2:[9,12], NAP:[6,12] }
+          A: { GK:[5,1], Z:[5,7], OP1:[2,13], OP2:[7,11], NAP:[5,16] },
+          B: { GK:[5,17], Z:[4,16], OP1:[3,14], OP2:[5,14], NAP:[4,12] }
         },
-        statuses: {},
+        statuses: { "B.Z": { defend: 1 } },
         focus: {},
         actions: [
-          { who: "A.NAP", kind: "shot", detail: "удар с H17" },
-          { who: "A.OP1", kind: "move", detail: "на подбор" }
+          { who: "A.NAP", kind: "move", detail: "в свободный F17" },
+          { who: "A.NAP", kind: "shot", detail: "удар" }
         ],
-        roll: { label: "Удар из зоны (ВР вышел)", chance: 48, result: "goal", roll: 31 },
-        uiLabels: [{ id: "banner", text: "ГОЛ A · мяч в воротах" }],
-        paradigm: "A забил — будет держать."
+        roll: { label: "Удар из свободного гекса штрафной", chance: 52, result: "goal", roll: 30 },
+        uiLabels: [{ id: "banner", text: "ГОЛ · через пустоту" }]
       },
       {
         min: 14, side: "kick", score: [1, 0],
-        narrative: "Снова центр. B меняет план: высокий пресс, иначе 0:1 до конца среза.",
+        narrative: "B всё ещё играет «все к мячу». A держит ширину и убивает время.",
         ball: [5, 9],
+        freeZones: [[9, 8], [2, 8]],
         players: {
-          A: { GK:[5,1], Z:[5,4], OP1:[3,6], OP2:[7,6], NAP:[5,7] },
-          B: { GK:[5,18], Z:[5,12], OP1:[3,10], OP2:[7,10], NAP:[5,9] }
+          A: { GK:[5,1], Z:[5,4], OP1:[2,6], OP2:[9,6], NAP:[5,7] },
+          B: { GK:[5,18], Z:[5,12], OP1:[4,10], OP2:[6,10], NAP:[5,9] }
         },
         statuses: {}, focus: {}, actions: [], roll: null,
-        uiLabels: [{ id: "paradigm", text: "B: блок → прессинг" }],
-        paradigm: "B раскрывается."
+        uiLabels: [{ id: "paradigm", text: "A держит 1:0 шириной" }],
+        paradigm: "A не схлопывается."
       },
       {
-        min: 15, side: "B", score: [1, 0], ap: 2,
-        narrative: "Прессинг двумя ОП на разыгрывающего A.",
-        ball: [5, 6],
-        players: {
-          A: { GK:[5,1], Z:[5,4], OP1:[4,6], OP2:[7,6], NAP:[5,7] },
-          B: { GK:[5,18], Z:[5,11], OP1:[4,7], OP2:[6,7], NAP:[5,9] }
-        },
-        statuses: {},
-        focus: {},
-        actions: [
-          { who: "B.OP1", kind: "press", detail: "аура на OP1 A" },
-          { who: "B.OP2", kind: "press", detail: "аура" }
-        ],
-        roll: null,
-        uiLabels: [{ id: "aura", text: "Двойной прессинг ОП" }]
-      },
-      {
-        min: 16, side: "A", score: [1, 0], ap: 2,
-        narrative: "Вынос под прессингом — срыв. Подбор B.",
-        ball: [5, 7],
-        players: {
-          A: { GK:[5,1], Z:[5,4], OP1:[4,6], OP2:[7,6], NAP:[5,7] },
-          B: { GK:[5,18], Z:[5,11], OP1:[4,7], OP2:[6,7], NAP:[5,9] }
-        },
-        statuses: {},
-        focus: {},
-        actions: [
-          { who: "A.OP1", kind: "pass", detail: "вынос вперёд" },
-          { who: "A.Z", kind: "move", detail: "страховка" }
-        ],
-        roll: { label: "Вынос под 2×ОП", chance: 36, result: "fail", roll: 80 },
-        uiLabels: [{ id: "roll", text: "36% → потеря" }]
-      },
-      {
-        min: 17, side: "B", score: [1, 0], ap: 2,
-        narrative: "B быстро вперёд: пас Нап на ряд 4 — ещё не удар, но близко.",
-        ball: [5, 4],
+        min: 16, side: "B", score: [1, 0], ap: 2,
+        narrative: "B прёт центром пачкой — ауры A перекрывают узкий коридор.",
+        ball: [5, 8],
+        freeZones: [[1, 5], [10, 5]],
         players: {
           A: { GK:[5,1], Z:[5,5], OP1:[3,6], OP2:[7,6], NAP:[5,7] },
-          B: { GK:[5,18], Z:[5,10], OP1:[4,6], OP2:[6,6], NAP:[5,4] }
-        },
-        statuses: {},
-        focus: {},
-        actions: [
-          { who: "B.OP1", kind: "pass", detail: "в Нап" },
-          { who: "B.NAP", kind: "move", detail: "F5" }
-        ],
-        roll: { label: "Пас в контратаку", chance: 70, result: "ok", roll: 20 },
-        uiLabels: [{ id: "tip", text: "Ударная зона B: row≤3" }]
-      },
-      {
-        min: 18, side: "A", score: [1, 0], ap: 2,
-        narrative: "A ставит Defend на пути и возвращает З.",
-        ball: [5, 4],
-        players: {
-          A: { GK:[5,1], Z:[5,3], OP1:[4,5], OP2:[7,5], NAP:[5,7] },
-          B: { GK:[5,18], Z:[5,10], OP1:[4,6], OP2:[6,6], NAP:[5,4] }
+          B: { GK:[5,18], Z:[5,10], OP1:[4,8], OP2:[6,8], NAP:[5,8] }
         },
         statuses: { "A.Z": { defend: 2 } },
         focus: {},
         actions: [
-          { who: "A.Z", kind: "defend", detail: "Defend F4" },
-          { who: "A.OP1", kind: "move", detail: "поджал" }
+          { who: "B.NAP", kind: "move", detail: "в лоб в блок" },
+          { who: "B.OP1", kind: "pass", detail: "в скученность" }
         ],
-        roll: null,
-        uiLabels: [{ id: "defend", text: "Defend на контратаке" }]
+        roll: { label: "Пас в тройную насыщенность + Defend", chance: 22, result: "fail", roll: 81 },
+        uiLabels: [{ id: "roll", text: "Узкий центр закрыт · края пустые не использованы" }]
       },
       {
-        min: 19, side: "B", score: [1, 1], ap: 2,
-        narrative: "Не в щит. Смещение на полгекса вбок + удар с E3 (ударная зона).",
-        ball: [5, 0],
-        shotFrom: [4, 2],
-        goalTo: [5, 0],
+        min: 18, side: "A", score: [1, 0], ap: 2,
+        narrative: "Вынос в широкий OP2 — снова не к куче, а в свободный край.",
+        ball: [9, 8],
+        freeZones: [[9, 8]],
         players: {
-          A: { GK:[5,1], Z:[5,3], OP1:[4,5], OP2:[7,5], NAP:[5,7] },
-          B: { GK:[5,18], Z:[5,10], OP1:[4,6], OP2:[6,6], NAP:[4,2] }
+          A: { GK:[5,1], Z:[5,4], OP1:[2,6], OP2:[9,8], NAP:[5,7] },
+          B: { GK:[5,18], Z:[5,9], OP1:[4,8], OP2:[6,8], NAP:[5,8] }
         },
-        statuses: { "A.Z": { defend: 1 } },
-        focus: {},
+        statuses: {}, focus: { "B.OP1": 1 },
         actions: [
-          { who: "B.NAP", kind: "move", detail: "ушёл с Defend на E3" },
-          { who: "B.NAP", kind: "shot", detail: "удар L2 с E3" }
+          { who: "A.Z", kind: "pass", detail: "на широкий край" },
+          { who: "A.OP2", kind: "move", detail: "принял один" }
         ],
-        roll: { label: "Удар с угла после обхода Defend", chance: 41, result: "goal", roll: 27 },
-        uiLabels: [{ id: "banner", text: "ГОЛ B · мяч в воротах A" }]
+        roll: { label: "Вынос в ширину", chance: 80, result: "ok", roll: 14 },
+        uiLabels: []
       },
       {
-        min: 20, side: "end", score: [1, 1],
-        narrative: "Свисток. 1:1. Оба гола — из ударной зоны после обхода, не из центра.",
+        min: 20, side: "end", score: [1, 0],
+        narrative: "1:0. Гол родился из пустого канала после схлопывания B. Скученность у мяча дважды убила атаки.",
         ball: [5, 9],
+        freeZones: [[2, 10], [9, 10]],
         players: {
-          A: { GK:[5,1], Z:[5,4], OP1:[3,6], OP2:[7,6], NAP:[5,7] },
-          B: { GK:[5,18], Z:[5,15], OP1:[3,14], OP2:[7,14], NAP:[5,12] }
+          A: { GK:[5,1], Z:[5,4], OP1:[2,6], OP2:[9,6], NAP:[5,7] },
+          B: { GK:[5,18], Z:[5,15], OP1:[2,14], OP2:[9,14], NAP:[5,12] }
         },
         statuses: {}, focus: {}, actions: [], roll: null,
-        uiLabels: [{ id: "banner", text: "Итог 1:1" }]
+        uiLabels: [{ id: "banner", text: "Итог 1:0 · урок ширины" }]
       }
     ]
   },
@@ -372,362 +336,342 @@ window.PITCH_TACTICS_MATCHES = [
   {
     id: "I",
     theme: "I",
-    title: "Контроль → край",
-    subtitle: "Тики-така упирается в Defend. Гол только после прострела с бровки в ряд 17.",
+    title: "Пустой край",
+    subtitle: "Замах в толпу мимо. Гол — прострел с одинокого фланга, где никто не стоял.",
     scoreFinal: "1:1",
-    styles: { A: "Контроль → правый край", B: "Активный блок → контра левым краем" },
+    styles: {
+      A: "Ищет пустые гексы",
+      B: "Держит ширину в контратаке"
+    },
     uiGlossary: [
-      { key: "Замах", where: "⚡ на фишке", text: "Виден. Лобовой удар в Defend — низкий %." },
-      { key: "Прострел", where: "Пас с края в штрафную", text: "Способ зайти в ударную зону без дриблинга сквозь З." }
+      { key: "Одинокий фланг", where: "1 фишка на бровке", text: "Если соперник уехал к мячу — это главный адрес паса." }
     ],
     steps: [
       {
         min: 0, side: "kick", score: [0, 0],
-        narrative: "Стартовые позиции уже «фланговые»: A правее, B держит левый канал.",
-        ball: [7, 9],
+        narrative: "Обе стороны широкие. Свободные зоны по бровкам отмечены.",
+        ball: [5, 9],
+        freeZones: [[1, 11], [10, 11]],
         players: {
-          A: { GK:[5,1], Z:[6,4], OP1:[3,6], OP2:[8,6], NAP:[7,8] },
-          B: { GK:[5,18], Z:[5,15], OP1:[2,13], OP2:[7,14], NAP:[3,12] }
+          A: { GK:[5,1], Z:[5,4], OP1:[1,6], OP2:[10,6], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,15], OP1:[1,14], OP2:[10,14], NAP:[5,12] }
         },
         statuses: {}, focus: {}, actions: [], roll: null,
-        uiLabels: [{ id: "banner", text: "Kick-off · фланговый рисунок" }]
+        uiLabels: [{ id: "banner", text: "Максимальная ширина" }]
       },
       {
         min: 1, side: "A", score: [0, 0], ap: 2,
-        narrative: "Короткий контроль OP1↔OP2 без вертикали.",
-        ball: [8, 7],
+        narrative: "Контроль в центре. Края A специально не трогают — якоря формы.",
+        ball: [5, 8],
+        freeZones: [[1, 10], [10, 10]],
         players: {
-          A: { GK:[5,1], Z:[6,4], OP1:[4,7], OP2:[8,7], NAP:[7,8] },
-          B: { GK:[5,18], Z:[5,15], OP1:[2,13], OP2:[7,14], NAP:[3,12] }
+          A: { GK:[5,1], Z:[5,4], OP1:[1,7], OP2:[10,7], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,15], OP1:[1,14], OP2:[10,14], NAP:[5,12] }
         },
         statuses: {}, focus: { "B.NAP": 1 },
         actions: [
-          { who: "A.OP1", kind: "pass", detail: "→ ОП2" },
-          { who: "A.OP2", kind: "move", detail: "принял" }
+          { who: "A.NAP", kind: "move", detail: "чуть глубже под пас" },
+          { who: "A.Z", kind: "pass", detail: "в Нап" }
         ],
-        roll: { label: "Пас", chance: 90, result: "ok", roll: 10 },
-        uiLabels: []
+        roll: { label: "Пас", chance: 88, result: "ok", roll: 20 },
+        uiLabels: [{ id: "tip", text: "OP1/OP2 держат колонки 1 и 10" }]
       },
       {
         min: 2, side: "B", score: [0, 0], ap: 2,
-        narrative: "B: Defend в центре + OP поджимает. Нап столбом → Сон.",
-        ball: [8, 7],
+        narrative: "B сжимает только центр Defend — края оставляет. Честный блок.",
+        ball: [5, 8],
+        freeZones: [[1, 12], [10, 12]],
         players: {
-          A: { GK:[5,1], Z:[6,4], OP1:[4,7], OP2:[8,7], NAP:[7,8] },
-          B: { GK:[5,18], Z:[5,14], OP1:[4,13], OP2:[7,14], NAP:[3,12] }
+          A: { GK:[5,1], Z:[5,4], OP1:[1,7], OP2:[10,7], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,14], OP1:[3,13], OP2:[7,13], NAP:[5,12] }
         },
         statuses: { "B.Z": { defend: 2 } },
         focus: { "B.NAP": 1 },
         actions: [
-          { who: "B.Z", kind: "defend", detail: "Defend F15" },
-          { who: "B.OP1", kind: "move", detail: "к центру" }
+          { who: "B.Z", kind: "defend", detail: "центр" },
+          { who: "B.OP1", kind: "move", detail: "чуть уже, но не на бровку A" }
         ],
         roll: null,
-        uiLabels: [{ id: "defend", text: "Defend центр" }]
+        uiLabels: [{ id: "tip", text: "Края B (1 и 10) всё ещё свободны для A" }]
       },
       {
         min: 3, side: "A", score: [0, 0], ap: 2,
-        narrative: "Замах на Нап у F12 — рано и почти в ауру. Видно.",
-        ball: [6, 11],
+        narrative: "Ошибка: Замах NAP в центре перед Defend — в толпе, не в пустоте.",
+        ball: [5, 11],
+        freeZones: [[10, 12], [10, 14]],
         players: {
-          A: { GK:[5,1], Z:[6,5], OP1:[5,8], OP2:[8,9], NAP:[6,11] },
-          B: { GK:[5,18], Z:[5,14], OP1:[4,13], OP2:[7,14], NAP:[3,12] }
+          A: { GK:[5,1], Z:[5,5], OP1:[1,8], OP2:[10,8], NAP:[5,11] },
+          B: { GK:[5,18], Z:[5,14], OP1:[3,13], OP2:[7,13], NAP:[5,12] }
         },
         statuses: { "A.NAP": { windup: true }, "B.Z": { defend: 1 } },
         focus: { "B.NAP": 2 },
         actions: [
-          { who: "A.OP2", kind: "pass", detail: "внутрь Нап" },
-          { who: "A.NAP", kind: "windup", detail: "Замах (рано)" }
+          { who: "A.NAP", kind: "move", detail: "в лоб в блок" },
+          { who: "A.NAP", kind: "windup", detail: "Замах в насыщенной зоне" }
         ],
-        roll: { label: "Пас под OP B", chance: 68, result: "ok", roll: 50 },
-        uiLabels: [{ id: "windup", text: "Замах виден" }]
+        roll: null,
+        uiLabels: [{ id: "windup", text: "Замах в толпе · свободный край справа проигнорирован" }]
       },
       {
         min: 4, side: "B", score: [0, 0], ap: 2,
-        narrative: "B не паникует: Defend на замах + крайний OP.",
-        ball: [6, 11],
+        narrative: "B усиливает центр — края по-прежнему пустые.",
+        ball: [5, 11],
+        freeZones: [[10, 13], [1, 13]],
         players: {
-          A: { GK:[5,1], Z:[6,5], OP1:[5,8], OP2:[8,9], NAP:[6,11] },
-          B: { GK:[5,18], Z:[6,13], OP1:[5,12], OP2:[8,13], NAP:[3,12] }
+          A: { GK:[5,1], Z:[5,5], OP1:[1,8], OP2:[10,8], NAP:[5,11] },
+          B: { GK:[5,18], Z:[5,13], OP1:[4,12], OP2:[6,12], NAP:[5,12] }
         },
         statuses: { "A.NAP": { windup: true }, "B.Z": { defend: 2 } },
         focus: { "B.NAP": 2 },
         actions: [
-          { who: "B.Z", kind: "defend", detail: "на клетке замаха" },
-          { who: "B.OP2", kind: "move", detail: "отрезал край" }
+          { who: "B.Z", kind: "defend", detail: "на замахе" },
+          { who: "B.OP2", kind: "move", detail: "уплотнил центр" }
         ],
         roll: null,
-        uiLabels: [{ id: "duel", text: "Замах vs Defend" }]
+        uiLabels: []
       },
       {
         min: 5, side: "A", score: [0, 0], ap: 2,
-        narrative: "Лобовой замах-удар в Defend — закономерно мимо. Замах сгорел.",
-        ball: [6, 11],
+        narrative: "Замах-удар из толпы — мимо. Правильный адрес был K-колонка.",
+        ball: [5, 11],
+        freeZones: [[10, 12]],
         players: {
-          A: { GK:[5,1], Z:[6,5], OP1:[5,8], OP2:[8,9], NAP:[6,11] },
-          B: { GK:[5,18], Z:[6,13], OP1:[5,12], OP2:[8,13], NAP:[3,12] }
+          A: { GK:[5,1], Z:[5,5], OP1:[1,8], OP2:[10,8], NAP:[5,11] },
+          B: { GK:[5,18], Z:[5,13], OP1:[4,12], OP2:[6,12], NAP:[5,12] }
         },
         statuses: { "B.Z": { defend: 1 } },
         focus: { "B.NAP": 3 },
         actions: [
-          { who: "A.OP1", kind: "pass", detail: "под замах" },
-          { who: "A.NAP", kind: "shot", detail: "замах в Defend" }
+          { who: "A.Z", kind: "pass", detail: "под замах" },
+          { who: "A.NAP", kind: "shot", detail: "в Defend из центра" }
         ],
-        roll: { label: "Замах-удар в Defend с row 11", chance: 14, result: "fail", roll: 77 },
-        uiLabels: [
-          { id: "roll", text: "14% → блок" },
-          { id: "tip", text: "Даже без Defend удар с row 11 вне зоны" }
-        ],
-        note: "Показываем ошибку: и рано, и в стойку."
+        roll: { label: "Удар из толпы / не зона", chance: 11, result: "fail", roll: 79 },
+        uiLabels: [{ id: "roll", text: "11% · урок: не бить там, где все стоят" }]
       },
       {
         min: 6, side: "B", score: [0, 0], ap: 2,
-        narrative: "Подбор З → вынос на Нап с Соном. Грязный приём, но удержал.",
-        ball: [3, 10],
+        narrative: "Подбор. B не схлопывается: вынос на своего широкого OP1 (колонка 1).",
+        ball: [1, 10],
+        freeZones: [[1, 7], [1, 5]],
         players: {
-          A: { GK:[5,1], Z:[6,5], OP1:[5,8], OP2:[8,9], NAP:[6,11] },
-          B: { GK:[5,18], Z:[6,13], OP1:[4,11], OP2:[8,13], NAP:[3,10] }
+          A: { GK:[5,1], Z:[5,5], OP1:[1,8], OP2:[10,8], NAP:[5,11] },
+          B: { GK:[5,18], Z:[5,13], OP1:[1,10], OP2:[8,12], NAP:[4,11] }
         },
-        statuses: {},
-        focus: { "B.NAP": 0 },
+        statuses: {}, focus: {},
         actions: [
-          { who: "B.Z", kind: "pass", detail: "вынос на Нап" },
-          { who: "B.NAP", kind: "receive", detail: "приём при Сон3" }
+          { who: "B.Z", kind: "pass", detail: "на широкий край, не в кучу" },
+          { who: "B.OP1", kind: "move", detail: "B11 один" }
         ],
-        roll: { label: "Приём Сон3", chance: 30, result: "ok", roll: 18 },
-        uiLabels: [{ id: "roll", text: "30% → чудом · Сон сброшен" }]
+        roll: { label: "Вынос в ширину", chance: 77, result: "ok", roll: 19 },
+        uiLabels: [{ id: "paradigm", text: "B играет в пустоту" }],
+        paradigm: "B: контра шириной."
       },
       {
         min: 7, side: "A", score: [0, 0], ap: 2,
-        narrative: "A возвращается — не даём контратаке дойти до ударной зоны.",
-        ball: [3, 10],
+        narrative: "A ошибочно всё тянет к левому мячу — правый край A брошен.",
+        ball: [1, 10],
+        freeZones: [[10, 8], [10, 6]],
         players: {
-          A: { GK:[5,1], Z:[4,6], OP1:[3,8], OP2:[7,8], NAP:[5,9] },
-          B: { GK:[5,18], Z:[6,13], OP1:[4,11], OP2:[8,13], NAP:[3,10] }
+          A: { GK:[5,1], Z:[3,5], OP1:[2,7], OP2:[5,7], NAP:[3,9] },
+          B: { GK:[5,18], Z:[5,13], OP1:[1,10], OP2:[8,12], NAP:[4,11] }
         },
         statuses: { "A.Z": { defend: 2 } },
         focus: {},
         actions: [
-          { who: "A.Z", kind: "defend", detail: "на пути контра" },
-          { who: "A.OP1", kind: "move", detail: "поджал Нап B" }
+          { who: "A.Z", kind: "defend", detail: "к мячу" },
+          { who: "A.OP2", kind: "move", detail: "бросил свой край · к мячу" }
         ],
         roll: null,
-        uiLabels: [{ id: "defend", text: "A гасит контратаку" }]
+        uiLabels: [{ id: "tip", text: "Схлопывание A · колонка 10 пуста" }]
       },
       {
         min: 8, side: "B", score: [0, 0], ap: 2,
-        narrative: "B не прёт в Defend — скидка назад. Атака сброшена.",
-        ball: [4, 12],
+        narrative: "Вперёд по пустому каналу A–B. Ещё не ударная зона.",
+        ball: [1, 6],
+        freeZones: [[1, 3], [2, 2]],
         players: {
-          A: { GK:[5,1], Z:[4,6], OP1:[3,8], OP2:[7,8], NAP:[5,9] },
-          B: { GK:[5,18], Z:[5,14], OP1:[4,12], OP2:[7,13], NAP:[3,11] }
+          A: { GK:[5,1], Z:[3,5], OP1:[2,7], OP2:[5,7], NAP:[3,9] },
+          B: { GK:[5,18], Z:[4,11], OP1:[2,8], OP2:[7,11], NAP:[1,6] }
         },
         statuses: { "A.Z": { defend: 1 } },
         focus: {},
         actions: [
-          { who: "B.NAP", kind: "pass", detail: "назад OP1" },
-          { who: "B.OP1", kind: "move", detail: "принял" }
+          { who: "B.OP1", kind: "pass", detail: "в Нап по пустому краю" },
+          { who: "B.NAP", kind: "move", detail: "B7" }
         ],
-        roll: { label: "Пас назад", chance: 88, result: "ok", roll: 5 },
+        roll: { label: "Пас в свободный канал", chance: 74, result: "ok", roll: 40 },
         uiLabels: []
       },
       {
         min: 9, side: "A", score: [0, 0], ap: 2,
-        narrative: "Смена плана: весь темп на правый край, без замаха.",
-        ball: [10, 10],
+        narrative: "Defend у ворот — край всё равно не закрыт до конца.",
+        ball: [1, 6],
+        freeZones: [[1, 3]],
         players: {
-          A: { GK:[5,1], Z:[6,5], OP1:[6,8], OP2:[10,10], NAP:[8,10] },
-          B: { GK:[5,18], Z:[5,14], OP1:[4,12], OP2:[7,13], NAP:[3,11] }
-        },
-        statuses: {},
-        focus: {},
-        actions: [
-          { who: "A.OP1", kind: "pass", detail: "длинный на край" },
-          { who: "A.OP2", kind: "move", detail: "K11" }
-        ],
-        roll: { label: "Смена фланга", chance: 72, result: "ok", roll: 40 },
-        uiLabels: [{ id: "paradigm", text: "A: контроль → край" }],
-        paradigm: "A уходит на бровку."
-      },
-      {
-        min: 10, side: "B", score: [0, 0], ap: 2,
-        narrative: "B смещает блок к правому краю A.",
-        ball: [10, 10],
-        players: {
-          A: { GK:[5,1], Z:[6,5], OP1:[6,8], OP2:[10,10], NAP:[8,10] },
-          B: { GK:[5,18], Z:[8,14], OP1:[6,12], OP2:[10,13], NAP:[4,11] }
-        },
-        statuses: {},
-        focus: {},
-        actions: [
-          { who: "B.Z", kind: "move", detail: "к флангу" },
-          { who: "B.OP2", kind: "move", detail: "K14" }
-        ],
-        roll: null,
-        uiLabels: []
-      },
-      {
-        min: 11, side: "A", score: [0, 0], ap: 2,
-        narrative: "Вверх по бровке: ещё не удар, но готовим прострел.",
-        ball: [10, 14],
-        players: {
-          A: { GK:[5,1], Z:[6,6], OP1:[7,10], OP2:[10,14], NAP:[8,13] },
-          B: { GK:[5,18], Z:[8,14], OP1:[6,12], OP2:[10,13], NAP:[4,11] }
-        },
-        statuses: {},
-        focus: {},
-        actions: [
-          { who: "A.OP2", kind: "move", detail: "K15 с мячом" },
-          { who: "A.NAP", kind: "move", detail: "открылся под прострел I14" }
-        ],
-        roll: null,
-        uiLabels: [{ id: "tip", text: "Цель — прострел в row 16–17" }]
-      },
-      {
-        min: 12, side: "B", score: [0, 0], ap: 2,
-        narrative: "З B в ауре на прострельную линию. OP2 жмёт край.",
-        ball: [10, 14],
-        players: {
-          A: { GK:[5,1], Z:[6,6], OP1:[7,10], OP2:[10,14], NAP:[8,13] },
-          B: { GK:[5,18], Z:[8,15], OP1:[7,13], OP2:[10,14], NAP:[4,11] }
-        },
-        statuses: { "B.Z": { defend: 2 } },
-        focus: {},
-        actions: [
-          { who: "B.OP2", kind: "move", detail: "контакт на краю" },
-          { who: "B.Z", kind: "defend", detail: "режет прострел" }
-        ],
-        roll: null,
-        uiLabels: [{ id: "defend", text: "Defend на линии прострела" }]
-      },
-      {
-        min: 13, side: "A", score: [0, 0], ap: 2,
-        narrative: "Не в стойку: пас назад, смена угла — Нап забегает за спину Defend на H17.",
-        ball: [7, 16],
-        players: {
-          A: { GK:[5,1], Z:[6,7], OP1:[8,12], OP2:[9,14], NAP:[7,16] },
-          B: { GK:[5,18], Z:[8,15], OP1:[7,13], OP2:[10,14], NAP:[4,11] }
-        },
-        statuses: { "B.Z": { defend: 1 } },
-        focus: {},
-        actions: [
-          { who: "A.OP2", kind: "pass", detail: "за спину стойки" },
-          { who: "A.NAP", kind: "move", detail: "H17 ударная зона" }
-        ],
-        roll: { label: "Пас за Defend", chance: 46, result: "ok", roll: 39 },
-        uiLabels: [{ id: "roll", text: "46% → прошёл" }]
-      },
-      {
-        min: 14, side: "B", score: [0, 0], ap: 2,
-        narrative: "ВР и З пытаются накрыть — поздно для идеального угла, но ещё есть шанс сейва.",
-        ball: [7, 16],
-        players: {
-          A: { GK:[5,1], Z:[6,7], OP1:[8,12], OP2:[9,14], NAP:[7,16] },
-          B: { GK:[6,17], Z:[7,16], OP1:[7,13], OP2:[10,14], NAP:[4,11] }
-        },
-        statuses: {},
-        focus: {},
-        actions: [
-          { who: "B.GK", kind: "move", detail: "на угол" },
-          { who: "B.Z", kind: "move", detail: "блок" }
-        ],
-        roll: null,
-        uiLabels: []
-      },
-      {
-        min: 15, side: "A", score: [1, 0], ap: 2,
-        narrative: "Удар с H17 — мяч в ворота.",
-        ball: [5, 19],
-        shotFrom: [7, 16],
-        goalTo: [5, 19],
-        players: {
-          A: { GK:[5,1], Z:[6,7], OP1:[8,12], OP2:[9,14], NAP:[7,16] },
-          B: { GK:[6,17], Z:[7,16], OP1:[7,13], OP2:[10,14], NAP:[4,11] }
-        },
-        statuses: {},
-        focus: {},
-        actions: [
-          { who: "A.NAP", kind: "shot", detail: "с H17" },
-          { who: "A.OP2", kind: "move", detail: "на отскок" }
-        ],
-        roll: { label: "Удар из штрафной", chance: 55, result: "goal", roll: 29 },
-        uiLabels: [{ id: "banner", text: "ГОЛ A" }]
-      },
-      {
-        min: 16, side: "kick", score: [1, 0],
-        narrative: "B отвечает своим краем — левый канал, который копировали с начала.",
-        ball: [5, 9],
-        players: {
-          A: { GK:[5,1], Z:[5,5], OP1:[4,7], OP2:[8,7], NAP:[6,8] },
-          B: { GK:[5,18], Z:[5,14], OP1:[2,11], OP2:[6,12], NAP:[2,10] }
-        },
-        statuses: {}, focus: {}, actions: [], roll: null,
-        uiLabels: [{ id: "paradigm", text: "B: контра левым краем" }],
-        paradigm: "B идёт своим флангом."
-      },
-      {
-        min: 17, side: "B", score: [1, 0], ap: 2,
-        narrative: "Быстрый подъём по A–B колонкам.",
-        ball: [2, 6],
-        players: {
-          A: { GK:[5,1], Z:[4,5], OP1:[3,7], OP2:[7,7], NAP:[6,8] },
-          B: { GK:[5,18], Z:[4,12], OP1:[3,8], OP2:[6,11], NAP:[2,6] }
-        },
-        statuses: {},
-        focus: {},
-        actions: [
-          { who: "B.OP1", kind: "pass", detail: "в Нап по краю" },
-          { who: "B.NAP", kind: "move", detail: "C7" }
-        ],
-        roll: { label: "Пас в край", chance: 76, result: "ok", roll: 33 },
-        uiLabels: []
-      },
-      {
-        min: 18, side: "A", score: [1, 0], ap: 2,
-        narrative: "З A опоздал на край — аура не достаёт до C7. Defend ставит ближе к воротам.",
-        ball: [2, 6],
-        players: {
-          A: { GK:[5,1], Z:[3,4], OP1:[3,6], OP2:[6,6], NAP:[6,8] },
-          B: { GK:[5,18], Z:[4,12], OP1:[3,8], OP2:[6,11], NAP:[2,6] }
+          A: { GK:[4,1], Z:[2,3], OP1:[2,5], OP2:[5,5], NAP:[4,7] },
+          B: { GK:[5,18], Z:[4,11], OP1:[2,8], OP2:[7,11], NAP:[1,6] }
         },
         statuses: { "A.Z": { defend: 2 } },
         focus: {},
         actions: [
-          { who: "A.Z", kind: "defend", detail: "D5" },
+          { who: "A.Z", kind: "defend", detail: "C4" },
           { who: "A.OP1", kind: "move", detail: "вышел" }
         ],
         roll: null,
-        uiLabels: [{ id: "tip", text: "Defend не накрыл край — Нап B ещё на row 6" }]
+        uiLabels: []
       },
       {
-        min: 19, side: "B", score: [1, 1], ap: 2,
-        narrative: "Ещё ход вперёд в ударную (C3) и удар. Мяч в ворота A.",
+        min: 10, side: "B", score: [0, 1], ap: 2,
+        narrative: "Ещё гекс в ударную C3 (мимо Defend) + удар. Мяч в ворота.",
         ball: [5, 0],
         shotFrom: [2, 2],
         goalTo: [5, 0],
+        freeZones: [[2, 2]],
         players: {
-          A: { GK:[4,1], Z:[3,4], OP1:[3,6], OP2:[6,6], NAP:[6,8] },
-          B: { GK:[5,18], Z:[4,12], OP1:[3,7], OP2:[6,11], NAP:[2,2] }
+          A: { GK:[4,1], Z:[2,3], OP1:[2,5], OP2:[5,5], NAP:[4,7] },
+          B: { GK:[5,18], Z:[4,11], OP1:[2,7], OP2:[7,11], NAP:[2,2] }
         },
         statuses: { "A.Z": { defend: 1 } },
         focus: {},
         actions: [
-          { who: "B.NAP", kind: "move", detail: "C3 ударная зона" },
+          { who: "B.NAP", kind: "move", detail: "в свободный C3" },
           { who: "B.NAP", kind: "shot", detail: "удар" }
         ],
-        roll: { label: "Удар с края штрафной", chance: 44, result: "goal", roll: 21 },
-        uiLabels: [{ id: "banner", text: "ГОЛ B" }]
+        roll: { label: "Удар из свободного гекса", chance: 50, result: "goal", roll: 24 },
+        uiLabels: [{ id: "banner", text: "ГОЛ B · пустой край" }]
+      },
+      {
+        min: 11, side: "kick", score: [0, 1],
+        narrative: "A возвращает ширину. Больше не схлопываем OP2.",
+        ball: [5, 9],
+        freeZones: [[10, 11], [1, 11]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[1,6], OP2:[10,6], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,15], OP1:[1,14], OP2:[10,14], NAP:[5,12] }
+        },
+        statuses: {}, focus: {}, actions: [], roll: null,
+        uiLabels: [{ id: "paradigm", text: "A: играй в пустоту" }],
+        paradigm: "A копирует урок B."
+      },
+      {
+        min: 12, side: "B", score: [0, 1], ap: 2,
+        narrative: "B теперь сам схлопывается защищать счёт — оба OP к центру.",
+        ball: [5, 9],
+        freeZones: [[10, 12], [10, 14]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[1,6], OP2:[10,6], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,14], OP1:[4,12], OP2:[6,12], NAP:[5,11] }
+        },
+        statuses: { "B.Z": { defend: 2 } },
+        focus: {},
+        actions: [
+          { who: "B.OP1", kind: "move", detail: "уже к центру" },
+          { who: "B.OP2", kind: "move", detail: "бросил край" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "tip", text: "Правый край B пуст" }]
+      },
+      {
+        min: 13, side: "A", score: [0, 1], ap: 2,
+        narrative: "Сразу в одинокий OP2 на колонке 10.",
+        ball: [10, 10],
+        freeZones: [[10, 14], [9, 15]],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[2,7], OP2:[10,10], NAP:[6,9] },
+          B: { GK:[5,18], Z:[5,14], OP1:[4,12], OP2:[6,12], NAP:[5,11] }
+        },
+        statuses: { "B.Z": { defend: 1 } },
+        focus: {},
+        actions: [
+          { who: "A.NAP", kind: "pass", detail: "переключение в пустоту" },
+          { who: "A.OP2", kind: "move", detail: "K11 один" }
+        ],
+        roll: { label: "Пас на одинокий край", chance: 73, result: "ok", roll: 31 },
+        uiLabels: []
+      },
+      {
+        min: 14, side: "B", score: [0, 1], ap: 2,
+        narrative: "Поздний выход OP2 B на край — NAP B всё ещё в центре.",
+        ball: [10, 10],
+        freeZones: [[10, 15]],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[2,7], OP2:[10,10], NAP:[6,9] },
+          B: { GK:[5,18], Z:[6,14], OP1:[5,12], OP2:[9,13], NAP:[5,11] }
+        },
+        statuses: {}, focus: {},
+        actions: [
+          { who: "B.OP2", kind: "move", detail: "догоняет" },
+          { who: "B.Z", kind: "move", detail: "сместился" }
+        ],
+        roll: null,
+        uiLabels: []
+      },
+      {
+        min: 15, side: "A", score: [0, 1], ap: 2,
+        narrative: "Прострел с одинокого фланга в NAP на H17 — между уехавшими.",
+        ball: [7, 16],
+        freeZones: [[7, 16]],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[3,9], OP2:[10,14], NAP:[7,16] },
+          B: { GK:[5,18], Z:[6,14], OP1:[5,12], OP2:[9,13], NAP:[5,11] }
+        },
+        statuses: {}, focus: {},
+        actions: [
+          { who: "A.OP2", kind: "pass", detail: "прострел в свободный гекс штрафной" },
+          { who: "A.NAP", kind: "move", detail: "H17" }
+        ],
+        roll: { label: "Прострел в пустоту", chance: 54, result: "ok", roll: 48 },
+        uiLabels: [{ id: "tip", text: "Не дриблинг сквозь З — пас в пустой гекс" }]
+      },
+      {
+        min: 16, side: "B", score: [0, 1], ap: 2,
+        narrative: "ВР/З пытаются накрыть свободный гекс.",
+        ball: [7, 16],
+        freeZones: [],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[3,9], OP2:[10,14], NAP:[7,16] },
+          B: { GK:[6,17], Z:[7,16], OP1:[5,13], OP2:[9,14], NAP:[5,11] }
+        },
+        statuses: { "B.Z": { defend: 2 } },
+        focus: {},
+        actions: [
+          { who: "B.Z", kind: "defend", detail: "на NAP" },
+          { who: "B.GK", kind: "move", detail: "выход" }
+        ],
+        roll: null,
+        uiLabels: []
+      },
+      {
+        min: 17, side: "A", score: [1, 1], ap: 2,
+        narrative: "Шаг в соседний свободный G17 + удар. Мяч в сетку.",
+        ball: [5, 19],
+        shotFrom: [6, 16],
+        goalTo: [5, 19],
+        freeZones: [[6, 16]],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[3,9], OP2:[10,14], NAP:[6,16] },
+          B: { GK:[6,17], Z:[7,16], OP1:[5,13], OP2:[9,14], NAP:[5,11] }
+        },
+        statuses: { "B.Z": { defend: 1 } },
+        focus: {},
+        actions: [
+          { who: "A.NAP", kind: "move", detail: "G17 свободно" },
+          { who: "A.NAP", kind: "shot", detail: "удар" }
+        ],
+        roll: { label: "Удар из свободного гекса", chance: 51, result: "goal", roll: 27 },
+        uiLabels: [{ id: "banner", text: "ГОЛ A · 1:1" }]
       },
       {
         min: 20, side: "end", score: [1, 1],
-        narrative: "1:1. Оба гола — прострел/край + удар из зоны, без «прохода через троих».",
+        narrative: "Оба гола — из пустых гексов после того, как соперник уехал к мячу. Толпа у мяча голов не создала.",
         ball: [5, 9],
+        freeZones: [[1, 10], [10, 10]],
         players: {
-          A: { GK:[5,1], Z:[5,4], OP1:[3,6], OP2:[8,6], NAP:[6,8] },
-          B: { GK:[5,18], Z:[5,15], OP1:[2,13], OP2:[7,14], NAP:[3,12] }
+          A: { GK:[5,1], Z:[5,4], OP1:[1,6], OP2:[10,6], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,15], OP1:[1,14], OP2:[10,14], NAP:[5,12] }
         },
         statuses: {}, focus: {}, actions: [], roll: null,
-        uiLabels: [{ id: "banner", text: "Итог 1:1" }]
+        uiLabels: [{ id: "banner", text: "Итог 1:1 · пустые зоны" }]
       }
     ]
   },
@@ -735,328 +679,300 @@ window.PITCH_TACTICS_MATCHES = [
   {
     id: "J",
     theme: "J",
-    title: "Пресс → блок лидера",
-    subtitle: "Отбор высоко → короткий розыгрыш у чужой штрафной → гол. Потом автобус.",
+    title: "Пресс без схлопывания",
+    subtitle: "Прессинг двумя, но третий остаётся широким. Гол в щель. Потом автобус с шириной.",
     scoreFinal: "2:0",
-    styles: { A: "Высокий пресс → автобус после гола", B: "Низкий блок → вынужденный риск" },
+    styles: {
+      A: "Пресс точечный + один широкий якорь",
+      B: "Низкий блок, потом паническое схлопывание"
+    },
     uiGlossary: [
-      { key: "Пресс", where: "A на рядах 12–15", text: "Отбор в чужой трети, не дриблинг через всю оборону." },
-      { key: "Автобус", where: "После 1:0", text: "A садится; B обязан раскрыться." }
+      { key: "Точечный пресс", where: "2 у мяча, 1 широкий", text: "Не все бегут к мячу — иначе нет адреса для отбора." }
     ],
     steps: [
       {
         min: 0, side: "kick", score: [0, 0],
-        narrative: "A сразу высоко. B низко у своих — видно по рядам.",
-        ball: [5, 11],
+        narrative: "A высоко, но широко: OP2 не в линии с OP1.",
+        ball: [5, 12],
+        freeZones: [[10, 14], [1, 14]],
         players: {
-          A: { GK:[5,1], Z:[5,7], OP1:[3,11], OP2:[7,11], NAP:[5,12] },
-          B: { GK:[5,18], Z:[5,16], OP1:[3,15], OP2:[7,15], NAP:[5,14] }
+          A: { GK:[5,1], Z:[5,7], OP1:[3,12], OP2:[10,10], NAP:[5,12] },
+          B: { GK:[5,18], Z:[5,16], OP1:[3,15], OP2:[8,15], NAP:[5,14] }
         },
         statuses: {}, focus: {}, actions: [], roll: null,
-        uiLabels: [{ id: "banner", text: "Прессинг A высоко" }]
+        uiLabels: [{ id: "banner", text: "Пресс + широкий якорь OP2" }]
       },
       {
         min: 1, side: "B", score: [0, 0], ap: 2,
-        narrative: "B пытается разыграть от З под прессингом OP A.",
-        ball: [5, 15],
+        narrative: "B разыгрывает у своей штрафной узко.",
+        ball: [4, 15],
+        freeZones: [[10, 12]],
         players: {
-          A: { GK:[5,1], Z:[5,8], OP1:[4,13], OP2:[6,13], NAP:[5,12] },
+          A: { GK:[5,1], Z:[5,8], OP1:[3,13], OP2:[10,11], NAP:[5,12] },
           B: { GK:[5,18], Z:[5,16], OP1:[4,15], OP2:[7,15], NAP:[5,14] }
         },
-        statuses: {},
-        focus: { "B.NAP": 1 },
+        statuses: {}, focus: { "B.NAP": 1 },
         actions: [
           { who: "B.Z", kind: "pass", detail: "на OP1" },
-          { who: "B.OP1", kind: "move", detail: "принял под прессом" }
+          { who: "B.OP1", kind: "move", detail: "принял" }
         ],
-        roll: { label: "Пас под аурой OP A", chance: 48, result: "ok", roll: 41 },
+        roll: { label: "Пас под давлением OP", chance: 55, result: "ok", roll: 50 },
         uiLabels: []
       },
       {
         min: 2, side: "A", score: [0, 0], ap: 2,
-        narrative: "Двойной пресс: оба OP накрывают владельца.",
+        narrative: "Точечный пресс: OP1+NAP на мяч. OP2 остаётся на K — не бежит.",
         ball: [4, 15],
+        freeZones: [[10, 13], [10, 15]],
         players: {
-          A: { GK:[5,1], Z:[5,9], OP1:[3,14], OP2:[5,14], NAP:[5,12] },
+          A: { GK:[5,1], Z:[5,9], OP1:[3,14], OP2:[10,12], NAP:[5,14] },
           B: { GK:[5,18], Z:[5,16], OP1:[4,15], OP2:[7,15], NAP:[5,14] }
         },
-        statuses: {},
-        focus: { "B.NAP": 1 },
+        statuses: {}, focus: { "B.NAP": 1 },
         actions: [
-          { who: "A.OP1", kind: "press", detail: "аура" },
-          { who: "A.OP2", kind: "press", detail: "аура" }
+          { who: "A.OP1", kind: "press", detail: "на мяч" },
+          { who: "A.NAP", kind: "press", detail: "на мяч · OP2 НЕ схлопнулся" }
         ],
         roll: null,
-        uiLabels: [{ id: "aura", text: "2×OP на разыгрывающем" }]
+        uiLabels: [{ id: "tip", text: "Широкий OP2 = адрес после отбора" }]
       },
       {
         min: 3, side: "B", score: [0, 0], ap: 2,
-        narrative: "Вынос вперёд под прессом — срыв. Мяч у A на чужой трети.",
-        ball: [5, 14],
+        narrative: "Вынос под прессом — срыв. Мяч у A.",
+        ball: [4, 14],
+        freeZones: [[10, 14]],
         players: {
-          A: { GK:[5,1], Z:[5,9], OP1:[3,14], OP2:[5,14], NAP:[5,13] },
+          A: { GK:[5,1], Z:[5,9], OP1:[3,14], OP2:[10,12], NAP:[5,14] },
           B: { GK:[5,18], Z:[5,16], OP1:[4,15], OP2:[7,15], NAP:[5,14] }
         },
-        statuses: {},
-        focus: { "B.NAP": 2 },
+        statuses: {}, focus: { "B.NAP": 2 },
         actions: [
           { who: "B.OP1", kind: "pass", detail: "вынос" },
           { who: "B.Z", kind: "move", detail: "страховка" }
         ],
-        roll: { label: "Вынос под 2×OP", chance: 32, result: "fail", roll: 74 },
-        uiLabels: [{ id: "roll", text: "потеря на чужой трети A" }]
+        roll: { label: "Вынос под прессом", chance: 33, result: "fail", roll: 72 },
+        uiLabels: [{ id: "roll", text: "потеря" }]
       },
       {
         min: 4, side: "A", score: [0, 0], ap: 2,
-        narrative: "Коротко: OP → NAP уже на 15 — ещё не бьём, готовим угол.",
-        ball: [6, 15],
+        narrative: "Не били из толпы у отбора. Переключение на широкого OP2 в пустоту.",
+        ball: [10, 14],
+        freeZones: [[10, 16], [9, 16]],
         players: {
-          A: { GK:[5,1], Z:[5,9], OP1:[4,14], OP2:[6,14], NAP:[6,15] },
+          A: { GK:[5,1], Z:[5,9], OP1:[4,14], OP2:[10,14], NAP:[6,13] },
           B: { GK:[5,18], Z:[5,16], OP1:[4,15], OP2:[7,15], NAP:[5,14] }
         },
-        statuses: {},
-        focus: { "B.NAP": 2 },
+        statuses: {}, focus: { "B.NAP": 2 },
         actions: [
-          { who: "A.OP2", kind: "pass", detail: "в Нап" },
-          { who: "A.NAP", kind: "move", detail: "G16" }
+          { who: "A.OP1", kind: "pass", detail: "в широкий свободный край" },
+          { who: "A.OP2", kind: "move", detail: "K15 один против линии" }
         ],
-        roll: { label: "Пас в штрафную зону", chance: 58, result: "ok", roll: 36 },
-        uiLabels: [{ id: "tip", text: "Ударная зона достигнута (15+)" }]
+        roll: { label: "Пас в свободную зону после отбора", chance: 70, result: "ok", roll: 22 },
+        uiLabels: [{ id: "tip", text: "Смысл широкого якоря при прессе" }]
       },
       {
         min: 5, side: "B", score: [0, 0], ap: 2,
-        narrative: "З B Defend + ВР. Не дают бить свободно.",
-        ball: [6, 15],
+        narrative: "B паникует — З и оба OP к правому мячу. Центр/лево пусты.",
+        ball: [10, 14],
+        freeZones: [[4, 16], [5, 16], [3, 15]],
         players: {
-          A: { GK:[5,1], Z:[5,9], OP1:[4,14], OP2:[6,14], NAP:[6,15] },
-          B: { GK:[6,17], Z:[6,16], OP1:[4,15], OP2:[7,15], NAP:[5,14] }
+          A: { GK:[5,1], Z:[5,9], OP1:[4,14], OP2:[10,14], NAP:[6,13] },
+          B: { GK:[5,18], Z:[8,15], OP1:[7,14], OP2:[10,15], NAP:[6,14] }
         },
-        statuses: { "B.Z": { defend: 2 } },
-        focus: { "B.NAP": 2 },
+        statuses: {}, focus: { "B.NAP": 2 },
         actions: [
-          { who: "B.Z", kind: "defend", detail: "на Нап" },
-          { who: "B.GK", kind: "move", detail: "сузил угол" }
+          { who: "B.Z", kind: "move", detail: "к мячу" },
+          { who: "B.OP2", kind: "move", detail: "к мячу" }
         ],
         roll: null,
-        uiLabels: [{ id: "defend", text: "Defend на ударнике" }]
+        uiLabels: [{ id: "tip", text: "Схлопывание B открыло E/F 16" }]
       },
       {
         min: 6, side: "A", score: [0, 0], ap: 2,
-        narrative: "Не бьём в Defend: скидка на OP1 под другим углом → ряд 16.",
+        narrative: "Прострел/диаговаль в свободный E17 — NAP бежит туда, не к куче на K.",
         ball: [4, 16],
+        freeZones: [[4, 16]],
         players: {
-          A: { GK:[5,1], Z:[5,9], OP1:[4,16], OP2:[6,14], NAP:[6,15] },
-          B: { GK:[6,17], Z:[6,16], OP1:[4,15], OP2:[7,15], NAP:[5,14] }
+          A: { GK:[5,1], Z:[5,9], OP1:[5,13], OP2:[9,14], NAP:[4,16] },
+          B: { GK:[5,18], Z:[8,15], OP1:[7,14], OP2:[10,15], NAP:[6,14] }
         },
-        statuses: { "B.Z": { defend: 1 } },
-        focus: { "B.NAP": 3 },
+        statuses: {}, focus: { "B.NAP": 3 },
         actions: [
-          { who: "A.NAP", kind: "pass", detail: "скидка OP1" },
-          { who: "A.OP1", kind: "move", detail: "E17" }
+          { who: "A.OP2", kind: "pass", detail: "в свободную штрафную" },
+          { who: "A.NAP", kind: "move", detail: "E17 · не к мячу на фланг" }
         ],
-        roll: { label: "Скидка от стойки", chance: 50, result: "ok", roll: 42 },
-        uiLabels: [{ id: "tip", text: "Обход Defend пасом" }]
+        roll: { label: "Пас в пустоту за схлопнутой линией", chance: 57, result: "ok", roll: 41 },
+        uiLabels: []
       },
       {
         min: 7, side: "B", score: [0, 0], ap: 2,
-        narrative: "Поздний сдвиг Defend — угол уже открыт.",
+        narrative: "Поздний возврат.",
         ball: [4, 16],
+        freeZones: [],
         players: {
-          A: { GK:[5,1], Z:[5,9], OP1:[4,16], OP2:[6,14], NAP:[6,15] },
-          B: { GK:[5,17], Z:[5,16], OP1:[4,15], OP2:[7,15], NAP:[5,14] }
+          A: { GK:[5,1], Z:[5,9], OP1:[5,13], OP2:[9,14], NAP:[4,16] },
+          B: { GK:[5,17], Z:[5,16], OP1:[5,15], OP2:[8,15], NAP:[6,14] }
         },
         statuses: { "B.Z": { defend: 2 } },
-        focus: { "B.NAP": 3 },
+        focus: {},
         actions: [
-          { who: "B.Z", kind: "defend", detail: "переставил" },
-          { who: "B.GK", kind: "move", detail: "F18" }
+          { who: "B.Z", kind: "defend", detail: "F17" },
+          { who: "B.GK", kind: "move", detail: "выход" }
         ],
         roll: null,
         uiLabels: []
       },
       {
         min: 8, side: "A", score: [1, 0], ap: 2,
-        narrative: "Удар OP1 с E17 — мяч в ворота.",
+        narrative: "Смещение в свободный F17 + удар в ворота.",
         ball: [5, 19],
-        shotFrom: [4, 16],
+        shotFrom: [5, 16],
         goalTo: [5, 19],
+        freeZones: [[5, 16]],
         players: {
-          A: { GK:[5,1], Z:[5,9], OP1:[4,16], OP2:[6,14], NAP:[6,15] },
-          B: { GK:[5,17], Z:[5,16], OP1:[4,15], OP2:[7,15], NAP:[5,14] }
+          A: { GK:[5,1], Z:[5,9], OP1:[5,13], OP2:[9,14], NAP:[5,16] },
+          B: { GK:[5,17], Z:[5,16], OP1:[5,15], OP2:[8,15], NAP:[6,14] }
         },
         statuses: { "B.Z": { defend: 1 } },
-        focus: { "B.NAP": 3 },
+        focus: {},
         actions: [
-          { who: "A.OP1", kind: "shot", detail: "с E17" },
-          { who: "A.NAP", kind: "move", detail: "на отскок" }
+          { who: "A.NAP", kind: "move", detail: "F17 свободно" },
+          { who: "A.NAP", kind: "shot", detail: "удар" }
         ],
-        roll: { label: "Удар после скидки", chance: 47, result: "goal", roll: 25 },
+        roll: { label: "Удар из свободного гекса", chance: 53, result: "goal", roll: 26 },
         uiLabels: [{ id: "banner", text: "ГОЛ A" }],
-        paradigm: "A забил высоким прессом — теперь сядет."
+        paradigm: "A сядет, но ширину сохранит."
       },
       {
         min: 9, side: "kick", score: [1, 0],
-        narrative: "Парадигма A: пресс выключен, автобус у своей трети.",
+        narrative: "Автобус A: низко, но OP1/OP2 на разных краях — не комок.",
         ball: [5, 9],
+        freeZones: [[1, 7], [10, 7]],
         players: {
-          A: { GK:[5,1], Z:[5,4], OP1:[3,5], OP2:[7,5], NAP:[5,6] },
-          B: { GK:[5,18], Z:[5,14], OP1:[3,11], OP2:[7,11], NAP:[5,10] }
+          A: { GK:[5,1], Z:[5,4], OP1:[1,5], OP2:[10,5], NAP:[5,6] },
+          B: { GK:[5,18], Z:[5,13], OP1:[4,10], OP2:[6,10], NAP:[5,9] }
         },
         statuses: { "A.Z": { defend: 2 } },
-        focus: {},
-        actions: [],
-        roll: null,
-        uiLabels: [{ id: "paradigm", text: "A: пресс → блок лидера" }],
-        paradigm: "A защищает счёт."
+        focus: {}, actions: [], roll: null,
+        uiLabels: [{ id: "paradigm", text: "Автобус с шириной" }],
+        paradigm: "Блок ≠ схлопывание."
       },
       {
-        min: 10, side: "B", score: [1, 0], ap: 2,
-        narrative: "B обязан идти — поднимает линию.",
-        ball: [5, 11],
+        min: 11, side: "B", score: [1, 0], ap: 2,
+        narrative: "B прёт центром втроём в Defend — края A пустые не использует.",
+        ball: [5, 6],
+        freeZones: [[1, 4], [10, 4]],
         players: {
-          A: { GK:[5,1], Z:[5,4], OP1:[3,5], OP2:[7,5], NAP:[5,6] },
-          B: { GK:[5,18], Z:[5,12], OP1:[4,10], OP2:[7,10], NAP:[5,11] }
+          A: { GK:[5,1], Z:[5,4], OP1:[1,5], OP2:[10,5], NAP:[5,6] },
+          B: { GK:[5,18], Z:[5,9], OP1:[4,7], OP2:[6,7], NAP:[5,6] }
         },
         statuses: { "A.Z": { defend: 1 } },
         focus: {},
         actions: [
-          { who: "B.OP1", kind: "pass", detail: "в Нап" },
-          { who: "B.NAP", kind: "move", detail: "F12" }
+          { who: "B.NAP", kind: "move", detail: "в лоб" },
+          { who: "B.OP1", kind: "pass", detail: "в скученность" }
         ],
-        roll: { label: "Пас вперёд", chance: 82, result: "ok", roll: 11 },
-        uiLabels: []
-      },
-      {
-        min: 11, side: "A", score: [1, 0], ap: 2,
-        narrative: "A только переставляет Defend и держит компакт.",
-        ball: [5, 11],
-        players: {
-          A: { GK:[5,1], Z:[5,5], OP1:[3,6], OP2:[7,6], NAP:[5,7] },
-          B: { GK:[5,18], Z:[5,12], OP1:[4,10], OP2:[7,10], NAP:[5,11] }
-        },
-        statuses: { "A.Z": { defend: 2 } },
-        focus: {},
-        actions: [
-          { who: "A.Z", kind: "defend", detail: "F6" },
-          { who: "A.OP2", kind: "move", detail: "ужали пространство" }
-        ],
-        roll: null,
-        uiLabels: [{ id: "defend", text: "Автобус" }]
-      },
-      {
-        min: 12, side: "B", score: [1, 0], ap: 2,
-        narrative: "B ставит Замах издалека (row 11) — видно, но зона плохая.",
-        ball: [5, 11],
-        players: {
-          A: { GK:[5,1], Z:[5,5], OP1:[3,6], OP2:[7,6], NAP:[5,7] },
-          B: { GK:[5,18], Z:[5,12], OP1:[4,10], OP2:[7,10], NAP:[5,11] }
-        },
-        statuses: { "A.Z": { defend: 1 }, "B.NAP": { windup: true } },
-        focus: {},
-        actions: [
-          { who: "B.OP2", kind: "pass", detail: "в Нап" },
-          { who: "B.NAP", kind: "windup", detail: "Замах с row 11" }
-        ],
-        roll: { label: "Пас", chance: 75, result: "ok", roll: 40 },
-        uiLabels: [{ id: "windup", text: "Замах слишком рано" }]
+        roll: { label: "Пас в комок + Defend", chance: 24, result: "fail", roll: 85 },
+        uiLabels: [{ id: "roll", text: "Края A пусты — B туда не пошёл" }]
       },
       {
         min: 13, side: "A", score: [1, 0], ap: 2,
-        narrative: "A просто держит Defend на линии — пусть бьют издалека.",
-        ball: [5, 11],
+        narrative: "Вынос на широкий OP2.",
+        ball: [10, 7],
+        freeZones: [[10, 7]],
         players: {
-          A: { GK:[5,1], Z:[5,5], OP1:[4,6], OP2:[7,6], NAP:[5,7] },
-          B: { GK:[5,18], Z:[5,12], OP1:[4,10], OP2:[7,10], NAP:[5,11] }
+          A: { GK:[5,1], Z:[5,4], OP1:[1,5], OP2:[10,7], NAP:[5,6] },
+          B: { GK:[5,18], Z:[5,8], OP1:[4,7], OP2:[6,7], NAP:[5,6] }
         },
-        statuses: { "A.Z": { defend: 2 }, "B.NAP": { windup: true } },
-        focus: {},
+        statuses: {}, focus: {},
         actions: [
-          { who: "A.Z", kind: "defend", detail: "обновил" },
-          { who: "A.OP1", kind: "move", detail: "блок" }
+          { who: "A.Z", kind: "pass", detail: "в ширину" },
+          { who: "A.OP2", kind: "move", detail: "один" }
         ],
-        roll: null,
+        roll: { label: "Вынос в пустоту", chance: 82, result: "ok", roll: 12 },
         uiLabels: []
       },
       {
         min: 14, side: "B", score: [1, 0], ap: 2,
-        narrative: "Реализация замаха с row 11 в стену/% — мимо. Так и должно быть.",
-        ball: [5, 5],
+        narrative: "B снова всей группой на фланг к мячу.",
+        ball: [10, 7],
+        freeZones: [[2, 10], [3, 12]],
         players: {
-          A: { GK:[5,1], Z:[5,5], OP1:[4,6], OP2:[7,6], NAP:[5,7] },
-          B: { GK:[5,18], Z:[5,12], OP1:[4,10], OP2:[7,10], NAP:[5,11] }
+          A: { GK:[5,1], Z:[5,4], OP1:[1,5], OP2:[10,7], NAP:[5,6] },
+          B: { GK:[5,18], Z:[7,9], OP1:[6,8], OP2:[9,8], NAP:[6,7] }
         },
-        statuses: { "A.Z": { defend: 1 } },
-        focus: {},
+        statuses: {}, focus: {},
         actions: [
-          { who: "B.OP1", kind: "pass", detail: "под замах" },
-          { who: "B.NAP", kind: "shot", detail: "издали в Defend" }
+          { who: "B.OP2", kind: "move", detail: "к мячу" },
+          { who: "B.Z", kind: "move", detail: "к мячу" }
         ],
-        roll: { label: "Замах с row 11 + Defend", chance: 9, result: "fail", roll: 88 },
-        uiLabels: [{ id: "roll", text: "9% → мимо · подбор A" }]
+        roll: null,
+        uiLabels: [{ id: "tip", text: "Левый канал B пуст для контра" }]
       },
       {
         min: 15, side: "A", score: [1, 0], ap: 2,
-        narrative: "Вынос в свободную зону — B раскрыт.",
-        ball: [8, 9],
+        narrative: "Переключение на OP1 в огромную пустоту.",
+        ball: [1, 10],
+        freeZones: [[1, 13], [2, 15]],
         players: {
-          A: { GK:[5,1], Z:[5,4], OP1:[4,6], OP2:[8,9], NAP:[6,8] },
-          B: { GK:[5,18], Z:[5,11], OP1:[3,9], OP2:[7,9], NAP:[5,10] }
+          A: { GK:[5,1], Z:[5,5], OP1:[1,10], OP2:[9,8], NAP:[4,8] },
+          B: { GK:[5,18], Z:[7,9], OP1:[6,8], OP2:[9,8], NAP:[6,7] }
         },
-        statuses: {},
-        focus: { "B.OP1": 1 },
+        statuses: {}, focus: {},
         actions: [
-          { who: "A.Z", kind: "pass", detail: "вынос на OP2" },
-          { who: "A.OP2", kind: "move", detail: "I10" }
+          { who: "A.OP2", kind: "pass", detail: "на пустой край" },
+          { who: "A.OP1", kind: "move", detail: "B11 один" }
         ],
-        roll: { label: "Вынос", chance: 84, result: "ok", roll: 15 },
-        uiLabels: [{ id: "paradigm", text: "Контра против раскрытого B" }]
+        roll: { label: "Пас в свободную зону", chance: 75, result: "ok", roll: 29 },
+        uiLabels: []
       },
       {
         min: 16, side: "B", score: [1, 0], ap: 2,
-        narrative: "B бежит назад — оба OP ещё высоко, Сон копится на одном.",
-        ball: [8, 9],
+        narrative: "Поздний возврат всей команды влево.",
+        ball: [1, 10],
+        freeZones: [[8, 14]],
         players: {
-          A: { GK:[5,1], Z:[5,4], OP1:[4,6], OP2:[8,9], NAP:[6,8] },
-          B: { GK:[5,18], Z:[6,12], OP1:[5,10], OP2:[8,11], NAP:[5,10] }
+          A: { GK:[5,1], Z:[5,5], OP1:[1,10], OP2:[9,8], NAP:[4,8] },
+          B: { GK:[5,18], Z:[3,12], OP1:[2,11], OP2:[5,11], NAP:[4,10] }
         },
-        statuses: {},
-        focus: {},
+        statuses: {}, focus: {},
         actions: [
-          { who: "B.Z", kind: "move", detail: "назад" },
-          { who: "B.OP2", kind: "move", detail: "догоняет край" }
+          { who: "B.OP1", kind: "move", detail: "к мячу" },
+          { who: "B.Z", kind: "move", detail: "к мячу" }
         ],
         roll: null,
         uiLabels: []
       },
       {
         min: 17, side: "A", score: [1, 0], ap: 2,
-        narrative: "Ещё пас в Нап на 14 — вход в ударную без дриблинга через З.",
-        ball: [7, 15],
+        narrative: "В щель на NAP E16, пока B уехал на фланг.",
+        ball: [4, 16],
+        freeZones: [[4, 16]],
         players: {
-          A: { GK:[5,1], Z:[5,5], OP1:[5,10], OP2:[8,12], NAP:[7,15] },
-          B: { GK:[5,18], Z:[6,14], OP1:[5,12], OP2:[8,13], NAP:[5,11] }
+          A: { GK:[5,1], Z:[5,6], OP1:[2,12], OP2:[8,10], NAP:[4,16] },
+          B: { GK:[5,18], Z:[3,12], OP1:[2,11], OP2:[5,11], NAP:[4,10] }
         },
-        statuses: {},
-        focus: {},
+        statuses: {}, focus: {},
         actions: [
-          { who: "A.OP2", kind: "pass", detail: "за спину убегающим" },
-          { who: "A.NAP", kind: "move", detail: "H16" }
+          { who: "A.OP1", kind: "pass", detail: "в пустую штрафную" },
+          { who: "A.NAP", kind: "move", detail: "E17" }
         ],
-        roll: { label: "Пас в разрез", chance: 61, result: "ok", roll: 38 },
-        uiLabels: [{ id: "tip", text: "Снова row 15+ до удара" }]
+        roll: { label: "Пас в пустоту", chance: 60, result: "ok", roll: 37 },
+        uiLabels: []
       },
       {
         min: 18, side: "B", score: [1, 0], ap: 2,
-        narrative: "Поздний Defend — Нап A уже в зоне.",
-        ball: [7, 15],
+        narrative: "ВР и Defend — поздно.",
+        ball: [4, 16],
+        freeZones: [],
         players: {
-          A: { GK:[5,1], Z:[5,5], OP1:[5,10], OP2:[8,12], NAP:[7,15] },
-          B: { GK:[6,17], Z:[7,16], OP1:[5,13], OP2:[8,13], NAP:[5,11] }
+          A: { GK:[5,1], Z:[5,6], OP1:[2,12], OP2:[8,10], NAP:[4,16] },
+          B: { GK:[5,17], Z:[4,16], OP1:[3,13], OP2:[6,13], NAP:[4,11] }
         },
         statuses: { "B.Z": { defend: 2 } },
         focus: {},
         actions: [
-          { who: "B.Z", kind: "defend", detail: "H17" },
+          { who: "B.Z", kind: "defend", detail: "E17" },
           { who: "B.GK", kind: "move", detail: "выход" }
         ],
         roll: null,
@@ -1064,33 +980,35 @@ window.PITCH_TACTICS_MATCHES = [
       },
       {
         min: 19, side: "A", score: [2, 0], ap: 2,
-        narrative: "Смещение с Defend на G17 + удар. Мяч в сетку.",
+        narrative: "Свободный F17 + удар. Мяч в ворота.",
         ball: [5, 19],
-        shotFrom: [6, 16],
+        shotFrom: [5, 16],
         goalTo: [5, 19],
+        freeZones: [[5, 16]],
         players: {
-          A: { GK:[5,1], Z:[5,5], OP1:[5,10], OP2:[8,12], NAP:[6,16] },
-          B: { GK:[6,17], Z:[7,16], OP1:[5,13], OP2:[8,13], NAP:[5,11] }
+          A: { GK:[5,1], Z:[5,6], OP1:[2,12], OP2:[8,10], NAP:[5,16] },
+          B: { GK:[5,17], Z:[4,16], OP1:[3,13], OP2:[6,13], NAP:[4,11] }
         },
         statuses: { "B.Z": { defend: 1 } },
         focus: {},
         actions: [
-          { who: "A.NAP", kind: "move", detail: "ушёл с линии Defend на G17" },
+          { who: "A.NAP", kind: "move", detail: "F17" },
           { who: "A.NAP", kind: "shot", detail: "удар" }
         ],
-        roll: { label: "Удар после смещения", chance: 49, result: "goal", roll: 22 },
+        roll: { label: "Удар из свободного гекса", chance: 50, result: "goal", roll: 23 },
         uiLabels: [{ id: "banner", text: "ГОЛ A · 2:0" }]
       },
       {
         min: 20, side: "end", score: [2, 0],
-        narrative: "2:0. Голы из чужой штрафной после отбора/контратаки — без прохода через троих в центре.",
+        narrative: "2:0. Пресс работал, потому что один оставался широким. Голы — в щели после схлопывания B к мячу.",
         ball: [5, 9],
+        freeZones: [[1, 10], [10, 10]],
         players: {
-          A: { GK:[5,1], Z:[5,4], OP1:[3,5], OP2:[7,5], NAP:[5,6] },
-          B: { GK:[5,18], Z:[5,15], OP1:[3,14], OP2:[7,14], NAP:[5,12] }
+          A: { GK:[5,1], Z:[5,4], OP1:[1,5], OP2:[10,5], NAP:[5,6] },
+          B: { GK:[5,18], Z:[5,15], OP1:[3,14], OP2:[8,14], NAP:[5,12] }
         },
         statuses: {}, focus: {}, actions: [], roll: null,
-        uiLabels: [{ id: "banner", text: "Итог 2:0" }]
+        uiLabels: [{ id: "banner", text: "Итог 2:0 · пространство" }]
       }
     ]
   }
