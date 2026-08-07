@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1712" />
+  <title>Pitch Tactics — Replay (гексы, standalone)</title>
+  <style>
+:root {
+  --bg: #0c1210;
+  --panel: #142018;
+  --line: #2a3d30;
+  --text: #e7f0e8;
+  --muted: #8fa396;
+  --a: #4aa3ff;
+  --b: #ff9f4a;
+  --accent: #c8f06a;
+  --danger: #ff6b6b;
+  --warn: #ffd166;
+  --font: "Segoe UI", "Trebuchet MS", system-ui, sans-serif;
+  --display: Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: var(--font);
+  color: var(--text);
+  background:
+    radial-gradient(900px 500px at 0% 0%, #1a3024 0%, transparent 55%),
+    radial-gradient(800px 400px at 100% 0%, #243044 0%, transparent 45%),
+    var(--bg);
+}
+body[data-match="H"] { --match-tint: #3d9bfd44; }
+body[data-match="I"] { --match-tint: #f0a05a44; }
+body[data-match="J"] { --match-tint: #c8f06a44; }
+
+.app {
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px 10px;
+  gap: 10px;
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand { display: flex; gap: 12px; align-items: center; }
+.brand-mark {
+  width: 42px; height: 42px; border-radius: 10px;
+  display: grid; place-items: center;
+  background: linear-gradient(145deg, #c8f06a, #5ecf8a);
+  color: #102016; font-weight: 800;
+}
+.brand h1 {
+  margin: 0; font-family: var(--display);
+  font-size: 1.3rem; font-weight: 600;
+}
+.tag { margin: 2px 0 0; color: var(--muted); font-size: 0.82rem; }
+.phone-tip {
+  display: none; margin: 0; width: 100%;
+  color: var(--accent); font-size: 0.8rem;
+}
+
+.match-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.tab {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.tab[aria-selected="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #24362a;
+}
+.tab.theme-H[aria-selected="true"] { border-color: var(--a); color: #9ccfff; }
+.tab.theme-I[aria-selected="true"] { border-color: var(--b); color: #ffc08a; }
+.tab.theme-J[aria-selected="true"] { border-color: var(--accent); color: var(--accent); }
+
+.meta {
+  border: 1px solid var(--line);
+  background: rgba(20, 32, 24, 0.9);
+  border-radius: 12px;
+  padding: 10px 14px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.meta strong { color: var(--text); }
+.theme-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--accent); flex: 0 0 auto;
+}
+.theme-dot.theme-H { background: var(--a); }
+.theme-dot.theme-I { background: var(--b); }
+.theme-dot.theme-J { background: var(--accent); }
+
+.stage {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 250px minmax(300px, 1fr) 280px;
+  gap: 10px;
+  min-height: 0;
+}
+
+.panel {
+  background: rgba(20, 32, 24, 0.95);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  overflow: auto;
+}
+.panel h2 {
+  margin: 12px 0 6px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.panel h2:first-child { margin-top: 0; }
+
+.clock {
+  font-family: var(--display);
+  font-size: 2.3rem;
+  color: var(--accent);
+  line-height: 1;
+}
+.scoreboard {
+  font-size: 1.55rem;
+  font-weight: 700;
+  margin: 6px 0 8px;
+  letter-spacing: 0.06em;
+}
+.side-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #24362a;
+  border: 1px solid var(--line);
+  font-size: 0.8rem;
+}
+.side-pill.A { border-color: var(--a); color: var(--a); }
+.side-pill.B { border-color: var(--b); color: var(--b); }
+
+.styles-box div { margin-bottom: 6px; font-size: 0.86rem; }
+.styles-box .who { color: var(--muted); font-size: 0.72rem; }
+
+.move-log, .actions, .labels {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.move-log li, .actions li, .labels li {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 9px;
+  background: #101810;
+  font-size: 0.8rem;
+}
+.move-log .active-move { border-color: #5a7a40; }
+.move-log .passive-move { opacity: 0.85; }
+.move-log .tagish, .actions .kind {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #24362a;
+  color: var(--accent);
+  font-size: 0.68rem;
+}
+.actions .kind { margin-left: 0; margin-right: 6px; }
+
+.glossary { display: flex; flex-direction: column; gap: 8px; }
+.glossary article {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px;
+  background: #101810;
+}
+.glossary b { color: var(--accent); font-size: 0.82rem; }
+.glossary .where { display: block; color: var(--muted); font-size: 0.72rem; margin: 2px 0 4px; }
+.glossary p { margin: 0; font-size: 0.8rem; line-height: 1.35; }
+
+.pitch-wrap { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.pitch-hud { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-height: 28px; }
+.banner { font-family: var(--display); font-size: 1.05rem; }
+.paradigm {
+  padding: 3px 10px; border-radius: 999px;
+  background: #3a2e14; border: 1px solid var(--warn);
+  color: var(--warn); font-size: 0.76rem;
+}
+
+.pitch {
+  position: relative;
+  flex: 1;
+  min-height: 560px;
+  border-radius: 16px;
+  border: 2px solid rgba(232, 244, 220, 0.28);
+  background:
+    radial-gradient(circle at 50% 50%, var(--match-tint, transparent), transparent 60%),
+    linear-gradient(180deg, #143222, #0f2418);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), 0 18px 40px rgba(0,0,0,0.35);
+  overflow: hidden;
+}
+
+.pitch-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.hex-cell {
+  fill: #1a4a2e;
+  stroke: rgba(220, 240, 210, 0.18);
+  stroke-width: 0.8;
+}
+.hex-cell.alt { fill: #174028; }
+.hex-cell.aura-p1 { fill: #2a5a7a; fill-opacity: 0.55; }
+.hex-cell.aura-p2 { fill: #7a5a2a; fill-opacity: 0.55; }
+.hex-cell.aura-defend {
+  fill: #4a6a20;
+  stroke: var(--accent);
+  stroke-width: 1.6;
+  fill-opacity: 0.65;
+}
+.hex-midline { stroke: rgba(255,255,255,0.22); stroke-width: 1.2; fill: none; }
+
+.move-arrow { fill: none; stroke-width: 1.5; stroke-linecap: round; opacity: 0.95; }
+.move-arrow.active-A { stroke: var(--a); }
+.move-arrow.active-B { stroke: var(--b); }
+.move-arrow.passive { stroke: #9db3a4; stroke-dasharray: 3 2; opacity: 0.7; }
+.move-head.active-A { fill: var(--a); }
+.move-head.active-B { fill: var(--b); }
+.move-head.passive { fill: #9db3a4; }
+.move-ghost { fill: rgba(255,255,255,0.25); }
+.ball-path {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.4;
+  stroke-dasharray: 2 2;
+  opacity: 0.85;
+}
+
+.fx-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.piece {
+  position: absolute;
+  width: 30px; height: 30px;
+  margin: -15px 0 0 -15px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.4);
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  padding: 0;
+}
+.piece.A { background: linear-gradient(160deg, #6eb6ff, #1d6ec7); color: #041018; }
+.piece.B { background: linear-gradient(160deg, #ffc08a, #c56a20); color: #1a0d04; }
+.piece.GK { border-style: dashed; }
+.piece-label { font-size: 0.62rem; font-weight: 800; }
+.badge-slot {
+  position: absolute;
+  top: -9px; right: -10px;
+  display: flex; gap: 2px;
+}
+.badge {
+  min-width: 16px; height: 16px; padding: 0 3px;
+  border-radius: 8px; font-size: 0.55rem;
+  display: grid; place-items: center;
+  background: #111; border: 1px solid var(--line); color: #fff;
+}
+.badge.sleep { background: #2a2440; border-color: #8b7cf7; color: #cbbfff; }
+.badge.defend { background: #243016; border-color: var(--accent); color: var(--accent); }
+.badge.windup { background: #3a2010; border-color: var(--b); color: var(--b); }
+
+.float-callout {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) translateY(4px);
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: #0b100d;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 8;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+}
+.float-callout.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  transition: opacity 0.2s ease, transform 0.25s ease;
+}
+.float-callout.kind-shot { border-color: var(--danger); color: #ffb4b4; }
+.float-callout.kind-pass { border-color: #9ccfff; color: #9ccfff; }
+.float-callout.kind-defend { border-color: var(--accent); }
+.float-callout.kind-windup { border-color: var(--b); color: #ffc08a; }
+.float-callout.kind-form { border-color: #9db3a4; color: #c5d5cb; font-weight: 600; }
+.float-callout::after {
+  content: "";
+  position: absolute;
+  left: 50%; bottom: -5px;
+  margin-left: -5px;
+  border: 5px solid transparent;
+  border-top-color: #0b100d;
+}
+
+.ball {
+  position: absolute;
+  width: 14px; height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  z-index: 5;
+  background: radial-gradient(circle at 35% 30%, #fff, #ccc 40%, #333);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.goal-flash {
+  position: absolute;
+  left: 50%; top: 42%;
+  transform: translate(-50%, -50%);
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.72);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--display);
+  font-size: 1.1rem;
+  animation: pop 0.9s ease;
+}
+@keyframes pop {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translate(-50%, -60%) scale(1); opacity: 0.2; }
+}
+
+.narrative { margin: 0; line-height: 1.45; font-size: 0.9rem; }
+.roll {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
+  background: #101810;
+  min-height: 84px;
+}
+.roll-empty { color: var(--muted); font-size: 0.84rem; }
+.roll-label { font-size: 0.78rem; color: var(--muted); }
+.roll-chance { font-family: var(--display); font-size: 1.7rem; }
+.roll-bar {
+  margin: 8px 0; height: 8px; border-radius: 999px;
+  background: #243028; overflow: hidden;
+}
+.roll-bar > span {
+  display: block; height: 100%;
+  background: linear-gradient(90deg, #5ecf8a, var(--accent));
+}
+.roll-result.ok, .roll-result.goal { color: var(--accent); }
+.roll-result.fail { color: var(--danger); }
+
+.note {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border-left: 3px solid var(--warn);
+  background: #2a2414;
+  color: #ffe6a8;
+  font-size: 0.8rem;
+  border-radius: 0 8px 8px 0;
+}
+
+.pitch-hint { margin: 0; color: var(--muted); font-size: 0.76rem; }
+
+.transport {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  padding: 10px 12px; border: 1px solid var(--line);
+  border-radius: 14px; background: rgba(20, 32, 24, 0.96);
+}
+.btn {
+  border: 1px solid var(--line);
+  background: #1c2a20; color: var(--text);
+  border-radius: 10px; padding: 8px 14px;
+  cursor: pointer; font: inherit;
+}
+.btn-primary {
+  background: linear-gradient(145deg, #c8f06a, #7ed39a);
+  color: #102016; border-color: transparent; font-weight: 700;
+}
+#scrubber { flex: 1; min-width: 120px; accent-color: var(--accent); }
+.step-count { color: var(--muted); font-size: 0.84rem; }
+
+@media (max-width: 1100px) {
+  .stage { grid-template-columns: 1fr; }
+  .pitch { min-height: 440px; }
+  .panel { max-height: 280px; }
+}
+@media (max-width: 720px) {
+  .app { padding: 10px 10px 90px; }
+  .phone-tip { display: block; }
+  .match-tabs { width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+  .tab { flex: 0 0 auto; padding: 10px 14px; }
+  .stage { display: flex; flex-direction: column; }
+  .pitch-wrap { order: 1; }
+  .panel-left { order: 2; max-height: none; }
+  .panel-right { order: 3; max-height: none; }
+  .glossary { display: none; }
+  .pitch { min-height: min(58vh, 480px); }
+  .piece { width: 26px; height: 26px; margin: -13px 0 0 -13px; }
+  .transport {
+    position: sticky; bottom: 0; z-index: 20;
+    margin: 0 -10px -10px; border-radius: 14px 14px 0 0;
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.35);
+  }
+  .btn { min-height: 44px; flex: 1; }
+  #scrubber { flex: 1 0 100%; }
+  .step-count { width: 100%; text-align: center; }
+}
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="brand">
+        <span class="brand-mark">PT</span>
+        <div>
+          <h1>Pitch Tactics Core</h1>
+          <p class="tag">Гексополе · плавные ходы · подписи · standalone для GitHub</p>
+        </div>
+      </div>
+      <p class="phone-tip">Телефон: партии сверху → ▶ Смотреть. Стрелки и всплывающие подписи на фишках.</p>
+      <nav class="match-tabs" id="matchTabs" aria-label="Партии"></nav>
+    </header>
+    <section class="meta" id="matchMeta"></section>
+    <main class="stage">
+      <aside class="panel panel-left">
+        <h2>Минута</h2>
+        <div class="clock" id="clock">00'</div>
+        <div class="scoreboard" id="scoreboard">0 : 0</div>
+        <div class="side-pill" id="sidePill">Kick-off</div>
+        <h2>Стили</h2>
+        <div id="stylesBox" class="styles-box"></div>
+        <h2>Кто куда сходил</h2>
+        <ul class="move-log" id="moveLog"></ul>
+        <h2>Глоссарий UI</h2>
+        <div id="glossary" class="glossary"></div>
+      </aside>
+      <section class="pitch-wrap">
+        <div class="pitch-hud">
+          <span id="banner" class="banner">—</span>
+          <span id="paradigm" class="paradigm" hidden></span>
+        </div>
+        <div class="pitch" id="pitch" role="img" aria-label="Гексогональное поле"></div>
+        <p class="pitch-hint">Гексы · стрелки хода · всплывающий текст · мяч по дуге</p>
+      </section>
+      <aside class="panel panel-right">
+        <h2>Что произошло</h2>
+        <p class="narrative" id="narrative"></p>
+        <h2>Действия AP</h2>
+        <ul class="actions" id="actions"></ul>
+        <h2>Бросок</h2>
+        <div class="roll" id="rollBox"><div class="roll-empty">Нет броска на этом шаге</div></div>
+        <h2>Метки</h2>
+        <ul class="labels" id="labels"></ul>
+        <p class="note" id="note" hidden></p>
+      </aside>
+    </main>
+    <footer class="transport">
+      <button type="button" id="btnPrev" class="btn">← Шаг</button>
+      <button type="button" id="btnPlay" class="btn btn-primary">▶ Смотреть</button>
+      <button type="button" id="btnNext" class="btn">Шаг →</button>
+      <input type="range" id="scrubber" min="0" max="0" value="0" />
+      <span id="stepCount" class="step-count">1 / 1</span>
+    </footer>
+  </div>
+  <script>
+/**
+ * Pitch Tactics Core — replay match data (edited for Freeze v1)
+ * All statuses visible. Probabilities shown. Per-player Focus (Сон).
+ * Coords: col 0-11 (A-L), row 0-19 (1-20). Home attacks +row.
+ */
+window.PITCH_TACTICS_MATCHES = [
+  {
+    id: "H",
+    theme: "H",
+    title: "Блок → прессинг",
+    subtitle: "Игра у своих третей. Сон на чужих ОП → гол. B раскрывается.",
+    scoreFinal: "1:1",
+    styles: { A: "Низкий контроль у своей трети", B: "Пассивный блок → прессинг" },
+    uiGlossary: [
+      { key: "Сон", where: "Бейдж на фишке + полоска слева", text: "Концентрация конкретной фишки. Сброс только её действием." },
+      { key: "Defend", where: "Щит на фишке, подсветка клетки", text: "Активная стойка, 2 чужих хода, затем сгорает." },
+      { key: "%", where: "Панель «Бросок» справа", text: "Preview шанса до действия и результат после." },
+      { key: "Форма", where: "Мелкие стрелки на поле после хода", text: "Пассив +1–2 к якорю. Не сброс Сна." }
+    ],
+    steps: [
+      {
+        min: 0, side: "kick", score: [0, 0],
+        narrative: "Свисток. Оба сидят низко — компакт у своих половин. Это партия «про терпение».",
+        ball: [5, 9],
+        players: {
+          A: { GK:[5,1], Z:[5,3], OP1:[3,5], OP2:[7,5], NAP:[5,7] },
+          B: { GK:[5,18], Z:[5,16], OP1:[3,14], OP2:[7,14], NAP:[5,12] }
+        },
+        statuses: {},
+        focus: {},
+        actions: [],
+        roll: null,
+        uiLabels: [
+          { id: "timer", text: "00'" },
+          { id: "score", text: "0 : 0" },
+          { id: "banner", text: "Kick-off · оба низко" }
+        ]
+      },
+      {
+        min: 1, side: "A", score: [0, 0], ap: 2,
+        narrative: "A: короткий контроль. Два AP на двух L1 — ОП1 с мячом вперёд, ОП2 подстраховал форму.",
+        ball: [5, 10],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[5,10], OP2:[7,8], NAP:[5,9] },
+          B: { GK:[5,18], Z:[5,15], OP1:[3,13], OP2:[7,13], NAP:[5,11] }
+        },
+        statuses: {},
+        focus: { "B.NAP": 1 },
+        actions: [
+          { who: "A.OP1", kind: "move", detail: "F7→F11 (3 кл.)" },
+          { who: "A.OP2", kind: "move", detail: "H7→H9" }
+        ],
+        roll: null,
+        uiLabels: [
+          { id: "focus", text: "B Нап: Сон 1 — 3' без действия", spot: "badge" },
+          { id: "ap", text: "AP 2/2 потрачено" }
+        ],
+        note: "Нап B уже копит Сон: его не трогали. З B пока чист."
+      },
+      {
+        min: 2, side: "B", score: [0, 0], ap: 2,
+        narrative: "B ставит Defend на З и чуть двигает ОП1. Сон Нап не сброшен — двигали не его.",
+        ball: [5, 10],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[5,10], OP2:[7,8], NAP:[5,9] },
+          B: { GK:[5,18], Z:[5,14], OP1:[4,13], OP2:[7,13], NAP:[5,11] }
+        },
+        statuses: { "B.Z": { defend: 2 } },
+        focus: { "B.NAP": 1, "B.OP2": 1 },
+        actions: [
+          { who: "B.Z", kind: "defend", detail: "Defend F15 (осталось 2 хода A)" },
+          { who: "B.OP1", kind: "move", detail: "D14→E14" }
+        ],
+        roll: null,
+        uiLabels: [
+          { id: "defend", text: "Defend · 2", spot: "piece B.Z" },
+          { id: "focus", text: "B ОП2: Сон 1 (не трогали)" }
+        ]
+      },
+      {
+        min: 3, side: "A", score: [0, 0], ap: 2,
+        narrative: "A не прёт в щит. Горизонталь на ОП2, пас под край.",
+        ball: [7, 11],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[5,10], OP2:[7,11], NAP:[6,10] },
+          B: { GK:[5,18], Z:[5,14], OP1:[4,13], OP2:[7,13], NAP:[5,11] }
+        },
+        statuses: { "B.Z": { defend: 1 } },
+        focus: { "B.NAP": 2, "B.OP2": 2 },
+        actions: [
+          { who: "A.OP1", kind: "pass", detail: "→ ОП2" },
+          { who: "A.OP2", kind: "move", detail: "с мячом H10→H12" }
+        ],
+        roll: { label: "Пас низом (без давления)", chance: 88, result: "ok", roll: 41 },
+        uiLabels: [
+          { id: "roll", text: "Пас 88% → 41 успех" },
+          { id: "defend", text: "Defend B.Z: осталось 1 ход" }
+        ]
+      },
+      {
+        min: 4, side: "B", score: [0, 0], ap: 2,
+        narrative: "B снова только З и ОП1. ОП2 и Нап продолжают копиться в Сне — классика «одного пошевелил».",
+        ball: [7, 11],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[5,10], OP2:[7,11], NAP:[6,10] },
+          B: { GK:[5,18], Z:[5,14], OP1:[5,13], OP2:[7,13], NAP:[5,11] }
+        },
+        statuses: { "B.Z": { defend: 0 } },
+        focus: { "B.NAP": 2, "B.OP2": 2 },
+        actions: [
+          { who: "B.Z", kind: "move", detail: "держится F15 (Defend сгорел по таймеру)" },
+          { who: "B.OP1", kind: "move", detail: "к мячу F14" }
+        ],
+        roll: null,
+        uiLabels: [
+          { id: "defend", text: "Defend сгорел (N=2 истекло)" },
+          { id: "focus", text: "Сон держится на ОП2 и Нап" }
+        ],
+        note: "Истечение Defend — честный таймер на щитке, не сюрприз."
+      },
+      {
+        min: 5, side: "A", score: [0, 0], ap: 2,
+        narrative: "Пас на Нап A. Дальше — в зону между сонными ОП2 B и линией.",
+        ball: [5, 12],
+        players: {
+          A: { GK:[5,1], Z:[5,7], OP1:[5,11], OP2:[7,12], NAP:[5,12] },
+          B: { GK:[5,18], Z:[5,14], OP1:[5,13], OP2:[7,13], NAP:[5,11] }
+        },
+        statuses: {},
+        focus: { "B.NAP": 2, "B.OP2": 2 },
+        actions: [
+          { who: "A.OP2", kind: "pass", detail: "→ Нап" },
+          { who: "A.NAP", kind: "move", detail: "F11→F13" }
+        ],
+        roll: { label: "Пас (край ауры ОП1 B = 1)", chance: 72, result: "ok", roll: 55 },
+        uiLabels: [{ id: "roll", text: "Пас под аурой 1: 72% → 55" }]
+      },
+      {
+        min: 6, side: "B", score: [0, 0], ap: 2,
+        narrative: "B пытается сбросить через ОП2… но у ОП2 Сон 2. Грязный приём.",
+        ball: [5, 12],
+        players: {
+          A: { GK:[5,1], Z:[5,7], OP1:[5,11], OP2:[7,12], NAP:[5,12] },
+          B: { GK:[5,18], Z:[5,14], OP1:[5,13], OP2:[7,13], NAP:[5,11] }
+        },
+        statuses: {},
+        focus: { "B.NAP": 3, "B.OP2": 0 },
+        actions: [
+          { who: "B.OP2", kind: "receive", detail: "попытка принять под прессингом формы" },
+          { who: "B.Z", kind: "move", detail: "F15→F14" }
+        ],
+        roll: { label: "Приём ОП2 (Сон 2)", chance: 38, result: "fail", roll: 61 },
+        uiLabels: [
+          { id: "roll", text: "Приём 38% (Сон2) → 61 провал" },
+          { id: "ball", text: "Подбор A.NAP" }
+        ],
+        note: "Ключевой урок Сна: сброс только у того, кто действовал. После фейла ОП2 сбросил Сон действием, но мяч уже потерян."
+      },
+      {
+        min: 7, side: "A", score: [1, 0], ap: 2,
+        narrative: "Нап A L2: ход в ударную + удар. Гол.",
+        ball: null,
+        players: {
+          A: { GK:[5,1], Z:[5,8], OP1:[5,12], OP2:[7,13], NAP:[5,16] },
+          B: { GK:[5,18], Z:[5,14], OP1:[5,13], OP2:[7,13], NAP:[5,11] }
+        },
+        statuses: {},
+        focus: { "B.NAP": 3 },
+        actions: [
+          { who: "A.NAP", kind: "move", detail: "F13→F17" },
+          { who: "A.NAP", kind: "shot", detail: "удар L2 (2-е действие)" }
+        ],
+        roll: { label: "Удар (чисто, без Defend)", chance: 64, result: "goal", roll: 22 },
+        uiLabels: [
+          { id: "roll", text: "Удар 64% → 22 ГОЛ" },
+          { id: "score", text: "1 : 0" },
+          { id: "banner", text: "GOAL A" }
+        ],
+        paradigm: "A переключается на удержание преимущества."
+      },
+      {
+        min: 11, side: "B", score: [1, 0], ap: 2,
+        narrative: "Смена парадигмы B: оба ОП вверх, Нап наконец двигают — сброс Сна. Прессинг.",
+        ball: [5, 9],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[4,8], OP2:[7,8], NAP:[5,9] },
+          B: { GK:[5,18], Z:[5,12], OP1:[4,10], OP2:[7,10], NAP:[5,9] }
+        },
+        statuses: {},
+        focus: {},
+        actions: [
+          { who: "B.OP1", kind: "press", detail: "высокий выход" },
+          { who: "B.NAP", kind: "move", detail: "сброс Сон 3→0" }
+        ],
+        roll: null,
+        uiLabels: [
+          { id: "paradigm", text: "B: блок → прессинг" },
+          { id: "focus", text: "Сон сброшен действиями" }
+        ],
+        paradigm: "B больше не ждёт."
+      },
+      {
+        min: 13, side: "B", score: [1, 1], ap: 2,
+        narrative: "Отбор на половине A и Нап L2: ход+удар. 1:1.",
+        ball: null,
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[3,7], OP2:[8,7], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,11], OP1:[4,8], OP2:[7,8], NAP:[5,3] }
+        },
+        statuses: {},
+        focus: {},
+        actions: [
+          { who: "B.NAP", kind: "move", detail: "канал F9→F4" },
+          { who: "B.NAP", kind: "shot", detail: "L2 удар" }
+        ],
+        roll: { label: "Удар контра", chance: 58, result: "goal", roll: 30 },
+        uiLabels: [
+          { id: "roll", text: "Удар 58% → 30 ГОЛ" },
+          { id: "score", text: "1 : 1" }
+        ]
+      },
+      {
+        min: 17, side: "A", score: [1, 1], ap: 2,
+        narrative: "A ставит видимый Замах на Нап (CD потом 5'). B видит иконку сразу.",
+        ball: [6, 14],
+        players: {
+          A: { GK:[5,1], Z:[5,7], OP1:[4,11], OP2:[7,12], NAP:[6,14] },
+          B: { GK:[5,18], Z:[5,15], OP1:[4,14], OP2:[7,14], NAP:[5,12] }
+        },
+        statuses: { "A.NAP": { windup: true, windupCdAfter: 5 } },
+        focus: {},
+        actions: [
+          { who: "A.NAP", kind: "move", detail: "в полуфланг" },
+          { who: "A.NAP", kind: "windup", detail: "Замах (видно)" }
+        ],
+        roll: null,
+        uiLabels: [
+          { id: "windup", text: "Замах A.Нап — открытая стойка", spot: "piece" }
+        ]
+      },
+      {
+        min: 18, side: "B", score: [1, 1], ap: 2,
+        narrative: "B отвечает Defend в зоне замаха + ОП к линии паса.",
+        ball: [6, 14],
+        players: {
+          A: { GK:[5,1], Z:[5,7], OP1:[4,11], OP2:[7,12], NAP:[6,14] },
+          B: { GK:[5,18], Z:[6,15], OP1:[5,14], OP2:[7,14], NAP:[5,12] }
+        },
+        statuses: { "A.NAP": { windup: true }, "B.Z": { defend: 2 } },
+        focus: {},
+        actions: [
+          { who: "B.Z", kind: "defend", detail: "Defend G16" },
+          { who: "B.OP1", kind: "move", detail: "режет пас" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "duel", text: "Замах vs Defend — оба видимы" }]
+      },
+      {
+        min: 19, side: "A", score: [1, 1], ap: 2,
+        narrative: "Пас под замах в стойку. Бесплатный удар сгорает / низкий %.",
+        ball: [6, 14],
+        players: {
+          A: { GK:[5,1], Z:[5,7], OP1:[4,11], OP2:[7,12], NAP:[6,14] },
+          B: { GK:[5,18], Z:[6,15], OP1:[5,14], OP2:[7,14], NAP:[5,12] }
+        },
+        statuses: { "B.Z": { defend: 1 } },
+        focus: {},
+        actions: [
+          { who: "A.OP2", kind: "pass", detail: "в Нап под Замах" },
+          { who: "A.NAP", kind: "shot", detail: "реализация замаха в Defend" }
+        ],
+        roll: { label: "Удар замаха в Defend", chance: 18, result: "fail", roll: 70 },
+        uiLabels: [
+          { id: "roll", text: "Замах-удар 18% → 70 блок" },
+          { id: "windup", text: "Замах сгорел · CD 5'" }
+        ]
+      },
+      {
+        min: 20, side: "end", score: [1, 1],
+        narrative: "Свисток среза. 1:1. Оба меняли план; Сон и видимый покер Замах↔Defend отработали без скрытых дебаффов.",
+        ball: [5, 9],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[4,8], OP2:[7,8], NAP:[5,9] },
+          B: { GK:[5,18], Z:[5,13], OP1:[4,11], OP2:[7,11], NAP:[5,10] }
+        },
+        statuses: {},
+        focus: {},
+        actions: [],
+        roll: null,
+        uiLabels: [{ id: "banner", text: "Итог 1:1 · 20'" }]
+      }
+    ]
+  },
+
+  {
+    id: "I",
+    theme: "I",
+    title: "Контроль → край",
+    subtitle: "Мяч и игроки у бровок (колонки A–C / J–L). Замах читают — уход на фланг.",
+    scoreFinal: "1:1",
+    styles: { A: "Тики-така → правый край", B: "Активный блок → контра левым каналом" },
+    uiGlossary: [
+      { key: "Аура З", where: "Кольцо 2 клетки", text: "Давление 2 режет % паса в зоне." },
+      { key: "Смена плана", where: "Баннер «Парадигма»", text: "Игрок сам бросает тики-така ради края." }
+    ],
+    steps: [
+      {
+        min: 0, side: "kick", score: [0, 0],
+        narrative: "Kick-off A. Сразу видно: игра по бровкам — OP2 и NAP правее центра, у B левый канал свободнее.",
+        ball: [8, 9],
+        players: {
+          A: { GK:[5,1], Z:[6,4], OP1:[2,7], OP2:[9,7], NAP:[8,8] },
+          B: { GK:[5,18], Z:[5,15], OP1:[2,13], OP2:[9,13], NAP:[3,11] }
+        },
+        statuses: {},
+        focus: {},
+        actions: [],
+        roll: null,
+        uiLabels: [{ id: "banner", text: "Kick-off · акцент на фланги" }]
+      },
+      {
+        min: 2, side: "B", score: [0, 0], ap: 2,
+        narrative: "B: Defend → на следующем ходу переставит. Нап B пока столбом — Сон растёт.",
+        ball: [8, 10],
+        players: {
+          A: { GK:[5,1], Z:[6,5], OP1:[2,8], OP2:[9,9], NAP:[8,10] },
+          B: { GK:[5,18], Z:[7,14], OP1:[3,13], OP2:[9,13], NAP:[3,11] }
+        },
+        statuses: { "B.Z": { defend: 2 } },
+        focus: { "B.NAP": 1 },
+        actions: [
+          { who: "B.Z", kind: "defend", detail: "Defend F15" },
+          { who: "B.OP1", kind: "move", detail: "сужает канал" }
+        ],
+        roll: null,
+        uiLabels: [
+          { id: "defend", text: "Defend · 2" },
+          { id: "focus", text: "B Нап Сон1 — хотите чистого снайпера без Сна: качайте параметр позже" }
+        ]
+      },
+      {
+        min: 4, side: "A", score: [0, 0], ap: 2,
+        narrative: "A рано ставит Замах на F14 — видно. Зона удара ещё далеко.",
+        ball: [5, 12],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[4,10], OP2:[7,11], NAP:[5,13] },
+          B: { GK:[5,18], Z:[6,14], OP1:[4,13], OP2:[7,13], NAP:[5,11] }
+        },
+        statuses: { "A.NAP": { windup: true }, "B.Z": { defend: 1 } },
+        focus: { "B.NAP": 2 },
+        actions: [
+          { who: "A.NAP", kind: "move", detail: "F12→F14" },
+          { who: "A.NAP", kind: "windup", detail: "Замах (рано)" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "windup", text: "Замах виден — B может готовить ответ" }]
+      },
+      {
+        min: 5, side: "B", score: [0, 0], ap: 2,
+        narrative: "B не только Defend: ОП на фланг чтения. Не покупается целиком.",
+        ball: [5, 12],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[4,10], OP2:[7,11], NAP:[5,13] },
+          B: { GK:[5,18], Z:[5,14], OP1:[4,13], OP2:[8,14], NAP:[5,11] }
+        },
+        statuses: { "A.NAP": { windup: true } },
+        focus: { "B.NAP": 2 },
+        actions: [
+          { who: "B.Z", kind: "move", detail: "переставил линию" },
+          { who: "B.OP2", kind: "move", detail: "закрыл полуфланг" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "paradigm", text: "B: чтение замаха без паники" }]
+      },
+      {
+        min: 6, side: "A", score: [0, 0], ap: 2,
+        narrative: "Смена парадигмы A: центр закрыт — все AP в край. Замах сгорает без реализации.",
+        ball: [8, 14],
+        players: {
+          A: { GK:[5,1], Z:[5,7], OP1:[5,11], OP2:[8,14], NAP:[7,14] },
+          B: { GK:[5,18], Z:[5,14], OP1:[4,13], OP2:[8,14], NAP:[5,11] }
+        },
+        statuses: {},
+        focus: { "B.NAP": 3 },
+        actions: [
+          { who: "A.OP2", kind: "move", detail: "H→ край с мячом" },
+          { who: "A.NAP", kind: "move", detail: "тянулся к флангу; замах сгорел" }
+        ],
+        roll: null,
+        uiLabels: [
+          { id: "paradigm", text: "A: контроль → край" },
+          { id: "windup", text: "Замах сгорел (окно / зона)" }
+        ],
+        paradigm: "A бросает тики-така."
+      },
+      {
+        min: 7, side: "B", score: [0, 0], ap: 2,
+        narrative: "B выносит на Нап с Соном 3 — грязный приём, но удержал и сбросил Сон действием.",
+        ball: [5, 10],
+        players: {
+          A: { GK:[5,1], Z:[5,7], OP1:[5,11], OP2:[8,13], NAP:[7,13] },
+          B: { GK:[5,18], Z:[5,14], OP1:[4,12], OP2:[7,12], NAP:[5,10] }
+        },
+        statuses: {},
+        focus: { "B.NAP": 0 },
+        actions: [
+          { who: "B.GK", kind: "pass", detail: "вынос" },
+          { who: "B.NAP", kind: "receive", detail: "приём при Сон3" }
+        ],
+        roll: { label: "Приём Нап Сон3", chance: 28, result: "ok", roll: 19 },
+        uiLabels: [{ id: "roll", text: "Приём 28% → 19 чудом удержал · Сон сброшен" }]
+      },
+      {
+        min: 11, side: "B", score: [0, 1], ap: 2,
+        narrative: "Контра в канал за поднятой линией A. Нап L2 — гол.",
+        ball: null,
+        players: {
+          A: { GK:[5,1], Z:[5,8], OP1:[4,12], OP2:[8,12], NAP:[6,13] },
+          B: { GK:[5,18], Z:[5,12], OP1:[3,9], OP2:[7,9], NAP:[5,3] }
+        },
+        statuses: {},
+        focus: {},
+        actions: [
+          { who: "B.NAP", kind: "move", detail: "F8→F4" },
+          { who: "B.NAP", kind: "shot", detail: "L2" }
+        ],
+        roll: { label: "Удар контра", chance: 61, result: "goal", roll: 25 },
+        uiLabels: [
+          { id: "score", text: "0 : 1" },
+          { id: "roll", text: "61% → 25 ГОЛ" }
+        ],
+        paradigm: "B перешёл в контратакующий режим."
+      },
+      {
+        min: 16, side: "A", score: [0, 1], ap: 2,
+        narrative: "A: новый Замах после CD 5'. Уже в ударной зоне края.",
+        ball: [8, 15],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[4,11], OP2:[8,15], NAP:[7,16] },
+          B: { GK:[5,18], Z:[6,15], OP1:[4,13], OP2:[8,14], NAP:[5,11] }
+        },
+        statuses: { "A.NAP": { windup: true } },
+        focus: {},
+        actions: [
+          { who: "A.OP2", kind: "pass", detail: "под Нап" },
+          { who: "A.NAP", kind: "windup", detail: "Замах G17" }
+        ],
+        roll: { label: "Пас под замах", chance: 70, result: "ok", roll: 40 },
+        uiLabels: [{ id: "windup", text: "Замах · CD готов после 5'" }]
+      },
+      {
+        min: 17, side: "B", score: [0, 1], ap: 2,
+        narrative: "B снова Defend на замах.",
+        ball: [7, 16],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[4,11], OP2:[8,15], NAP:[7,16] },
+          B: { GK:[5,18], Z:[7,16], OP1:[5,14], OP2:[8,14], NAP:[5,11] }
+        },
+        statuses: { "A.NAP": { windup: true }, "B.Z": { defend: 2 } },
+        focus: {},
+        actions: [
+          { who: "B.Z", kind: "defend", detail: "на клетке замаха" },
+          { who: "B.OP1", kind: "move", detail: "страховка" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "duel", text: "Снова Замах vs Defend" }]
+      },
+      {
+        min: 18, side: "A", score: [1, 1], ap: 2,
+        narrative: "Обход: не бьём в щит — скидываем ОП2, тот возвращает, обычный L2 удар с угла.",
+        ball: null,
+        players: {
+          A: { GK:[5,1], Z:[5,7], OP1:[5,12], OP2:[9,16], NAP:[8,17] },
+          B: { GK:[5,18], Z:[7,16], OP1:[5,14], OP2:[8,14], NAP:[5,11] }
+        },
+        statuses: { "B.Z": { defend: 1 } },
+        focus: {},
+        actions: [
+          { who: "A.NAP", kind: "pass", detail: "скидка с замаха на ОП2 (замах сгорел ради схемы)" },
+          { who: "A.NAP", kind: "shot", detail: "после возврата — обычный удар" }
+        ],
+        roll: { label: "Удар с угла в обход Defend", chance: 47, result: "goal", roll: 33 },
+        uiLabels: [
+          { id: "score", text: "1 : 1" },
+          { id: "roll", text: "47% → 33 ГОЛ" },
+          { id: "tip", text: "Лобовой замах в Defend слаб; обход — сильнее" }
+        ]
+      },
+      {
+        min: 20, side: "end", score: [1, 1],
+        narrative: "1:1. Видимый замах создал покер; победил не скрытый бафф, а смена плана на край и обход стойки.",
+        ball: [5, 10],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[4,8], OP2:[7,8], NAP:[5,9] },
+          B: { GK:[5,18], Z:[5,14], OP1:[4,12], OP2:[7,12], NAP:[5,11] }
+        },
+        statuses: {},
+        focus: {},
+        actions: [],
+        roll: null,
+        uiLabels: [{ id: "banner", text: "Итог 1:1" }]
+      }
+    ]
+  },
+
+  {
+    id: "J",
+    theme: "J",
+    title: "Пресс → блок лидера",
+    subtitle: "A сразу высоко (ряды 10–15). После 1:0 садится в свою треть. B лезет.",
+    scoreFinal: "2:0",
+    styles: { A: "Высокий пресс → автобус", B: "Низкий блок → вынужденный риск" },
+    uiGlossary: [
+      { key: "CD Замах", where: "Таймер на бейдже", text: "Сильные скиллы всегда с cooldown." },
+      { key: "Аура ОП", where: "Кольцо 1", text: "Прессинг двумя ОП режет чужой вынос." }
+    ],
+    steps: [
+      {
+        min: 0, side: "kick", score: [0, 0],
+        narrative: "A сразу высокий прессинг — линия уже у центрального круга. B сидит низко у своих ворот.",
+        ball: [5, 12],
+        players: {
+          A: { GK:[5,1], Z:[5,7], OP1:[3,11], OP2:[7,11], NAP:[5,12] },
+          B: { GK:[5,18], Z:[5,16], OP1:[3,15], OP2:[7,15], NAP:[5,14] }
+        },
+        statuses: {},
+        focus: {},
+        actions: [],
+        roll: null,
+        uiLabels: [{ id: "banner", text: "Прессинг A · линия высоко" }]
+      },
+      {
+        min: 3, side: "A", score: [0, 0], ap: 2,
+        narrative: "Два ОП в ауре 1 на разыгрывающего B. Нап B бездействует — Сон.",
+        ball: [5, 15],
+        players: {
+          A: { GK:[5,1], Z:[5,9], OP1:[4,14], OP2:[6,14], NAP:[5,13] },
+          B: { GK:[5,18], Z:[5,16], OP1:[5,15], OP2:[7,14], NAP:[5,14] }
+        },
+        statuses: {},
+        focus: { "B.NAP": 1 },
+        actions: [
+          { who: "A.OP1", kind: "press", detail: "аура 1" },
+          { who: "A.OP2", kind: "press", detail: "аура 1" }
+        ],
+        roll: null,
+        uiLabels: [
+          { id: "aura", text: "Давление ОП×2 на клетках вокруг мяча" },
+          { id: "focus", text: "B Нап Сон1" }
+        ]
+      },
+      {
+        min: 4, side: "B", score: [0, 0], ap: 2,
+        narrative: "Вынос под двойной аурой — срыв. Мяч у A.",
+        ball: [5, 13],
+        players: {
+          A: { GK:[5,1], Z:[5,8], OP1:[4,13], OP2:[6,13], NAP:[5,12] },
+          B: { GK:[5,18], Z:[5,15], OP1:[5,14], OP2:[7,13], NAP:[5,11] }
+        },
+        statuses: {},
+        focus: { "B.NAP": 2 },
+        actions: [{ who: "B.OP1", kind: "pass", detail: "вынос вперёд" }],
+        roll: { label: "Пас под 2×аурой ОП", chance: 34, result: "fail", roll: 71 },
+        uiLabels: [{ id: "roll", text: "Пас 34% → 71 перехват A" }]
+      },
+      {
+        min: 8, side: "A", score: [1, 0], ap: 2,
+        narrative: "Нап L2 ход+удар после серии потерь B. 1:0.",
+        ball: null,
+        players: {
+          A: { GK:[5,1], Z:[5,9], OP1:[4,14], OP2:[7,14], NAP:[5,16] },
+          B: { GK:[5,18], Z:[5,15], OP1:[4,13], OP2:[7,13], NAP:[5,11] }
+        },
+        statuses: {},
+        focus: { "B.NAP": 3 },
+        actions: [
+          { who: "A.NAP", kind: "move", detail: "в ударную" },
+          { who: "A.NAP", kind: "shot", detail: "L2" }
+        ],
+        roll: { label: "Удар", chance: 60, result: "goal", roll: 18 },
+        uiLabels: [
+          { id: "score", text: "1 : 0" },
+          { id: "roll", text: "60% → 18 ГОЛ" }
+        ]
+      },
+      {
+        min: 9, side: "A", score: [1, 0], ap: 2,
+        narrative: "Смена парадигмы A: пресс выключен, З Defend у своей трети, ОП откат.",
+        ball: [5, 9],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[3,6], OP2:[7,6], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,14], OP1:[4,12], OP2:[7,12], NAP:[5,10] }
+        },
+        statuses: { "A.Z": { defend: 2 } },
+        focus: { "B.NAP": 0 },
+        actions: [
+          { who: "A.Z", kind: "defend", detail: "автобус F6" },
+          { who: "A.OP1", kind: "move", detail: "откат" }
+        ],
+        roll: null,
+        uiLabels: [
+          { id: "paradigm", text: "A: пресс → блок лидера" },
+          { id: "defend", text: "Defend · 2 — не до конца матча" }
+        ],
+        paradigm: "A защищает счёт. B обязан рискнуть — иначе ничья в полном матче, здесь срез продолжается."
+      },
+      {
+        min: 13, side: "B", score: [1, 0], ap: 2,
+        narrative: "B раскрылся и ставит Замах — видно. A уже ждёт.",
+        ball: [5, 15],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[4,7], OP2:[7,7], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,12], OP1:[4,14], OP2:[7,14], NAP:[5,15] }
+        },
+        statuses: { "A.Z": { defend: 1 }, "B.NAP": { windup: true } },
+        focus: {},
+        actions: [
+          { who: "B.NAP", kind: "move", detail: "в зону" },
+          { who: "B.NAP", kind: "windup", detail: "Замах" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "windup", text: "Замах B виден" }]
+      },
+      {
+        min: 14, side: "A", score: [1, 0], ap: 2,
+        narrative: "A: Defend на клетку замаха + второй AP ОП к мячу.",
+        ball: [5, 15],
+        players: {
+          A: { GK:[5,1], Z:[5,14], OP1:[5,13], OP2:[7,8], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,12], OP1:[4,14], OP2:[7,14], NAP:[5,15] }
+        },
+        statuses: { "A.Z": { defend: 2 }, "B.NAP": { windup: true } },
+        focus: {},
+        actions: [
+          { who: "A.Z", kind: "defend", detail: "на замахе" },
+          { who: "A.OP1", kind: "move", detail: "к мячу" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "duel", text: "Открытый ответ на Замах" }]
+      },
+      {
+        min: 15, side: "B", score: [1, 0], ap: 2,
+        narrative: "Реализация замаха в щит — провал. Честный низкий %.",
+        ball: [5, 14],
+        players: {
+          A: { GK:[5,1], Z:[5,14], OP1:[5,13], OP2:[7,8], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,12], OP1:[4,14], OP2:[7,14], NAP:[5,15] }
+        },
+        statuses: { "A.Z": { defend: 1 } },
+        focus: {},
+        actions: [
+          { who: "B.OP1", kind: "pass", detail: "в Нап" },
+          { who: "B.NAP", kind: "shot", detail: "замах-удар" }
+        ],
+        roll: { label: "Замах в Defend", chance: 16, result: "fail", roll: 82 },
+        uiLabels: [
+          { id: "roll", text: "16% → 82 мимо" },
+          { id: "windup", text: "Замах сгорел · CD 5'" }
+        ]
+      },
+      {
+        min: 19, side: "A", score: [1, 0], ap: 2,
+        narrative: "Контра: A ставит Замах (свой CD готов) на уходе.",
+        ball: [5, 14],
+        players: {
+          A: { GK:[5,1], Z:[5,7], OP1:[4,11], OP2:[7,11], NAP:[5,14] },
+          B: { GK:[5,18], Z:[5,12], OP1:[3,10], OP2:[8,10], NAP:[5,9] }
+        },
+        statuses: { "A.NAP": { windup: true } },
+        focus: { "B.OP1": 1, "B.OP2": 1 },
+        actions: [
+          { who: "A.OP2", kind: "pass", detail: "в Нап" },
+          { who: "A.NAP", kind: "windup", detail: "Замах" }
+        ],
+        roll: { label: "Пас в контратаку", chance: 75, result: "ok", roll: 50 },
+        uiLabels: [{ id: "windup", text: "Замах A · B ОП в Сне после раскрытия" }]
+      },
+      {
+        min: 20, side: "A", score: [2, 0], ap: 2,
+        narrative: "Пас в зону + реализация замаха. 2:0. Свисток.",
+        ball: null,
+        players: {
+          A: { GK:[5,1], Z:[5,7], OP1:[4,12], OP2:[7,12], NAP:[5,17] },
+          B: { GK:[5,18], Z:[5,14], OP1:[3,11], OP2:[8,11], NAP:[5,10] }
+        },
+        statuses: {},
+        focus: {},
+        actions: [
+          { who: "A.OP1", kind: "pass", detail: "под замах" },
+          { who: "A.NAP", kind: "shot", detail: "замах-удар" }
+        ],
+        roll: { label: "Замах чистый", chance: 55, result: "goal", roll: 21 },
+        uiLabels: [
+          { id: "score", text: "2 : 0" },
+          { id: "roll", text: "55% → 21 ГОЛ" },
+          { id: "banner", text: "Итог 2:0" }
+        ]
+      }
+    ]
+  }
+];
+
+  </script>
+  <script>
+(function () {
+  /** Flat-top hex grid, odd-q offset coords [col, row] */
+  const COLS = 12;
+  const ROWS = 20;
+  const HEX = 18; // radius in SVG units
+  const STEP_X = HEX * 1.5;
+  const STEP_Y = HEX * Math.sqrt(3);
+  const ORIGIN_X = HEX * 1.35;
+  const ORIGIN_Y = HEX * 1.2;
+  const VB_W = ORIGIN_X * 2 + STEP_X * (COLS - 1) + HEX;
+  const VB_H = ORIGIN_Y * 2 + STEP_Y * (ROWS - 0.5) + HEX;
+
+  const ROLE_SHORT = { GK: "ВР", Z: "З", OP1: "О1", OP2: "О2", NAP: "Н" };
+  const ROLE_NAME = {
+    GK: "Вратарь",
+    Z: "Защитник",
+    OP1: "Опорный 1",
+    OP2: "Опорный 2",
+    NAP: "Нападающий",
+  };
+  const PRESSURE = { GK: 0, Z: 2, OP1: 1, OP2: 1, NAP: 0 };
+  const KIND_RU = {
+    move: "Бежит",
+    pass: "Пас",
+    shot: "Удар!",
+    defend: "Defend",
+    windup: "Замах",
+    press: "Прессинг",
+    receive: "Приём",
+  };
+  const MOVE_MS = 950;
+  const HOLD_MS = 1700;
+
+  const matches = window.PITCH_TACTICS_MATCHES || [];
+  let matchIndex = 0;
+  let stepIndex = 0;
+  let playing = false;
+  let playTimer = null;
+  let animating = false;
+
+  const pieceEls = {};
+  let ballEl = null;
+  let svgEl = null;
+  let hexLayer = null;
+  let trailLayer = null;
+  let fxLayer = null;
+  let lastPlayers = null;
+  let lastBall = null;
+  const hexNodes = {};
+
+  const els = {
+    tabs: document.getElementById("matchTabs"),
+    meta: document.getElementById("matchMeta"),
+    clock: document.getElementById("clock"),
+    scoreboard: document.getElementById("scoreboard"),
+    sidePill: document.getElementById("sidePill"),
+    stylesBox: document.getElementById("stylesBox"),
+    glossary: document.getElementById("glossary"),
+    banner: document.getElementById("banner"),
+    paradigm: document.getElementById("paradigm"),
+    pitch: document.getElementById("pitch"),
+    narrative: document.getElementById("narrative"),
+    actions: document.getElementById("actions"),
+    rollBox: document.getElementById("rollBox"),
+    labels: document.getElementById("labels"),
+    note: document.getElementById("note"),
+    scrubber: document.getElementById("scrubber"),
+    stepCount: document.getElementById("stepCount"),
+    btnPrev: document.getElementById("btnPrev"),
+    btnNext: document.getElementById("btnNext"),
+    btnPlay: document.getElementById("btnPlay"),
+    moveLog: document.getElementById("moveLog"),
+  };
+
+  function match() {
+    return matches[matchIndex];
+  }
+  function step() {
+    return match().steps[stepIndex];
+  }
+  function prevStep() {
+    return stepIndex > 0 ? match().steps[stepIndex - 1] : null;
+  }
+
+  /** odd-q flat-top center in SVG units */
+  function hexCenter(col, row) {
+    const x = ORIGIN_X + STEP_X * col;
+    const y = ORIGIN_Y + STEP_Y * (row + 0.5 * (col & 1));
+    return { x, y };
+  }
+
+  function hexPoints(cx, cy, size) {
+    const pts = [];
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI / 180) * (60 * i); // flat-top
+      pts.push(cx + size * Math.cos(a) + "," + (cy + size * Math.sin(a)));
+    }
+    return pts.join(" ");
+  }
+
+  function offsetToCube(col, row) {
+    const x = col;
+    const z = row - ((col - (col & 1)) >> 1);
+    const y = -x - z;
+    return { x, y, z };
+  }
+
+  function hexDist(a, b) {
+    const A = offsetToCube(a[0], a[1]);
+    const B = offsetToCube(b[0], b[1]);
+    return (Math.abs(A.x - B.x) + Math.abs(A.y - B.y) + Math.abs(A.z - B.z)) / 2;
+  }
+
+  function cellName(pos) {
+    return ("ABCDEFGHIJKL"[pos[0]] || "?") + (pos[1] + 1);
+  }
+
+  function pctFromHex(col, row) {
+    const c = hexCenter(col, row);
+    return { left: (c.x / VB_W) * 100, top: (c.y / VB_H) * 100 };
+  }
+
+  function ensureLayers() {
+    if (svgEl) return;
+    els.pitch.innerHTML = "";
+
+    svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svgEl.setAttribute("class", "pitch-svg");
+    svgEl.setAttribute("viewBox", "0 0 " + VB_W + " " + VB_H);
+    svgEl.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    els.pitch.appendChild(svgEl);
+
+    hexLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    trailLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    svgEl.appendChild(hexLayer);
+    svgEl.appendChild(trailLayer);
+
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const center = hexCenter(c, r);
+        const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        poly.setAttribute("points", hexPoints(center.x, center.y, HEX * 0.92));
+        poly.setAttribute("class", "hex-cell" + ((c + r) % 2 ? " alt" : ""));
+        poly.dataset.col = String(c);
+        poly.dataset.row = String(r);
+        hexLayer.appendChild(poly);
+        hexNodes[c + "," + r] = poly;
+      }
+    }
+
+    const mid = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    const yMid = (hexCenter(0, 9).y + hexCenter(0, 10).y) / 2;
+    mid.setAttribute("x1", ORIGIN_X - HEX);
+    mid.setAttribute("x2", VB_W - ORIGIN_X + HEX);
+    mid.setAttribute("y1", yMid);
+    mid.setAttribute("y2", yMid);
+    mid.setAttribute("class", "hex-midline");
+    hexLayer.appendChild(mid);
+
+    fxLayer = document.createElement("div");
+    fxLayer.className = "fx-layer";
+    els.pitch.appendChild(fxLayer);
+
+    ballEl = document.createElement("div");
+    ballEl.className = "ball";
+    ballEl.hidden = true;
+    els.pitch.appendChild(ballEl);
+
+    ["A", "B"].forEach((side) => {
+      ["GK", "Z", "OP1", "OP2", "NAP"].forEach((role) => {
+        const key = side + "." + role;
+        const el = document.createElement("button");
+        el.type = "button";
+        el.className = "piece " + side + (role === "GK" ? " GK" : "");
+        el.innerHTML =
+          '<span class="piece-label">' +
+          ROLE_SHORT[role] +
+          '</span><span class="badge-slot"></span><span class="float-callout" hidden></span>';
+        els.pitch.appendChild(el);
+        pieceEls[key] = el;
+      });
+    });
+  }
+
+  function setPiecePos(el, col, row, animate) {
+    const p = pctFromHex(col, row);
+    if (!animate) {
+      el.style.transition = "none";
+      el.style.left = p.left + "%";
+      el.style.top = p.top + "%";
+      void el.offsetWidth;
+      el.style.transition = "";
+    } else {
+      el.style.transition =
+        "left " + MOVE_MS + "ms ease, top " + MOVE_MS + "ms ease";
+      el.style.left = p.left + "%";
+      el.style.top = p.top + "%";
+    }
+  }
+
+  function setBallPos(col, row, animate) {
+    if (col == null) {
+      ballEl.hidden = true;
+      return;
+    }
+    ballEl.hidden = false;
+    const p = pctFromHex(col, row);
+    if (!animate) {
+      ballEl.style.transition = "none";
+      ballEl.style.left = p.left + "%";
+      ballEl.style.top = p.top + "%";
+      void ballEl.offsetWidth;
+      ballEl.style.transition = "";
+    } else {
+      ballEl.style.transition =
+        "left " +
+        MOVE_MS +
+        "ms cubic-bezier(.2,.75,.2,1), top " +
+        MOVE_MS +
+        "ms cubic-bezier(.2,.75,.2,1)";
+      ballEl.style.left = p.left + "%";
+      ballEl.style.top = p.top + "%";
+    }
+  }
+
+  function clearTrails() {
+    while (trailLayer.firstChild) trailLayer.removeChild(trailLayer.firstChild);
+  }
+
+  function drawArrow(from, to, cls) {
+    if (!from || !to) return;
+    if (from[0] === to[0] && from[1] === to[1]) return;
+    const a = hexCenter(from[0], from[1]);
+    const b = hexCenter(to[0], to[1]);
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", a.x);
+    line.setAttribute("y1", a.y);
+    line.setAttribute("x2", b.x);
+    line.setAttribute("y2", b.y);
+    line.setAttribute("class", "move-arrow " + cls);
+    trailLayer.appendChild(line);
+
+    const ang = (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
+    const head = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+    const s = 5;
+    head.setAttribute(
+      "points",
+      b.x + "," + b.y + " " + (b.x - s) + "," + (b.y - s * 0.55) + " " + (b.x - s) + "," + (b.y + s * 0.55)
+    );
+    head.setAttribute("class", "move-head " + cls);
+    head.setAttribute("transform", "rotate(" + ang + " " + b.x + " " + b.y + ")");
+    trailLayer.appendChild(head);
+
+    const ghost = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    ghost.setAttribute("cx", a.x);
+    ghost.setAttribute("cy", a.y);
+    ghost.setAttribute("r", 4);
+    ghost.setAttribute("class", "move-ghost");
+    trailLayer.appendChild(ghost);
+  }
+
+  function drawBallPath(from, to) {
+    if (!from || !to) return;
+    const a = hexCenter(from[0], from[1]);
+    const b = hexCenter(to[0], to[1]);
+    const mx = (a.x + b.x) / 2;
+    const my = (a.y + b.y) / 2 - HEX * 0.8;
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M " + a.x + " " + a.y + " Q " + mx + " " + my + " " + b.x + " " + b.y);
+    path.setAttribute("class", "ball-path");
+    trailLayer.appendChild(path);
+  }
+
+  function resetHexClasses() {
+    Object.values(hexNodes).forEach((poly) => {
+      const c = Number(poly.dataset.col);
+      const r = Number(poly.dataset.row);
+      poly.setAttribute("class", "hex-cell" + ((c + r) % 2 ? " alt" : ""));
+    });
+  }
+
+  function paintHex(col, row, cls) {
+    const n = hexNodes[col + "," + row];
+    if (!n) return;
+    n.setAttribute("class", "hex-cell " + cls);
+  }
+
+  function renderAuras(s) {
+    resetHexClasses();
+    Object.entries(s.statuses || {}).forEach(([key, st]) => {
+      if (!st.defend) return;
+      const [side, role] = key.split(".");
+      const pos = s.players[side][role];
+      if (pos) paintHex(pos[0], pos[1], "aura-defend");
+    });
+    ["A", "B"].forEach((side) => {
+      Object.entries(s.players[side]).forEach(([role, pos]) => {
+        const rad = PRESSURE[role] || 0;
+        if (!rad) return;
+        for (let c = 0; c < COLS; c++) {
+          for (let r = 0; r < ROWS; r++) {
+            const d = hexDist(pos, [c, r]);
+            if (d > 0 && d <= rad) {
+              const n = hexNodes[c + "," + r];
+              if (n && n.getAttribute("class").indexOf("aura-defend") >= 0) continue;
+              paintHex(c, r, rad >= 2 ? "aura-p2" : "aura-p1");
+            }
+          }
+        }
+      });
+    });
+  }
+
+  function updateBadges(s) {
+    Object.keys(pieceEls).forEach((key) => {
+      const slot = pieceEls[key].querySelector(".badge-slot");
+      slot.innerHTML = "";
+      const focusLv = (s.focus || {})[key] || 0;
+      const st = (s.statuses || {})[key] || {};
+      if (focusLv > 0) {
+        const b = document.createElement("span");
+        b.className = "badge sleep";
+        b.textContent = "Z" + focusLv;
+        slot.appendChild(b);
+      }
+      if (st.defend) {
+        const b = document.createElement("span");
+        b.className = "badge defend";
+        b.textContent = "D" + st.defend;
+        slot.appendChild(b);
+      }
+      if (st.windup) {
+        const b = document.createElement("span");
+        b.className = "badge windup";
+        b.textContent = "⚡";
+        slot.appendChild(b);
+      }
+    });
+  }
+
+  function clearCallouts() {
+    Object.values(pieceEls).forEach((el) => {
+      const c = el.querySelector(".float-callout");
+      c.hidden = true;
+      c.textContent = "";
+      c.className = "float-callout";
+    });
+    fxLayer.innerHTML = "";
+  }
+
+  function showCallout(key, text, kind) {
+    const el = pieceEls[key];
+    if (!el) return;
+    const c = el.querySelector(".float-callout");
+    c.hidden = false;
+    c.textContent = text;
+    c.className = "float-callout show kind-" + (kind || "move");
+  }
+
+  function collectMoves(prev, next) {
+    const moves = [];
+    if (!prev) return moves;
+    ["A", "B"].forEach((side) => {
+      Object.keys(next.players[side]).forEach((role) => {
+        const a = prev.players[side][role];
+        const b = next.players[side][role];
+        if (!a || !b) return;
+        if (a[0] !== b[0] || a[1] !== b[1]) {
+          const key = side + "." + role;
+          moves.push({
+            key,
+            side,
+            role,
+            from: a,
+            to: b,
+            active: (next.actions || []).some((act) => act.who === key),
+            cells: hexDist(a, b),
+          });
+        }
+      });
+    });
+    return moves;
+  }
+
+  function renderMoveLog(moves) {
+    els.moveLog.innerHTML = "";
+    if (!moves.length) {
+      els.moveLog.innerHTML = "<li>Никто не сдвинулся</li>";
+      return;
+    }
+    moves
+      .slice()
+      .sort((a, b) => Number(b.active) - Number(a.active) || b.cells - a.cells)
+      .forEach((m) => {
+        const li = document.createElement("li");
+        li.className = m.active ? "active-move" : "passive-move";
+        li.innerHTML =
+          "<strong>" +
+          m.side +
+          " " +
+          ROLE_NAME[m.role] +
+          "</strong> " +
+          cellName(m.from) +
+          " → " +
+          cellName(m.to) +
+          ' <span class="tagish">' +
+          (m.active ? "актив" : "форма") +
+          " · " +
+          m.cells +
+          " гекс</span>";
+        els.moveLog.appendChild(li);
+      });
+  }
+
+  function renderRoll(roll) {
+    if (!roll) {
+      els.rollBox.innerHTML = '<div class="roll-empty">Нет броска</div>';
+      return;
+    }
+    const cls =
+      roll.result === "fail" ? "fail" : roll.result === "goal" ? "goal" : "ok";
+    const resultText =
+      roll.result === "goal" ? "ГОЛ" : roll.result === "ok" ? "Успех" : "Провал";
+    els.rollBox.innerHTML =
+      '<div class="roll-label">' +
+      roll.label +
+      '</div><div class="roll-chance">' +
+      roll.chance +
+      '%</div><div class="roll-bar"><span style="width:' +
+      roll.chance +
+      '%"></span></div><div class="roll-result ' +
+      cls +
+      '">Бросок ' +
+      roll.roll +
+      " → " +
+      resultText +
+      "</div>";
+  }
+
+  function renderMeta() {
+    const m = match();
+    document.body.dataset.match = m.id;
+    els.meta.innerHTML =
+      '<span class="theme-dot theme-' +
+      m.id +
+      '"></span><strong>' +
+      m.title +
+      "</strong> — " +
+      m.subtitle +
+      " · Итог <strong>" +
+      m.scoreFinal +
+      "</strong>";
+    els.stylesBox.innerHTML =
+      '<div><div class="who">Игрок A</div>' +
+      m.styles.A +
+      '</div><div><div class="who">Игрок B</div>' +
+      m.styles.B +
+      "</div>";
+    els.glossary.innerHTML = "";
+    (m.uiGlossary || []).forEach((g) => {
+      const art = document.createElement("article");
+      art.innerHTML =
+        "<b>" +
+        g.key +
+        '</b><span class="where">Где: ' +
+        g.where +
+        "</span><p>" +
+        g.text +
+        "</p>";
+      els.glossary.appendChild(art);
+    });
+  }
+
+  function renderSidePanel(s, moves) {
+    const m = match();
+    els.scrubber.max = String(m.steps.length - 1);
+    els.scrubber.value = String(stepIndex);
+    els.stepCount.textContent = stepIndex + 1 + " / " + m.steps.length;
+    els.clock.textContent = String(s.min).padStart(2, "0") + "'";
+    els.scoreboard.textContent = s.score[0] + " : " + s.score[1];
+
+    const side = s.side || "";
+    els.sidePill.textContent =
+      side === "A"
+        ? "Ход A"
+        : side === "B"
+          ? "Ход B"
+          : side === "kick"
+            ? "Kick-off"
+            : side === "end"
+              ? "Финал"
+              : side;
+    els.sidePill.className =
+      "side-pill " + (side === "A" || side === "B" ? side : "");
+
+    const bannerLabel = (s.uiLabels || []).find((x) => x.id === "banner");
+    els.banner.textContent = bannerLabel
+      ? bannerLabel.text
+      : m.title + " · " + s.min + "'";
+
+    if (s.paradigm) {
+      els.paradigm.hidden = false;
+      els.paradigm.textContent = "Парадигма: " + s.paradigm;
+    } else {
+      const pLab = (s.uiLabels || []).find((x) => x.id === "paradigm");
+      if (pLab) {
+        els.paradigm.hidden = false;
+        els.paradigm.textContent = pLab.text;
+      } else els.paradigm.hidden = true;
+    }
+
+    els.narrative.textContent = s.narrative || "";
+    els.actions.innerHTML = "";
+    (s.actions || []).forEach((a) => {
+      const li = document.createElement("li");
+      li.innerHTML =
+        '<span class="kind">' +
+        (KIND_RU[a.kind] || a.kind) +
+        "</span><strong>" +
+        a.who +
+        "</strong> — " +
+        a.detail;
+      els.actions.appendChild(li);
+    });
+    if (!(s.actions || []).length) els.actions.innerHTML = "<li>Нет AP-действий</li>";
+
+    renderRoll(s.roll);
+    renderMoveLog(moves);
+
+    els.labels.innerHTML = "";
+    (s.uiLabels || []).forEach((l) => {
+      const li = document.createElement("li");
+      li.innerHTML = "<strong>" + l.id + "</strong>: " + l.text;
+      els.labels.appendChild(li);
+    });
+    if (s.note) {
+      els.note.hidden = false;
+      els.note.textContent = s.note;
+    } else els.note.hidden = true;
+  }
+
+  function placeInstant(s) {
+    ensureLayers();
+    clearTrails();
+    clearCallouts();
+    ["A", "B"].forEach((side) => {
+      Object.entries(s.players[side]).forEach(([role, pos]) => {
+        setPiecePos(pieceEls[side + "." + role], pos[0], pos[1], false);
+      });
+    });
+    setBallPos(s.ball ? s.ball[0] : null, s.ball ? s.ball[1] : null, false);
+    renderAuras(s);
+    updateBadges(s);
+    lastPlayers = JSON.parse(JSON.stringify(s.players));
+    lastBall = s.ball ? s.ball.slice() : null;
+  }
+
+  function animateToStep(s, fromPlayers, fromBall) {
+    ensureLayers();
+    clearTrails();
+    clearCallouts();
+
+    const fakePrev = { players: fromPlayers, actions: [] };
+    const moves = collectMoves(fakePrev, s);
+
+    moves.forEach((mv) => {
+      drawArrow(mv.from, mv.to, mv.active ? "active-" + mv.side : "passive");
+    });
+    if (fromBall && s.ball) drawBallPath(fromBall, s.ball);
+    if (fromBall && !s.ball) {
+      const flash = document.createElement("div");
+      flash.className = "goal-flash";
+      flash.textContent = "ГОЛ / МЯЧ ВНЕ";
+      fxLayer.appendChild(flash);
+    }
+
+    renderSidePanel(s, moves);
+
+    (s.actions || []).forEach((a, idx) => {
+      setTimeout(() => {
+        showCallout(a.who, KIND_RU[a.kind] || a.kind, a.kind);
+      }, 80 + idx * 160);
+    });
+    moves
+      .filter((m) => !m.active && m.cells >= 2)
+      .slice(0, 4)
+      .forEach((m, idx) => {
+        setTimeout(() => {
+          const c = pieceEls[m.key].querySelector(".float-callout");
+          if (!c.hidden && c.textContent) return;
+          showCallout(
+            m.key,
+            "Форма " + cellName(m.from) + "→" + cellName(m.to),
+            "form"
+          );
+        }, 350 + idx * 140);
+      });
+
+    requestAnimationFrame(() => {
+      ["A", "B"].forEach((side) => {
+        Object.entries(s.players[side]).forEach(([role, pos]) => {
+          setPiecePos(pieceEls[side + "." + role], pos[0], pos[1], true);
+        });
+      });
+      if (s.ball) setBallPos(s.ball[0], s.ball[1], true);
+      else setBallPos(null, null, false);
+    });
+
+    setTimeout(() => {
+      renderAuras(s);
+      updateBadges(s);
+    }, MOVE_MS);
+
+    lastPlayers = JSON.parse(JSON.stringify(s.players));
+    lastBall = s.ball ? s.ball.slice() : null;
+  }
+
+  function render(animate) {
+    renderMeta();
+    const s = step();
+    ensureLayers();
+    const shouldAnimate =
+      animate !== false && lastPlayers && stepIndex > 0 && !animating;
+
+    if (shouldAnimate) {
+      animating = true;
+      animateToStep(s, lastPlayers, lastBall);
+      setTimeout(() => {
+        animating = false;
+      }, MOVE_MS + 80);
+    } else {
+      const prev = prevStep();
+      const moves = collectMoves(prev, s);
+      placeInstant(s);
+      if (prev) {
+        moves.forEach((mv) =>
+          drawArrow(mv.from, mv.to, mv.active ? "active-" + mv.side : "passive")
+        );
+        if (prev.ball && s.ball) drawBallPath(prev.ball, s.ball);
+        (s.actions || []).forEach((a) =>
+          showCallout(a.who, KIND_RU[a.kind] || a.kind, a.kind)
+        );
+      }
+      renderSidePanel(s, moves);
+      renderAuras(s);
+      updateBadges(s);
+    }
+  }
+
+  function buildTabs() {
+    els.tabs.innerHTML = "";
+    matches.forEach((m, i) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "tab theme-" + m.id;
+      b.textContent = m.id + " · " + m.title;
+      b.setAttribute("aria-selected", i === matchIndex ? "true" : "false");
+      b.addEventListener("click", () => {
+        stopPlay();
+        matchIndex = i;
+        stepIndex = 0;
+        lastPlayers = null;
+        lastBall = null;
+        buildTabs();
+        render(false);
+      });
+      els.tabs.appendChild(b);
+    });
+  }
+
+  function stopPlay() {
+    playing = false;
+    els.btnPlay.textContent = "▶ Смотреть";
+    if (playTimer) {
+      clearTimeout(playTimer);
+      playTimer = null;
+    }
+  }
+
+  function playNext() {
+    if (!playing) return;
+    if (stepIndex >= match().steps.length - 1) {
+      stopPlay();
+      return;
+    }
+    stepIndex += 1;
+    render(true);
+    playTimer = setTimeout(playNext, MOVE_MS + HOLD_MS);
+  }
+
+  function startPlay() {
+    playing = true;
+    els.btnPlay.textContent = "❚❚ Пауза";
+    if (stepIndex >= match().steps.length - 1) {
+      stepIndex = 0;
+      lastPlayers = null;
+      render(false);
+      playTimer = setTimeout(playNext, 600);
+    } else playNext();
+  }
+
+  els.btnPrev.addEventListener("click", () => {
+    stopPlay();
+    stepIndex = Math.max(0, stepIndex - 1);
+    lastPlayers = null;
+    render(false);
+  });
+  els.btnNext.addEventListener("click", () => {
+    stopPlay();
+    if (stepIndex < match().steps.length - 1) {
+      stepIndex += 1;
+      render(true);
+    }
+  });
+  els.btnPlay.addEventListener("click", () => {
+    if (playing) stopPlay();
+    else startPlay();
+  });
+  els.scrubber.addEventListener("input", () => {
+    stopPlay();
+    stepIndex = Number(els.scrubber.value);
+    lastPlayers = null;
+    render(false);
+  });
+
+  if (!matches.length) {
+    document.body.innerHTML = "<p style='padding:2rem'>Нет данных</p>";
+    return;
+  }
+  buildTabs();
+  render(false);
+})();
+
+  </script>
+</body>
+</html>
