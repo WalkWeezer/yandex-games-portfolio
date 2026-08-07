@@ -1650,21 +1650,56 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     return "<span>" + l + "<b>" + v + "</b></span>";
   }
 
-  /** Партнёры у центра — короткий пас/навес с розыгрыша, якоря схемы (home) не трогаем */
+  function inCenterCircle(pos) {
+    const c = pos[0];
+    const r = pos[1];
+    if (r === HALF_ROW) return true;
+    return Math.abs(r - HALF_ROW) <= 1 && Math.abs(c - CENTER_COL) <= 2;
+  }
+
+  /** Принимающая сторона — своя половина, вне центрального круга (НП за кругом) */
+  function placeReceivingKickoff(squad, side) {
+    Object.values(squad).forEach((p) => {
+      p.burst = false;
+      let pos = (p.home && p.home.slice()) || p.pos.slice();
+      if (side === "A") {
+        // своя половина: ряд строго < HALF_ROW
+        if (pos[1] >= HALF_ROW) pos[1] = HALF_ROW - 2;
+      } else {
+        if (pos[1] <= HALF_ROW) pos[1] = HALF_ROW + 2;
+      }
+      if (inCenterCircle(pos)) {
+        pos[1] = side === "A" ? HALF_ROW - 2 : HALF_ROW + 2;
+        if (Math.abs(pos[0] - CENTER_COL) <= 2 && pos[1] === (side === "A" ? HALF_ROW - 1 : HALF_ROW + 1)) {
+          pos[1] = side === "A" ? HALF_ROW - 2 : HALF_ROW + 2;
+        }
+      }
+      p.pos = pos;
+    });
+    if (squad.NAP) {
+      // НП принимающих — за центральным кругом по центру
+      squad.NAP.pos = [CENTER_COL, side === "A" ? HALF_ROW - 2 : HALF_ROW + 2];
+    }
+  }
+
+  /** Партнёры у центра у разводящих; принимающие вне круга */
   function placeKickoffSupport(ownerSide) {
     const yours = ownerSide === "A";
-    const squad = yours ? state.you : state.them;
+    const kicking = yours ? state.you : state.them;
+    const receiving = yours ? state.them : state.you;
+    const recvSide = yours ? "B" : "A";
     const back = yours ? -2 : 2;
     const wingR = yours ? -1 : 1;
-    squad.NAP.pos = [CENTER_COL, HALF_ROW];
-    squad.NAP.burst = true;
-    if (squad.Z) squad.Z.pos = [CENTER_COL, HALF_ROW + back];
-    if (squad.OP1) squad.OP1.pos = [CENTER_COL - 2, HALF_ROW + wingR];
-    if (squad.OP2) squad.OP2.pos = [CENTER_COL + 2, HALF_ROW + wingR];
-    if (squad.GK) squad.GK.pos = squad.GK.home.slice();
-    Object.values(squad).forEach((p) => {
+    kicking.NAP.pos = [CENTER_COL, HALF_ROW];
+    kicking.NAP.burst = true;
+    if (kicking.Z) kicking.Z.pos = [CENTER_COL, HALF_ROW + back];
+    if (kicking.OP1) kicking.OP1.pos = [CENTER_COL - 2, HALF_ROW + wingR];
+    if (kicking.OP2) kicking.OP2.pos = [CENTER_COL + 2, HALF_ROW + wingR];
+    if (kicking.GK) kicking.GK.pos = kicking.GK.home.slice();
+    Object.values(kicking).forEach((p) => {
       if (p.role !== "NAP") p.burst = false;
     });
+    placeReceivingKickoff(receiving, recvSide);
   }
 
   function startMatch() {
@@ -1673,9 +1708,12 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     state.turn = "A";
     state.ap = COACH_AP;
     state.ball = [CENTER_COL, HALF_ROW];
-    // Якоря схемы = текущая расстановка; NAP якорь — центр после свистка
+    // Якоря схемы = расстановка; НП не якорим в центр (при чужом розыгрыше должен быть за кругом)
     Object.values(state.you).forEach((p) => {
-      p.home = p.role === "NAP" ? [CENTER_COL, HALF_ROW] : p.pos.slice();
+      p.home = p.pos.slice();
+      if (p.role === "NAP" && (p.home[1] >= HALF_ROW || inCenterCircle(p.home))) {
+        p.home = [CENTER_COL, HALF_ROW - 2];
+      }
     });
     Object.values(state.them).forEach((p) => {
       p.pos = p.home.slice();
