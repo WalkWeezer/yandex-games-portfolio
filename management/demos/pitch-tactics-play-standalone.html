@@ -356,6 +356,11 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
 .hex-cell.pressure1 { fill: #5a4a20; fill-opacity: 0.7; }
 .hex-cell.pressure2 { fill: #6a3020; fill-opacity: 0.75; }
 .hex-cell.loose { fill: #4a3a60; stroke: #cbbfff; stroke-width: 1.5; }
+.hex-cell.loose-contested {
+  fill: #5a3048;
+  stroke: #ffb0d0;
+  stroke-width: 2;
+}
 
 .mark-boundary {
   fill: none;
@@ -2058,13 +2063,20 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       state.reachable = cellsInRange(p.pos, bands.gold).filter((pos) => canStandOn(pos, p.id));
       if (state.loose) {
         const d = hexDist(p.pos, state.ball);
-        if (d > 0 && d <= bands.gold && canStandOn(state.ball, p.id)) {
+        const tackleR = actionRange(p, "tackle");
+        // спорный мяч: в радиусе хода и отбора — клик = борьба (без стака)
+        if (
+          d > 0 &&
+          d <= bands.gold &&
+          (canStandOn(state.ball, p.id) || (canTargetLooseBall(state.ball, p.id) && d <= tackleR))
+        ) {
           if (!state.reachable.some((x) => x[0] === state.ball[0] && x[1] === state.ball[1])) {
             state.reachable.push(state.ball.slice());
           }
         }
       }
       const deb = state.ballOwner === p.id ? carrySpeedDebuff(p.control || 1) : 0;
+      const contested = state.loose && occupant(state.ball) && occupant(state.ball).side === "B";
       toast(
         "Ход XCOM · жёлтый ≤" +
           bands.yellow +
@@ -2073,7 +2085,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
           " · " +
           bands.tag +
           (deb ? " −" + deb + " влад." : "") +
-          " · можно на 1 клетку"
+          (contested ? " · спорный мяч — клик = борьба" : " · можно на 1 клетку")
       );
     } else if (mode === "pass" || mode === "cross") {
       const range = actionRange(p, mode);
@@ -2093,7 +2105,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     } else if (mode === "tackle") {
       const range = actionRange(p, "tackle");
       if (state.loose && hexDist(p.pos, state.ball) <= range) {
-        if (hexDist(p.pos, state.ball) === 0) {
+        if (hexDist(p.pos, state.ball) === 0 && !(occupant(state.ball) && occupant(state.ball).side === "B")) {
           closeRadial();
           doPickup(p, true);
           return;
@@ -2102,8 +2114,20 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       }
       const ow = ownerPlayer();
       if (ow && ow.side === "B" && hexDist(p.pos, ow.pos) <= range) state.targets.push(ow.pos.slice());
+      // соперник на клетке свободного мяча — тоже кликабельная цель
+      if (state.loose) {
+        const occ = occupant(state.ball);
+        if (occ && occ.side === "B" && hexDist(p.pos, occ.pos) <= range) {
+          if (!state.targets.some((x) => x[0] === occ.pos[0] && x[1] === occ.pos[1])) {
+            state.targets.push(occ.pos.slice());
+          }
+        }
+      }
       if (!state.targets.length) toast("Цель отбора вне радиуса " + range);
-      else toast("Отбор · радиус " + range);
+      else {
+        const contested = state.loose && occupant(state.ball) && occupant(state.ball).side === "B";
+        toast(contested ? "Спорный мяч · клик по клетке/сопернику" : "Отбор · радиус " + range);
+      }
     }
     paintBoard();
     renderLeft();
@@ -2202,7 +2226,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       box.innerHTML =
         "<b>Отбор</b> радиус " +
         actionRange(p, "tackle") +
-        " (атрибут÷2). Промах — мяч остаётся у владельца.";
+        " (атрибут÷2). Свободный мяч на клетке соперника — борьба за подбор. Промах по владельцу — мяч остаётся у него.";
   }
 
   function aiGkDive(side) {
@@ -2228,6 +2252,10 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
             doPickup(sel, false);
             return;
           }
+          if (state.loose) {
+            toast("Мяч свободен — кликните клетку мяча или соперника на ней");
+            return;
+          }
           doTackle(sel, p);
           return;
         }
@@ -2250,7 +2278,10 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     if (!p || p.side !== "A" || !state.mode) return;
 
     if (state.mode === "move") {
-      if (!state.reachable.some((x) => x[0] === c && x[1] === r)) return;
+      if (!state.reachable.some((x) => x[0] === c && x[1] === r)) {
+        toast("Клетка вне радиуса хода");
+        return;
+      }
       doMove(p, [c, r]);
       return;
     }
@@ -2267,7 +2298,15 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       return;
     }
     if (state.mode === "tackle" && state.loose && c === state.ball[0] && r === state.ball[1]) {
-      if (hexDist(p.pos, state.ball) <= actionRange(p, "tackle")) doPickup(p);
+      if (hexDist(p.pos, state.ball) <= actionRange(p, "tackle")) doPickup(p, false);
+      else toast("Мяч вне радиуса отбора");
+      return;
+    }
+    if (state.mode === "tackle" && state.loose) {
+      const occ = occupant([c, r]);
+      if (occ && occ.side === "B" && occ.pos[0] === state.ball[0] && occ.pos[1] === state.ball[1]) {
+        doPickup(p, false);
+      }
     }
   }
 
@@ -2297,6 +2336,23 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     const steps = hexDist(from, to);
     if (steps > bands.gold) {
       toast("Дальше золотого радиуса (" + bands.gold + ")");
+      return;
+    }
+    // Спорный свободный мяч на клетке соперника — борьба без стака позиций
+    if (state.loose && to[0] === state.ball[0] && to[1] === state.ball[1]) {
+      const occ = occupant(to);
+      if (occ && occ.id !== p.id && occ.side !== p.side) {
+        if (hexDist(from, to) > actionRange(p, "tackle")) {
+          toast("Подойдите ближе · радиус отбора " + actionRange(p, "tackle"));
+          return;
+        }
+        contestedLoose(p, occ, false);
+        spendAP(p.id, from);
+        return;
+      }
+    }
+    if (!canStandOn(to, p.id)) {
+      toast("Клетка занята");
       return;
     }
     p.pos = to.slice();
@@ -2357,10 +2413,16 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     spendAP(p.id, from);
   }
 
-  /** sure=true: мяч под ногами / наступил — без провала */
+  /** sure=true: мяч под ногами / наступил на пустую клетку — без провала */
   function claimLoose(p, sure) {
     if (!state.loose) return false;
     const dist = hexDist(p.pos, state.ball);
+    const occ = occupant(state.ball);
+    const enemy = occ && occ.side !== p.side ? occ : null;
+    // Спорная клетка — только через contestedLoose (не «бесплатный» sure)
+    if (enemy && enemy.id !== p.id) {
+      return contestedLoose(p, enemy, sure);
+    }
     if (dist > actionRange(p, "tackle") && !sure) return false;
     if (sure || dist === 0) {
       state.ballOwner = p.id;
@@ -2386,17 +2448,85 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     return false;
   }
 
+  /**
+   * Свободный мяч на клетке соперника: борьба за подбор.
+   * Позиции не стакаем — победитель забирает мяч к себе (или закрепляет у себя).
+   */
+  function contestedLoose(p, enemy, forceAttempt) {
+    if (!state.loose || !enemy) return false;
+    const dist = hexDist(p.pos, state.ball);
+    if (dist > actionRange(p, "tackle") && !forceAttempt) {
+      toast("Мяч вне радиуса отбора");
+      return false;
+    }
+    let ch = clamp(52 + skillPct(p.tackle) * 0.4 - skillPct(enemy.tackle) * 0.28, 22, 88);
+    if (dist === 0) ch = clamp(ch + 8, 22, 92);
+    const roll = rnd();
+    pushLog(
+      "Борьба за мяч: " +
+        p.name +
+        " vs " +
+        enemy.name +
+        " · " +
+        ch +
+        "% (" +
+        Math.round(roll) +
+        ") · клетка " +
+        cellName(state.ball)
+    );
+    if (roll <= ch) {
+      state.ballOwner = p.id;
+      state.loose = false;
+      state.ball = p.pos.slice();
+      p.burst = true;
+      enemy.burst = false;
+      resetCarryFatigue();
+      pushLog(p.name + " выиграл свободный мяч у " + enemy.name, true);
+      toast("Мяч ваш!");
+      return true;
+    }
+    state.ballOwner = enemy.id;
+    state.loose = false;
+    state.ball = enemy.pos.slice();
+    enemy.burst = true;
+    resetCarryFatigue();
+    pushLog(enemy.name + " закрепил свободный мяч", true);
+    toast("Соперник закрепил мяч");
+    return false;
+  }
+
   function doPickup(p, sure) {
     if (!state.loose) {
       toast("Мяч не свободен");
       return;
     }
-    if (hexDist(p.pos, state.ball) > actionRange(p, "tackle")) {
+    const occ = occupant(state.ball);
+    const enemy = occ && occ.side !== p.side ? occ : null;
+    const dist = hexDist(p.pos, state.ball);
+    if (enemy) {
+      if (dist > actionRange(p, "tackle") && !sure) {
+        toast("Мяч вне радиуса отбора " + actionRange(p, "tackle"));
+        return;
+      }
+      contestedLoose(p, enemy, !!sure);
+      spendAP(p.id);
+      return;
+    }
+    if (dist > actionRange(p, "tackle") && !sure) {
       toast("Мяч вне радиуса");
       return;
     }
-    claimLoose(p, !!sure || hexDist(p.pos, state.ball) === 0);
-    spendAP();
+    claimLoose(p, !!sure || dist === 0);
+    spendAP(p.id);
+  }
+
+  /** Клетка свободного мяча — цель хода даже если там стоит соперник */
+  function canTargetLooseBall(pos, movingId) {
+    if (!state.loose) return false;
+    if (pos[0] !== state.ball[0] || pos[1] !== state.ball[1]) return false;
+    const occ = occupant(pos);
+    if (!occ || occ.id === movingId) return canStandOn(pos, movingId);
+    return occ.side !== byId(movingId).side;
   }
 
   function doPass(from, to, isCross) {
@@ -2611,7 +2741,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
 
   function aiAction(style) {
     if (state.loose) {
-      // 1) уже стоит на мяче — всегда забирает
+      // 1) уже стоит на мяче — всегда забирает (если клетка не занята врагом)
       const onBall = Object.values(state.them).find(
         (p) => p.pos[0] === state.ball[0] && p.pos[1] === state.ball[1]
       );
@@ -2619,23 +2749,31 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
         claimLoose(onBall, true);
         return;
       }
-      // 2) ближайший бежит на клетку мяча / подбирает
+      const youOnBall = Object.values(state.you || {}).find(
+        (p) => p.pos[0] === state.ball[0] && p.pos[1] === state.ball[1]
+      );
+      // 2) ближайший бежит на клетку мяча / подбирает / борется
       const near = Object.values(state.them)
         .filter((p) => p.role !== "GK")
         .sort((a, b) => hexDist(a.pos, state.ball) - hexDist(b.pos, state.ball))[0];
       if (near) {
         const d = hexDist(near.pos, state.ball);
         const bud = actionRange(near, "move");
-        if (d <= actionRange(near, "tackle") && d > 0 && Math.random() < 0.45) {
-          claimLoose(near, false);
-          if (!state.loose) return;
+        const tR = actionRange(near, "tackle");
+        if (d <= tR && d > 0) {
+          if (youOnBall) {
+            contestedLoose(near, youOnBall, false);
+            return;
+          }
+          if (Math.random() < 0.55) {
+            claimLoose(near, false);
+            if (!state.loose) return;
+          }
         }
         if (d <= bud && !occupant(state.ball)) {
-          // шаг на мяч
           const opts = cellsInRange(near.pos, bud)
             .filter((pos) => canStandOn(pos, near.id))
             .sort((a, b) => hexDist(a, state.ball) - hexDist(b, state.ball));
-          // предпочесть саму клетку мяча
           const onto = opts.find((pos) => pos[0] === state.ball[0] && pos[1] === state.ball[1]) || opts[0];
           if (onto) {
             near.pos = onto;

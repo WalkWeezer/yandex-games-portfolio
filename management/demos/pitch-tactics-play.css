@@ -348,6 +348,11 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
 .hex-cell.pressure1 { fill: #5a4a20; fill-opacity: 0.7; }
 .hex-cell.pressure2 { fill: #6a3020; fill-opacity: 0.75; }
 .hex-cell.loose { fill: #4a3a60; stroke: #cbbfff; stroke-width: 1.5; }
+.hex-cell.loose-contested {
+  fill: #5a3048;
+  stroke: #ffb0d0;
+  stroke-width: 2;
+}
 
 .mark-boundary {
   fill: none;
