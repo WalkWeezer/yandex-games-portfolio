@@ -955,7 +955,7 @@
       '<div class="skills-side" id="skillsSide"></div></div>' +
       '<div class="lineup-actions"><button class="btn btn-ghost" id="back">← Назад</button>' +
       '<button class="btn btn-primary" id="kick">Начать матч</button></div>' +
-      '<div class="hint-box">Ход как в XCOM: <b>жёлтый</b>/<b>золотой</b> радиус. Неактивные сами держат <b>форму по линии мяча</b> (фланги не схлопываются). С мячом −дебафф владения.</div></section>';
+      '<div class="hint-box">Ход как в XCOM: <b>жёлтый</b>/<b>золотой</b> радиус. После вашего хода нетронутые держат <b>форму по линии мяча</b> (фланги не схлопываются). С мячом −дебафф владения.</div></section>';
 
     drawLineupPitch();
     fillSkillsSide();
@@ -1320,7 +1320,7 @@
       " · устал." +
       (state.ballOwner === p.id ? state.carryFatigue || 0 : 0) +
       "</div>" +
-      '<div class="hint-box">Ход XCOM: жёлтый/золотой. Форма без команды — <b>по линии мяча</b>. С мячом −дебафф владения.</div></div>'
+      '<div class="hint-box">Ход XCOM: жёлтый/золотой. После вашего хода нетронутые держат <b>форму по линии мяча</b>. С мячом −дебафф владения.</div></div>'
     );
   }
 
@@ -1852,10 +1852,6 @@
     state.targets = [];
     closeRadial();
     syncPieces(true, moveId, fromPos);
-    // остальные без команды подтягивают линию мяча уже в течение хода
-    if (state.turn === "A" && !state.over) {
-      holdFormation("A", state.actedIds.concat(state.lockedIds), true);
-    }
     renderLeft();
     renderRight();
     paintBoard();
@@ -2228,7 +2224,6 @@
 
   function endAITurn() {
     holdFormation("B", state.aiLocked || []);
-    holdFormation("A", state.actedIds); // подтянуть своих перед новым ходом
     state.turn = "A";
     state.ap = COACH_AP;
     state.lockedIds = [];
