@@ -373,14 +373,26 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
 
 .piece {
   position: absolute;
-  width: 28px; height: 28px;
-  margin: -14px 0 0 -14px;
+  width: 34px; height: 34px;
+  margin: -17px 0 0 -17px;
   border-radius: 50%;
   border: 2px solid rgba(255,255,255,0.45);
-  display: grid; place-items: center;
-  font-size: 0.62rem; font-weight: 800;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  font-weight: 800;
   z-index: 4; cursor: pointer; padding: 0;
   box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+  line-height: 1;
+}
+.piece .piece-role { font-size: 0.62rem; }
+.piece .piece-sa {
+  font-size: 0.45rem;
+  font-weight: 700;
+  opacity: 0.9;
+  letter-spacing: -0.02em;
 }
 .piece.A { background: linear-gradient(160deg,#6eb6ff,#1d6ec7); color:#041018; }
 .piece.B { background: linear-gradient(160deg,#ffc08a,#c56a20); color:#1a0d04; }

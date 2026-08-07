@@ -324,13 +324,13 @@
     return o;
   }
 
-  // Атрибуты 1–5: радиус действия скилла.
-  // Пас/удар = значение; отбор = /2; навес = ×2. S/A ≤ 5.
+  // Атрибуты 1–5. Ход: после касания/подбора — рывок A, дальше — S.
+  // Профили нарочно разные: взрывной ≠ стайер.
   const YOU_BASE = {
-    GK: { name: "Кольцов", shot: 1, pass: 3, cross: 1, tackle: 2, speed: 2, accel: 2, press: 0, pos: [6, 1] },
+    GK: { name: "Кольцов", shot: 1, pass: 3, cross: 1, tackle: 2, speed: 2, accel: 1, press: 0, pos: [6, 1] },
     Z: { name: "Буров", shot: 1, pass: 3, cross: 2, tackle: 4, speed: 3, accel: 2, press: 2, pos: [6, 4] },
-    OP1: { name: "Левин", shot: 2, pass: 4, cross: 3, tackle: 3, speed: 4, accel: 3, press: 1, pos: [2, 6] },
-    OP2: { name: "Райцев", shot: 2, pass: 4, cross: 4, tackle: 3, speed: 4, accel: 3, press: 1, pos: [10, 6] },
+    OP1: { name: "Левин", shot: 2, pass: 4, cross: 3, tackle: 3, speed: 2, accel: 5, press: 1, pos: [2, 6] }, // взрывной
+    OP2: { name: "Райцев", shot: 2, pass: 4, cross: 4, tackle: 3, speed: 5, accel: 1, press: 1, pos: [10, 6] }, // стайер
     NAP: { name: "Сомов", shot: 4, pass: 2, cross: 2, tackle: 2, speed: 5, accel: 4, press: 1, pos: [6, 8] },
   };
   const AWAY_HOME = {
@@ -483,13 +483,24 @@
     return 18 + attr * 14; // 1→32 … 5→88
   }
 
-  /** Радиус действия: пас/удар = N, отбор = N/2, навес = N×2 */
+  /** Радиус действия: пас/удар = N, отбор = N/2, навес = N×2; ход = A (рывок) или S */
   function actionRange(p, mode) {
     if (mode === "pass" || mode === "shot") return p[mode];
     if (mode === "cross") return p.cross * 2;
     if (mode === "tackle") return Math.max(1, Math.round(p.tackle / 2));
-    if (mode === "move") return p.burst ? p.accel : p.speed;
+    if (mode === "move") return moveBudget(p);
     return 1;
+  }
+
+  function moveBudget(p) {
+    // С мячом после касания — ускорение; иначе / продолжение — скорость
+    if (state.ballOwner === p.id && p.burst) return p.accel;
+    return p.speed;
+  }
+
+  function moveMs(from, to) {
+    const d = Math.max(1, hexDist(from, to));
+    return 90 + d * 110; // дальше = дольше на экране, разница S/A видна
   }
 
   function inActionRange(from, to, mode) {
@@ -698,7 +709,7 @@
       '<div class="skills-side" id="skillsSide"></div></div>' +
       '<div class="lineup-actions"><button class="btn btn-ghost" id="back">← Назад</button>' +
       '<button class="btn btn-primary" id="kick">Начать матч</button></div>' +
-      '<div class="hint-box">Атрибуты 1–5 = радиус действия: пас/удар = N, отбор = N÷2, навес = N×2. Скор./Уск. ≤5. Внутри радиуса пас без штрафа дистанции.</div></section>';
+      '<div class="hint-box">Атрибуты 1–5 = радиус (пас/удар = N, отбор÷2, навес×2). <b>S</b> — ход без рывка, <b>A</b> — первый рывок с мячом. Левин A5/S2, Райцев A1/S5, Нап S5/A4.</div></section>';
 
     drawLineupPitch();
     fillSkillsSide();
@@ -835,11 +846,11 @@
           skillCell("Пас", p.pass) +
           skillCell("Навес", p.cross) +
           skillCell("Отбор", p.tackle) +
-          '</div><div class="meta-row">S' +
+          '</div><div class="meta-row"><b>S' +
           p.speed +
-          "/A" +
+          " / A" +
           p.accel +
-          " · радиусы: пас " +
+          "</b> · радиусы: пас " +
           actionRange(p, "pass") +
           " · навес " +
           actionRange(p, "cross") +
@@ -962,7 +973,11 @@
         p.name +
         '</span><span class="pc-meta">' +
         cellName(p.pos) +
-        " · Σ" +
+        " · <b>S" +
+        p.speed +
+        "/A" +
+        p.accel +
+        "</b> · Σ" +
         pr.pts +
         "</span>";
       b.onclick = () => {
@@ -1073,8 +1088,15 @@
       const el = document.createElement("button");
       el.type = "button";
       el.className = "piece " + p.side;
-      el.textContent = ROLE_LABEL[p.role];
-      el.title = p.name;
+      el.innerHTML =
+        '<span class="piece-role">' +
+        ROLE_LABEL[p.role] +
+        '</span><span class="piece-sa">S' +
+        p.speed +
+        " A" +
+        p.accel +
+        "</span>";
+      el.title = p.name + " · S" + p.speed + "/A" + p.accel;
       el.addEventListener("click", (ev) => {
         ev.stopPropagation();
         onPieceClick(p.id);
@@ -1108,19 +1130,36 @@
     });
   }
 
-  function syncPieces(animate) {
+  function syncPieces(animate, moveId, fromPos) {
     allPlayers().forEach((p) => {
       const el = pieceEls[p.id];
       if (!el) return;
       const pt = pctFromHex(p.pos[0], p.pos[1]);
-      el.style.transition = animate ? "left .35s ease, top .35s ease" : "none";
+      if (animate && moveId && p.id === moveId && fromPos) {
+        el.style.transition = "left " + moveMs(fromPos, p.pos) + "ms ease, top " + moveMs(fromPos, p.pos) + "ms ease";
+      } else {
+        el.style.transition = animate ? "left .28s ease, top .28s ease" : "none";
+      }
       el.style.left = pt.left + "%";
       el.style.top = pt.top + "%";
       el.classList.toggle("selected", state.selectedId === p.id);
       el.classList.toggle("has-ball", state.ballOwner === p.id);
+      el.title = p.name + " · S" + p.speed + "/A" + p.accel + (p.burst && state.ballOwner === p.id ? " · рывок" : "");
+      const label = ROLE_LABEL[p.role];
+      if (el.dataset.baseLabel !== label) {
+        el.dataset.baseLabel = label;
+      }
+      el.innerHTML =
+        '<span class="piece-role">' +
+        label +
+        '</span><span class="piece-sa">S' +
+        p.speed +
+        " A" +
+        p.accel +
+        "</span>";
     });
     const bp = pctFromHex(state.ball[0], state.ball[1]);
-    ballEl.style.transition = animate ? "left .4s ease, top .4s ease" : "none";
+    ballEl.style.transition = animate ? "left .35s ease, top .35s ease" : "none";
     ballEl.style.left = bp.left + "%";
     ballEl.style.top = bp.top + "%";
     ballEl.style.opacity = state.ballOwner && !state.loose ? "0.3" : "1";
@@ -1231,7 +1270,8 @@
           }
         }
       }
-      toast("Ход до " + bud + " гексов (" + (p.burst ? "уск.A" : "скор.S") + ")");
+      const tag = state.ballOwner === p.id && p.burst ? "рывок A" + p.accel : "скор. S" + p.speed;
+      toast("Ход до " + bud + " · " + tag);
     } else if (mode === "pass" || mode === "cross") {
       const range = actionRange(p, mode);
       Object.values(state.you).forEach((t) => {
@@ -1289,11 +1329,8 @@
     }
     if (state.mode === "move") {
       const bud = actionRange(p, "move");
-      let html =
-        "<b>Ход</b> до " +
-        bud +
-        " · " +
-        (p.burst ? "рывок A" + p.accel : "скор. S" + p.speed);
+      const tag = state.ballOwner === p.id && p.burst ? "рывок A" + p.accel : "скор. S" + p.speed;
+      let html = "<b>Ход</b> до <b>" + bud + "</b> гексов · " + tag + " (S" + p.speed + "/A" + p.accel + ")";
       if (state.ballOwner === p.id && hoverHex) {
         const ch = chanceCarry(p, hoverHex);
         html +=
@@ -1303,7 +1340,9 @@
           ch.detail +
           "</div>";
       } else if (state.ballOwner === p.id) {
-        html += "<div class='muted'>С мячом: наведите клетку — % удержания под давлением.</div>";
+        html += "<div class='muted'>С мячом: 1-й ход = A, дальше = S. Наведите клетку — % удержания.</div>";
+      } else {
+        html += "<div class='muted'>Без мяча ходит на S. Левин взрывной (A5/S2), Райцев стайер (A1/S5).</div>";
       }
       box.innerHTML = html;
       return;
@@ -1409,30 +1448,44 @@
     }
   }
 
-  function spendAP() {
+  function spendAP(moveId, fromPos) {
     state.ap -= 1;
     state.mode = null;
     state.reachable = [];
     state.targets = [];
     closeRadial();
+    syncPieces(true, moveId, fromPos);
+    renderLeft();
+    renderRight();
+    paintBoard();
+    updatePreview();
     if (state.ap <= 0 && !state.over) endPlayerTurn();
-    else {
-      renderLeft();
-      renderRight();
-      paintBoard();
-      updatePreview();
-      syncPieces(true);
-    }
   }
 
   function doMove(p, to) {
+    const from = p.pos.slice();
     const carrying = state.ballOwner === p.id;
-    const usedBurst = p.burst;
+    const usedBurst = carrying && p.burst;
+    const bud = moveBudget(p);
+    if (hexDist(from, to) > bud) {
+      toast("Дальше лимита хода (" + bud + ")");
+      return;
+    }
     p.pos = to.slice();
     if (carrying) {
       const ch = chanceCarry(p, to);
       const roll = rnd();
-      pushLog(p.name + " ведёт → " + cellName(to) + " · " + ch.detail + " · бросок " + Math.round(roll));
+      pushLog(
+        p.name +
+          " ведёт → " +
+          cellName(to) +
+          " · " +
+          (usedBurst ? "рывок A" + p.accel : "скор. S" + p.speed) +
+          " · " +
+          ch.detail +
+          " · бросок " +
+          Math.round(roll)
+      );
       if (roll <= ch.keep) {
         state.ball = to.slice();
         state.loose = false;
@@ -1445,15 +1498,14 @@
         toast("Потеря мяча");
       }
     } else {
-      pushLog(p.name + " → " + cellName(to));
-      // наступил на свободный мяч — забирает
+      pushLog(p.name + " → " + cellName(to) + " · S" + p.speed + " (ход " + hexDist(from, to) + "/" + bud + ")");
       if (state.loose && state.ball[0] === to[0] && state.ball[1] === to[1]) {
         claimLoose(p, true);
       }
     }
     if (usedBurst) p.burst = false;
     else if (carrying) p.burst = false;
-    spendAP();
+    spendAP(p.id, from);
   }
 
   /** sure=true: мяч под ногами / наступил — без провала */
@@ -1491,10 +1543,6 @@
     if (hexDist(p.pos, state.ball) > actionRange(p, "tackle")) {
       toast("Мяч вне радиуса");
       return;
-    }
-    // подтянуть мяч к игроку при подборе с соседней клетки
-    if (hexDist(p.pos, state.ball) > 0 && (sure || true)) {
-      // остаёмся на своей клетке, мяч к нам
     }
     claimLoose(p, !!sure || hexDist(p.pos, state.ball) === 0);
     spendAP();
@@ -1711,7 +1759,6 @@
       );
       if (onBall) {
         claimLoose(onBall, true);
-        pushLog("ПК: " + onBall.name + " забрал мяч под ногами");
         return;
       }
       // 2) ближайший бежит на клетку мяча / подбирает
@@ -1835,14 +1882,14 @@
   }
 
   function aiMoveToward(p, target) {
-    const bud = actionRange(p, "move");
+    const bud = moveBudget(p);
+    const from = p.pos.slice();
     const opts = cellsInRange(p.pos, bud).filter((pos) => !occupant(pos));
     if (!opts.length) return;
     const carrying = state.ballOwner === p.id;
     opts.sort((a, b) => {
       const da = hexDist(a, target) - hexDist(b, target);
       if (!carrying) return da;
-      // avoid Σ≥2 cells when carrying
       const pa = pressureOn(a, p.side).pts;
       const pb = pressureOn(b, p.side).pts;
       const ra = pa >= 2 ? 100 : pa;
@@ -1850,12 +1897,22 @@
       return ra - rb || da;
     });
     const to = opts[0];
-    const usedBurst = p.burst;
+    const usedBurst = carrying && p.burst;
     p.pos = to;
     if (carrying) {
       const ch = chanceCarry(p, to);
       const roll = rnd();
-      pushLog("ПК " + p.name + " ведёт → " + cellName(to) + " · удержать " + ch.keep + "%");
+      pushLog(
+        "ПК " +
+          p.name +
+          " ведёт → " +
+          cellName(to) +
+          " · " +
+          (usedBurst ? "A" + p.accel : "S" + p.speed) +
+          " · удержать " +
+          ch.keep +
+          "%"
+      );
       if (roll <= ch.keep) {
         state.ball = to.slice();
         state.loose = false;
@@ -1866,9 +1923,18 @@
         pushLog("ПК потерял мяч под давлением!", true);
       }
     } else {
-      pushLog("ПК " + p.name + " → " + cellName(p.pos));
+      pushLog("ПК " + p.name + " → " + cellName(p.pos) + " · S" + p.speed);
+      if (state.loose && p.pos[0] === state.ball[0] && p.pos[1] === state.ball[1]) {
+        claimLoose(p, true);
+      }
     }
     if (usedBurst || carrying) p.burst = false;
+    // animate this piece by distance on next sync
+    const el = pieceEls[p.id];
+    if (el) {
+      const ms = moveMs(from, to);
+      el.style.transition = "left " + ms + "ms ease, top " + ms + "ms ease";
+    }
   }
 
   function aiSmart(ow) {
