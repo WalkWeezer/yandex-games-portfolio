@@ -1840,6 +1840,10 @@
     state.targets = [];
     closeRadial();
     syncPieces(true, moveId, fromPos);
+    // остальные без команды подтягивают линию мяча уже в течение хода
+    if (state.turn === "A" && !state.over) {
+      holdFormation("A", state.actedIds.concat(state.lockedIds), true);
+    }
     renderLeft();
     renderRight();
     paintBoard();
