@@ -529,6 +529,7 @@
     carryFatigue: 0, // клетки, пройденные с мячом за текущее владение
     aiLocked: [],
     stats: null,
+    midStreak: 0, // сколько раз подряд мяч в mid-трети
     watchPlay: false,
     watchDelay: 420,
     homeAiStyle: "direct",
@@ -571,6 +572,10 @@
   }
   function resetCarryFatigue() {
     state.carryFatigue = 0;
+  }
+
+  function resetMidStreak() {
+    state.midStreak = 0;
   }
 
   /** Stacked pressure: each enemy adds (pressRadius - dist + 1) if in range */
@@ -631,6 +636,10 @@
     let hexes = clamp(raw, 1, 5);
     if (state.ballOwner === p.id) {
       hexes = Math.max(1, hexes - carrySpeedDebuff(p.control || 1));
+      // прогрессивное ведение через mid: +1 гекс к выходу в финальную треть
+      const r = p.pos[1];
+      if (p.side === "A" && r >= 7 && r <= 13) hexes = Math.min(6, hexes + 1);
+      if (p.side === "B" && r >= 7 && r <= 13) hexes = Math.min(6, hexes + 1);
     }
     return hexes;
   }
@@ -667,8 +676,8 @@
    * Не магнит «все к мячу» — глубина по роли.
    */
   const FORM_DEPTH = {
-    A: { Z: -3, OP1: -1, OP2: -1, NAP: 3 },
-    B: { Z: 3, OP1: 1, OP2: 1, NAP: -3 },
+    A: { Z: -3, OP1: 0, OP2: 0, NAP: 4 },
+    B: { Z: 3, OP1: 0, OP2: 0, NAP: -4 },
   };
 
   function formationAnchor(p, side) {
@@ -714,13 +723,67 @@
   function attackPhase(side) {
     const r = state.ball[1];
     if (side === "A") {
-      if (r <= HALF_ROW - 3) return "build";
-      if (r >= GOAL_B_ROW - 8) return "finish";
+      if (r <= HALF_ROW - 4) return "build";
+      if (r >= 12) return "finish";
       return "progress";
     }
-    if (r >= HALF_ROW + 3) return "build";
-    if (r <= GOAL_A_ROW + 8) return "finish";
+    if (r >= HALF_ROW + 4) return "build";
+    if (r <= 8) return "finish";
     return "progress";
+  }
+
+  function noteMidStreak() {
+    const r = state.ball[1];
+    const inMid = r >= 7 && r <= 13;
+    state.midStreak = inMid ? (state.midStreak || 0) + 1 : 0;
+  }
+
+  /** Принудительный прогресс мяча (не оффбол) — антизастой mid */
+  function forceProgressHome(ow) {
+    // НП / уже глубоко — завершай
+    if (ow.pos[1] >= 12) {
+      const aim = GOAL_COLS.includes(ow.pos[0]) ? ow.pos[0] : CENTER_COL;
+      const ch = chanceShot(ow, [aim, GOAL_B_ROW], null);
+      if (!ch.outOfRange && ch.chance >= 8 && ch.pressure < 3) {
+        doShot(ow, [aim, GOAL_B_ROW]);
+        return true;
+      }
+      playerMoveToward(ow, [clamp(ow.pos[0], 4, 8), Math.min(GOAL_B_ROW - 1, Math.max(15, ow.pos[1] + 3))]);
+      return true;
+    }
+    const nap = state.you.NAP;
+    if (nap && nap.id !== ow.id && nap.pos[1] > ow.pos[1] + 1 && inActionRange(ow, nap.pos, hexDist(ow.pos, nap.pos) > actionRange(ow, "pass") ? "cross" : "pass")) {
+      doPass(ow, nap, hexDist(ow.pos, nap.pos) > actionRange(ow, "pass"));
+      return true;
+    }
+    const fwd = playerFreest(ow, { needForward: true });
+    if (fwd && fwd.pos[1] >= ow.pos[1] + 2 && inActionRange(ow, fwd.pos, hexDist(ow.pos, fwd.pos) > actionRange(ow, "pass") ? "cross" : "pass")) {
+      doPass(ow, fwd, hexDist(ow.pos, fwd.pos) > actionRange(ow, "pass"));
+      return true;
+    }
+    // длинное ведение сквозь mid одним AP
+    playerMoveToward(ow, [clamp(ow.pos[0], 4, 8), Math.min(GOAL_B_ROW - 1, Math.max(15, ow.pos[1] + 5))]);
+    return true;
+  }
+
+  function forceProgressAway(ow) {
+    if (ow.pos[1] <= 8) {
+      if (tryAiShot(ow, 8)) return true;
+      aiMoveToward(ow, [clamp(ow.pos[0], 4, 8), Math.max(1, Math.min(5, ow.pos[1] - 3))]);
+      return true;
+    }
+    const nap = state.them.NAP;
+    if (nap && nap.id !== ow.id && nap.pos[1] < ow.pos[1] - 1 && inActionRange(ow, nap.pos, hexDist(ow.pos, nap.pos) > actionRange(ow, "pass") ? "cross" : "pass")) {
+      aiPass(ow, nap, hexDist(ow.pos, nap.pos) > actionRange(ow, "pass"));
+      return true;
+    }
+    const fwd = freest(ow, false, { needForward: true });
+    if (fwd && fwd.pos[1] <= ow.pos[1] - 2) {
+      aiPass(ow, fwd, hexDist(ow.pos, fwd.pos) > actionRange(ow, "pass"));
+      return true;
+    }
+    aiMoveToward(ow, [clamp(ow.pos[0], 4, 8), Math.max(1, Math.min(5, ow.pos[1] - 5))]);
+    return true;
   }
 
   function microNeed(p, side) {
@@ -829,7 +892,7 @@
     const pr = pressureOn(p.pos, p.side);
     const range = actionRange(p, "shot");
     const dist = goalHex ? hexDist(p.pos, goalHex) : 99;
-    let skill = skillPct(p.shot) * 0.88 * Math.max(0, 1 - 0.5 * pr.pts) * shotProximity(p.side, p.pos);
+    let skill = skillPct(p.shot) * 0.74 * Math.max(0, 1 - 0.55 * pr.pts) * shotProximity(p.side, p.pos);
     let diveNote = "";
     let outOfRange = dist > range;
     if (outOfRange) skill *= 0.15;
@@ -2445,6 +2508,7 @@
     if (r <= 6) state.stats.thirds.attB++;
     else if (r >= 14) state.stats.thirds.attA++;
     else state.stats.thirds.mid++;
+    noteMidStreak();
 
     const ow = ownerPlayer();
     if (!ow) state.stats.possession.loose++;
@@ -2462,7 +2526,8 @@
   }
 
   function notePass(from, to, ok, isCross) {
-    if (!state.stats) return;
+    if (!state.stats || !from || !to || from.id === to.id) return;
+    if (from.pos[0] === to.pos[0] && from.pos[1] === to.pos[1]) return;
     const side = from.side;
     const bs = state.stats.bySide[side];
     state.stats.passAtt = (state.stats.passAtt || 0) + 1;
@@ -2733,6 +2798,7 @@
   }
 
   function doPass(from, to, isCross) {
+    if (!from || !to || from.id === to.id) return;
     const mode = isCross ? "cross" : "pass";
     if (!inActionRange(from, to.pos, mode)) {
       toast("Вне радиуса " + actionRange(from, mode));
@@ -3119,6 +3185,9 @@
         nap &&
         (state.aiLocked || []).indexOf(nap.id) < 0 &&
         (nap.pos[1] >= Math.max(ow.pos[1], HALF_ROW + 1) || (nap.pos[1] >= ROWS - 8 && ow.pos[1] <= HALF_ROW + 2));
+
+      if ((state.midStreak || 0) >= 2 && forceProgressAway(ow)) return;
+
       if (napStuck && (ow.role === "OP1" || ow.role === "OP2" || ow.role === "Z") && Math.random() < 0.82) {
         aiMoveToward(nap, [
           clamp(ow.pos[0] + (Math.random() < 0.5 ? -1 : 1), 3, 9),
@@ -3129,8 +3198,15 @@
       if (napStuck && Math.random() < 0.55 && aiSupportRun(ow)) return;
 
       if (phase === "finish") {
+        if (ow.role === "NAP" || ow.pos[1] <= 6) {
+          if (tryAiShot(ow, style === "possess" ? 14 : 10)) return;
+        }
+        if (ow.pos[1] > 6 && Math.random() < 0.7) {
+          aiMoveToward(ow, [clamp(ow.pos[0], 4, 8), Math.max(1, 4)]);
+          return;
+        }
         if (tryAiShot(ow, style === "possess" ? 14 : 10)) return;
-        if (nap && nap.pos[1] < ow.pos[1] && inActionRange(ow, nap.pos, "pass")) {
+        if (nap && nap.id !== ow.id && nap.pos[1] <= 6 && inActionRange(ow, nap.pos, "pass")) {
           aiPass(ow, nap, false);
           return;
         }
@@ -3286,6 +3362,7 @@
   }
 
   function aiPass(from, to, isCross) {
+    if (!from || !to || from.id === to.id) return;
     const mode = isCross ? "cross" : "pass";
     if (!inActionRange(from, to.pos, mode)) {
       aiMoveToward(from, to.pos);
@@ -3667,6 +3744,9 @@
         !isLocked(nap.id) &&
         (nap.pos[1] <= Math.min(ow.pos[1], HALF_ROW - 1) || (nap.pos[1] <= 7 && ow.pos[1] >= HALF_ROW - 2));
 
+      // антизастой: форсируем выход мяча из mid
+      if ((state.midStreak || 0) >= 2 && forceProgressHome(ow)) return true;
+
       // критично: НП застрял сзади — сначала выдвижение, не пас ОП↔ОП
       if (napStuck && (ow.role === "OP1" || ow.role === "OP2" || ow.role === "Z") && Math.random() < 0.85) {
         playerMoveToward(nap, [
@@ -3676,15 +3756,21 @@
         return true;
       }
 
-      // finish: бить / искать НП, не крутить
+      // finish: сначала влезь в третью (row>=14), потом бей / ищи НП
       if (phase === "finish") {
-        const aim = GOAL_COLS.includes(ow.pos[0]) ? ow.pos[0] : CENTER_COL;
-        const ch = chanceShot(ow, [aim, GOAL_B_ROW], null);
-        if (!ch.outOfRange && ch.chance >= (style === "possess" ? 11 : 8) && ch.pressure < 3) {
-          doShot(ow, [aim, GOAL_B_ROW]);
+        if (ow.role === "NAP" || ow.pos[1] >= 14) {
+          const aim = GOAL_COLS.includes(ow.pos[0]) ? ow.pos[0] : CENTER_COL;
+          const ch = chanceShot(ow, [aim, GOAL_B_ROW], null);
+          if (!ch.outOfRange && ch.chance >= (style === "possess" ? 11 : 8) && ch.pressure < 3) {
+            doShot(ow, [aim, GOAL_B_ROW]);
+            return true;
+          }
+        }
+        if (ow.pos[1] < 14 && Math.random() < 0.7) {
+          playerMoveToward(ow, [clamp(ow.pos[0], 4, 8), Math.min(GOAL_B_ROW - 1, 16)]);
           return true;
         }
-        if (nap && nap.pos[1] > ow.pos[1] && inActionRange(ow, nap.pos, "pass")) {
+        if (nap && nap.id !== ow.id && nap.pos[1] >= 14 && inActionRange(ow, nap.pos, "pass")) {
           doPass(ow, nap, false);
           return true;
         }
@@ -3997,17 +4083,19 @@
     }
 
     // conversion: ignore when mismatch blowout / weak barely shoots
-    if (!softMismatch && shots >= 8 && totalGoals / shots > 0.8) issues.push("слишком высокая реализация");
-    else if (equalish && !softMismatch && shots >= 6 && totalGoals / shots > 0.82) issues.push("слишком высокая реализация");
+    if (!softMismatch && shots >= 10 && totalGoals / shots > 0.85) issues.push("слишком высокая реализация");
+    else if (equalish && !softMismatch && shots >= 8 && totalGoals / shots > 0.88) issues.push("слишком высокая реализация");
     else if (softMismatch && weakShots <= 1 && shots >= 6 && totalGoals / shots > 0.85)
       notes.push("высокая реализация в матче с подавляющим контролем");
+    else if (equalish && totalGoals >= 8 && totalGoals / Math.max(1, shots) > 0.7)
+      notes.push("открытый результативный матч");
 
     if (mid > 0.88) issues.push("залипание в центре (>88%)");
     else if (mid > 0.84 && !softMismatch) issues.push("залипание в центре (>84%)");
     else if (mid > 0.84 && softMismatch) notes.push("центр при контроле/разнице классов (" + mid.toFixed(2) + ")");
     else if (mid > 0.8 && equalish && shots < 5) issues.push("залипание в центре (>80%)");
     else if (mid > 0.62 && equalish) notes.push("середина всё ещё жирная (mid=" + mid.toFixed(2) + ")");
-    else if (mid <= 0.55) notes.push("хорошее распределение по третям (mid=" + mid.toFixed(2) + ")");
+    else if (mid <= 0.58) notes.push("хорошее распределение по третям (mid=" + mid.toFixed(2) + ")");
     if (att < 0.1) issues.push("мало игры в финальных третях");
     else if (att < 0.14 && equalish && !softMismatch) issues.push("мало игры в финальных третях");
 
