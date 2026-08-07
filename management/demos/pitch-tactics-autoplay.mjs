@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 /**
  * Быстрый ИИ vs ИИ прогон без браузера.
- * Usage: node pitch-tactics-autoplay.mjs [opponentId=academy] [--out path]
+ * Usage:
+ *   node pitch-tactics-autoplay.mjs [awayId=academy]
+ *   node pitch-tactics-autoplay.mjs rivals --home direct
+ *   node pitch-tactics-autoplay.mjs --batch 5 --out /tmp/pitch-batch.json
  */
 import fs from "fs";
 import path from "path";
@@ -10,9 +13,29 @@ import vm from "vm";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
-const oppId = args.find((a) => !a.startsWith("--")) || "academy";
-const outIdx = args.indexOf("--out");
-const outPath = outIdx >= 0 ? args[outIdx + 1] : null;
+
+function argVal(flag, fallback) {
+  const i = args.indexOf(flag);
+  return i >= 0 ? args[i + 1] : fallback;
+}
+
+const positional = args.find((a) => !a.startsWith("--") && args[args.indexOf(a) - 1] !== "--home" && args[args.indexOf(a) - 1] !== "--out" && args[args.indexOf(a) - 1] !== "--batch");
+const awayId = positional || "rivals";
+const homeStyle = argVal("--home", "direct");
+const outPath = argVal("--out", null);
+const batchN = Number(argVal("--batch", "0")) || 0;
+
+const EQUAL_ROTATION = [
+  { awayId: "rivals", homeStyle: "direct" },
+  { awayId: "wingers", homeStyle: "possess" },
+  { awayId: "vertical", homeStyle: "width" },
+  { awayId: "rivals", homeStyle: "width" },
+  { awayId: "wingers", homeStyle: "direct" },
+  { awayId: "vertical", homeStyle: "possess" },
+  { awayId: "rivals", homeStyle: "possess" },
+  { awayId: "wingers", homeStyle: "width" },
+  { awayId: "vertical", homeStyle: "direct" },
+];
 
 function stubEl(tag) {
   const el = {
@@ -132,18 +155,68 @@ const sandbox = {
 const code = fs.readFileSync(path.join(__dirname, "pitch-tactics-play.js"), "utf8");
 vm.runInNewContext(code, sandbox, { filename: "pitch-tactics-play.js" });
 
-const t0 = Date.now();
-const result = sandbox.window.pitchAutoPlayFullMatch(oppId);
-result.elapsedMs = Date.now() - t0;
-
-const json = JSON.stringify(result, null, 2);
-if (outPath) {
-  fs.mkdirSync(path.dirname(path.resolve(outPath)), { recursive: true });
-  fs.writeFileSync(outPath, json);
-  const protoPath = outPath.replace(/\.json$/i, "-protocol.txt");
-  fs.writeFileSync(protoPath, (result.protocol || []).join("\n"));
+function summarize(result) {
+  return {
+    homeStyle: result.homeStyle,
+    opponent: result.opponent,
+    awayAi: result.awayAi,
+    score: result.score,
+    shots: [result.stats.shotsFor, result.stats.shotsAgainst],
+    passPct: result.passPct,
+    thirdsShare: result.thirdsShare,
+    tackles: result.stats.tackles,
+    hotCells: result.hotCells,
+    topPassLinks: result.topPassLinks,
+    quality: result.quality,
+    elapsedMs: result.elapsedMs,
+  };
 }
-process.stdout.write(json + "\n");
-process.stderr.write(
-  `AI vs AI ${result.opponent}: ${result.score[0]}:${result.score[1]} @${result.minute}' in ${result.elapsedMs}ms\n`
-);
+
+function play(opts) {
+  const t0 = Date.now();
+  const result = sandbox.window.pitchAutoPlayFullMatch(opts);
+  result.elapsedMs = Date.now() - t0;
+  return result;
+}
+
+if (batchN > 0) {
+  const matches = [];
+  let streak = 0;
+  let best = 0;
+  for (let i = 0; i < batchN; i++) {
+    const opts = EQUAL_ROTATION[i % EQUAL_ROTATION.length];
+    const result = play(opts);
+    const sum = summarize(result);
+    matches.push(sum);
+    if (sum.quality.ok) {
+      streak++;
+      best = Math.max(best, streak);
+    } else streak = 0;
+    process.stderr.write(
+      `#${i + 1} ${opts.homeStyle} vs ${result.opponent}: ${result.score[0]}:${result.score[1]} ` +
+        `shots ${sum.shots.join("-")} mid ${Math.round(sum.thirdsShare.mid * 100)}% ` +
+        `${sum.quality.ok ? "OK" : "FAIL " + sum.quality.issues.join("; ")} (${result.elapsedMs}ms)\n`
+    );
+  }
+  const payload = { bestStreak: best, okRate: matches.filter((m) => m.quality.ok).length / matches.length, matches };
+  const json = JSON.stringify(payload, null, 2);
+  if (outPath) {
+    fs.mkdirSync(path.dirname(path.resolve(outPath)), { recursive: true });
+    fs.writeFileSync(outPath, json);
+  }
+  process.stdout.write(json + "\n");
+} else {
+  const result = play({ awayId, homeStyle });
+  const json = JSON.stringify(result, null, 2);
+  if (outPath) {
+    fs.mkdirSync(path.dirname(path.resolve(outPath)), { recursive: true });
+    fs.writeFileSync(outPath, json);
+    const protoPath = outPath.replace(/\.json$/i, "-protocol.txt");
+    fs.writeFileSync(protoPath, (result.protocol || []).join("\n"));
+  }
+  process.stdout.write(json + "\n");
+  process.stderr.write(
+    `AI vs AI ${homeStyle} vs ${result.opponent}: ${result.score[0]}:${result.score[1]} @${result.minute}' ` +
+      `q=${result.quality.ok} in ${result.elapsedMs}ms\n`
+  );
+}
