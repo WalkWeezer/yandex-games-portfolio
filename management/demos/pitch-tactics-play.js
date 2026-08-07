@@ -1207,7 +1207,7 @@
     resetCarryFatigue();
     pushLog("Свисток! Партнёры у мяча — короткий пас или ведение. Клик → радиальное меню.", true);
     state.screen = "match";
-    render();
+    if (!state.autoPlay) render();
   }
 
   // —— Match ——
@@ -2223,7 +2223,7 @@
     setTimeout(() => {
       if (scored) {
         state.ball = goalHex.slice();
-        syncPieces(true);
+        if (!state.autoPlay) syncPieces(true);
         state.score[0] += 1;
         if (state.stats) state.stats.goalsFor++;
         pushLog("ГОЛ! Мяч в " + cellName(goalHex), true);
@@ -2285,7 +2285,7 @@
         (ownerSide === "A" ? "вы" : "соперник") +
         " у мяча · принимающий НП за кругом."
     );
-    syncPieces(true);
+    if (!state.autoPlay) syncPieces(true);
   }
 
   function endPlayerTurn() {
@@ -2329,8 +2329,10 @@
       state.score[0] > state.score[1] ? "Победа!" : state.score[0] < state.score[1] ? "Поражение" : "Ничья";
     pushLog("Финал " + state.score[0] + ":" + state.score[1] + " — " + msg, true);
     toast(msg + " " + state.score[0] + ":" + state.score[1]);
-    renderLeft();
-    renderRight();
+    if (!state.autoPlay) {
+      renderLeft();
+      renderRight();
+    }
   }
 
   function runAI() {
@@ -2828,25 +2830,27 @@
 
   window.pitchAutoPlayFullMatch = autoPlayFullMatch;
 
-  render();
-
-  const autoParam = /(?:\?|&)autoplay=([^&]*)/.exec(location.search || "");
-  if (autoParam) {
-    const id = decodeURIComponent(autoParam[1] || "academy") || "academy";
-    try {
-      const result = autoPlayFullMatch(id);
-      const pre = document.createElement("pre");
-      pre.id = "autoplay-result";
-      pre.style.cssText =
-        "position:fixed;inset:8px;overflow:auto;background:#0b100e;color:#e8f2ea;z-index:99;padding:12px;font:12px/1.4 monospace";
-      pre.textContent = JSON.stringify(result, null, 2);
-      document.body.appendChild(pre);
-      window.__autoplayResult = result;
-    } catch (err) {
-      const pre = document.createElement("pre");
-      pre.id = "autoplay-result";
-      pre.textContent = "ERROR: " + (err && err.stack ? err.stack : err);
-      document.body.appendChild(pre);
+  // В Node-прогоне UI не поднимаем — только логика матча
+  if (!globalThis.__PITCH_NODE_AUTOPLAY__) {
+    render();
+    const autoParam = /(?:\?|&)autoplay=([^&]*)/.exec(location.search || "");
+    if (autoParam) {
+      const id = decodeURIComponent(autoParam[1] || "academy") || "academy";
+      try {
+        const result = autoPlayFullMatch(id);
+        const pre = document.createElement("pre");
+        pre.id = "autoplay-result";
+        pre.style.cssText =
+          "position:fixed;inset:8px;overflow:auto;background:#0b100e;color:#e8f2ea;z-index:99;padding:12px;font:12px/1.4 monospace";
+        pre.textContent = JSON.stringify(result, null, 2);
+        document.body.appendChild(pre);
+        window.__autoplayResult = result;
+      } catch (err) {
+        const pre = document.createElement("pre");
+        pre.id = "autoplay-result";
+        pre.textContent = "ERROR: " + (err && err.stack ? err.stack : err);
+        document.body.appendChild(pre);
+      }
     }
   }
 })();
