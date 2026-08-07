@@ -546,13 +546,19 @@
     return 18 + attr * 14; // 1→32 … 5→88
   }
 
-  /** Радиус действия: пас/удар = N, отбор = N/2, навес = N×2; ход = A (рывок) или S */
+  /** Радиус: пас = N×2, удар = N, отбор = N/2, навес = N×2; ход = A/S */
   function actionRange(p, mode) {
-    if (mode === "pass" || mode === "shot") return p[mode];
+    if (mode === "pass") return (p.pass || 1) * 2;
+    if (mode === "shot") return p.shot;
     if (mode === "cross") return p.cross * 2;
     if (mode === "tackle") return Math.max(1, Math.round(p.tackle / 2));
     if (mode === "move") return moveBudget(p);
     return 1;
+  }
+
+  /** Эффективный скилл паса ×2 (карточка 1–5 → до 5 для %) */
+  function passSkillAttr(p) {
+    return clamp((p.pass || 1) * 2, 1, 5);
   }
 
   /**
@@ -726,12 +732,14 @@
     const pr = pressureOn(p.pos, p.side);
     const dist = hexDist(p.pos, target);
     const range = actionRange(p, mode);
-    const attr = mode === "cross" ? p.cross : p.pass;
-    const label = mode === "cross" ? "Навес" : "Пас";
-    let skill = skillPct(attr) * Math.max(0, 1 - 0.25 * pr.pts);
+    const isCross = mode === "cross";
+    const attr = isCross ? p.cross : p.pass;
+    const skillAttr = isCross ? attr : passSkillAttr(p);
+    const label = isCross ? "Навес" : "Пас";
+    // пас: скилл ×2 (через skillAttr); давление −25%/пт
+    let skill = skillPct(skillAttr) * Math.max(0, 1 - 0.25 * pr.pts);
     const outOfRange = dist > range;
-    if (outOfRange) skill *= 0.12;
-    // внутри радиуса — «без проблем» по дистанции (штраф только давление)
+    if (outOfRange) skill *= isCross ? 0.12 : 0.2;
     return {
       chance: clamp(Math.round(skill), 1, 96),
       pressure: pr.pts,
@@ -742,7 +750,9 @@
         label +
         " " +
         attr +
-        "/5 · радиус " +
+        "/5" +
+        (!isCross && skillAttr !== attr ? "→эфф." + skillAttr : "") +
+        " · радиус " +
         range +
         " · дист. " +
         dist +
