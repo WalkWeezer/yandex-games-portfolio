@@ -825,15 +825,16 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       tackle: spec.tackle,
       speed: spec.speed,
       accel: spec.accel,
+      control: spec.control, // владение мячом 1–5
       press: spec.press,
-      burst: false, // true = next move uses accel (after touch / pickup)
+      burst: false,
       pos: spec.pos.slice(),
       home: spec.pos.slice(),
     };
   }
   function scaleSkills(base, mult) {
     const o = {};
-    ["shot", "pass", "cross", "tackle", "speed", "accel"].forEach((k) => {
+    ["shot", "pass", "cross", "tackle", "speed", "accel", "control"].forEach((k) => {
       o[k] = clamp(Math.round(base[k] * mult), 1, 5);
     });
     o.press = base.press;
@@ -842,14 +843,13 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     return o;
   }
 
-  // Атрибуты 1–5. Ход: после касания/подбора — рывок A, дальше — S.
-  // Профили нарочно разные: взрывной ≠ стайер.
+  // S/A = гексы без мяча. С мячом − дебафф от владения. Усталость ведения копит риск потери.
   const YOU_BASE = {
-    GK: { name: "Кольцов", shot: 1, pass: 3, cross: 1, tackle: 2, speed: 2, accel: 1, press: 0, pos: [6, 1] },
-    Z: { name: "Буров", shot: 1, pass: 3, cross: 2, tackle: 4, speed: 3, accel: 2, press: 2, pos: [6, 4] },
-    OP1: { name: "Левин", shot: 2, pass: 4, cross: 3, tackle: 3, speed: 2, accel: 5, press: 1, pos: [2, 6] }, // взрывной
-    OP2: { name: "Райцев", shot: 2, pass: 4, cross: 4, tackle: 3, speed: 5, accel: 1, press: 1, pos: [10, 6] }, // стайер
-    NAP: { name: "Сомов", shot: 4, pass: 2, cross: 2, tackle: 2, speed: 5, accel: 4, press: 0, pos: [6, 8] },
+    GK: { name: "Кольцов", shot: 1, pass: 3, cross: 1, tackle: 2, speed: 2, accel: 1, control: 3, press: 0, pos: [6, 1] },
+    Z: { name: "Буров", shot: 1, pass: 3, cross: 2, tackle: 4, speed: 3, accel: 2, control: 3, press: 2, pos: [6, 4] },
+    OP1: { name: "Левин", shot: 2, pass: 4, cross: 3, tackle: 3, speed: 2, accel: 5, control: 4, press: 1, pos: [2, 6] },
+    OP2: { name: "Райцев", shot: 2, pass: 4, cross: 4, tackle: 3, speed: 5, accel: 1, control: 3, press: 1, pos: [10, 6] },
+    NAP: { name: "Сомов", shot: 4, pass: 2, cross: 2, tackle: 2, speed: 5, accel: 4, control: 2, press: 0, pos: [6, 8] },
   };
   const AWAY_HOME = {
     GK: [6, 19],
@@ -864,10 +864,10 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       name: "Академия «Росток»",
       tier: "weak",
       tierLabel: "Слабее",
-      tactics: "Узкий блок",
-      desc: "Слабее, часто схлопываются.",
-      mult: 0.78,
-      ai: "collapse",
+      tactics: "Робкий блок",
+      desc: "Слабые скиллы, держат форму, мало пресса.",
+      mult: 0.62,
+      ai: "shape",
       names: { GK: "Юный", Z: "Тихий", OP1: "Серый", OP2: "Малый", NAP: "Новиков" },
     },
     {
@@ -957,7 +957,10 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     waiting: false,
     radialOpen: false,
     diveCol: null,
-    lockedIds: [], // после отбора игрок недоступен до конца хода тренера
+    lockedIds: [],
+    actedIds: [],
+    carryFatigue: 0, // клетки, пройденные с мячом за текущее владение
+    aiLocked: [],
   };
 
   const app = document.getElementById("app");
@@ -984,8 +987,16 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   function lockPlayer(id, reason) {
     if (!id || isLocked(id)) return;
     state.lockedIds.push(id);
+    markActed(id);
     const p = byId(id);
     pushLog((p ? p.name : id) + " исчерпан" + (reason ? " (" + reason + ")" : ""), true);
+  }
+  function markActed(id) {
+    if (!id) return;
+    if (state.actedIds.indexOf(id) < 0) state.actedIds.push(id);
+  }
+  function resetCarryFatigue() {
+    state.carryFatigue = 0;
   }
 
   /** Stacked pressure: each enemy adds (pressRadius - dist + 1) if in range */
@@ -1025,32 +1036,62 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   }
 
   /**
-   * S/A 1–5 → гексы за одно действие (не «перебежать поле»).
-   * 1→1, 2→1, 3→2, 4→2, 5→3. С мячом ещё −1 (мин. 1).
+   * Без мяча: S/A = гексы (1–5).
+   * С мячом: дебафф к дистанции от низкого владения + усталость ведения режет % удержания.
    */
-  function attrToHexes(attr) {
-    const a = clamp(attr | 0, 1, 5);
-    return [0, 1, 1, 2, 2, 3][a];
+  function carrySpeedDebuff(control) {
+    // control 5→0, 4→1, 3→1, 2→2, 1→2
+    return Math.max(0, Math.ceil((5 - clamp(control, 1, 5)) / 2));
   }
 
   function moveBudget(p) {
     const raw = state.ballOwner === p.id && p.burst ? p.accel : p.speed;
-    let hexes = attrToHexes(raw);
-    if (state.ballOwner === p.id) hexes = Math.max(1, hexes - 1); // ведение короче спринта без мяча
+    let hexes = clamp(raw, 1, 5);
+    if (state.ballOwner === p.id) {
+      hexes = Math.max(1, hexes - carrySpeedDebuff(p.control || 1));
+    }
     return hexes;
   }
 
   function moveMs(from, to) {
     const d = Math.max(1, hexDist(from, to));
-    return 100 + d * 140;
+    return 90 + d * 100;
   }
 
   function canStandOn(pos, movingId) {
     if (!inBounds(pos[0], pos[1])) return false;
-    if (isGoalHex(pos[0], pos[1])) return false; // в ворота только ударом
+    if (isGoalHex(pos[0], pos[1])) return false;
     const occ = occupant(pos);
     if (occ && occ.id !== movingId) return false;
     return true;
+  }
+
+  /** Неактивные подтягиваются к якорю схемы (0–2 гекса), сохраняя канал */
+  function holdFormation(side, skipIds, quiet) {
+    const squad = side === "A" ? state.you : state.them;
+    if (!squad) return;
+    const skip = skipIds || [];
+    let moved = 0;
+    Object.values(squad).forEach((p) => {
+      if (skip.indexOf(p.id) >= 0) return;
+      if (state.ballOwner === p.id) return;
+      const home = p.home;
+      const dist = hexDist(p.pos, home);
+      if (dist <= 0) return;
+      const step = Math.min(2, dist);
+      let opts = cellsInRange(p.pos, step).filter((pos) => canStandOn(pos, p.id));
+      if (p.role === "OP1") opts = opts.filter((pos) => pos[0] <= CENTER_COL);
+      if (p.role === "OP2") opts = opts.filter((pos) => pos[0] >= CENTER_COL);
+      if (p.role === "GK") opts = opts.filter((pos) => (side === "A" ? pos[1] <= 3 : pos[1] >= ROWS - 4));
+      opts.sort((a, b) => hexDist(a, home) - hexDist(b, home));
+      if (!opts.length) return;
+      if (hexDist(opts[0], home) >= dist) return;
+      p.pos = opts[0];
+      moved++;
+    });
+    if (moved && !quiet) {
+      pushLog(side === "A" ? "Ваши без команды подтянули форму (" + moved + ")" : "ПК держит ширину формы (" + moved + ")");
+    }
   }
 
   function inActionRange(from, to, mode) {
@@ -1156,27 +1197,37 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     };
   }
 
-  /** Ход с мячом под давлением: Σ1 рискованно, Σ≥2 ≈ потеря */
-  function chanceCarry(p, toHex) {
+  /** Ведение: давление + усталость за каждую пройденную с мячом клетку; владение смягчает */
+  function chanceCarry(p, toHex, steps) {
     const pr = pressureOn(toHex, p.side);
-    let keep;
-    if (pr.pts <= 0) keep = 97;
-    else if (pr.pts === 1) keep = 48;
-    else if (pr.pts === 2) keep = 12;
-    else keep = 4;
+    const ctrl = p.control || 1;
+    const fat = (state.carryFatigue || 0) + (steps || 0);
+    const perHex = Math.max(5, 18 - ctrl * 2); // control5: 8%/гекс, control1: 16%/гекс
+    let keep = 98 - fat * perHex;
+    if (pr.pts === 1) keep -= 32;
+    else if (pr.pts === 2) keep -= 62;
+    else if (pr.pts >= 3) keep -= 78;
+    keep = clamp(Math.round(keep), 4, 97);
     return {
       keep,
       pressure: pr.pts,
       parts: pr.parts,
+      fatigue: fat,
       detail:
         "Ведение → " +
         cellName(toHex) +
         " · удержать " +
         keep +
-        "% · Σдавл. " +
+        "% · влад." +
+        ctrl +
+        " · устал." +
+        fat +
+        " (−" +
+        perHex +
+        "%/гекс) · Σдавл. " +
         pr.pts +
         (pr.parts.length ? " [" + pr.parts.join(", ") + "]" : "") +
-        (pr.pts >= 2 ? " · почти гарант. потеря" : pr.pts === 1 ? " · риск" : ""),
+        (pr.pts >= 2 ? " · плотное давление" : ""),
     };
   }
 
@@ -1258,7 +1309,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       '<div class="skills-side" id="skillsSide"></div></div>' +
       '<div class="lineup-actions"><button class="btn btn-ghost" id="back">← Назад</button>' +
       '<button class="btn btn-primary" id="kick">Начать матч</button></div>' +
-      '<div class="hint-box">S/A 1–5 → ход на 1/1/2/2/3 гекса за действие; с мячом ещё −1. За 2 AP быстрый нап проходит ~4 гекса с мячом — не полполя. Левин A5 (рывок 2 с мячом), Райцев S5 (без мяча 3).</div></section>';
+      '<div class="hint-box">Без мяча — полный S/A (до 5 гекс). С мячом −дебафф от <b>владения</b>; каждая клетка ведения копит риск потери (как усталость). Неактивные сами подтягивают форму.</div></section>';
 
     drawLineupPitch();
     fillSkillsSide();
@@ -1397,13 +1448,11 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
           skillCell("Отбор", p.tackle) +
           '</div><div class="meta-row"><b>S' +
           p.speed +
-          "→" +
-          attrToHexes(p.speed) +
-          " / A" +
+          "/A" +
           p.accel +
-          "→" +
-          attrToHexes(p.accel) +
-          "</b> гекс · пас " +
+          " · Влад." +
+          p.control +
+          "</b> · пас " +
           actionRange(p, "pass") +
           " · навес " +
           actionRange(p, "cross") +
@@ -1452,6 +1501,8 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     state.waiting = false;
     state.radialOpen = false;
     state.lockedIds = [];
+    state.actedIds = [];
+    resetCarryFatigue();
     pushLog("Свисток! Клик по игроку → радиальное меню (5 действий).", true);
     state.screen = "match";
     render();
@@ -1593,16 +1644,22 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       p.tackle +
       "</b>→" +
       actionRange(p, "tackle") +
-      "</div></div>" +
+      '</div><div>Влад. <b>' +
+      p.control +
+      "</b></div><div>Ход <b>" +
+      moveBudget(p) +
+      "</b></div></div>" +
       '<div class="muted" style="font-size:0.75rem">S' +
       p.speed +
       " / A" +
       p.accel +
-      (p.burst ? " · рывок A" : " · ход S") +
+      (p.burst && state.ballOwner === p.id ? " · рывок A" : "") +
       " · давл.r" +
       p.press +
+      " · устал." +
+      (state.ballOwner === p.id ? state.carryFatigue || 0 : 0) +
       "</div>" +
-      '<div class="hint-box">Ход с мячом в Σдавл.≥2 ≈ потеря. 1–5 = радиус (отбор÷2, навес×2).</div></div>'
+      '<div class="hint-box">Без мяча — полный S/A. С мячом −дебафф владения; клетки ведения копят риск потери.</div></div>'
     );
   }
 
@@ -1871,13 +1928,14 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
         }
       }
       const raw = state.ballOwner === p.id && p.burst ? p.accel : p.speed;
+      const deb = state.ballOwner === p.id ? carrySpeedDebuff(p.control || 1) : 0;
       const tag =
         (state.ballOwner === p.id && p.burst ? "рывок A" : "скор. S") +
         raw +
+        (deb ? "−" + deb : "") +
         "→" +
         bud +
-        " гекс" +
-        (state.ballOwner === p.id ? " (с мячом −1)" : "");
+        " гекс";
       toast("Ход до " + bud + " · " + tag);
     } else if (mode === "pass" || mode === "cross") {
       const range = actionRange(p, mode);
@@ -1937,21 +1995,19 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     if (state.mode === "move") {
       const bud = actionRange(p, "move");
       const raw = state.ballOwner === p.id && p.burst ? p.accel : p.speed;
+      const deb = state.ballOwner === p.id ? carrySpeedDebuff(p.control || 1) : 0;
       let html =
         "<b>Ход</b> до <b>" +
         bud +
-        "</b> гекс · атрибут " +
+        "</b> · " +
         (state.ballOwner === p.id && p.burst ? "A" : "S") +
         raw +
-        " → " +
-        attrToHexes(raw) +
-        (state.ballOwner === p.id ? " −1 с мячом" : "") +
-        " · S" +
-        p.speed +
-        "/A" +
-        p.accel;
+        (deb ? " −" + deb + " (влад." + p.control + ")" : " без мяча") +
+        " · устал." +
+        (state.carryFatigue || 0);
       if (state.ballOwner === p.id && hoverHex) {
-        const ch = chanceCarry(p, hoverHex);
+        const steps = hexDist(p.pos, hoverHex);
+        const ch = chanceCarry(p, hoverHex, steps);
         html +=
           '<div class="pct" style="font-size:1.2rem">' +
           ch.keep +
@@ -1960,7 +2016,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
           "</div>";
       } else {
         html +=
-          "<div class='muted'>S/A 1–5 дают 1/1/2/2/3 гекса за действие; с мячом на гекс меньше. 2 AP ≠ пробег всего поля.</div>";
+          "<div class='muted'>Без мяча — полный S/A (до 5). С мячом −дебафф владения; каждая клетка ведения копит риск потери.</div>";
       }
       box.innerHTML = html;
       return;
@@ -2067,6 +2123,8 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   }
 
   function spendAP(moveId, fromPos) {
+    if (moveId) markActed(moveId);
+    else if (state.selectedId) markActed(state.selectedId);
     state.ap -= 1;
     state.mode = null;
     state.reachable = [];
@@ -2085,20 +2143,21 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     const carrying = state.ballOwner === p.id;
     const usedBurst = carrying && p.burst;
     const bud = moveBudget(p);
-    if (hexDist(from, to) > bud) {
+    const steps = hexDist(from, to);
+    if (steps > bud) {
       toast("Дальше лимита хода (" + bud + ")");
       return;
     }
     p.pos = to.slice();
     if (carrying) {
-      const ch = chanceCarry(p, to);
+      const ch = chanceCarry(p, to, steps);
       const roll = rnd();
       pushLog(
         p.name +
           " ведёт → " +
           cellName(to) +
           " · " +
-          (usedBurst ? "рывок A" + p.accel : "скор. S" + p.speed) +
+          (usedBurst ? "A" + p.accel : "S" + p.speed) +
           " · " +
           ch.detail +
           " · бросок " +
@@ -2107,16 +2166,18 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       if (roll <= ch.keep) {
         state.ball = to.slice();
         state.loose = false;
-        pushLog("Мяч удержан");
+        state.carryFatigue = (state.carryFatigue || 0) + steps;
+        pushLog("Мяч удержан · усталость ведения " + state.carryFatigue);
       } else {
         state.ballOwner = null;
         state.loose = true;
         state.ball = to.slice();
-        pushLog("Потеря под давлением! Свободный мяч @ " + cellName(to), true);
+        resetCarryFatigue();
+        pushLog("Потеря на ведении! Свободный мяч @ " + cellName(to), true);
         toast("Потеря мяча");
       }
     } else {
-      pushLog(p.name + " → " + cellName(to) + " · S" + p.speed + " (ход " + hexDist(from, to) + "/" + bud + ")");
+      pushLog(p.name + " → " + cellName(to) + " · S" + p.speed + " (ход " + steps + "/" + bud + ")");
       if (state.loose && state.ball[0] === to[0] && state.ball[1] === to[1]) {
         claimLoose(p, true);
       }
@@ -2136,6 +2197,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       state.loose = false;
       state.ball = p.pos.slice();
       p.burst = true;
+      resetCarryFatigue();
       pushLog(p.name + " подобрал мяч", true);
       return true;
     }
@@ -2146,6 +2208,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       state.loose = false;
       state.ball = p.pos.slice();
       p.burst = true;
+      resetCarryFatigue();
       pushLog(p.name + " подобрал мяч (" + ch + "%)", true);
       return true;
     }
@@ -2193,6 +2256,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       state.loose = false;
       to.burst = true;
       from.burst = false;
+      resetCarryFatigue();
       pushLog("Точно!", true);
     } else {
       state.ball = [
@@ -2201,9 +2265,10 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       ];
       state.ballOwner = null;
       state.loose = true;
+      resetCarryFatigue();
       pushLog("Свободный мяч @ " + cellName(state.ball), true);
     }
-    spendAP();
+    spendAP(from.id);
   }
 
   function doShot(p, goalHex) {
@@ -2227,6 +2292,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     state.ballOwner = null;
     state.loose = false;
     state.ball = p.pos.slice();
+    resetCarryFatigue();
     syncPieces(false);
     state.waiting = true;
 
@@ -2286,12 +2352,13 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       state.loose = false;
       p.burst = true;
       victim.burst = false;
+      resetCarryFatigue();
       pushLog("Мяч отобран!", true);
     } else {
       pushLog("Отбор не вышел — мяч у " + victim.name, true);
     }
     lockPlayer(p.id, "отбор");
-    spendAP();
+    spendAP(p.id);
   }
 
   function resetKickoff(ownerSide) {
@@ -2308,6 +2375,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       state.them.NAP.burst = true;
     }
     state.loose = false;
+    resetCarryFatigue();
     pushLog("Розыгрыш с центра.");
     syncPieces(true);
   }
@@ -2319,8 +2387,8 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     state.mode = null;
     state.reachable = [];
     state.targets = [];
+    holdFormation("A", state.actedIds.concat(state.lockedIds));
     state.turn = "B";
-    // минута только после полного цикла (игрок+ПК) — иначе 90' сгорали вдвое быстрее
     pushLog("— Ход соперника —");
     renderLeft();
     renderRight();
@@ -2331,9 +2399,12 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
   }
 
   function endAITurn() {
+    holdFormation("B", state.aiLocked || []);
+    holdFormation("A", state.actedIds); // подтянуть своих перед новым ходом
     state.turn = "A";
     state.ap = COACH_AP;
     state.lockedIds = [];
+    state.actedIds = [];
     state.minute = Math.min(MATCH_MINUTES, state.minute + 1);
     state.waiting = false;
     state.selectedId = null;
@@ -2428,6 +2499,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       }
       if (style === "width") return aiWidth(ow);
       if (style === "collapse") return aiCollapse(ow);
+      if (style === "shape") return aiShape(ow);
       return aiSmart(ow);
     }
     return aiDefend();
@@ -2452,10 +2524,12 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       state.you.GK.pos = [dive, GOAL_A_ROW];
       state.ball = state.you.GK.pos.slice();
       state.loose = false;
+      resetCarryFatigue();
       pushLog("Ваш ВР поймал!", true);
     } else {
       state.loose = true;
       state.ball = [aim, 2];
+      resetCarryFatigue();
       pushLog("ПК не забил");
     }
   }
@@ -2494,9 +2568,11 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       state.loose = false;
       to.burst = true;
       from.burst = false;
+      resetCarryFatigue();
     } else {
       state.ballOwner = null;
       state.loose = true;
+      resetCarryFatigue();
       state.ball = [
         clamp(Math.round((from.pos[0] + to.pos[0]) / 2), 0, 12),
         clamp(Math.round((from.pos[1] + to.pos[1]) / 2), 0, 20),
@@ -2521,10 +2597,11 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       return ra - rb || da;
     });
     const to = opts[0];
+    const steps = hexDist(from, to);
     const usedBurst = carrying && p.burst;
     p.pos = to;
     if (carrying) {
-      const ch = chanceCarry(p, to);
+      const ch = chanceCarry(p, to, steps);
       const roll = rnd();
       pushLog(
         "ПК " +
@@ -2535,16 +2612,19 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
           (usedBurst ? "A" + p.accel : "S" + p.speed) +
           " · удержать " +
           ch.keep +
-          "%"
+          "% · устал." +
+          ch.fatigue
       );
       if (roll <= ch.keep) {
         state.ball = to.slice();
         state.loose = false;
+        state.carryFatigue = (state.carryFatigue || 0) + steps;
       } else {
         state.ballOwner = null;
         state.loose = true;
         state.ball = to.slice();
-        pushLog("ПК потерял мяч под давлением!", true);
+        resetCarryFatigue();
+        pushLog("ПК потерял мяч на ведении!", true);
       }
     } else {
       pushLog("ПК " + p.name + " → " + cellName(p.pos) + " · S" + p.speed);
@@ -2553,11 +2633,9 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       }
     }
     if (usedBurst || carrying) p.burst = false;
-    // animate this piece by distance on next sync
     const el = pieceEls[p.id];
     if (el) {
-      const ms = moveMs(from, to);
-      el.style.transition = "left " + ms + "ms ease, top " + ms + "ms ease";
+      el.style.transition = "left " + moveMs(from, to) + "ms ease, top " + moveMs(from, to) + "ms ease";
     }
   }
 
@@ -2567,9 +2645,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       aiPass(ow, recv, hexDist(ow.pos, recv.pos) > actionRange(ow, "pass"));
       return;
     }
-    // prefer free lane, not into Σ2
-    const safe = [CENTER_COL, 2];
-    aiMoveToward(ow, safe);
+    aiMoveToward(ow, [CENTER_COL, 2]);
   }
   function aiWidth(ow) {
     const recv = freest(ow, true);
@@ -2579,34 +2655,64 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
     }
     aiMoveToward(ow, [ow.pos[0] < 6 ? 1 : 11, Math.max(2, ow.pos[1] - 3)]);
   }
-  function aiCollapse(ow) {
-    Object.values(state.them).forEach((t) => {
-      if (t.id === ow.id || t.role === "GK") return;
-      if (hexDist(t.pos, ow.pos) > 2) {
-        const opts = cellsInRange(t.pos, 1).filter((pos) => !occupant(pos));
-        opts.sort((a, b) => hexDist(a, ow.pos) - hexDist(b, ow.pos));
-        if (opts[0]) t.pos = opts[0];
+  /** Слабый соперник: почти не тащит сам, пас назад/в ширину, форма не схлопывается */
+  function aiShape(ow) {
+    if ((state.carryFatigue || 0) >= 2 || pressureOn(ow.pos, "B").pts >= 1) {
+      const safe = Object.values(state.them)
+        .filter((t) => t.id !== ow.id && t.role !== "GK")
+        .sort((a, b) => pressureOn(a.pos, "B").pts - pressureOn(b.pos, "B").pts)[0];
+      if (safe && inActionRange(ow, safe.pos, "pass")) {
+        aiPass(ow, safe, false);
+        return;
       }
-    });
+    }
+    const recv = freest(ow, true);
+    if (recv) {
+      aiPass(ow, recv, hexDist(ow.pos, recv.pos) > 3);
+      return;
+    }
+    // короткий шаг, не бег через всё поле
+    aiMoveToward(ow, [clamp(ow.pos[0], 2, 10), Math.max(3, ow.pos[1] - 1)]);
+  }
+  function aiCollapse(ow) {
+    // только З чуть поджимает — края не схлопываются
+    const z = state.them.Z;
+    if (z && hexDist(z.pos, ow.pos) > 3) {
+      const opts = cellsInRange(z.pos, 1).filter((pos) => canStandOn(pos, z.id));
+      opts.sort((a, b) => hexDist(a, ow.pos) - hexDist(b, ow.pos));
+      if (opts[0]) z.pos = opts[0];
+    }
     aiMoveToward(ow, [CENTER_COL, 3]);
   }
   function aiDefend() {
     const target = state.loose ? state.ball : ownerPlayer() ? ownerPlayer().pos : state.ball;
-    const h = Object.values(state.them)
+    const hunters = Object.values(state.them)
       .filter((p) => p.role !== "GK" && (state.aiLocked || []).indexOf(p.id) < 0)
-      .sort((a, b) => hexDist(a.pos, target) - hexDist(b.pos, target))[0];
-    if (!h) return;
+      .sort((a, b) => hexDist(a.pos, target) - hexDist(b.pos, target));
+    const h = hunters[0];
+    if (!h) {
+      holdFormation("B", [], true);
+      return;
+    }
+    if ((h.role === "OP1" || h.role === "OP2") && Math.abs(h.home[0] - target[0]) > 4) {
+      holdFormation("B", [], true);
+      aiMoveToward(h, h.home);
+      return;
+    }
     const ow = ownerPlayer();
     const range = actionRange(h, "tackle");
     if (ow && ow.side === "A" && hexDist(h.pos, ow.pos) <= range) {
       const ch = chanceTackle(h, ow);
+      let chance = ch.chance;
+      if (state.opponentId === "academy") chance = Math.round(chance * 0.7);
       const roll = rnd();
-      pushLog("ПК отбор · " + ch.chance + "%");
-      if (roll <= ch.chance) {
+      pushLog("ПК отбор · " + chance + "%");
+      if (roll <= chance) {
         state.ballOwner = h.id;
         state.ball = h.pos.slice();
         state.loose = false;
         h.burst = true;
+        resetCarryFatigue();
         pushLog("ПК отобрал!", true);
       } else {
         pushLog("ПК отбор мимо — мяч у " + ow.name);
@@ -2616,6 +2722,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0 0 8px; }
       return;
     }
     aiMoveToward(h, target);
+    holdFormation("B", [h.id].concat(state.aiLocked || []), true);
   }
 
   render();
