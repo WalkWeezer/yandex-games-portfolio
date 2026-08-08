@@ -1,0 +1,2352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1712" />
+  <title>Pitch Tactics — Replay (free zones)</title>
+  <style>
+:root {
+  --bg: #0c1210;
+  --panel: #142018;
+  --line: #2a3d30;
+  --text: #e7f0e8;
+  --muted: #8fa396;
+  --a: #4aa3ff;
+  --b: #ff9f4a;
+  --accent: #c8f06a;
+  --danger: #ff6b6b;
+  --warn: #ffd166;
+  --font: "Segoe UI", "Trebuchet MS", system-ui, sans-serif;
+  --display: Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: var(--font);
+  color: var(--text);
+  background:
+    radial-gradient(900px 500px at 0% 0%, #1a3024 0%, transparent 55%),
+    radial-gradient(800px 400px at 100% 0%, #243044 0%, transparent 45%),
+    var(--bg);
+}
+body[data-match="H"] { --match-tint: #3d9bfd44; }
+body[data-match="I"] { --match-tint: #f0a05a44; }
+body[data-match="J"] { --match-tint: #c8f06a44; }
+
+.app {
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px 10px;
+  gap: 10px;
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand { display: flex; gap: 12px; align-items: center; }
+.brand-mark {
+  width: 42px; height: 42px; border-radius: 10px;
+  display: grid; place-items: center;
+  background: linear-gradient(145deg, #c8f06a, #5ecf8a);
+  color: #102016; font-weight: 800;
+}
+.brand h1 {
+  margin: 0; font-family: var(--display);
+  font-size: 1.3rem; font-weight: 600;
+}
+.tag { margin: 2px 0 0; color: var(--muted); font-size: 0.82rem; }
+.phone-tip {
+  display: none; margin: 0; width: 100%;
+  color: var(--accent); font-size: 0.8rem;
+}
+
+.match-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.tab {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.tab[aria-selected="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #24362a;
+}
+.tab.theme-H[aria-selected="true"] { border-color: var(--a); color: #9ccfff; }
+.tab.theme-I[aria-selected="true"] { border-color: var(--b); color: #ffc08a; }
+.tab.theme-J[aria-selected="true"] { border-color: var(--accent); color: var(--accent); }
+
+.meta {
+  border: 1px solid var(--line);
+  background: rgba(20, 32, 24, 0.9);
+  border-radius: 12px;
+  padding: 10px 14px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.meta strong { color: var(--text); }
+.theme-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--accent); flex: 0 0 auto;
+}
+.theme-dot.theme-H { background: var(--a); }
+.theme-dot.theme-I { background: var(--b); }
+.theme-dot.theme-J { background: var(--accent); }
+
+.stage {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 250px minmax(300px, 1fr) 280px;
+  gap: 10px;
+  min-height: 0;
+}
+
+.panel {
+  background: rgba(20, 32, 24, 0.95);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  overflow: auto;
+}
+.panel h2 {
+  margin: 12px 0 6px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.panel h2:first-child { margin-top: 0; }
+
+.clock {
+  font-family: var(--display);
+  font-size: 2.3rem;
+  color: var(--accent);
+  line-height: 1;
+}
+.scoreboard {
+  font-size: 1.55rem;
+  font-weight: 700;
+  margin: 6px 0 8px;
+  letter-spacing: 0.06em;
+}
+.side-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #24362a;
+  border: 1px solid var(--line);
+  font-size: 0.8rem;
+}
+.side-pill.A { border-color: var(--a); color: var(--a); }
+.side-pill.B { border-color: var(--b); color: var(--b); }
+
+.styles-box div { margin-bottom: 6px; font-size: 0.86rem; }
+.styles-box .who { color: var(--muted); font-size: 0.72rem; }
+
+.move-log, .actions, .labels {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.move-log li, .actions li, .labels li {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 9px;
+  background: #101810;
+  font-size: 0.8rem;
+}
+.move-log .active-move { border-color: #5a7a40; }
+.move-log .passive-move { opacity: 0.85; }
+.move-log .tagish, .actions .kind {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #24362a;
+  color: var(--accent);
+  font-size: 0.68rem;
+}
+.actions .kind { margin-left: 0; margin-right: 6px; }
+
+.glossary { display: flex; flex-direction: column; gap: 8px; }
+.glossary article {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px;
+  background: #101810;
+}
+.glossary b { color: var(--accent); font-size: 0.82rem; }
+.glossary .where { display: block; color: var(--muted); font-size: 0.72rem; margin: 2px 0 4px; }
+.glossary p { margin: 0; font-size: 0.8rem; line-height: 1.35; }
+
+.pitch-wrap { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.pitch-hud { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-height: 28px; }
+.banner { font-family: var(--display); font-size: 1.05rem; }
+.paradigm {
+  padding: 3px 10px; border-radius: 999px;
+  background: #3a2e14; border: 1px solid var(--warn);
+  color: var(--warn); font-size: 0.76rem;
+}
+
+.pitch {
+  position: relative;
+  flex: 1;
+  min-height: 560px;
+  border-radius: 16px;
+  border: 2px solid rgba(232, 244, 220, 0.28);
+  background:
+    radial-gradient(circle at 50% 50%, var(--match-tint, transparent), transparent 60%),
+    linear-gradient(180deg, #143222, #0f2418);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), 0 18px 40px rgba(0,0,0,0.35);
+  overflow: hidden;
+}
+
+.pitch-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.hex-cell {
+  fill: #1a4a2e;
+  stroke: rgba(220, 240, 210, 0.18);
+  stroke-width: 0.8;
+}
+.hex-cell.alt { fill: #174028; }
+.hex-cell.aura-p1 { fill: #2a5a7a; fill-opacity: 0.55; }
+.hex-cell.aura-p2 { fill: #7a5a2a; fill-opacity: 0.55; }
+.hex-cell.aura-defend {
+  fill: #4a6a20;
+  stroke: var(--accent);
+  stroke-width: 1.6;
+  fill-opacity: 0.65;
+}
+.hex-cell.hex-goal {
+  fill: #0a1018;
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 1.4;
+}
+.hex-cell.hex-goal-a {
+  fill: #1a1520;
+  stroke: var(--b);
+}
+.hex-cell.hex-goal-b {
+  fill: #101820;
+  stroke: var(--a);
+}
+.hex-cell.hex-free {
+  fill: #2d5a38;
+  stroke: #c8f06a;
+  stroke-width: 1.8;
+  stroke-dasharray: 4 2;
+  fill-opacity: 0.85;
+}
+.hex-midline { stroke: rgba(255,255,255,0.22); stroke-width: 1.2; fill: none; }
+
+.move-arrow { fill: none; stroke-width: 1.5; stroke-linecap: round; opacity: 0.95; }
+.move-arrow.active-A { stroke: var(--a); }
+.move-arrow.active-B { stroke: var(--b); }
+.move-arrow.passive { stroke: #9db3a4; stroke-dasharray: 3 2; opacity: 0.7; }
+.move-head.active-A { fill: var(--a); }
+.move-head.active-B { fill: var(--b); }
+.move-head.passive { fill: #9db3a4; }
+.move-ghost { fill: rgba(255,255,255,0.25); }
+.ball-path {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.4;
+  stroke-dasharray: 2 2;
+  opacity: 0.85;
+}
+
+.fx-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.piece {
+  position: absolute;
+  width: 30px; height: 30px;
+  margin: -15px 0 0 -15px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.4);
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  padding: 0;
+}
+.piece.A { background: linear-gradient(160deg, #6eb6ff, #1d6ec7); color: #041018; }
+.piece.B { background: linear-gradient(160deg, #ffc08a, #c56a20); color: #1a0d04; }
+.piece.GK { border-style: dashed; }
+.piece-label { font-size: 0.62rem; font-weight: 800; }
+.badge-slot {
+  position: absolute;
+  top: -9px; right: -10px;
+  display: flex; gap: 2px;
+}
+.badge {
+  min-width: 16px; height: 16px; padding: 0 3px;
+  border-radius: 8px; font-size: 0.55rem;
+  display: grid; place-items: center;
+  background: #111; border: 1px solid var(--line); color: #fff;
+}
+.badge.sleep { background: #2a2440; border-color: #8b7cf7; color: #cbbfff; }
+.badge.defend { background: #243016; border-color: var(--accent); color: var(--accent); }
+.badge.windup { background: #3a2010; border-color: var(--b); color: var(--b); }
+
+.float-callout {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) translateY(4px);
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: #0b100d;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 8;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+}
+.float-callout.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  transition: opacity 0.2s ease, transform 0.25s ease;
+}
+.float-callout.kind-shot { border-color: var(--danger); color: #ffb4b4; }
+.float-callout.kind-pass { border-color: #9ccfff; color: #9ccfff; }
+.float-callout.kind-defend { border-color: var(--accent); }
+.float-callout.kind-windup { border-color: var(--b); color: #ffc08a; }
+.float-callout.kind-form { border-color: #9db3a4; color: #c5d5cb; font-weight: 600; }
+.float-callout::after {
+  content: "";
+  position: absolute;
+  left: 50%; bottom: -5px;
+  margin-left: -5px;
+  border: 5px solid transparent;
+  border-top-color: #0b100d;
+}
+
+.ball {
+  position: absolute;
+  width: 14px; height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  z-index: 5;
+  background: radial-gradient(circle at 35% 30%, #fff, #ccc 40%, #333);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.ball-shot {
+  transform: scale(1.25);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.65), 0 2px 8px rgba(0,0,0,0.5);
+}
+.goal-net-flash {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  display: grid;
+  place-items: center;
+  font-size: 1.4rem;
+  pointer-events: none;
+  animation: netPop 1.1s ease forwards;
+  z-index: 7;
+}
+@keyframes netPop {
+  0% { transform: scale(0.4); opacity: 0; }
+  35% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.15; }
+}
+.goal-flash {
+  position: absolute;
+  left: 50%; top: 42%;
+  transform: translate(-50%, -50%);
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.72);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--display);
+  font-size: 1.1rem;
+  animation: pop 0.9s ease;
+}
+@keyframes pop {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translate(-50%, -60%) scale(1); opacity: 0.2; }
+}
+
+.narrative { margin: 0; line-height: 1.45; font-size: 0.9rem; }
+.roll {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
+  background: #101810;
+  min-height: 84px;
+}
+.roll-empty { color: var(--muted); font-size: 0.84rem; }
+.roll-label { font-size: 0.78rem; color: var(--muted); }
+.roll-chance { font-family: var(--display); font-size: 1.7rem; }
+.roll-bar {
+  margin: 8px 0; height: 8px; border-radius: 999px;
+  background: #243028; overflow: hidden;
+}
+.roll-bar > span {
+  display: block; height: 100%;
+  background: linear-gradient(90deg, #5ecf8a, var(--accent));
+}
+.roll-result.ok, .roll-result.goal { color: var(--accent); }
+.roll-result.fail { color: var(--danger); }
+
+.note {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border-left: 3px solid var(--warn);
+  background: #2a2414;
+  color: #ffe6a8;
+  font-size: 0.8rem;
+  border-radius: 0 8px 8px 0;
+}
+
+.pitch-hint { margin: 0; color: var(--muted); font-size: 0.76rem; }
+
+.transport {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  padding: 10px 12px; border: 1px solid var(--line);
+  border-radius: 14px; background: rgba(20, 32, 24, 0.96);
+}
+.btn {
+  border: 1px solid var(--line);
+  background: #1c2a20; color: var(--text);
+  border-radius: 10px; padding: 8px 14px;
+  cursor: pointer; font: inherit;
+}
+.btn-primary {
+  background: linear-gradient(145deg, #c8f06a, #7ed39a);
+  color: #102016; border-color: transparent; font-weight: 700;
+}
+#scrubber { flex: 1; min-width: 120px; accent-color: var(--accent); }
+.step-count { color: var(--muted); font-size: 0.84rem; }
+
+@media (max-width: 1100px) {
+  .stage { grid-template-columns: 1fr; }
+  .pitch { min-height: 440px; }
+  .panel { max-height: 280px; }
+}
+@media (max-width: 720px) {
+  .app { padding: 10px 10px 90px; }
+  .phone-tip { display: block; }
+  .match-tabs { width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+  .tab { flex: 0 0 auto; padding: 10px 14px; }
+  .stage { display: flex; flex-direction: column; }
+  .pitch-wrap { order: 1; }
+  .panel-left { order: 2; max-height: none; }
+  .panel-right { order: 3; max-height: none; }
+  .glossary { display: none; }
+  .pitch { min-height: min(58vh, 480px); }
+  .piece { width: 26px; height: 26px; margin: -13px 0 0 -13px; }
+  .transport {
+    position: sticky; bottom: 0; z-index: 20;
+    margin: 0 -10px -10px; border-radius: 14px 14px 0 0;
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.35);
+  }
+  .btn { min-height: 44px; flex: 1; }
+  #scrubber { flex: 1 0 100%; }
+  .step-count { width: 100%; text-align: center; }
+}
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="brand">
+        <span class="brand-mark">PT</span>
+        <div>
+          <h1>Pitch Tactics Core</h1>
+          <p class="tag">Свободные зоны · ширина · мяч в ворота</p>
+        </div>
+      </div>
+      <p class="phone-tip">Лаймовый пунктир = свободная зона. ▶ Смотреть</p>
+      <nav class="match-tabs" id="matchTabs" aria-label="Партии"></nav>
+    </header>
+    <section class="meta" id="matchMeta"></section>
+    <main class="stage">
+      <aside class="panel panel-left">
+        <h2>Минута</h2>
+        <div class="clock" id="clock">00'</div>
+        <div class="scoreboard" id="scoreboard">0 : 0</div>
+        <div class="side-pill" id="sidePill">Kick-off</div>
+        <h2>Стили</h2>
+        <div id="stylesBox" class="styles-box"></div>
+        <h2>Кто куда сходил</h2>
+        <ul class="move-log" id="moveLog"></ul>
+        <h2>Глоссарий UI</h2>
+        <div id="glossary" class="glossary"></div>
+      </aside>
+      <section class="pitch-wrap">
+        <div class="pitch-hud">
+          <span id="banner" class="banner">—</span>
+          <span id="paradigm" class="paradigm" hidden></span>
+        </div>
+        <div class="pitch" id="pitch" role="img" aria-label="Гексогональное поле"></div>
+        <p class="pitch-hint">Пунктир лайм = свободная зона. Не все бегут к мячу.</p>
+      </section>
+      <aside class="panel panel-right">
+        <h2>Что произошло</h2>
+        <p class="narrative" id="narrative"></p>
+        <h2>Действия AP</h2>
+        <ul class="actions" id="actions"></ul>
+        <h2>Бросок</h2>
+        <div class="roll" id="rollBox"><div class="roll-empty">Нет броска</div></div>
+        <h2>Метки</h2>
+        <ul class="labels" id="labels"></ul>
+        <p class="note" id="note" hidden></p>
+      </aside>
+    </main>
+    <footer class="transport">
+      <button type="button" id="btnPrev" class="btn">← Шаг</button>
+      <button type="button" id="btnPlay" class="btn btn-primary">▶ Смотреть</button>
+      <button type="button" id="btnNext" class="btn">Шаг →</button>
+      <input type="range" id="scrubber" min="0" max="0" value="0" />
+      <span id="stepCount" class="step-count">1 / 1</span>
+    </footer>
+  </div>
+  <script>
+/**
+ * Coherent hex replays — space / free zones first.
+ * Principle: width & depth held; goals come from empty channels,
+ * not from everyone magnetizing to the ball.
+ * A attacks +row (goal row 19); B attacks -row (goal row 0).
+ * Shot zone: A row>=16, B row<=3. Z r=2, OP r=1.
+ */
+window.PITCH_TACTICS_MATCHES = [
+  {
+    id: "H",
+    theme: "H",
+    title: "Ширина vs схлопывание",
+    subtitle: "Сначала оба жмутся к мячу — атака мертва. Потом A держит край пустым и бьёт оттуда.",
+    scoreFinal: "1:0",
+    styles: {
+      A: "После ошибки начинает держать ширину",
+      B: "Весь матч схлопывается к мячу"
+    },
+    uiGlossary: [
+      { key: "Свободная зона", where: "Подсветка гекса · пунктир", text: "Пустой канал вне аур. Туда и надо пасовать." },
+      { key: "Схлопывание", where: "Все фишки у мяча", text: "Плохо: нет угла для паса, ауры перекрывают всё." },
+      { key: "Ширина", where: "ОП2 остаётся на бровке", text: "Не бежит к мячу — ждёт передачу в пустоту." }
+    ],
+    steps: [
+      {
+        min: 0, side: "kick", score: [0, 0],
+        narrative: "Старт. Форма широкая: OP1 слева, OP2 справа, NAP впереди по центру.",
+        ball: [5, 9],
+        freeZones: [[9, 11], [2, 11]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[2,6], OP2:[9,6], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,15], OP1:[2,14], OP2:[9,14], NAP:[5,12] }
+        },
+        statuses: {}, focus: {}, actions: [], roll: null,
+        uiLabels: [{ id: "banner", text: "Широкая форма · пустые каналы" }]
+      },
+      {
+        min: 1, side: "A", score: [0, 0], ap: 2,
+        narrative: "Мяч уходит на OP1 (лево). OP2 A пассивом остаётся справа — не бежит к мячу.",
+        ball: [2, 7],
+        freeZones: [[9, 10], [9, 12]],
+        players: {
+          A: { GK:[5,1], Z:[4,5], OP1:[2,7], OP2:[9,7], NAP:[4,8] },
+          B: { GK:[5,18], Z:[5,15], OP1:[2,14], OP2:[9,14], NAP:[5,12] }
+        },
+        statuses: {}, focus: { "B.NAP": 1 },
+        actions: [
+          { who: "A.OP1", kind: "move", detail: "принял на левом канале C8" },
+          { who: "A.Z", kind: "move", detail: "чуть подстраховал" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "tip", text: "Свободно справа: J/K — OP2 там ждёт" }]
+      },
+      {
+        min: 2, side: "B", score: [0, 0], ap: 2,
+        narrative: "Ошибка B: оба OP и З съезжают к левому мячу. Правый край B оголён.",
+        ball: [2, 7],
+        freeZones: [[9, 12], [10, 13], [9, 14]],
+        players: {
+          A: { GK:[5,1], Z:[4,5], OP1:[2,7], OP2:[9,7], NAP:[4,8] },
+          B: { GK:[5,18], Z:[3,14], OP1:[2,12], OP2:[4,13], NAP:[3,11] }
+        },
+        statuses: {}, focus: { "B.NAP": 1 },
+        actions: [
+          { who: "B.OP1", kind: "press", detail: "рванул к мячу" },
+          { who: "B.Z", kind: "move", detail: "съехал влево за мячом" }
+        ],
+        roll: null,
+        uiLabels: [
+          { id: "paradigm", text: "B схлопнулся к мячу" },
+          { id: "tip", text: "Свободная зона: весь правый край B пуст" }
+        ],
+        note: "Плохой паттерн: 3 игрока B у колонок 2–4, справа никого."
+      },
+      {
+        min: 3, side: "A", score: [0, 0], ap: 2,
+        narrative: "A играет в пустоту: длинный пас на OP2, который не схлопывался.",
+        ball: [9, 10],
+        freeZones: [[9, 12], [10, 14]],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[3,7], OP2:[9,10], NAP:[6,9] },
+          B: { GK:[5,18], Z:[3,14], OP1:[2,12], OP2:[4,13], NAP:[3,11] }
+        },
+        statuses: {}, focus: { "B.NAP": 2 },
+        actions: [
+          { who: "A.OP1", kind: "pass", detail: "переключение на правый край" },
+          { who: "A.OP2", kind: "move", detail: "принял в свободной зоне J11" }
+        ],
+        roll: { label: "Пас в свободный край (вне аур)", chance: 76, result: "ok", roll: 28 },
+        uiLabels: [{ id: "roll", text: "В пустоту 76% → ок" }]
+      },
+      {
+        min: 4, side: "B", score: [0, 0], ap: 2,
+        narrative: "B поздно бежит на фланг — снова все трое к мячу. Центр и лево B пустые, но A уже справа.",
+        ball: [9, 10],
+        freeZones: [[5, 14], [2, 13]],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[3,7], OP2:[9,10], NAP:[6,9] },
+          B: { GK:[5,18], Z:[7,14], OP1:[6,12], OP2:[9,13], NAP:[5,12] }
+        },
+        statuses: {}, focus: { "B.NAP": 2 },
+        actions: [
+          { who: "B.OP2", kind: "move", detail: "догоняет край" },
+          { who: "B.Z", kind: "move", detail: "опять к мячу" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "tip", text: "B снова уплотняется у мяча — опоздал" }]
+      },
+      {
+        min: 5, side: "A", score: [0, 0], ap: 2,
+        narrative: "Плохой выбор A: NAP и OP1 тоже бегут к мячу на фланг. Скученность — пас вперёд в ауру OP2 B.",
+        ball: [9, 11],
+        freeZones: [[4, 12], [5, 13]],
+        players: {
+          A: { GK:[5,1], Z:[6,6], OP1:[7,9], OP2:[9,11], NAP:[8,10] },
+          B: { GK:[5,18], Z:[7,14], OP1:[6,12], OP2:[9,13], NAP:[5,12] }
+        },
+        statuses: {}, focus: { "B.NAP": 3 },
+        actions: [
+          { who: "A.OP2", kind: "pass", detail: "вперёд в скученность" },
+          { who: "A.NAP", kind: "move", detail: "притянут к мячу" }
+        ],
+        roll: { label: "Пас в ауру OP B при скученности", chance: 34, result: "fail", roll: 70 },
+        uiLabels: [
+          { id: "roll", text: "34% → срыв" },
+          { id: "tip", text: "Свободная зона была в центре (E/F) — туда не сыграли" }
+        ],
+        note: "Эпизод-ошибка: даже владея краем, схлопнули свою атаку к мячу."
+      },
+      {
+        min: 6, side: "B", score: [0, 0], ap: 2,
+        narrative: "B подобрал и… снова все к мячу. Контратака без ширины.",
+        ball: [8, 11],
+        freeZones: [[2, 8], [2, 6]],
+        players: {
+          A: { GK:[5,1], Z:[6,6], OP1:[7,9], OP2:[9,11], NAP:[8,10] },
+          B: { GK:[5,18], Z:[7,13], OP1:[6,11], OP2:[8,11], NAP:[5,11] }
+        },
+        statuses: {}, focus: {},
+        actions: [
+          { who: "B.OP2", kind: "move", detail: "подбор у мяча" },
+          { who: "B.OP1", kind: "move", detail: "тоже к мячу" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "tip", text: "Свободен левый канал A–C — B его не использует" }]
+      },
+      {
+        min: 7, side: "A", score: [0, 0], ap: 2,
+        narrative: "Отбор. A возвращает ширину: OP1 уходит далеко влево от мяча.",
+        ball: [7, 9],
+        freeZones: [[2, 11], [2, 13]],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[2,8], OP2:[8,9], NAP:[5,9] },
+          B: { GK:[5,18], Z:[6,13], OP1:[5,11], OP2:[8,12], NAP:[5,11] }
+        },
+        statuses: {}, focus: {},
+        actions: [
+          { who: "A.OP2", kind: "move", detail: "отбор" },
+          { who: "A.OP1", kind: "move", detail: "ушёл в широкий канал · не к мячу" }
+        ],
+        roll: { label: "Отбор у скученности B", chance: 55, result: "ok", roll: 40 },
+        uiLabels: [{ id: "paradigm", text: "A снова держит ширину" }],
+        paradigm: "A: ширина важнее бега к мячу."
+      },
+      {
+        min: 8, side: "B", score: [0, 0], ap: 2,
+        narrative: "B ставит Defend у центра и жмётся к мячу — левый край B пуст.",
+        ball: [7, 9],
+        freeZones: [[2, 12], [1, 14], [2, 15]],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[2,8], OP2:[8,9], NAP:[5,9] },
+          B: { GK:[5,18], Z:[6,14], OP1:[5,12], OP2:[7,12], NAP:[5,11] }
+        },
+        statuses: { "B.Z": { defend: 2 } },
+        focus: {},
+        actions: [
+          { who: "B.Z", kind: "defend", detail: "центр" },
+          { who: "B.OP2", kind: "move", detail: "к мячу" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "tip", text: "Свободная зона: A–C ряды 12–15" }]
+      },
+      {
+        min: 9, side: "A", score: [0, 0], ap: 2,
+        narrative: "Переключение в пустоту на OP1 — он один на всём левом крае.",
+        ball: [2, 12],
+        freeZones: [[2, 15], [3, 16]],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[2,12], OP2:[8,10], NAP:[4,11] },
+          B: { GK:[5,18], Z:[6,14], OP1:[5,12], OP2:[7,12], NAP:[5,11] }
+        },
+        statuses: { "B.Z": { defend: 1 } },
+        focus: {},
+        actions: [
+          { who: "A.OP2", kind: "pass", detail: "длинное переключение в свободную зону" },
+          { who: "A.OP1", kind: "move", detail: "C13 один" }
+        ],
+        roll: { label: "Пас в свободную зону", chance: 71, result: "ok", roll: 25 },
+        uiLabels: [{ id: "roll", text: "Пустота 71% → ок" }]
+      },
+      {
+        min: 10, side: "B", score: [0, 0], ap: 2,
+        narrative: "B бежит влево пачкой. Правый край B теперь пуст — но мяч уже слева.",
+        ball: [2, 12],
+        freeZones: [[9, 14], [10, 15]],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[2,12], OP2:[8,10], NAP:[4,11] },
+          B: { GK:[5,18], Z:[3,14], OP1:[2,13], OP2:[4,13], NAP:[4,12] }
+        },
+        statuses: {}, focus: {},
+        actions: [
+          { who: "B.OP1", kind: "move", detail: "к мячу" },
+          { who: "B.Z", kind: "move", detail: "к мячу" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "tip", text: "Снова схлопывание B · NAP A может диагональ вправо позже" }]
+      },
+      {
+        min: 11, side: "A", score: [0, 0], ap: 2,
+        narrative: "Не прём в троих. Пас внутрь-вперёд на NAP в щель между уехавшими.",
+        ball: [4, 15],
+        freeZones: [[4, 16], [5, 17]],
+        players: {
+          A: { GK:[5,1], Z:[5,7], OP1:[2,13], OP2:[7,11], NAP:[4,15] },
+          B: { GK:[5,18], Z:[3,14], OP1:[2,13], OP2:[4,13], NAP:[4,12] }
+        },
+        statuses: {}, focus: {},
+        actions: [
+          { who: "A.OP1", kind: "pass", detail: "в щель за спину схлопнувшимся" },
+          { who: "A.NAP", kind: "move", detail: "E16 · ударная зона" }
+        ],
+        roll: { label: "Пас в щель (З B уехал влево)", chance: 58, result: "ok", roll: 45 },
+        uiLabels: [{ id: "tip", text: "Ударная зона через пустоту, не через ауру" }]
+      },
+      {
+        min: 12, side: "B", score: [0, 0], ap: 2,
+        narrative: "Поздний Defend — NAP уже в зоне, ВР выходит.",
+        ball: [4, 15],
+        freeZones: [],
+        players: {
+          A: { GK:[5,1], Z:[5,7], OP1:[2,13], OP2:[7,11], NAP:[4,15] },
+          B: { GK:[5,17], Z:[4,16], OP1:[3,14], OP2:[5,14], NAP:[4,12] }
+        },
+        statuses: { "B.Z": { defend: 2 } },
+        focus: {},
+        actions: [
+          { who: "B.Z", kind: "defend", detail: "E17" },
+          { who: "B.GK", kind: "move", detail: "выход" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "defend", text: "Поздняя стойка" }]
+      },
+      {
+        min: 13, side: "A", score: [1, 0], ap: 2,
+        narrative: "Смещение с линии Defend в свободный гекс F17 + удар. Мяч в ворота.",
+        ball: [5, 19],
+        shotFrom: [5, 16],
+        goalTo: [5, 19],
+        freeZones: [[5, 16]],
+        players: {
+          A: { GK:[5,1], Z:[5,7], OP1:[2,13], OP2:[7,11], NAP:[5,16] },
+          B: { GK:[5,17], Z:[4,16], OP1:[3,14], OP2:[5,14], NAP:[4,12] }
+        },
+        statuses: { "B.Z": { defend: 1 } },
+        focus: {},
+        actions: [
+          { who: "A.NAP", kind: "move", detail: "в свободный F17" },
+          { who: "A.NAP", kind: "shot", detail: "удар" }
+        ],
+        roll: { label: "Удар из свободного гекса штрафной", chance: 52, result: "goal", roll: 30 },
+        uiLabels: [{ id: "banner", text: "ГОЛ · через пустоту" }]
+      },
+      {
+        min: 14, side: "kick", score: [1, 0],
+        narrative: "B всё ещё играет «все к мячу». A держит ширину и убивает время.",
+        ball: [5, 9],
+        freeZones: [[9, 8], [2, 8]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[2,6], OP2:[9,6], NAP:[5,7] },
+          B: { GK:[5,18], Z:[5,12], OP1:[4,10], OP2:[6,10], NAP:[5,9] }
+        },
+        statuses: {}, focus: {}, actions: [], roll: null,
+        uiLabels: [{ id: "paradigm", text: "A держит 1:0 шириной" }],
+        paradigm: "A не схлопывается."
+      },
+      {
+        min: 16, side: "B", score: [1, 0], ap: 2,
+        narrative: "B прёт центром пачкой — ауры A перекрывают узкий коридор.",
+        ball: [5, 8],
+        freeZones: [[1, 5], [10, 5]],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[3,6], OP2:[7,6], NAP:[5,7] },
+          B: { GK:[5,18], Z:[5,10], OP1:[4,8], OP2:[6,8], NAP:[5,8] }
+        },
+        statuses: { "A.Z": { defend: 2 } },
+        focus: {},
+        actions: [
+          { who: "B.NAP", kind: "move", detail: "в лоб в блок" },
+          { who: "B.OP1", kind: "pass", detail: "в скученность" }
+        ],
+        roll: { label: "Пас в тройную насыщенность + Defend", chance: 22, result: "fail", roll: 81 },
+        uiLabels: [{ id: "roll", text: "Узкий центр закрыт · края пустые не использованы" }]
+      },
+      {
+        min: 18, side: "A", score: [1, 0], ap: 2,
+        narrative: "Вынос в широкий OP2 — снова не к куче, а в свободный край.",
+        ball: [9, 8],
+        freeZones: [[9, 8]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[2,6], OP2:[9,8], NAP:[5,7] },
+          B: { GK:[5,18], Z:[5,9], OP1:[4,8], OP2:[6,8], NAP:[5,8] }
+        },
+        statuses: {}, focus: { "B.OP1": 1 },
+        actions: [
+          { who: "A.Z", kind: "pass", detail: "на широкий край" },
+          { who: "A.OP2", kind: "move", detail: "принял один" }
+        ],
+        roll: { label: "Вынос в ширину", chance: 80, result: "ok", roll: 14 },
+        uiLabels: []
+      },
+      {
+        min: 20, side: "end", score: [1, 0],
+        narrative: "1:0. Гол родился из пустого канала после схлопывания B. Скученность у мяча дважды убила атаки.",
+        ball: [5, 9],
+        freeZones: [[2, 10], [9, 10]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[2,6], OP2:[9,6], NAP:[5,7] },
+          B: { GK:[5,18], Z:[5,15], OP1:[2,14], OP2:[9,14], NAP:[5,12] }
+        },
+        statuses: {}, focus: {}, actions: [], roll: null,
+        uiLabels: [{ id: "banner", text: "Итог 1:0 · урок ширины" }]
+      }
+    ]
+  },
+
+  {
+    id: "I",
+    theme: "I",
+    title: "Пустой край",
+    subtitle: "Замах в толпу мимо. Гол — прострел с одинокого фланга, где никто не стоял.",
+    scoreFinal: "1:1",
+    styles: {
+      A: "Ищет пустые гексы",
+      B: "Держит ширину в контратаке"
+    },
+    uiGlossary: [
+      { key: "Одинокий фланг", where: "1 фишка на бровке", text: "Если соперник уехал к мячу — это главный адрес паса." }
+    ],
+    steps: [
+      {
+        min: 0, side: "kick", score: [0, 0],
+        narrative: "Обе стороны широкие. Свободные зоны по бровкам отмечены.",
+        ball: [5, 9],
+        freeZones: [[1, 11], [10, 11]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[1,6], OP2:[10,6], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,15], OP1:[1,14], OP2:[10,14], NAP:[5,12] }
+        },
+        statuses: {}, focus: {}, actions: [], roll: null,
+        uiLabels: [{ id: "banner", text: "Максимальная ширина" }]
+      },
+      {
+        min: 1, side: "A", score: [0, 0], ap: 2,
+        narrative: "Контроль в центре. Края A специально не трогают — якоря формы.",
+        ball: [5, 8],
+        freeZones: [[1, 10], [10, 10]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[1,7], OP2:[10,7], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,15], OP1:[1,14], OP2:[10,14], NAP:[5,12] }
+        },
+        statuses: {}, focus: { "B.NAP": 1 },
+        actions: [
+          { who: "A.NAP", kind: "move", detail: "чуть глубже под пас" },
+          { who: "A.Z", kind: "pass", detail: "в Нап" }
+        ],
+        roll: { label: "Пас", chance: 88, result: "ok", roll: 20 },
+        uiLabels: [{ id: "tip", text: "OP1/OP2 держат колонки 1 и 10" }]
+      },
+      {
+        min: 2, side: "B", score: [0, 0], ap: 2,
+        narrative: "B сжимает только центр Defend — края оставляет. Честный блок.",
+        ball: [5, 8],
+        freeZones: [[1, 12], [10, 12]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[1,7], OP2:[10,7], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,14], OP1:[3,13], OP2:[7,13], NAP:[5,12] }
+        },
+        statuses: { "B.Z": { defend: 2 } },
+        focus: { "B.NAP": 1 },
+        actions: [
+          { who: "B.Z", kind: "defend", detail: "центр" },
+          { who: "B.OP1", kind: "move", detail: "чуть уже, но не на бровку A" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "tip", text: "Края B (1 и 10) всё ещё свободны для A" }]
+      },
+      {
+        min: 3, side: "A", score: [0, 0], ap: 2,
+        narrative: "Ошибка: Замах NAP в центре перед Defend — в толпе, не в пустоте.",
+        ball: [5, 11],
+        freeZones: [[10, 12], [10, 14]],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[1,8], OP2:[10,8], NAP:[5,11] },
+          B: { GK:[5,18], Z:[5,14], OP1:[3,13], OP2:[7,13], NAP:[5,12] }
+        },
+        statuses: { "A.NAP": { windup: true }, "B.Z": { defend: 1 } },
+        focus: { "B.NAP": 2 },
+        actions: [
+          { who: "A.NAP", kind: "move", detail: "в лоб в блок" },
+          { who: "A.NAP", kind: "windup", detail: "Замах в насыщенной зоне" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "windup", text: "Замах в толпе · свободный край справа проигнорирован" }]
+      },
+      {
+        min: 4, side: "B", score: [0, 0], ap: 2,
+        narrative: "B усиливает центр — края по-прежнему пустые.",
+        ball: [5, 11],
+        freeZones: [[10, 13], [1, 13]],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[1,8], OP2:[10,8], NAP:[5,11] },
+          B: { GK:[5,18], Z:[5,13], OP1:[4,12], OP2:[6,12], NAP:[5,12] }
+        },
+        statuses: { "A.NAP": { windup: true }, "B.Z": { defend: 2 } },
+        focus: { "B.NAP": 2 },
+        actions: [
+          { who: "B.Z", kind: "defend", detail: "на замахе" },
+          { who: "B.OP2", kind: "move", detail: "уплотнил центр" }
+        ],
+        roll: null,
+        uiLabels: []
+      },
+      {
+        min: 5, side: "A", score: [0, 0], ap: 2,
+        narrative: "Замах-удар из толпы — мимо. Правильный адрес был K-колонка.",
+        ball: [5, 11],
+        freeZones: [[10, 12]],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[1,8], OP2:[10,8], NAP:[5,11] },
+          B: { GK:[5,18], Z:[5,13], OP1:[4,12], OP2:[6,12], NAP:[5,12] }
+        },
+        statuses: { "B.Z": { defend: 1 } },
+        focus: { "B.NAP": 3 },
+        actions: [
+          { who: "A.Z", kind: "pass", detail: "под замах" },
+          { who: "A.NAP", kind: "shot", detail: "в Defend из центра" }
+        ],
+        roll: { label: "Удар из толпы / не зона", chance: 11, result: "fail", roll: 79 },
+        uiLabels: [{ id: "roll", text: "11% · урок: не бить там, где все стоят" }]
+      },
+      {
+        min: 6, side: "B", score: [0, 0], ap: 2,
+        narrative: "Подбор. B не схлопывается: вынос на своего широкого OP1 (колонка 1).",
+        ball: [1, 10],
+        freeZones: [[1, 7], [1, 5]],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[1,8], OP2:[10,8], NAP:[5,11] },
+          B: { GK:[5,18], Z:[5,13], OP1:[1,10], OP2:[8,12], NAP:[4,11] }
+        },
+        statuses: {}, focus: {},
+        actions: [
+          { who: "B.Z", kind: "pass", detail: "на широкий край, не в кучу" },
+          { who: "B.OP1", kind: "move", detail: "B11 один" }
+        ],
+        roll: { label: "Вынос в ширину", chance: 77, result: "ok", roll: 19 },
+        uiLabels: [{ id: "paradigm", text: "B играет в пустоту" }],
+        paradigm: "B: контра шириной."
+      },
+      {
+        min: 7, side: "A", score: [0, 0], ap: 2,
+        narrative: "A ошибочно всё тянет к левому мячу — правый край A брошен.",
+        ball: [1, 10],
+        freeZones: [[10, 8], [10, 6]],
+        players: {
+          A: { GK:[5,1], Z:[3,5], OP1:[2,7], OP2:[5,7], NAP:[3,9] },
+          B: { GK:[5,18], Z:[5,13], OP1:[1,10], OP2:[8,12], NAP:[4,11] }
+        },
+        statuses: { "A.Z": { defend: 2 } },
+        focus: {},
+        actions: [
+          { who: "A.Z", kind: "defend", detail: "к мячу" },
+          { who: "A.OP2", kind: "move", detail: "бросил свой край · к мячу" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "tip", text: "Схлопывание A · колонка 10 пуста" }]
+      },
+      {
+        min: 8, side: "B", score: [0, 0], ap: 2,
+        narrative: "Вперёд по пустому каналу A–B. Ещё не ударная зона.",
+        ball: [1, 6],
+        freeZones: [[1, 3], [2, 2]],
+        players: {
+          A: { GK:[5,1], Z:[3,5], OP1:[2,7], OP2:[5,7], NAP:[3,9] },
+          B: { GK:[5,18], Z:[4,11], OP1:[2,8], OP2:[7,11], NAP:[1,6] }
+        },
+        statuses: { "A.Z": { defend: 1 } },
+        focus: {},
+        actions: [
+          { who: "B.OP1", kind: "pass", detail: "в Нап по пустому краю" },
+          { who: "B.NAP", kind: "move", detail: "B7" }
+        ],
+        roll: { label: "Пас в свободный канал", chance: 74, result: "ok", roll: 40 },
+        uiLabels: []
+      },
+      {
+        min: 9, side: "A", score: [0, 0], ap: 2,
+        narrative: "Defend у ворот — край всё равно не закрыт до конца.",
+        ball: [1, 6],
+        freeZones: [[1, 3]],
+        players: {
+          A: { GK:[4,1], Z:[2,3], OP1:[2,5], OP2:[5,5], NAP:[4,7] },
+          B: { GK:[5,18], Z:[4,11], OP1:[2,8], OP2:[7,11], NAP:[1,6] }
+        },
+        statuses: { "A.Z": { defend: 2 } },
+        focus: {},
+        actions: [
+          { who: "A.Z", kind: "defend", detail: "C4" },
+          { who: "A.OP1", kind: "move", detail: "вышел" }
+        ],
+        roll: null,
+        uiLabels: []
+      },
+      {
+        min: 10, side: "B", score: [0, 1], ap: 2,
+        narrative: "Ещё гекс в ударную C3 (мимо Defend) + удар. Мяч в ворота.",
+        ball: [5, 0],
+        shotFrom: [2, 2],
+        goalTo: [5, 0],
+        freeZones: [[2, 2]],
+        players: {
+          A: { GK:[4,1], Z:[2,3], OP1:[2,5], OP2:[5,5], NAP:[4,7] },
+          B: { GK:[5,18], Z:[4,11], OP1:[2,7], OP2:[7,11], NAP:[2,2] }
+        },
+        statuses: { "A.Z": { defend: 1 } },
+        focus: {},
+        actions: [
+          { who: "B.NAP", kind: "move", detail: "в свободный C3" },
+          { who: "B.NAP", kind: "shot", detail: "удар" }
+        ],
+        roll: { label: "Удар из свободного гекса", chance: 50, result: "goal", roll: 24 },
+        uiLabels: [{ id: "banner", text: "ГОЛ B · пустой край" }]
+      },
+      {
+        min: 11, side: "kick", score: [0, 1],
+        narrative: "A возвращает ширину. Больше не схлопываем OP2.",
+        ball: [5, 9],
+        freeZones: [[10, 11], [1, 11]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[1,6], OP2:[10,6], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,15], OP1:[1,14], OP2:[10,14], NAP:[5,12] }
+        },
+        statuses: {}, focus: {}, actions: [], roll: null,
+        uiLabels: [{ id: "paradigm", text: "A: играй в пустоту" }],
+        paradigm: "A копирует урок B."
+      },
+      {
+        min: 12, side: "B", score: [0, 1], ap: 2,
+        narrative: "B теперь сам схлопывается защищать счёт — оба OP к центру.",
+        ball: [5, 9],
+        freeZones: [[10, 12], [10, 14]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[1,6], OP2:[10,6], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,14], OP1:[4,12], OP2:[6,12], NAP:[5,11] }
+        },
+        statuses: { "B.Z": { defend: 2 } },
+        focus: {},
+        actions: [
+          { who: "B.OP1", kind: "move", detail: "уже к центру" },
+          { who: "B.OP2", kind: "move", detail: "бросил край" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "tip", text: "Правый край B пуст" }]
+      },
+      {
+        min: 13, side: "A", score: [0, 1], ap: 2,
+        narrative: "Сразу в одинокий OP2 на колонке 10.",
+        ball: [10, 10],
+        freeZones: [[10, 14], [9, 15]],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[2,7], OP2:[10,10], NAP:[6,9] },
+          B: { GK:[5,18], Z:[5,14], OP1:[4,12], OP2:[6,12], NAP:[5,11] }
+        },
+        statuses: { "B.Z": { defend: 1 } },
+        focus: {},
+        actions: [
+          { who: "A.NAP", kind: "pass", detail: "переключение в пустоту" },
+          { who: "A.OP2", kind: "move", detail: "K11 один" }
+        ],
+        roll: { label: "Пас на одинокий край", chance: 73, result: "ok", roll: 31 },
+        uiLabels: []
+      },
+      {
+        min: 14, side: "B", score: [0, 1], ap: 2,
+        narrative: "Поздний выход OP2 B на край — NAP B всё ещё в центре.",
+        ball: [10, 10],
+        freeZones: [[10, 15]],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[2,7], OP2:[10,10], NAP:[6,9] },
+          B: { GK:[5,18], Z:[6,14], OP1:[5,12], OP2:[9,13], NAP:[5,11] }
+        },
+        statuses: {}, focus: {},
+        actions: [
+          { who: "B.OP2", kind: "move", detail: "догоняет" },
+          { who: "B.Z", kind: "move", detail: "сместился" }
+        ],
+        roll: null,
+        uiLabels: []
+      },
+      {
+        min: 15, side: "A", score: [0, 1], ap: 2,
+        narrative: "Прострел с одинокого фланга в NAP на H17 — между уехавшими.",
+        ball: [7, 16],
+        freeZones: [[7, 16]],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[3,9], OP2:[10,14], NAP:[7,16] },
+          B: { GK:[5,18], Z:[6,14], OP1:[5,12], OP2:[9,13], NAP:[5,11] }
+        },
+        statuses: {}, focus: {},
+        actions: [
+          { who: "A.OP2", kind: "pass", detail: "прострел в свободный гекс штрафной" },
+          { who: "A.NAP", kind: "move", detail: "H17" }
+        ],
+        roll: { label: "Прострел в пустоту", chance: 54, result: "ok", roll: 48 },
+        uiLabels: [{ id: "tip", text: "Не дриблинг сквозь З — пас в пустой гекс" }]
+      },
+      {
+        min: 16, side: "B", score: [0, 1], ap: 2,
+        narrative: "ВР/З пытаются накрыть свободный гекс.",
+        ball: [7, 16],
+        freeZones: [],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[3,9], OP2:[10,14], NAP:[7,16] },
+          B: { GK:[6,17], Z:[7,16], OP1:[5,13], OP2:[9,14], NAP:[5,11] }
+        },
+        statuses: { "B.Z": { defend: 2 } },
+        focus: {},
+        actions: [
+          { who: "B.Z", kind: "defend", detail: "на NAP" },
+          { who: "B.GK", kind: "move", detail: "выход" }
+        ],
+        roll: null,
+        uiLabels: []
+      },
+      {
+        min: 17, side: "A", score: [1, 1], ap: 2,
+        narrative: "Шаг в соседний свободный G17 + удар. Мяч в сетку.",
+        ball: [5, 19],
+        shotFrom: [6, 16],
+        goalTo: [5, 19],
+        freeZones: [[6, 16]],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[3,9], OP2:[10,14], NAP:[6,16] },
+          B: { GK:[6,17], Z:[7,16], OP1:[5,13], OP2:[9,14], NAP:[5,11] }
+        },
+        statuses: { "B.Z": { defend: 1 } },
+        focus: {},
+        actions: [
+          { who: "A.NAP", kind: "move", detail: "G17 свободно" },
+          { who: "A.NAP", kind: "shot", detail: "удар" }
+        ],
+        roll: { label: "Удар из свободного гекса", chance: 51, result: "goal", roll: 27 },
+        uiLabels: [{ id: "banner", text: "ГОЛ A · 1:1" }]
+      },
+      {
+        min: 20, side: "end", score: [1, 1],
+        narrative: "Оба гола — из пустых гексов после того, как соперник уехал к мячу. Толпа у мяча голов не создала.",
+        ball: [5, 9],
+        freeZones: [[1, 10], [10, 10]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[1,6], OP2:[10,6], NAP:[5,8] },
+          B: { GK:[5,18], Z:[5,15], OP1:[1,14], OP2:[10,14], NAP:[5,12] }
+        },
+        statuses: {}, focus: {}, actions: [], roll: null,
+        uiLabels: [{ id: "banner", text: "Итог 1:1 · пустые зоны" }]
+      }
+    ]
+  },
+
+  {
+    id: "J",
+    theme: "J",
+    title: "Пресс без схлопывания",
+    subtitle: "Прессинг двумя, но третий остаётся широким. Гол в щель. Потом автобус с шириной.",
+    scoreFinal: "2:0",
+    styles: {
+      A: "Пресс точечный + один широкий якорь",
+      B: "Низкий блок, потом паническое схлопывание"
+    },
+    uiGlossary: [
+      { key: "Точечный пресс", where: "2 у мяча, 1 широкий", text: "Не все бегут к мячу — иначе нет адреса для отбора." }
+    ],
+    steps: [
+      {
+        min: 0, side: "kick", score: [0, 0],
+        narrative: "A высоко, но широко: OP2 не в линии с OP1.",
+        ball: [5, 12],
+        freeZones: [[10, 14], [1, 14]],
+        players: {
+          A: { GK:[5,1], Z:[5,7], OP1:[3,12], OP2:[10,10], NAP:[5,12] },
+          B: { GK:[5,18], Z:[5,16], OP1:[3,15], OP2:[8,15], NAP:[5,14] }
+        },
+        statuses: {}, focus: {}, actions: [], roll: null,
+        uiLabels: [{ id: "banner", text: "Пресс + широкий якорь OP2" }]
+      },
+      {
+        min: 1, side: "B", score: [0, 0], ap: 2,
+        narrative: "B разыгрывает у своей штрафной узко.",
+        ball: [4, 15],
+        freeZones: [[10, 12]],
+        players: {
+          A: { GK:[5,1], Z:[5,8], OP1:[3,13], OP2:[10,11], NAP:[5,12] },
+          B: { GK:[5,18], Z:[5,16], OP1:[4,15], OP2:[7,15], NAP:[5,14] }
+        },
+        statuses: {}, focus: { "B.NAP": 1 },
+        actions: [
+          { who: "B.Z", kind: "pass", detail: "на OP1" },
+          { who: "B.OP1", kind: "move", detail: "принял" }
+        ],
+        roll: { label: "Пас под давлением OP", chance: 55, result: "ok", roll: 50 },
+        uiLabels: []
+      },
+      {
+        min: 2, side: "A", score: [0, 0], ap: 2,
+        narrative: "Точечный пресс: OP1+NAP на мяч. OP2 остаётся на K — не бежит.",
+        ball: [4, 15],
+        freeZones: [[10, 13], [10, 15]],
+        players: {
+          A: { GK:[5,1], Z:[5,9], OP1:[3,14], OP2:[10,12], NAP:[5,14] },
+          B: { GK:[5,18], Z:[5,16], OP1:[4,15], OP2:[7,15], NAP:[5,14] }
+        },
+        statuses: {}, focus: { "B.NAP": 1 },
+        actions: [
+          { who: "A.OP1", kind: "press", detail: "на мяч" },
+          { who: "A.NAP", kind: "press", detail: "на мяч · OP2 НЕ схлопнулся" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "tip", text: "Широкий OP2 = адрес после отбора" }]
+      },
+      {
+        min: 3, side: "B", score: [0, 0], ap: 2,
+        narrative: "Вынос под прессом — срыв. Мяч у A.",
+        ball: [4, 14],
+        freeZones: [[10, 14]],
+        players: {
+          A: { GK:[5,1], Z:[5,9], OP1:[3,14], OP2:[10,12], NAP:[5,14] },
+          B: { GK:[5,18], Z:[5,16], OP1:[4,15], OP2:[7,15], NAP:[5,14] }
+        },
+        statuses: {}, focus: { "B.NAP": 2 },
+        actions: [
+          { who: "B.OP1", kind: "pass", detail: "вынос" },
+          { who: "B.Z", kind: "move", detail: "страховка" }
+        ],
+        roll: { label: "Вынос под прессом", chance: 33, result: "fail", roll: 72 },
+        uiLabels: [{ id: "roll", text: "потеря" }]
+      },
+      {
+        min: 4, side: "A", score: [0, 0], ap: 2,
+        narrative: "Не били из толпы у отбора. Переключение на широкого OP2 в пустоту.",
+        ball: [10, 14],
+        freeZones: [[10, 16], [9, 16]],
+        players: {
+          A: { GK:[5,1], Z:[5,9], OP1:[4,14], OP2:[10,14], NAP:[6,13] },
+          B: { GK:[5,18], Z:[5,16], OP1:[4,15], OP2:[7,15], NAP:[5,14] }
+        },
+        statuses: {}, focus: { "B.NAP": 2 },
+        actions: [
+          { who: "A.OP1", kind: "pass", detail: "в широкий свободный край" },
+          { who: "A.OP2", kind: "move", detail: "K15 один против линии" }
+        ],
+        roll: { label: "Пас в свободную зону после отбора", chance: 70, result: "ok", roll: 22 },
+        uiLabels: [{ id: "tip", text: "Смысл широкого якоря при прессе" }]
+      },
+      {
+        min: 5, side: "B", score: [0, 0], ap: 2,
+        narrative: "B паникует — З и оба OP к правому мячу. Центр/лево пусты.",
+        ball: [10, 14],
+        freeZones: [[4, 16], [5, 16], [3, 15]],
+        players: {
+          A: { GK:[5,1], Z:[5,9], OP1:[4,14], OP2:[10,14], NAP:[6,13] },
+          B: { GK:[5,18], Z:[8,15], OP1:[7,14], OP2:[10,15], NAP:[6,14] }
+        },
+        statuses: {}, focus: { "B.NAP": 2 },
+        actions: [
+          { who: "B.Z", kind: "move", detail: "к мячу" },
+          { who: "B.OP2", kind: "move", detail: "к мячу" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "tip", text: "Схлопывание B открыло E/F 16" }]
+      },
+      {
+        min: 6, side: "A", score: [0, 0], ap: 2,
+        narrative: "Прострел/диаговаль в свободный E17 — NAP бежит туда, не к куче на K.",
+        ball: [4, 16],
+        freeZones: [[4, 16]],
+        players: {
+          A: { GK:[5,1], Z:[5,9], OP1:[5,13], OP2:[9,14], NAP:[4,16] },
+          B: { GK:[5,18], Z:[8,15], OP1:[7,14], OP2:[10,15], NAP:[6,14] }
+        },
+        statuses: {}, focus: { "B.NAP": 3 },
+        actions: [
+          { who: "A.OP2", kind: "pass", detail: "в свободную штрафную" },
+          { who: "A.NAP", kind: "move", detail: "E17 · не к мячу на фланг" }
+        ],
+        roll: { label: "Пас в пустоту за схлопнутой линией", chance: 57, result: "ok", roll: 41 },
+        uiLabels: []
+      },
+      {
+        min: 7, side: "B", score: [0, 0], ap: 2,
+        narrative: "Поздний возврат.",
+        ball: [4, 16],
+        freeZones: [],
+        players: {
+          A: { GK:[5,1], Z:[5,9], OP1:[5,13], OP2:[9,14], NAP:[4,16] },
+          B: { GK:[5,17], Z:[5,16], OP1:[5,15], OP2:[8,15], NAP:[6,14] }
+        },
+        statuses: { "B.Z": { defend: 2 } },
+        focus: {},
+        actions: [
+          { who: "B.Z", kind: "defend", detail: "F17" },
+          { who: "B.GK", kind: "move", detail: "выход" }
+        ],
+        roll: null,
+        uiLabels: []
+      },
+      {
+        min: 8, side: "A", score: [1, 0], ap: 2,
+        narrative: "Смещение в свободный F17 + удар в ворота.",
+        ball: [5, 19],
+        shotFrom: [5, 16],
+        goalTo: [5, 19],
+        freeZones: [[5, 16]],
+        players: {
+          A: { GK:[5,1], Z:[5,9], OP1:[5,13], OP2:[9,14], NAP:[5,16] },
+          B: { GK:[5,17], Z:[5,16], OP1:[5,15], OP2:[8,15], NAP:[6,14] }
+        },
+        statuses: { "B.Z": { defend: 1 } },
+        focus: {},
+        actions: [
+          { who: "A.NAP", kind: "move", detail: "F17 свободно" },
+          { who: "A.NAP", kind: "shot", detail: "удар" }
+        ],
+        roll: { label: "Удар из свободного гекса", chance: 53, result: "goal", roll: 26 },
+        uiLabels: [{ id: "banner", text: "ГОЛ A" }],
+        paradigm: "A сядет, но ширину сохранит."
+      },
+      {
+        min: 9, side: "kick", score: [1, 0],
+        narrative: "Автобус A: низко, но OP1/OP2 на разных краях — не комок.",
+        ball: [5, 9],
+        freeZones: [[1, 7], [10, 7]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[1,5], OP2:[10,5], NAP:[5,6] },
+          B: { GK:[5,18], Z:[5,13], OP1:[4,10], OP2:[6,10], NAP:[5,9] }
+        },
+        statuses: { "A.Z": { defend: 2 } },
+        focus: {}, actions: [], roll: null,
+        uiLabels: [{ id: "paradigm", text: "Автобус с шириной" }],
+        paradigm: "Блок ≠ схлопывание."
+      },
+      {
+        min: 11, side: "B", score: [1, 0], ap: 2,
+        narrative: "B прёт центром втроём в Defend — края A пустые не использует.",
+        ball: [5, 6],
+        freeZones: [[1, 4], [10, 4]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[1,5], OP2:[10,5], NAP:[5,6] },
+          B: { GK:[5,18], Z:[5,9], OP1:[4,7], OP2:[6,7], NAP:[5,6] }
+        },
+        statuses: { "A.Z": { defend: 1 } },
+        focus: {},
+        actions: [
+          { who: "B.NAP", kind: "move", detail: "в лоб" },
+          { who: "B.OP1", kind: "pass", detail: "в скученность" }
+        ],
+        roll: { label: "Пас в комок + Defend", chance: 24, result: "fail", roll: 85 },
+        uiLabels: [{ id: "roll", text: "Края A пусты — B туда не пошёл" }]
+      },
+      {
+        min: 13, side: "A", score: [1, 0], ap: 2,
+        narrative: "Вынос на широкий OP2.",
+        ball: [10, 7],
+        freeZones: [[10, 7]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[1,5], OP2:[10,7], NAP:[5,6] },
+          B: { GK:[5,18], Z:[5,8], OP1:[4,7], OP2:[6,7], NAP:[5,6] }
+        },
+        statuses: {}, focus: {},
+        actions: [
+          { who: "A.Z", kind: "pass", detail: "в ширину" },
+          { who: "A.OP2", kind: "move", detail: "один" }
+        ],
+        roll: { label: "Вынос в пустоту", chance: 82, result: "ok", roll: 12 },
+        uiLabels: []
+      },
+      {
+        min: 14, side: "B", score: [1, 0], ap: 2,
+        narrative: "B снова всей группой на фланг к мячу.",
+        ball: [10, 7],
+        freeZones: [[2, 10], [3, 12]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[1,5], OP2:[10,7], NAP:[5,6] },
+          B: { GK:[5,18], Z:[7,9], OP1:[6,8], OP2:[9,8], NAP:[6,7] }
+        },
+        statuses: {}, focus: {},
+        actions: [
+          { who: "B.OP2", kind: "move", detail: "к мячу" },
+          { who: "B.Z", kind: "move", detail: "к мячу" }
+        ],
+        roll: null,
+        uiLabels: [{ id: "tip", text: "Левый канал B пуст для контра" }]
+      },
+      {
+        min: 15, side: "A", score: [1, 0], ap: 2,
+        narrative: "Переключение на OP1 в огромную пустоту.",
+        ball: [1, 10],
+        freeZones: [[1, 13], [2, 15]],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[1,10], OP2:[9,8], NAP:[4,8] },
+          B: { GK:[5,18], Z:[7,9], OP1:[6,8], OP2:[9,8], NAP:[6,7] }
+        },
+        statuses: {}, focus: {},
+        actions: [
+          { who: "A.OP2", kind: "pass", detail: "на пустой край" },
+          { who: "A.OP1", kind: "move", detail: "B11 один" }
+        ],
+        roll: { label: "Пас в свободную зону", chance: 75, result: "ok", roll: 29 },
+        uiLabels: []
+      },
+      {
+        min: 16, side: "B", score: [1, 0], ap: 2,
+        narrative: "Поздний возврат всей команды влево.",
+        ball: [1, 10],
+        freeZones: [[8, 14]],
+        players: {
+          A: { GK:[5,1], Z:[5,5], OP1:[1,10], OP2:[9,8], NAP:[4,8] },
+          B: { GK:[5,18], Z:[3,12], OP1:[2,11], OP2:[5,11], NAP:[4,10] }
+        },
+        statuses: {}, focus: {},
+        actions: [
+          { who: "B.OP1", kind: "move", detail: "к мячу" },
+          { who: "B.Z", kind: "move", detail: "к мячу" }
+        ],
+        roll: null,
+        uiLabels: []
+      },
+      {
+        min: 17, side: "A", score: [1, 0], ap: 2,
+        narrative: "В щель на NAP E16, пока B уехал на фланг.",
+        ball: [4, 16],
+        freeZones: [[4, 16]],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[2,12], OP2:[8,10], NAP:[4,16] },
+          B: { GK:[5,18], Z:[3,12], OP1:[2,11], OP2:[5,11], NAP:[4,10] }
+        },
+        statuses: {}, focus: {},
+        actions: [
+          { who: "A.OP1", kind: "pass", detail: "в пустую штрафную" },
+          { who: "A.NAP", kind: "move", detail: "E17" }
+        ],
+        roll: { label: "Пас в пустоту", chance: 60, result: "ok", roll: 37 },
+        uiLabels: []
+      },
+      {
+        min: 18, side: "B", score: [1, 0], ap: 2,
+        narrative: "ВР и Defend — поздно.",
+        ball: [4, 16],
+        freeZones: [],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[2,12], OP2:[8,10], NAP:[4,16] },
+          B: { GK:[5,17], Z:[4,16], OP1:[3,13], OP2:[6,13], NAP:[4,11] }
+        },
+        statuses: { "B.Z": { defend: 2 } },
+        focus: {},
+        actions: [
+          { who: "B.Z", kind: "defend", detail: "E17" },
+          { who: "B.GK", kind: "move", detail: "выход" }
+        ],
+        roll: null,
+        uiLabels: []
+      },
+      {
+        min: 19, side: "A", score: [2, 0], ap: 2,
+        narrative: "Свободный F17 + удар. Мяч в ворота.",
+        ball: [5, 19],
+        shotFrom: [5, 16],
+        goalTo: [5, 19],
+        freeZones: [[5, 16]],
+        players: {
+          A: { GK:[5,1], Z:[5,6], OP1:[2,12], OP2:[8,10], NAP:[5,16] },
+          B: { GK:[5,17], Z:[4,16], OP1:[3,13], OP2:[6,13], NAP:[4,11] }
+        },
+        statuses: { "B.Z": { defend: 1 } },
+        focus: {},
+        actions: [
+          { who: "A.NAP", kind: "move", detail: "F17" },
+          { who: "A.NAP", kind: "shot", detail: "удар" }
+        ],
+        roll: { label: "Удар из свободного гекса", chance: 50, result: "goal", roll: 23 },
+        uiLabels: [{ id: "banner", text: "ГОЛ A · 2:0" }]
+      },
+      {
+        min: 20, side: "end", score: [2, 0],
+        narrative: "2:0. Пресс работал, потому что один оставался широким. Голы — в щели после схлопывания B к мячу.",
+        ball: [5, 9],
+        freeZones: [[1, 10], [10, 10]],
+        players: {
+          A: { GK:[5,1], Z:[5,4], OP1:[1,5], OP2:[10,5], NAP:[5,6] },
+          B: { GK:[5,18], Z:[5,15], OP1:[3,14], OP2:[8,14], NAP:[5,12] }
+        },
+        statuses: {}, focus: {}, actions: [], roll: null,
+        uiLabels: [{ id: "banner", text: "Итог 2:0 · пространство" }]
+      }
+    ]
+  }
+];
+
+  </script>
+  <script>
+(function () {
+  /** Flat-top hex grid, odd-q offset coords [col, row] */
+  const COLS = 12;
+  const ROWS = 20;
+  const HEX = 18; // radius in SVG units
+  const STEP_X = HEX * 1.5;
+  const STEP_Y = HEX * Math.sqrt(3);
+  const ORIGIN_X = HEX * 1.35;
+  const ORIGIN_Y = HEX * 1.2;
+  const VB_W = ORIGIN_X * 2 + STEP_X * (COLS - 1) + HEX;
+  const VB_H = ORIGIN_Y * 2 + STEP_Y * (ROWS - 0.5) + HEX;
+
+  const ROLE_SHORT = { GK: "ВР", Z: "З", OP1: "О1", OP2: "О2", NAP: "Н" };
+  const ROLE_NAME = {
+    GK: "Вратарь",
+    Z: "Защитник",
+    OP1: "Опорный 1",
+    OP2: "Опорный 2",
+    NAP: "Нападающий",
+  };
+  const PRESSURE = { GK: 0, Z: 2, OP1: 1, OP2: 1, NAP: 0 };
+  const KIND_RU = {
+    move: "Бежит",
+    pass: "Пас",
+    shot: "Удар!",
+    defend: "Defend",
+    windup: "Замах",
+    press: "Прессинг",
+    receive: "Приём",
+  };
+  const MOVE_MS = 950;
+  const BALL_GOAL_MS = 1100;
+  const HOLD_MS = 1800;
+
+  const GOAL_A = { cols: [4, 5, 6, 7], row: 0 }; // B scores here
+  const GOAL_B = { cols: [4, 5, 6, 7], row: 19 }; // A scores here
+
+  const matches = window.PITCH_TACTICS_MATCHES || [];
+  let matchIndex = 0;
+  let stepIndex = 0;
+  let playing = false;
+  let playTimer = null;
+  let animating = false;
+
+  const pieceEls = {};
+  let ballEl = null;
+  let svgEl = null;
+  let hexLayer = null;
+  let trailLayer = null;
+  let fxLayer = null;
+  let lastPlayers = null;
+  let lastBall = null;
+  const hexNodes = {};
+
+  const els = {
+    tabs: document.getElementById("matchTabs"),
+    meta: document.getElementById("matchMeta"),
+    clock: document.getElementById("clock"),
+    scoreboard: document.getElementById("scoreboard"),
+    sidePill: document.getElementById("sidePill"),
+    stylesBox: document.getElementById("stylesBox"),
+    glossary: document.getElementById("glossary"),
+    banner: document.getElementById("banner"),
+    paradigm: document.getElementById("paradigm"),
+    pitch: document.getElementById("pitch"),
+    narrative: document.getElementById("narrative"),
+    actions: document.getElementById("actions"),
+    rollBox: document.getElementById("rollBox"),
+    labels: document.getElementById("labels"),
+    note: document.getElementById("note"),
+    scrubber: document.getElementById("scrubber"),
+    stepCount: document.getElementById("stepCount"),
+    btnPrev: document.getElementById("btnPrev"),
+    btnNext: document.getElementById("btnNext"),
+    btnPlay: document.getElementById("btnPlay"),
+    moveLog: document.getElementById("moveLog"),
+  };
+
+  function match() {
+    return matches[matchIndex];
+  }
+  function step() {
+    return match().steps[stepIndex];
+  }
+  function prevStep() {
+    return stepIndex > 0 ? match().steps[stepIndex - 1] : null;
+  }
+
+  /** odd-q flat-top center in SVG units */
+  function hexCenter(col, row) {
+    const x = ORIGIN_X + STEP_X * col;
+    const y = ORIGIN_Y + STEP_Y * (row + 0.5 * (col & 1));
+    return { x, y };
+  }
+
+  function hexPoints(cx, cy, size) {
+    const pts = [];
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI / 180) * (60 * i); // flat-top
+      pts.push(cx + size * Math.cos(a) + "," + (cy + size * Math.sin(a)));
+    }
+    return pts.join(" ");
+  }
+
+  function offsetToCube(col, row) {
+    const x = col;
+    const z = row - ((col - (col & 1)) >> 1);
+    const y = -x - z;
+    return { x, y, z };
+  }
+
+  function hexDist(a, b) {
+    const A = offsetToCube(a[0], a[1]);
+    const B = offsetToCube(b[0], b[1]);
+    return (Math.abs(A.x - B.x) + Math.abs(A.y - B.y) + Math.abs(A.z - B.z)) / 2;
+  }
+
+  function cellName(pos) {
+    return ("ABCDEFGHIJKL"[pos[0]] || "?") + (pos[1] + 1);
+  }
+
+  function pctFromHex(col, row) {
+    const c = hexCenter(col, row);
+    return { left: (c.x / VB_W) * 100, top: (c.y / VB_H) * 100 };
+  }
+
+  function ensureLayers() {
+    if (svgEl) return;
+    els.pitch.innerHTML = "";
+
+    svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svgEl.setAttribute("class", "pitch-svg");
+    svgEl.setAttribute("viewBox", "0 0 " + VB_W + " " + VB_H);
+    svgEl.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    els.pitch.appendChild(svgEl);
+
+    hexLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    trailLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    svgEl.appendChild(hexLayer);
+    svgEl.appendChild(trailLayer);
+
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const center = hexCenter(c, r);
+        const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        poly.setAttribute("points", hexPoints(center.x, center.y, HEX * 0.92));
+        let cls = "hex-cell" + ((c + r) % 2 ? " alt" : "");
+        const g = isGoalHex(c, r);
+        if (g) cls += " hex-goal hex-goal-" + g.toLowerCase();
+        poly.setAttribute("class", cls);
+        poly.dataset.col = String(c);
+        poly.dataset.row = String(r);
+        hexLayer.appendChild(poly);
+        hexNodes[c + "," + r] = poly;
+      }
+    }
+
+    const mid = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    const yMid = (hexCenter(0, 9).y + hexCenter(0, 10).y) / 2;
+    mid.setAttribute("x1", ORIGIN_X - HEX);
+    mid.setAttribute("x2", VB_W - ORIGIN_X + HEX);
+    mid.setAttribute("y1", yMid);
+    mid.setAttribute("y2", yMid);
+    mid.setAttribute("class", "hex-midline");
+    hexLayer.appendChild(mid);
+
+    fxLayer = document.createElement("div");
+    fxLayer.className = "fx-layer";
+    els.pitch.appendChild(fxLayer);
+
+    ballEl = document.createElement("div");
+    ballEl.className = "ball";
+    ballEl.hidden = true;
+    els.pitch.appendChild(ballEl);
+
+    ["A", "B"].forEach((side) => {
+      ["GK", "Z", "OP1", "OP2", "NAP"].forEach((role) => {
+        const key = side + "." + role;
+        const el = document.createElement("button");
+        el.type = "button";
+        el.className = "piece " + side + (role === "GK" ? " GK" : "");
+        el.innerHTML =
+          '<span class="piece-label">' +
+          ROLE_SHORT[role] +
+          '</span><span class="badge-slot"></span><span class="float-callout" hidden></span>';
+        els.pitch.appendChild(el);
+        pieceEls[key] = el;
+      });
+    });
+  }
+
+  function setPiecePos(el, col, row, animate) {
+    const p = pctFromHex(col, row);
+    if (!animate) {
+      el.style.transition = "none";
+      el.style.left = p.left + "%";
+      el.style.top = p.top + "%";
+      void el.offsetWidth;
+      el.style.transition = "";
+    } else {
+      el.style.transition =
+        "left " + MOVE_MS + "ms ease, top " + MOVE_MS + "ms ease";
+      el.style.left = p.left + "%";
+      el.style.top = p.top + "%";
+    }
+  }
+
+  function setBallPos(col, row, animate) {
+    if (col == null) {
+      ballEl.hidden = true;
+      return;
+    }
+    ballEl.hidden = false;
+    const p = pctFromHex(col, row);
+    const ms = ballEl.classList.contains("ball-shot") ? BALL_GOAL_MS : MOVE_MS;
+    if (!animate) {
+      ballEl.style.transition = "none";
+      ballEl.style.left = p.left + "%";
+      ballEl.style.top = p.top + "%";
+      void ballEl.offsetWidth;
+      ballEl.style.transition = "";
+    } else {
+      ballEl.style.transition =
+        "left " +
+        ms +
+        "ms cubic-bezier(.15,.85,.2,1), top " +
+        ms +
+        "ms cubic-bezier(.15,.85,.2,1), transform " +
+        ms +
+        "ms ease";
+      ballEl.style.left = p.left + "%";
+      ballEl.style.top = p.top + "%";
+    }
+  }
+
+  function clearTrails() {
+    while (trailLayer.firstChild) trailLayer.removeChild(trailLayer.firstChild);
+  }
+
+  function drawArrow(from, to, cls) {
+    if (!from || !to) return;
+    if (from[0] === to[0] && from[1] === to[1]) return;
+    const a = hexCenter(from[0], from[1]);
+    const b = hexCenter(to[0], to[1]);
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", a.x);
+    line.setAttribute("y1", a.y);
+    line.setAttribute("x2", b.x);
+    line.setAttribute("y2", b.y);
+    line.setAttribute("class", "move-arrow " + cls);
+    trailLayer.appendChild(line);
+
+    const ang = (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
+    const head = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+    const s = 5;
+    head.setAttribute(
+      "points",
+      b.x + "," + b.y + " " + (b.x - s) + "," + (b.y - s * 0.55) + " " + (b.x - s) + "," + (b.y + s * 0.55)
+    );
+    head.setAttribute("class", "move-head " + cls);
+    head.setAttribute("transform", "rotate(" + ang + " " + b.x + " " + b.y + ")");
+    trailLayer.appendChild(head);
+
+    const ghost = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    ghost.setAttribute("cx", a.x);
+    ghost.setAttribute("cy", a.y);
+    ghost.setAttribute("r", 4);
+    ghost.setAttribute("class", "move-ghost");
+    trailLayer.appendChild(ghost);
+  }
+
+  function drawBallPath(from, to) {
+    if (!from || !to) return;
+    const a = hexCenter(from[0], from[1]);
+    const b = hexCenter(to[0], to[1]);
+    const mx = (a.x + b.x) / 2;
+    const my = (a.y + b.y) / 2 - HEX * 0.8;
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M " + a.x + " " + a.y + " Q " + mx + " " + my + " " + b.x + " " + b.y);
+    path.setAttribute("class", "ball-path");
+    trailLayer.appendChild(path);
+  }
+
+  function isGoalHex(col, row) {
+    if (row === GOAL_A.row && GOAL_A.cols.indexOf(col) >= 0) return "A";
+    if (row === GOAL_B.row && GOAL_B.cols.indexOf(col) >= 0) return "B";
+    return null;
+  }
+
+  function paintGoals() {
+    GOAL_A.cols.forEach((c) => {
+      const n = hexNodes[c + "," + GOAL_A.row];
+      if (n) n.classList.add("hex-goal", "hex-goal-a");
+    });
+    GOAL_B.cols.forEach((c) => {
+      const n = hexNodes[c + "," + GOAL_B.row];
+      if (n) n.classList.add("hex-goal", "hex-goal-b");
+    });
+  }
+
+  function resetHexClasses() {
+    Object.values(hexNodes).forEach((poly) => {
+      const c = Number(poly.dataset.col);
+      const r = Number(poly.dataset.row);
+      let cls = "hex-cell" + ((c + r) % 2 ? " alt" : "");
+      const g = isGoalHex(c, r);
+      if (g) cls += " hex-goal hex-goal-" + g.toLowerCase();
+      poly.setAttribute("class", cls);
+    });
+  }
+
+  function paintHex(col, row, cls) {
+    const n = hexNodes[col + "," + row];
+    if (!n) return;
+    const g = isGoalHex(col, row);
+    let base = "hex-cell " + cls;
+    if (g) base += " hex-goal hex-goal-" + g.toLowerCase();
+    n.setAttribute("class", base);
+  }
+
+  function renderAuras(s) {
+    resetHexClasses();
+    (s.freeZones || []).forEach((pos) => {
+      paintHex(pos[0], pos[1], "hex-free");
+    });
+    Object.entries(s.statuses || {}).forEach(([key, st]) => {
+      if (!st.defend) return;
+      const [side, role] = key.split(".");
+      const pos = s.players[side][role];
+      if (pos) paintHex(pos[0], pos[1], "aura-defend");
+    });
+    ["A", "B"].forEach((side) => {
+      Object.entries(s.players[side]).forEach(([role, pos]) => {
+        const rad = PRESSURE[role] || 0;
+        if (!rad) return;
+        for (let c = 0; c < COLS; c++) {
+          for (let r = 0; r < ROWS; r++) {
+            const d = hexDist(pos, [c, r]);
+            if (d > 0 && d <= rad) {
+              const n = hexNodes[c + "," + r];
+              if (!n) continue;
+              const cls = n.getAttribute("class") || "";
+              if (cls.indexOf("aura-defend") >= 0 || cls.indexOf("hex-free") >= 0) continue;
+              paintHex(c, r, rad >= 2 ? "aura-p2" : "aura-p1");
+            }
+          }
+        }
+      });
+    });
+  }
+
+  function updateBadges(s) {
+    Object.keys(pieceEls).forEach((key) => {
+      const slot = pieceEls[key].querySelector(".badge-slot");
+      slot.innerHTML = "";
+      const focusLv = (s.focus || {})[key] || 0;
+      const st = (s.statuses || {})[key] || {};
+      if (focusLv > 0) {
+        const b = document.createElement("span");
+        b.className = "badge sleep";
+        b.textContent = "Z" + focusLv;
+        slot.appendChild(b);
+      }
+      if (st.defend) {
+        const b = document.createElement("span");
+        b.className = "badge defend";
+        b.textContent = "D" + st.defend;
+        slot.appendChild(b);
+      }
+      if (st.windup) {
+        const b = document.createElement("span");
+        b.className = "badge windup";
+        b.textContent = "⚡";
+        slot.appendChild(b);
+      }
+    });
+  }
+
+  function clearCallouts() {
+    Object.values(pieceEls).forEach((el) => {
+      const c = el.querySelector(".float-callout");
+      c.hidden = true;
+      c.textContent = "";
+      c.className = "float-callout";
+    });
+    fxLayer.innerHTML = "";
+  }
+
+  function showCallout(key, text, kind) {
+    const el = pieceEls[key];
+    if (!el) return;
+    const c = el.querySelector(".float-callout");
+    c.hidden = false;
+    c.textContent = text;
+    c.className = "float-callout show kind-" + (kind || "move");
+  }
+
+  function collectMoves(prev, next) {
+    const moves = [];
+    if (!prev) return moves;
+    ["A", "B"].forEach((side) => {
+      Object.keys(next.players[side]).forEach((role) => {
+        const a = prev.players[side][role];
+        const b = next.players[side][role];
+        if (!a || !b) return;
+        if (a[0] !== b[0] || a[1] !== b[1]) {
+          const key = side + "." + role;
+          moves.push({
+            key,
+            side,
+            role,
+            from: a,
+            to: b,
+            active: (next.actions || []).some((act) => act.who === key),
+            cells: hexDist(a, b),
+          });
+        }
+      });
+    });
+    return moves;
+  }
+
+  function renderMoveLog(moves) {
+    els.moveLog.innerHTML = "";
+    if (!moves.length) {
+      els.moveLog.innerHTML = "<li>Никто не сдвинулся</li>";
+      return;
+    }
+    moves
+      .slice()
+      .sort((a, b) => Number(b.active) - Number(a.active) || b.cells - a.cells)
+      .forEach((m) => {
+        const li = document.createElement("li");
+        li.className = m.active ? "active-move" : "passive-move";
+        li.innerHTML =
+          "<strong>" +
+          m.side +
+          " " +
+          ROLE_NAME[m.role] +
+          "</strong> " +
+          cellName(m.from) +
+          " → " +
+          cellName(m.to) +
+          ' <span class="tagish">' +
+          (m.active ? "актив" : "форма") +
+          " · " +
+          m.cells +
+          " гекс</span>";
+        els.moveLog.appendChild(li);
+      });
+  }
+
+  function renderRoll(roll) {
+    if (!roll) {
+      els.rollBox.innerHTML = '<div class="roll-empty">Нет броска</div>';
+      return;
+    }
+    const cls =
+      roll.result === "fail" ? "fail" : roll.result === "goal" ? "goal" : "ok";
+    const resultText =
+      roll.result === "goal" ? "ГОЛ" : roll.result === "ok" ? "Успех" : "Провал";
+    els.rollBox.innerHTML =
+      '<div class="roll-label">' +
+      roll.label +
+      '</div><div class="roll-chance">' +
+      roll.chance +
+      '%</div><div class="roll-bar"><span style="width:' +
+      roll.chance +
+      '%"></span></div><div class="roll-result ' +
+      cls +
+      '">Бросок ' +
+      roll.roll +
+      " → " +
+      resultText +
+      "</div>";
+  }
+
+  function renderMeta() {
+    const m = match();
+    document.body.dataset.match = m.id;
+    els.meta.innerHTML =
+      '<span class="theme-dot theme-' +
+      m.id +
+      '"></span><strong>' +
+      m.title +
+      "</strong> — " +
+      m.subtitle +
+      " · Итог <strong>" +
+      m.scoreFinal +
+      "</strong>";
+    els.stylesBox.innerHTML =
+      '<div><div class="who">Игрок A</div>' +
+      m.styles.A +
+      '</div><div><div class="who">Игрок B</div>' +
+      m.styles.B +
+      "</div>";
+    els.glossary.innerHTML = "";
+    (m.uiGlossary || []).forEach((g) => {
+      const art = document.createElement("article");
+      art.innerHTML =
+        "<b>" +
+        g.key +
+        '</b><span class="where">Где: ' +
+        g.where +
+        "</span><p>" +
+        g.text +
+        "</p>";
+      els.glossary.appendChild(art);
+    });
+  }
+
+  function renderSidePanel(s, moves) {
+    const m = match();
+    els.scrubber.max = String(m.steps.length - 1);
+    els.scrubber.value = String(stepIndex);
+    els.stepCount.textContent = stepIndex + 1 + " / " + m.steps.length;
+    els.clock.textContent = String(s.min).padStart(2, "0") + "'";
+    els.scoreboard.textContent = s.score[0] + " : " + s.score[1];
+
+    const side = s.side || "";
+    els.sidePill.textContent =
+      side === "A"
+        ? "Ход A"
+        : side === "B"
+          ? "Ход B"
+          : side === "kick"
+            ? "Kick-off"
+            : side === "end"
+              ? "Финал"
+              : side;
+    els.sidePill.className =
+      "side-pill " + (side === "A" || side === "B" ? side : "");
+
+    const bannerLabel = (s.uiLabels || []).find((x) => x.id === "banner");
+    els.banner.textContent = bannerLabel
+      ? bannerLabel.text
+      : m.title + " · " + s.min + "'";
+
+    if (s.paradigm) {
+      els.paradigm.hidden = false;
+      els.paradigm.textContent = "Парадигма: " + s.paradigm;
+    } else {
+      const pLab = (s.uiLabels || []).find((x) => x.id === "paradigm");
+      if (pLab) {
+        els.paradigm.hidden = false;
+        els.paradigm.textContent = pLab.text;
+      } else els.paradigm.hidden = true;
+    }
+
+    els.narrative.textContent = s.narrative || "";
+    els.actions.innerHTML = "";
+    (s.actions || []).forEach((a) => {
+      const li = document.createElement("li");
+      li.innerHTML =
+        '<span class="kind">' +
+        (KIND_RU[a.kind] || a.kind) +
+        "</span><strong>" +
+        a.who +
+        "</strong> — " +
+        a.detail;
+      els.actions.appendChild(li);
+    });
+    if (!(s.actions || []).length) els.actions.innerHTML = "<li>Нет AP-действий</li>";
+
+    renderRoll(s.roll);
+    renderMoveLog(moves);
+
+    els.labels.innerHTML = "";
+    (s.uiLabels || []).forEach((l) => {
+      const li = document.createElement("li");
+      li.innerHTML = "<strong>" + l.id + "</strong>: " + l.text;
+      els.labels.appendChild(li);
+    });
+    if (s.note) {
+      els.note.hidden = false;
+      els.note.textContent = s.note;
+    } else els.note.hidden = true;
+  }
+
+  function placeInstant(s) {
+    ensureLayers();
+    clearTrails();
+    clearCallouts();
+    ["A", "B"].forEach((side) => {
+      Object.entries(s.players[side]).forEach(([role, pos]) => {
+        setPiecePos(pieceEls[side + "." + role], pos[0], pos[1], false);
+      });
+    });
+    setBallPos(s.ball ? s.ball[0] : null, s.ball ? s.ball[1] : null, false);
+    renderAuras(s);
+    updateBadges(s);
+    lastPlayers = JSON.parse(JSON.stringify(s.players));
+    lastBall = s.ball ? s.ball.slice() : null;
+  }
+
+  function animateToStep(s, fromPlayers, fromBall) {
+    ensureLayers();
+    clearTrails();
+    clearCallouts();
+
+    const fakePrev = { players: fromPlayers, actions: [] };
+    const moves = collectMoves(fakePrev, s);
+    const isGoal = s.roll && s.roll.result === "goal" && s.goalTo;
+    const shotFrom = s.shotFrom || fromBall;
+
+    moves.forEach((mv) => {
+      drawArrow(mv.from, mv.to, mv.active ? "active-" + mv.side : "passive");
+    });
+
+    if (isGoal && shotFrom) {
+      drawBallPath(shotFrom, s.goalTo);
+    } else if (fromBall && s.ball) {
+      drawBallPath(fromBall, s.ball);
+    }
+
+    renderSidePanel(s, moves);
+
+    (s.actions || []).forEach((a, idx) => {
+      setTimeout(() => {
+        showCallout(a.who, KIND_RU[a.kind] || a.kind, a.kind);
+      }, 80 + idx * 160);
+    });
+    moves
+      .filter((m) => !m.active && m.cells >= 2)
+      .slice(0, 4)
+      .forEach((m, idx) => {
+        setTimeout(() => {
+          const c = pieceEls[m.key].querySelector(".float-callout");
+          if (!c.hidden && c.textContent) return;
+          showCallout(
+            m.key,
+            "Форма " + cellName(m.from) + "→" + cellName(m.to),
+            "form"
+          );
+        }, 350 + idx * 140);
+      });
+
+    // First move players; ball waits at shot origin for goals
+    requestAnimationFrame(() => {
+      ["A", "B"].forEach((side) => {
+        Object.entries(s.players[side]).forEach(([role, pos]) => {
+          setPiecePos(pieceEls[side + "." + role], pos[0], pos[1], true);
+        });
+      });
+
+      if (isGoal && shotFrom) {
+        setBallPos(shotFrom[0], shotFrom[1], false);
+        setTimeout(() => {
+          ballEl.classList.add("ball-shot");
+          setBallPos(s.goalTo[0], s.goalTo[1], true);
+          const net = document.createElement("div");
+          net.className = "goal-net-flash";
+          const gp = pctFromHex(s.goalTo[0], s.goalTo[1]);
+          net.style.left = gp.left + "%";
+          net.style.top = gp.top + "%";
+          net.textContent = "⚽";
+          fxLayer.appendChild(net);
+          setTimeout(() => ballEl.classList.remove("ball-shot"), BALL_GOAL_MS + 50);
+        }, Math.min(400, MOVE_MS * 0.45));
+      } else if (s.ball) {
+        setBallPos(s.ball[0], s.ball[1], true);
+      } else {
+        setBallPos(null, null, false);
+      }
+    });
+
+    setTimeout(() => {
+      renderAuras(s);
+      updateBadges(s);
+    }, MOVE_MS);
+
+    lastPlayers = JSON.parse(JSON.stringify(s.players));
+    lastBall = s.ball ? s.ball.slice() : s.goalTo ? s.goalTo.slice() : null;
+  }
+
+  function render(animate) {
+    renderMeta();
+    const s = step();
+    ensureLayers();
+    const shouldAnimate =
+      animate !== false && lastPlayers && stepIndex > 0 && !animating;
+
+    if (shouldAnimate) {
+      animating = true;
+      animateToStep(s, lastPlayers, lastBall);
+      setTimeout(() => {
+        animating = false;
+      }, MOVE_MS + 80);
+    } else {
+      const prev = prevStep();
+      const moves = collectMoves(prev, s);
+      placeInstant(s);
+      if (prev) {
+        moves.forEach((mv) =>
+          drawArrow(mv.from, mv.to, mv.active ? "active-" + mv.side : "passive")
+        );
+        if (prev.ball && s.ball) drawBallPath(prev.ball, s.ball);
+        (s.actions || []).forEach((a) =>
+          showCallout(a.who, KIND_RU[a.kind] || a.kind, a.kind)
+        );
+      }
+      renderSidePanel(s, moves);
+      renderAuras(s);
+      updateBadges(s);
+    }
+  }
+
+  function buildTabs() {
+    els.tabs.innerHTML = "";
+    matches.forEach((m, i) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "tab theme-" + m.id;
+      b.textContent = m.id + " · " + m.title;
+      b.setAttribute("aria-selected", i === matchIndex ? "true" : "false");
+      b.addEventListener("click", () => {
+        stopPlay();
+        matchIndex = i;
+        stepIndex = 0;
+        lastPlayers = null;
+        lastBall = null;
+        buildTabs();
+        render(false);
+      });
+      els.tabs.appendChild(b);
+    });
+  }
+
+  function stopPlay() {
+    playing = false;
+    els.btnPlay.textContent = "▶ Смотреть";
+    if (playTimer) {
+      clearTimeout(playTimer);
+      playTimer = null;
+    }
+  }
+
+  function playNext() {
+    if (!playing) return;
+    if (stepIndex >= match().steps.length - 1) {
+      stopPlay();
+      return;
+    }
+    stepIndex += 1;
+    render(true);
+    playTimer = setTimeout(playNext, MOVE_MS + HOLD_MS + (step().roll && step().roll.result === "goal" ? 700 : 0));
+  }
+
+  function startPlay() {
+    playing = true;
+    els.btnPlay.textContent = "❚❚ Пауза";
+    if (stepIndex >= match().steps.length - 1) {
+      stepIndex = 0;
+      lastPlayers = null;
+      render(false);
+      playTimer = setTimeout(playNext, 600);
+    } else playNext();
+  }
+
+  els.btnPrev.addEventListener("click", () => {
+    stopPlay();
+    stepIndex = Math.max(0, stepIndex - 1);
+    lastPlayers = null;
+    render(false);
+  });
+  els.btnNext.addEventListener("click", () => {
+    stopPlay();
+    if (stepIndex < match().steps.length - 1) {
+      stepIndex += 1;
+      render(true);
+    }
+  });
+  els.btnPlay.addEventListener("click", () => {
+    if (playing) stopPlay();
+    else startPlay();
+  });
+  els.scrubber.addEventListener("input", () => {
+    stopPlay();
+    stepIndex = Number(els.scrubber.value);
+    lastPlayers = null;
+    render(false);
+  });
+
+  if (!matches.length) {
+    document.body.innerHTML = "<p style='padding:2rem'>Нет данных</p>";
+    return;
+  }
+  buildTabs();
+  render(false);
+})();
+
+  </script>
+</body>
+</html>

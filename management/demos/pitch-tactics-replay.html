@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1712" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Pitch Tactics — Replay (гексы)</title>
+  <link rel="stylesheet" href="pitch-tactics-replay.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="brand">
+        <span class="brand-mark">PT</span>
+        <div>
+          <h1>Pitch Tactics Core</h1>
+          <p class="tag">Свободные зоны · ширина · без схлопывания к мячу</p>
+        </div>
+      </div>
+      <p class="phone-tip">Лаймовый пунктир = свободная зона. ▶ Смотреть</p>
+      <nav class="match-tabs" id="matchTabs" aria-label="Партии"></nav>
+    </header>
+
+    <section class="meta" id="matchMeta"></section>
+
+    <main class="stage">
+      <aside class="panel panel-left">
+        <h2>Минута</h2>
+        <div class="clock" id="clock">00'</div>
+        <div class="scoreboard" id="scoreboard">0 : 0</div>
+        <div class="side-pill" id="sidePill">Kick-off</div>
+        <h2>Стили</h2>
+        <div id="stylesBox" class="styles-box"></div>
+        <h2>Кто куда сходил</h2>
+        <ul class="move-log" id="moveLog"></ul>
+        <h2>Глоссарий UI</h2>
+        <div id="glossary" class="glossary"></div>
+      </aside>
+
+      <section class="pitch-wrap">
+        <div class="pitch-hud">
+          <span id="banner" class="banner">—</span>
+          <span id="paradigm" class="paradigm" hidden></span>
+        </div>
+        <div class="pitch" id="pitch" role="img" aria-label="Гексогональное поле"></div>
+        <p class="pitch-hint">Пунктир лайм = свободная зона. Гол через пустоту, не через кучу у мяча.</p>
+      </section>
+
+      <aside class="panel panel-right">
+        <h2>Что произошло</h2>
+        <p class="narrative" id="narrative"></p>
+        <h2>Действия AP</h2>
+        <ul class="actions" id="actions"></ul>
+        <h2>Бросок</h2>
+        <div class="roll" id="rollBox">
+          <div class="roll-empty">Нет броска на этом шаге</div>
+        </div>
+        <h2>Метки</h2>
+        <ul class="labels" id="labels"></ul>
+        <p class="note" id="note" hidden></p>
+      </aside>
+    </main>
+
+    <footer class="transport">
+      <button type="button" id="btnPrev" class="btn">← Шаг</button>
+      <button type="button" id="btnPlay" class="btn btn-primary">▶ Смотреть</button>
+      <button type="button" id="btnNext" class="btn">Шаг →</button>
+      <input type="range" id="scrubber" min="0" max="0" value="0" />
+      <span id="stepCount" class="step-count">1 / 1</span>
+    </footer>
+  </div>
+
+  <script src="pitch-tactics-data.js"></script>
+  <script src="pitch-tactics-replay.js"></script>
+</body>
+</html>
