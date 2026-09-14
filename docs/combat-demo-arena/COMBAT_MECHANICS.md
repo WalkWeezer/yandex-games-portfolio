@@ -415,7 +415,7 @@ Combine: unordered pair (порядок кнопок не важен). Startup *
 | AR-ANCHOR | **Major** | Guard | −20% incoming poise; hyperarmor на последние 40% startup Attack B | −15% dodge distance |
 | AR-GLASS | **Major** | Tempo | После dodge: A startup −20% на 1,5 с | Max HP **−15** (85); +10% chip through block |
 | AR-FOCUSV | **Major** | Focus | Primary/Combine не прерывается хитами poise < 20 | Move ×0,50 во время wind-up каста |
-| AR-THORN | Minor | Thorns | Reflect 10 melee 1/1,5 с | +10% incoming ranged HP |
+| AR-THORN | Minor | Thorns | Reflect 10 melee 1/1,5 с (**Thorn Plate**) | +10% incoming ranged HP |
 | AR-BLOOD | Minor | Toll | A hit restores **2 Focus** | A costs **2 HP** (не убивает: floor 1 HP) |
 | AR-WIDE | Minor | Step | Dodge i-frames **0,22 с** | Dodge STA **34** instead of 28 |
 
@@ -623,7 +623,7 @@ Combine: unordered pair (порядок кнопок не важен). Startup *
 2. Медианное время клира M1 vs M2 отличается ≤ **20%**.  
 3. Среднее Combine за клир ∈ **[3, 10]**; Backfire хотя бы раз у новичка, избегается на 3-м заходе.  
 4. M1 проходит без усиленных катализаторов; M2 без катализаторов длиннее ≥ **30%**.  
-5. Ни один armor pair не даёт автовин; Glass Tempo наказывает chip.  
+5. Ни один armor pair не даёт автовин; Glass Tempo (Major) наказуем chip, если взят.  
 6. Swap commitment наказуем попаданием.  
 7. После 1 баннера игрок использует R1/R2/L1/L2/Combine/○/□/△ без подсказки HUD.
 
