@@ -1,680 +1,669 @@
-# Combat Mechanics — Demo Arena (Canon)
+# Демо-арена: боевые механики (канон v2)
 
-**Статус:** единственный канон для сборки демо-арены.  
-**Версия:** 1.0 (синтез 4 research streams).  
-**Жанр:** изометрический hardcore (Death’s Door readability + soulslike weight + immersive-sim routes).  
-**Ограничения:** без XP-левелинга; без роглайк-обёртки; DualSense-first; бой самодостаточен.  
-**Loadout:** Attack A, Attack B, Skill 1, Skill 2.
+**Статус:** канон для немедленной сборки v0 арены.  
+**Язык правил:** русский. Числа важнее прилагательных.  
+**Жанр:** изометрический hardcore action (вес soulslike + маршруты immersive sim).  
+**Ввод:** DualSense-first.  
+**Вне скоупа демо:** левелинг персонажа, роглайк-мета, магазин между забегами, кооп.
 
-Если правило отсутствует здесь — оно **вне скоупа** демо. Числа важнее прилагательных.
-
----
-
-## Реестр разрешённых противоречий
-
-| Конфликт | Источник A | Источник B | Канон |
-|----------|------------|------------|-------|
-| Combine | GDD draft: R1+R2 | DualSense: L1+L2 | **L1+L2** |
-| Attack / Skill | GDD: □/△ атаки, R1/R2 скиллы | DualSense golden | **R1/R2 = Attack A/B; L1/L2 = Skill 1/2** |
-| Dodge / Block / Interact | GDD: × dodge, ○ interact/block | DualSense | **○ Dodge; □ Block/Parry; × Interact** |
-| Weapon swap | GDD: L1+△ | DualSense: △ | **△** (commitment + CD) |
-| R stick | GDD: soft-aim offset 3 м | DualSense: Aim/Facing | **Aim/Facing** + лёгкий assist |
-| Env Read на L2 | GDD: hold L2 | DualSense: L2 = Skill 2 | **Touchpad hold** = Environmental Read |
-| Имена явлений | GDD русские рабочие | Magicka matrix | **Ионный Прилив, Немой Разряд, …** (см. §E) |
-| Материалы | GDD: 5 | Weapon budget: 4 | **4 materials** |
-| Weapon runes | GDD: 7 | Weapon budget: 12 | **12 weapon runes** |
-| Armor major | GDD: 2 равных | Weapon: max 1 major | **2 слота, max 1 Major** |
-| Силы | Weapon research: 4 | Fantasy + Magicka: 5 | **5 сил** |
-| Heat vs Debt | Magicka Heat | GDD Debt | **Debt = Heat** (одна шкала 0–50) |
-| Healing | DualSense: 1 flask | GDD: нет | **1 Flask** на заход |
-| Враги | GDD: Grunt/Wretch/Saint | DualSense roles | **Ash Raider / Cinder Archer / Warden / Doorwarden** |
-| Magic A/B penalty | GDD −25% HP / −30% poise | — | **сохранено** |
-| Combine timing | Magicka 0.35–0.60 с | GDD 0.45 с | **0.50 с** wind-up |
-| Hierarchy | — | Weapon research | **Chassis ≫ Rune ≫ Material** |
+Если правило не описано здесь — его **нет** в демо. Любое изменение чисел = новая версия документа.
 
 ---
 
-## A. Pillars
+## 0. Build Order for Programmers (день 1 → арена)
 
-1. **Читаемость врага первична.** Тёплый floor-telegraph врага всегда поверх VFX игрока. Среда — второй слой (Touchpad Environmental Read).
-2. **Вес и commitment.** Startup → Active → Recover. Спам проигрывает таймингу. Cancel в dodge только в первых 30% startup (исключение: Dagger — 50%).
-3. **Мастерство без уровней.** Сила = знание телеграфов, носителей, пар сил, управление Stamina/Focus/Debt — не статы персонажа.
-4. **Три равноправных победы.** Pure melee / pure magic / hybrid закрывают арену без обязательного билда.
-5. **Две активные силы → одно явление.** Skill 1 + Skill 2 preset до боя; Combine = phenomenon. Нет mid-fight очереди из 5 элементов.
-6. **Среда — маршрутизатор силы.** Катализаторы (Wet, AshBed, WhisperFog, RootedGround, Conductive) меняют *модус* явления, не только +%.
-7. **Chassis ≫ Rune ≫ Material.** Шасси = кто ты; руна = как бьёт A/B; материал = affinity + mild cost. Руна ≠ скилл.
-8. **Anti-ARPG.** Нет affix soup, support gems, skills-as-items, mid-fight rune swap.
+Делать **строго по порядку**. Не начинать босса, пока не закрыт предыдущий блок.
+
+| Шаг | Что собрать | Готово, когда | Числа-якоря |
+|-----|-------------|---------------|-------------|
+| **P0** | Игрок: движение + камера-aim | Л стик двигает, П стик двигает soft-aim ≤ 3 м, deadzone 0,12 | скорость базы 4,2 м/с |
+| **P1** | Ресурсы HP/STA/Focus/Debt/Poise | HUD числа; реген по §3; действия блокируются при STA < cost | HP100, STA100, Focus100, Debt0–50, Poise80 |
+| **P2** | DualSense map §4 без скиллов | R1/R2 = Attack A/B заглушки; ○ dodge; □ block; × interact; △ swap; R3 lock | см. §4 |
+| **P3** | Одно melee-шасси Cleaver | A/B с startup/active/recovery; STA cost; hitbox | §6.3 Cleaver |
+| **P4** | Dodge + i-frames + Poise stagger | ○: 0,18 с i-frames с кадра 2; Poise=0 → stagger 0,70 с | STA28 |
+| **P5** | Block/Parry на □ | hold=block, tap/вход в окне=parry; canBlock только Cleaver/Spear | §6.2 |
+| **P6** | Skill1/Skill2 на L1/L2 (Tier-0) | 5 сил; Focus24; wind-up 0,28 / recover 0,22 | §7.1 |
+| **P7** | Combine = **L1+L2 ≥ 120 мс** | Tier-1 феномен по неупорядоченной паре; Focus40 | §7.2, §8 |
+| **P8** | Носители + Tier-2 | Torch/Water/Oil/Shadow/Corpse; soft-aim ≤1,5 м → Tier-2 иначе Tier-1 | §7.3 |
+| **P9** | Debt→Heat + Backfire | Debt≥40 → Backfire; haptic Heat | §3.4, §8.4 |
+| **P10** | 6 шасси + Material + 2 Weapon Runes | Конфликты ForceExclusive/Stance; иерархия Chassis≫Rune≫Material | §6–§9 |
+| **P11** | 2 Armor Runes | Конфликты Family; штрафы обязательны | §10 |
+| **P12** | Пресеты M1/M2/M3 + loadout UI | Без суммарного DPS-числа | §6.5 |
+| **P13** | Адды ×2 | Ash Grunt + Tide Wretch | §11.3–11.4 |
+| **P14** | Босс Gate Saint 3 фазы | HP280; скрипт 45 с / оба адда | §11.5–11.6 |
+| **P15** | Приёмка трёх маршрутов | M1/M2/M3 проходят по критериям §11.7 | §13 |
+
+**Запрет дня 1:** роглайк-лут, очередь элементов, третий скилл-слот, Affix-суп, лечение флаконами.
 
 ---
 
-## B. Resources (exact numbers)
+## 1. Десять жёстких правил (не обсуждаются)
 
-### B1. HP
-| Параметр | Значение |
-|----------|----------|
-| Max HP | **100** |
-| Смерть | HP ≤ 0 → рестарт арены с тем же loadout |
-| Flask | **1** использование / заход; восстановление **40 HP**; анимация 1,00 с (можно dodge-cancel в первые 0,20 с → flask **не** тратится) |
-| Crit | ×**1,50** HP-урон; отдельный SFX + haptic tick |
+1. **Combine = L1+L2** (удержание ≥ 120 мс). **Не** R1+R2. R1/R2 = только Attack A/B.
+2. **Нет очереди элементов.** Loadout = ровно Skill1 + Skill2. Явление = именованный феномен пары. Порядок кнопок не важен.
+3. **Враг важнее алхимии.** Телеграф врага всегда выше VFX игрока и подсветки носителей.
+4. **Скилл = акт Силы. Руна = пассив оружия/брони. Среда = носитель Tier-2.** Spark-руна ≠ Spark-скилл.
+5. **Иерархия силы билда:** Chassis ≫ Rune ≫ Material. Шасси задаёт глаголы; руна — поведение; материал — тонкий множитель.
+6. **Gear = Chassis + Material + RuneA + RuneB.** Без ARPG-аффиксов и без «ещё одного процента в меню».
+7. **Focus + Debt/Heat + Backfire** работают вместе. Магия не бесплатна.
+8. **Tier-2 требует носитель.** Tier-0/1 работают без среды. Melee-клир без Tier-2 валиден.
+9. **Три фантазии равноправны:** pure melee / pure magic / hybrid — у каждой явный маршрут на демо-боссе (§11.7).
+10. **Свап = commitment 0,60 с, CD 4,00 с.** Меняет только оружие (Chassis+Material+Weapon Runes). Skills и Armor Runes не меняются.
 
-### B2. Stamina (STA)
+---
+
+## 2. Combat pillars
+
+1. Читаемость врага первична.
+2. Вес и commitment: спам проигрывает таймингу.
+3. Мастерство без уровней: знание телеграфов, носителей, Focus/Debt.
+4. Три равноправных победы.
+5. Две активные силы → один феномен.
+6. Среда — маршрут силы, не декор.
+7. Руны правят оружием, не заменяют скиллы.
+
+---
+
+## 3. Ресурсы (точные правила)
+
+### 3.1 HP
 | Параметр | Значение |
 |----------|----------|
 | Max | **100** |
-| Attack A | **12** |
-| Attack B | **22** |
-| Dodge | **28** |
-| Block absorb (за удар) | **8 + 0,35 × входящий poise-урон** |
-| Parry success | **0** STA (riposte A бесплатен по STA) |
-| Реген | **28 STA/с** после **0,35 с** без траты STA |
-| Guard break | STA = 0 во время блока → self-stagger **0,60 с**, блок снят |
-| Недостаток STA | действие **не стартует** |
+| Старт | 100 |
+| Смерть | HP ≤ 0 → рестарт арены с тем же loadout |
+| Лечение в демо | **нет** |
+| Crit | ×1,5 HP-урона + отдельный SFX/haptic |
 
-Бюджет ощущений: 3 dodge подряд ≈ пусто; Sword A-серия ≈ 36–48 STA.
+**Failure:** HP≤0 = смерть. Нет «downed» состояния.
 
-### B3. Focus
+### 3.2 Stamina (STA)
 | Параметр | Значение |
 |----------|----------|
-| Max / старт боя | **100** |
-| Skill 1 или Skill 2 (Primary) | **24** |
-| Combine (явление) | **40** |
+| Max | **100** |
+| Реген | **28 STA/с** после **0,35 с** без траты STA |
+| При STA < cost | действие **не стартует** (короткий haptic deny) |
+
+| Действие | Cost STA |
+|----------|----------|
+| Attack A | 12 |
+| Attack B | 22 |
+| Dodge | 28 |
+| Block absorb (canBlock) | 8 + 0,35 × входящий poise-урон |
+| Parry успех | 0 (вместо block absorb) |
+| Parry провал (tap вне окна) | 6 |
+
+Debt модифицирует реген STA и cost dodge — §3.4.
+
+### 3.3 Focus
+| Параметр | Значение |
+|----------|----------|
+| Max / старт | **100** / 100 |
+| Skill1 или Skill2 (Tier-0) | **24** |
+| Combine Tier-1 или Tier-2 | **40** (+ носитель расходуется на Tier-2) |
 | Реген | **10 Focus/с** после **0,80 с** без каста/combine |
-| Списание | в начале wind-up |
+| Списание | в начале wind-up (резерв); при dodge-cancel в окне — возврат 100% |
 
-### B4. Debt (Heat)
-Единая шкала долга/перегрева магии. Диапазон **0–50**.
+### 3.4 Debt / Heat
+**Debt** — число 0–50. **Heat** — UI/haptic-лента от Debt (не отдельный пул).
 
-| Правило | Число |
-|---------|-------|
-| Каст при Focus < cost | разрешён; недостача → Debt 1:1; Focus → 0 |
-| Debt cap | **50**; если недостача не влезает → каст **отменяется** в первые 100 мс, Backfire **нет** |
-| STA regen while Debt > 0 | ×**(1 − 0,01 × Debt)** (Debt 50 → ×0,50) |
-| Focus regen while Debt > 0 | ×**(1 − 0,012 × Debt)** (Debt 50 → ×0,40) |
-| Debt ≥ 30 | каждое dodge **+6 STA** cost |
-| Debt ≥ 40 | следующий Primary/Combine = **обязательный Backfire roll** (§H) |
-| Debt decay | **6 Debt/с** только при Focus ≥ 60 и вне wind-up каста |
-| Combine всегда | +**4 Debt** на успешный release (даже при полном Focus) |
+| Debt | Heat-лента | Эффект |
+|------|------------|--------|
+| 0 | Cold | нет |
+| 1–29 | Warm | реген STA ×(1 − 0,01×Debt); реген Focus ×(1 − 0,012×Debt) |
+| 30–39 | Hot | + эффекты Warm; каждое уклонение **+6 STA** к cost |
+| 40–50 | Critical | + Hot; следующий каст/combine → **обязательный Backfire** (§8.4) |
 
-### B5. Poise (скрытый / тонкий щит)
-| Параметр | Игрок |
-|----------|-------|
-| Max Poise | **80** |
-| Break | Poise = 0 → stagger **0,70 с**; Poise сразу → **40**; далее реген **20/с** вне хита |
-| Dodge i-frames | входящий poise-урон = **0** |
-| Block | входящий poise ×**0,60**; perfect block (первые 0,12 с контакта) → poise ×**0,0**, атакующий получает poise **12** |
+**Каст при Focus < cost:**
+1. Каст разрешён.
+2. Недостача → Debt 1:1 (нужно 40, есть 15 → Focus=0, Debt+=25).
+3. Если Debt упрётся в 50 и недостача ещё есть → каст **отмена в первые 100 мс**, Backfire **нет**, ресурсы не тратятся сверх капа.
 
-Вражеские Poise — §K.
+**Снижение Debt:** **6 Debt/с**, только если Focus ≥ 60 **и** игрок не в wind-up. Иначе Debt не падает.
 
-### B6. Явно не используется
-- Отдельная Mana
-- Кулдауны на одиночные Primary (кроме анимаций)
-- Комбо-счётчик как ресурс
-- Sprint
-- XP / уровни персонажа
+### 3.5 Poise (игрок)
+| Параметр | Значение |
+|----------|----------|
+| Max | **80** |
+| Stagger при Poise=0 | уязвимость **0,70 с**; Poise → 40 сразу после; далее реген **20/с** |
+| Во время dodge i-frames | poise-урон = 0 |
+| Cast stagger | если во время commitment каста входящий poise ≥ **25** → каст fail (§8.1) |
+
+### 3.6 Демо явно не использует
+Mana-пул, CD на одиночные скиллы, комбо-счётчик как ресурс, флаконы, очередь элементов.
 
 ---
 
-## C. DualSense map (every button)
+## 4. DualSense — золотая карта (канон)
 
-**Золотой layout (канон):**
+Контекст: бой на арене. Options = пауза.
 
-```
-L stick  — Move
-R stick  — Aim / Facing
-R1       — Attack A
-R2       — Attack B (+ adaptive)
-L1       — Skill 1 (Primary 1)
-L2       — Skill 2 (Primary 2) (+ adaptive charge)
-L1+L2    — Combine / Fusion (≥ 120 мс simultaneous)
-○        — Dodge
-□        — Block / Parry (tap = parry, hold ≥ 200 мс = block)
-△        — Weapon / Loadout Swap
-×        — Interact
-R3       — Soft-lock toggle
-Touchpad hold — Environmental Read
-Touchpad click — Status flash (Focus/Debt/STA 1,2 с)
-Options  — Pause
-```
+| Ввод | Действие | Примечание |
+|------|----------|------------|
+| **Л стик** | Движение | 8-way + аналог. Sprint **нет**. База 4,2 м/с |
+| **П стик** | Soft-aim | Точка скилла/явления в радиусе **3 м** от игрока. Deadzone **0,12**. Камера изометрия фиксирована |
+| **R1** | **Attack A** | Лёгкая атака активного оружия |
+| **R2** | **Attack B** | Тяжёлая / особая атака |
+| **L1** | **Skill 1** | Тап <200 мс = каст; hold ≥200 мс = charge/готовность к combine |
+| **L2** | **Skill 2** | Аналогично L1 |
+| **L1+L2** ≥ **120 мс** | **Combine** → явление | Приоритет выше одиночного каста. Отпустил один раньше 120 мс → одиночный скилл той кнопки, что держалась дольше |
+| **○** | **Dodge** | STA 28; i-frames 0,18 с с кадра 2; направление = Л стик, иначе от угрозы |
+| **□** | **Block / Parry** | Hold ≥200 мс = Block (если `canBlock`). Tap в окне parry = Parry. Иначе deny |
+| **△** | **Weapon swap** | Commitment 0,60 с; CD 4,00 с; движение ×0,4; нельзя Attack/Skill/Dodge |
+| **×** | **Interact** | Тап. Факел зажечь/потушенный, дверь, триггеры арены |
+| **R3** | Soft-lock | Ближайшая угроза ≤10 м; повтор / смерть цели = сброс |
+| **Touchpad hold ≥200 мс** | Environmental Read | Подсветка носителей ≤8 м; **не пауза**; атаки отменяют режим. Телеграфы врага **не** скрываются |
+| **Touchpad клик** | Быстрый статус | Focus/Debt/STA числа 1,2 с |
+| **L3 / Create** | — | Не используются в демо |
+| **Options** | Пауза | Полная |
+| **D-pad ↑/↓** | Смена Skill1/Skill2 | **Только вне боя**. В бою ignore + deny haptic |
+| **D-pad ←/→** | Пресет loadout | Только до старта арены |
 
-### C1. Детали вводов
-
-| Ввод | Поведение |
-|------|-----------|
-| **L stick** | Analog move; sprint нет; 8-way ок |
-| **R stick** | Независимый facing. Soft assist: притяжение к ближайшему врагу в конусе ±35° / 8 м; отключается при отклонении стика > 0,70. Deadzone 0,12 |
-| **R1 Attack A** | Tap = лёгкая атака. Hold ≥ 280 мс = charged A **только** если шасси `hasChargeA` (Spear, Staff, Bow-out-of-demo) |
-| **R2 Attack B** | Тяжёлая / special. Adaptive: сопротивление по типу шасси (§C3) |
-| **L1 Skill 1** | Tap < 200 мс = Primary 1. Hold ≥ 200 мс = charge ready для Combine |
-| **L2 Skill 2** | Аналогично L1 |
-| **L1+L2 ≥ 120 мс** | Combine. Приоритет выше одиночного Primary. Если отпустить один раньше 120 мс — одиночный скилл той кнопки, что держалась дольше |
-| **○ Dodge** | I-frames **0,18 с** с кадра 2; стоимость 28 STA; направление = L stick, иначе away from soft-lock / facing back |
-| **□ tap (< 200 мс)** | Parry window **0,18 с** (если `canBlock`). Успех vs melee active → враг recover +0,45 с, ваш riposte R1 бесплатен по STA в 0,40 с |
-| **□ hold (≥ 200 мс)** | Block. HP melee −55%, ranged −25%; poise ×0,60. Magic chassis / Dagger: `canBlock: no` → hold = deny haptic |
-| **△ Swap** | На запасное оружие. Commitment **0,60 с**, CD **4,00 с**. Во время commitment: нельзя Attack/Skill/Dodge; move ×0,40. Меняет только Chassis+Material+Weapon Runes. Skills и Armor **не** меняются |
-| **× Interact** | Рычаг, flask pickup, зажечь Torch, bench вне боя |
-| **R3** | Toggle soft-lock; цикл целей в 10 м. Повтор / смерть цели = сброс. Камера **не** hard-lock |
-| **Touchpad hold** | Environmental Read: подсвет носителей/катализаторов ≤ 8 м; **не** скрывает вражеские телеграфы; атаки отменяют режим |
-| **D-pad** | Только **вне боя** / на bench: ↑ Skill 1, ↓ Skill 2, ←/→ пресет. В бою = deny |
-| **L3** | Не используется |
-| **Create** | Не используется |
-
-### C2. Haptics (минимум)
-| Событие | Feedback |
-|---------|----------|
-| Attack A hit | короткий tick |
-| Attack B / enemy poise break | тяжёлый pulse |
-| Parry success | sharp tick L+R |
-| Debt ≥ 30 | низкочастотный гул пока Debt ≥ 30 |
+### 4.1 Haptic (минимум)
+| Событие | Haptic |
+|---------|--------|
+| Hit Attack A | короткий tick |
+| Attack B / враг stagger | тяжёлый pulse |
+| Heat Hot (Debt≥30) | низкочастотный гул, пока Debt≥30 |
 | Backfire | двусторонний удар 200 мс |
-| Enemy red telegraph | directional rumble (fallback: общий warning) |
-| Dodge i-frames | тишина |
+| Телеграф «красный» | warning pulse (направленный, если API есть) |
+| Deny (нет STA / конфликт) | короткий двойной tick |
 
-### C3. Adaptive triggers
-| Триггер | Поведение |
-|---------|-----------|
-| **R2** | Bow/Staff charge: progressive resistance. Hammer/heavy B: click на release. Focus < 24: лёгкое сопротивление. Debt ≥ 40: сильное |
-| **L2** | Charge Skill 2 / Combine ready: нарастающее сопротивление |
+### 4.2 Adaptive triggers
+| Триггер | Сопротивление |
+|---------|----------------|
+| **R2** (Attack B) | лёгкое при STA < 22; сильнее при STA < 12 |
+| **L2** (Skill 2) | лёгкое при Focus < 24; сильное при Debt ≥ 40 (Critical Heat) |
 
-Все критические cues дублируются визуально/звуком.
+### 4.3 Что запрещено путать
+- **Combine ≠ R1+R2.** R1+R2 одновременно = оба Attack (не комбо-явление; в демо просто приоритет Attack B если оба в одном кадре).
+- **Skill ≠ Attack.** Силы только на L1/L2.
+- **Dodge только ○.** Interact только ×. Block только □.
 
----
+### 4.4 Feel-скрипт (одна «фраза» DualSense)
+Цель: за 8 секунд игрок слышит пальцами вес боя.
+1. R1 tick-hit → R2 тяжёлый pulse (Cleaver B).
+2. ○ dodge через жёлтый телеграф (короткий whoosh haptic).
+3. L1 Skill (лёгкое сопротивление L-триггера если низкий Focus).
+4. L1+L2 Combine: оба триггера вжаты → на release ударный pulse явления.
+5. Debt≥30: постоянный гул Heat, пока не сбросят Debt.
 
-## D. Chassis list for demo + Attack A/B
-
-### D0. Общие правила
-- Оружие = **Chassis + Material + Rune A + Rune B**.
-- Иерархия: **Chassis ≫ Rune ≫ Material**.
-- Активно 1 оружие + 1 запасное (swap △).
-- Демо-бюджет шасси: **6**.
-
-**Material (ровно 4):**
-
-| Material | HP dmg | Poise dmg | Affinity | Mild cost |
-|----------|--------|-----------|----------|-----------|
-| **Iron** | ×1,00 | ×1,00 | — | — |
-| **Embersteel** | ×0,92 | ×0,95 | Ash | Crit → Ash DoT 2/с × 3 с |
-| **Tideglass** | ×0,90 | ×0,85 | Tide | +4% STA cost на A/B |
-| **Rootbone** | ×0,94 | ×1,10 | Root | −6% move speed в recovery атак |
-
-Material **не** меняет число ударов комбо и не даёт новых кнопок.
-
-**Magic fairness:** Attack A/B магических шасси: HP-урон ×**0,75**, poise ×**0,70** vs martial того же тира (уже заложено в числах ниже).
-
-### D1. Frame-feel (философия при 60 fps «кадрах ощущения»)
-
-| Семья | Startup A/B | Active | Recover | Poise vs врага | Заметка |
-|-------|-------------|--------|---------|----------------|---------|
-| Sword | 6–10 / 14–20 | короткий | A короткий; B +12–18 | средний | учитель арены |
-| Spear | 8–12 / 16–22 | узкий A | whiff наказуем | хорош vs dash-in | facing критичен |
-| Dagger | 3–6 / 10–14 | крошечный | малый, высокий STA drain | низкий | награда за фланг |
-| Hammer* | 14–22 / 22–32 | длинный | тяжёлый | высокий break | *вне демо-списка; спек для пост-демо |
-| Bow* | 4–8 / charge 20–45 | projectile | A лёгкий | низкий | *вне демо; adaptive draw |
-| Staff | 8–12 / 18–28 | линия/луч | interruptible | средний | linear commitment |
-| Book | 10–14 / channel 25–50 | zone linger | высокий на B | низкий | sigil ritual |
-| Orb | 6–10 / 12–20+delay | delayed | средний | средний | residues / orbitals |
-
-Правила commitment: (1) dodge-cancel первые 30% startup (Dagger 50%); (2) после active recover uncancellable кроме parry-success; (3) B всегда дороже A.
-
-### D2. Martial chassis (3)
-
-#### 1) Sword (`canBlock: yes`, `hasChargeA: no`)
-- **A:** горизонтальный slash, дуга 90°, радиус 1,6 м; урон **18**, poise **22**; startup 0,22 с, active 0,10 с, recovery 0,28 с. Серия до 3 A.
-- **B:** overhead, радиус 1,8 м; урон **32**, poise **40**; startup 0,42 с, active 0,12 с, recovery 0,48 с. Vs staggered: +10 HP.
-
-#### 2) Spear (`canBlock: yes`, `hasChargeA: yes`)
-- **A:** poke луч 2,4 × 0,45 м; урон **15**, poise **16**; startup 0,18 с, recovery 0,24 с; move ×0,5 в startup.
-- **B:** charged thrust (hold R2 до 0,55 с); дистанция 2,8–3,2 м; урон **28–36**, poise **30–38**; recovery 0,40 с. Dodge-cancel только первые 0,15 с charge. Block во время charge B запрещён.
-
-#### 3) Dagger / Twin Knives (`canBlock: no`, `hasChargeA: no`)
-- **A:** double strike **10+10**, poise **8+8**; startup 0,12 с, recovery 0,16 с; 4-й удар recovery 0,28 с.
-- **B:** cross-cut урон **24**, poise **18**, Bleed 6/с × 2 с; startup 0,30 с, recovery 0,34 с. +25% HP если удар в спину (угол > 120° от facing врага).
-- Ideal dodge → микрошаг назад 0,2 м.
-
-### D3. Magical chassis (3)
-
-#### 4) Staff — linear commitment (`canBlock: no`, `hasChargeA: yes`)
-- **A:** shaft melee радиус 1,7 м; урон **14**, poise **18**; startup 0,24 с, recovery 0,30 с.
-- **B:** line wave 4 × 1,2 м; урон **20**, poise **16**; startup 0,48 с, recovery 0,52 с; knockback лёгких 1,5 м. Стоять 0,40 с до B → pierce.
-- **Combine feel:** «выстрел явления» по facing; поворот во wind-up ×0,35.
-- Лучшие пары: Spark+Tide, Spark+Root.
-
-#### 5) Book (Grimoire) — sigil ritual (`canBlock: no`)
-- **A:** сигил на пол в aim-точке ≤ 5 м; через 0,35 с импульс урон **14**, poise **10**, радиус 1,0 м. Макс активных сигилов: **2**.
-- **B:** page-ward 0,90 с: поглощает **1** снаряд **или** −35% ближайшего melee. Не стакается.
-- **Residue+Strike:** Primary Skill на активный сигил → сигил получает тег Силы (+10% радиус 2 с). Combine во время сигила = ритуал с полным telegraph.
-- Лучшие пары: Root+Whisper, Tide+Root, Whisper+Ash.
-
-#### 6) Orb — residues / orbitals (`canBlock: no`)
-- **A:** bolt 14 м/с; урон **12**, poise **8**; startup 0,16 с, recovery 0,20 с.
-- **B:** вооружает до **2** орбиталей (радиус орбиты 1,2 м, 0,80 с до автодетонации); повтор R2 = detonate радиус 1,4 м, урон **22**, poise **14**.
-- Weave: после Primary следующее A в 0,50 с получает **+4** урона.
-- Лучшие пары: Ash+Whisper, Tide+Ash, Ash+Root.
-
-### D4. Пресеты приёмки
-
-| ID | Weapon A | Weapon B | Skill 1 | Skill 2 | Armor |
-|----|----------|----------|---------|---------|-------|
-| **M1 Melee** | Sword Iron | Spear Iron | Root | Ash | Anchor Guard (Major), Thorn Plate |
-| **M2 Magic** | Orb Tideglass | Book Embersteel | Spark | Tide | Focus Veil (Major), Wide Step |
-| **M3 Hybrid** | Spear Embersteel | Orb Rootbone | Spark | Root | Anchor Guard (Major), Blood Toll |
+Если этот скрипт не читается без HUD — карта кнопок провалена.
 
 ---
 
-## E. Forces + singles + full skill×skill matrix
+## 5. Боевые глаголы — полная спецификация
 
-### E0. Пять Сил
+Каждый глагол: кнопка, cost, тайминг, failure.
 
-| Сила | Primary форма | Статус | Цвет игрока (cool) |
-|------|---------------|--------|--------------------|
-| **Spark** | Bolt / chain-1 | Charged | Янтарный (cool edge) |
-| **Tide** | Sector wave | Wet + knock | Сине-зелёный |
-| **Whisper** | Bind / mark | Hushed | Бледно-лиловый *(только VFX силы)* |
-| **Ash** | Field cloud | Ashen | Угольно-оранжевый |
-| **Root** | Bind vines | Entangled | Хвойно-зелёный |
+| Глагол | Кнопка | Cost | Startup / Active / Recover | Failure state |
+|--------|--------|------|----------------------------|---------------|
+| Move | Л стик | 0 | continuous | нет |
+| Soft-aim | П стик | 0 | continuous, clamp 3 м | вне радиуса — clamp |
+| Attack A | R1 | STA 12 | по шасси §6 | STA<12 → не старт; hit whiff = только STA/анимация |
+| Attack B | R2 | STA 22 | по шасси §6 | STA<22 → не старт |
+| Skill 1 | L1 | Focus 24 (+Debt) | 0,28 / per-skill / 0,22 | Focus+Debt cap → cancel 100 мс; cast stagger → fail, Focus spent, no Backfire |
+| Skill 2 | L2 | Focus 24 (+Debt) | 0,28 / per-skill / 0,22 | то же |
+| Combine | L1+L2 ≥120 мс | Focus 40 (+Debt) | 0,45 / release / 0,30 | нет пары сил (UI forbid); Debt cap cancel; Backfire если Debt≥40; нет носителя → Tier-1 |
+| Dodge | ○ | STA 28 (+6 если Debt≥30) | startup 2 кадра (~0,033 с) / i-frames 0,18 / recover 0,22 | STA<cost → не старт; в commitment без cancel-окна → ignore |
+| Block | □ hold ≥200 мс | absorb: 8+0,35×poise_in | enter 0,10 / hold / exit 0,15 | `canBlock=no` → deny; STA<absorb → блок ломается, полный урон + poise |
+| Parry | □ tap **или** вход в Block в окне | 0 | окно: первые **0,12 с** active hitbox врага | вне окна: если был tap → STA 6 + обычный hit; если hold block вне окна → обычный Block. `canBlock=no` → любой □ = deny |
+| Swap | △ | 0 (CD 4,0 с) | commitment **0,60 с** | CD активен → deny; во время commitment hit = полный урон/stagger |
+| Interact | × | 0 | 0,15 с | нет цели ≤1,5 м → deny |
+| Soft-lock | R3 | 0 | instant toggle | нет цели ≤10 м → deny |
+| Env Read | Touchpad hold | 0 | enter 0,20 / hold | Attack/Skill отменяет |
 
-Вражеский telegraph: **тёплый янтарь/красный** floor decal — никогда не совпадает с player cool palette.
+**Списание STA/Focus:** в кадре **старта** действия (не в active). Whiff не возвращает cost (кроме dodge-cancel в окне каста — Focus возврат 100%).
 
-### E1. Primary (Tier-0) — одиночный скилл
+**R1+R2 в одном кадре:** это **не** Combine. Приоритет = Attack B. Combine только **L1+L2**.
 
-Общее: startup **0,28 с**, recovery **0,22 с**, cost **24 Focus**. Dodge-cancel только T+0,00–0,10 с (полный refund).
+**Приоритет ввода (высший → низший):**
+1. Уже идущий commitment (атака/каст/swap)
+2. Dodge — если cancel-окно открыто
+3. Combine (L1+L2)
+4. Skill tap (L1 или L2)
+5. Attack B (R2)
+6. Attack A (R1)
+7. Block/Parry (□)
+8. Interact (×)
+9. Swap request (△)
 
-| Сила | Эффект | Числа |
-|------|--------|-------|
-| Spark | Разряд по facing | Луч 5 м; урон **26**; poise **12**; поджигает Oil/AshBed 100% |
-| Tide | Волна от игрока | Конус 160° / 2,2 м; урон **18**; poise **20**; knock 1,2 м; создаёт **Wet** лужу 2,5 с |
-| Whisper | Step + shadow cut | I-frames 0,15 с + удар на выходе урон **20**; poise **8**; ignore 30% armor; оставляет **WhisperFog** 3,0 с (расходуемый) |
-| Ash | Конус тлена | 90° / 2,0 м; урон **12** + DoT **8/с × 3 с**; poise **10**; тушит Torch; усиливает труп → AshBed tag |
-| Root | Лозы в aim | Радиус 1,3 м; урон **10**; poise **24**; Entangled 1,2 с; **RootedGround** якорь 4 с |
+---
 
-Loadout: ровно 2 силы. Две **одинаковые** силы **разрешены** (dual-same phenomena). UI bench показывает имя явления пары.
+## 6. Оружие: Chassis + Material + RuneA + RuneB
 
-### E2. Полная матрица Combine (Skill × Skill)
+### 6.0 Иерархия и сборка
+```
+Loadout оружия = Chassis ≫ (RuneA + RuneB) ≫ Material
+```
+- **Chassis** задаёт hitbox, тайминги, canBlock, роль.
+- **Runes** меняют поведение A/B и пассивы (не дают «бесплатный каст Силы»).
+- **Material** — множители HP/poise + опциональный тег Силы на крите/хите. Не меняет глаголы шасси.
 
-Combine: unordered pair (порядок кнопок не важен). Startup **0,50 с**, recovery **0,30 с**, cost **40 Focus**, +**4 Debt**. Dodge-cancel T+0,00–0,12 с (refund). Формы: Bolt / Field / Bind.
+Активно 1 оружие + 1 в запасе. Swap меняет весь пакет оружия. Skills и Armor Runes — нет.
 
-#### E2.1 Cross pairs (обязательный документ; демо может шипнуть 6 ключей первыми)
+### 6.1 Material (демо)
 
-| Пара | Явление | Форма | Базовый эффект (без катализатора) |
-|------|---------|-------|-----------------------------------|
-| Spark+Tide | **Ионный Прилив** | Field | Сектор 2,4 м × 2,5 с: **10/с**; micro-stagger poise 8 каждые 0,8 с; chain на Wet |
-| Spark+Whisper | **Немой Разряд** | Bolt | Линия 6 м: урон **34**; poise **14**; Hushed 2,0 с; следующий удар по цели = guaranteed stagger (≥18 poise) |
-| Spark+Ash | **Тлеющая Вспышка** | Field | Взрыв 2,0 м: урон **28**; Ash DoT 4/с × 4 с; short blind 0,35 с у аддов |
-| Spark+Root | **Живая Проволока** | Bind | Entangled в aim 3 с связаны: tick Spark **6/с**; DR после 2 с (−50% tick). Poise 12 on apply |
-| Tide+Whisper | **Утопленный Шёпот** | Field | Туман 3,0 м × 3 с: miss chance врагов +25%; aggression −; audio cue направлений |
-| Tide+Ash | **Грязевой Шторм** | Field | Зона 2,2 м: slow 35%; урон **8/с × 3 с**; гасит горение / AshBed → грязь |
-| Tide+Root | **Топь (Mire)** | Bind | Круг 2,6 м × 3 с: скорость ×0,5; попытка dodge через зону → Entangled 1 proc/враг |
-| Whisper+Ash | **Пепельная Завеса (Ash Veil)** | Field | Stealth 1,2 с (no Combine i-frames); выход = ash burst урон **16** радиус 1,5 м |
-| Whisper+Root | **Терновник-Психе (Thorn Psyche)** | Bind | Forced turn / taunt-lite 1 цели ≤ 5 м + fear аддов 1,5 с; урон **18**; poise **22** |
-| Ash+Root | **Угольный Склеп (Coal Crypt)** | Field | Клетка 2,0 м × 4 с: DoT **14** apply + **6/с**; anti-heal (flask эффекты врагов n/a; игрок flask в зоне −50% heal) |
+| Material | × HP-урон | × poise | Сила-тег |
+|----------|-----------|---------|----------|
+| Iron | 1,00 | 1,00 | — |
+| Embersteel | 0,92 | 0,95 | Ash: DoT 2/с × 3 с при crit |
+| Tideglass | 0,90 | 0,85 | Tide |
+| Whisperwood | 0,88 | 0,80 | Whisper |
+| Rootbone | 0,94 | 1,10 | Root |
 
-#### E2.2 Dual-same (документировано; шип опционален)
+### 6.2 Block / Parry (канон)
+- `canBlock: yes` → Cleaver, Spear.
+- `canBlock: no` → Twin Knives, Orb, Grimoire, Staff.
+- **Block:** hold □ ≥200 мс. HP-урон melee −55%, ranged −25%; poise-урон ×0,6. STA absorb по §3.2.
+- **Parry (идеальный блок):** □ tap **или** начало block-контакта в первые **0,12 с** active hitbox врага → poise-урон ×0,0; атакующий получает poise **12**.
+- Во время Attack B charge копья блок невозможен.
+
+### 6.3 Blade family
+
+#### Cleaver
+| | Attack A | Attack B |
+|--|----------|----------|
+| Описание | горизонтальный рубёж, дуга 90°, r=1,6 м | рубёж сверху, r=1,8 м |
+| Урон HP / poise | 18 / 22 | 32 / 40; +10 HP если цель staggered |
+| Startup / Active / Recover | **0,22 / 0,10 / 0,28** | **0,42 / 0,12 / 0,48** |
+| Cancel | dodge с ≥50% recovery | нет dodge-cancel после startup |
+| canBlock | yes | yes |
+| Failure | whiff / STA | whiff / STA; прерывание poise≥25 во startup → recover early, урон 0 |
+
+#### Spear
+| | Attack A | Attack B |
+|--|----------|----------|
+| Описание | укол, луч 2,4×0,45 м | charge-выпад (hold R2 до 0,55 с), 2,8–3,2 м |
+| Урон HP / poise | 15 / 16 | 28–36 / 30–38 (от заряда) |
+| Startup / Active / Recover | **0,18 / 0,08 / 0,24** | charge 0–0,55; active **0,10**; recover **0,40** |
+| Move | startup ×0,5 скорости | dodge-cancel только в первые 0,15 с charge |
+| canBlock | yes (не во время charge B) | — |
+| Failure | whiff / STA | отпускание <0,15 с charge → слабый poke 20/22; STA<22 → не старт |
+
+#### Twin Knives
+| | Attack A | Attack B |
+|--|----------|----------|
+| Описание | двойной удар | крест-разрыв + Bleed 6/с × 2 с |
+| Урон HP / poise | 10+10 / 8+8 | 24 / 18 |
+| Startup / Active / Recover | **0,12 / 0,08 / 0,16** | **0,30 / 0,10 / 0,34** |
+| Серия | до 3×A без потери темпа; 4-й A recover **0,28** | — |
+| canBlock | **no** | — |
+| Награда | идеальный dodge → авто-микрошаг назад 0,2 м | — |
+| Failure | STA; 4-й A в спаме = длинный recover (намеренно) | whiff / STA |
+
+### 6.4 Magic family
+
+**Штраф справедливости:** Attack A/B magic → HP ×**0,75**, poise ×**0,70** vs «эквивалент» клинка (числа ниже уже финальные).
+
+#### Orb
+| | Attack A | Attack B |
+|--|----------|----------|
+| Описание | bolt 14 м/с (не Сила Spark) | орб зависает 0,80 с → взрыв r=1,4 м; повторный R2 = детонация |
+| Урон HP / poise | 12 / 8 | 22 / 14 |
+| Startup / Active / Recover | **0,16 / projectile / 0,20** | **0,20 / 0,80 hang+burst / 0,28** |
+| Weave | после любого Tier-0 скилла: след. A ≤0,50 с получает **+4** урона | автодетонация если не взорвать |
+| Failure | промах снаряда; STA | STA; взрыв по пустоте = только STA |
+
+#### Grimoire
+| | Attack A | Attack B |
+|--|----------|----------|
+| Описание | руна-метка в soft-aim ≤5 м; через 0,35 с импульс r=1,0 м | страница-щит 0,90 с: 1 снаряд absorb **или** −35% ближайший melee |
+| Урон HP / poise | 14 / 10 | 0 (защита) |
+| Startup / Active / Recover | **0,20 / mark 0,35 then pulse / 0,24** | **0,12 / 0,90 / 0,20** |
+| Лимит | макс **2** активных метки | не стакается |
+| Бонус | во время метки Combine → метка +10% радиус на 2 с (тег Силы визуал) | — |
+| Failure | 3-я метка заменяет старейшую; STA | STA; щит истекает впустую |
+
+#### Staff
+| | Attack A | Attack B |
+|--|----------|----------|
+| Описание | удар древком r=1,7 м | волна 4×1,2 м, knockback лёгких 1,5 м |
+| Урон HP / poise | 14 / **18** (исключение: выше прочих magic) | 20 / 16 |
+| Startup / Active / Recover | **0,24 / 0,10 / 0,30** | **0,48 / 0,12 / 0,52** |
+| Бонус | — | стоять 0,40 с до B → **pierce** (не гасится трупом) |
+| Failure | STA / whiff | движение во время «стоять 0,40» сбрасывает pierce; STA |
+
+### 6.5 Пресеты приёмки (обязательны)
+
+| ID | Оружие A | Оружие B | Skill1 | Skill2 | Armor |
+|----|----------|----------|--------|--------|-------|
+| **M1 Melee** | Cleaver Iron | Spear Iron | Root | Ash | Brace, Thornmail |
+| **M2 Magic** | Orb Tideglass | Grimoire Whisperwood | Spark | Tide | Focusweave, Glassmind |
+| **M3 Hybrid** | Spear Embersteel | Orb Whisperwood | Spark | Root | Brace, Focusweave |
+
+Кастом в пределах каталога демо разрешён; приёмка маршрутов §11.7 — только на M1/M2/M3.
+
+---
+
+## 7. Силы, скиллы, явления (Magicka-суть)
+
+### 7.0 Пять Сил
+
+| Сила | Суть | Цвет телеграфа игрока |
+|------|------|------------------------|
+| Spark | разряд, пик, поджог носителя | янтарный |
+| Tide | давление, сдвиг, лужа | сине-зелёный |
+| Whisper | смещение, частичный игнор брони | бледно-лиловый *(только VFX силы)* |
+| Ash | тление, DoT, тушение | угольно-оранжевый |
+| Root | якорь, замедление, poise | хвойно-зелёный |
+
+**Запрет:** две одинаковые силы в Skill1+Skill2 на экране экипировки.  
+**Запрет:** element queue / buffer / «сначала Spark потом Tide в очереди». Только пара слотов → феномен.
+
+### 7.1 Tier-0 — одиночный скилл (без носителя)
+
+Общее: cost **24 Focus**; startup **0,28**; recovery **0,22**; dodge-cancel только **0,00–0,10 с**; после — commitment.
+
+| Сила | Active / форма | Числа | Failure |
+|------|----------------|-------|---------|
+| Spark | луч 5 м по soft-aim | урон **26**, poise **12**; 100% поджиг Torch/Oil | whiff; cast stagger |
+| Tide | конус 160° r=2,2 м | урон **18**, poise **20**, knockback 1,2 м; создаёт **Water** 2,5 с | cast stagger |
+| Whisper | i-frames 0,15 + удар в точке выхода | урон **20**, poise **8**, игнор 30% брони; **Shadow** 3,0 с | cast stagger |
+| Ash | конус 90° r=2,0 м | урон **12** + DoT **8/с × 3 с**, poise **10**; тушит Torch; усиливает Corpse как Ash-носитель | cast stagger |
+| Root | зона soft-aim r=1,3 м | урон **10**, poise **24**, Rooted 1,2 с; **RootAnchor** 4 с | aim в пустоту = зона всё равно ставится |
+
+### 7.2 Tier-1 — Skill1+Skill2 без носителя
+
+Combine: cost **40 Focus**; startup **0,45**; recovery **0,30**; dodge-cancel **0,00–0,12 с**.  
+Пара **неупорядоченная**. 10 феноменов:
 
 | Пара | Явление | Эффект |
 |------|---------|--------|
-| Spark+Spark | **Грозовой Шквал** | Широкий слабый веер: урон **16**, 3 луча ±20°; быстрый cast (startup 0,35 с) |
-| Tide+Tide | **Отлив-Стена** | Стена 3 × 1 м × 2 с: push + блокирует 1 projectile tier |
-| Whisper+Whisper | **Хор** | Mass Hush радиус 3 м × 1,2 с; +**8 Debt** вместо +4 |
-| Ash+Ash | **Уголь-Щит** | Ablative cloud: поглощает **1** хит ≤ 25 HP в течение 2 с |
-| Root+Root | **Роща** | Slow-зона 3,5 м × 4 с; startup 0,60 с (длинный) |
+| Spark+Tide | **Грозовая плёнка** | зона 2,4 м × 2,5 с: **10/с**; каждые 0,8 с poise 8 |
+| Spark+Whisper | **Режущая вспышка** | линия 6 м: урон **34**, poise **14**; лёгкий agro-drop 0,2 с |
+| Spark+Ash | **Вспышка тлена** | взрыв 2,0 м: урон **28** + Ash DoT 4/с × 4 с |
+| Spark+Root | **Искровой капкан** | aim: капкан 3 с → урон **30**, Rooted 0,8 с |
+| Tide+Whisper | **Тихий поток** | смещение игрока 3,5 м по aim + урон **16** на пути; лужа |
+| Tide+Ash | **Кипящая муть** | зона 2,2 м: −35% speed, **8/с × 3 с** |
+| Tide+Root | **Трясина** | зона 2,6 м × 3 с: speed ×0,5, poise regen врага ×0,5 |
+| Whisper+Ash | **Пепельный мираж** | клон 2 с; первый удар врага по клону = miss; игрок ≤2 м → 0,2 с i-frames |
+| Whisper+Root | **Хватка из тени** | тянет 1 врага ≤5 м на 2 м к игроку; урон **18**, poise **22** |
+| Ash+Root | **Мёртвая поросль** | зона 2,0 м: урон **14**; Frail (+15% входящего) 4 с |
 
-#### E2.3 Демо-приоритет шипа (минимум 6)
-1. Ионный Прилив  
-2. Немой Разряд  
-3. Тлеющая Вспышка  
-4. Топь  
-5. Пепельная Завеса  
-6. Угольный Склеп  
+**Failure Combine:** Debt cap → cancel 100 мс; Backfire при Debt≥40; одинаковые силы — невозможно (UI).
 
-Остальная матрица — в коде за флагом или фаза 2 демо.
+### 7.3 Tier-2 — с носителем
 
-### E3. Катализатор → усиленный модус (не отдельный Tier-меню)
+Условие: в кадре release soft-aim **≤1,5 м** от нужного носителя **или** носитель пересекает зону явления. Носитель **потребляется** (кроме geometry-shadow — см. ниже).  
+Нет валидного носителя → **Tier-1 той же пары**, без Backfire.
 
-Если soft-aim / зона явления пересекает tagged volume в радиусе **1,5 м** на кадре release:
+| Пара | Носитель | Tier-2 | Эффект |
+|------|----------|--------|--------|
+| Spark+Tide | Water | **Грозовой столб** | r=1,6 м × 2 с: **18/с**, poise 18 / 0,6 с; лужа исчезает |
+| Spark+Ash | Torch / Oil | **Огненный шквал** | конус 6 м: урон **40**, poise **20**; пол горит 3 с (12/с); факел тухнет / oil сгорает |
+| Spark+Root | RootAnchor | **Проводная казнь** | **48** одной цели на якоре ≤4 м; якорь сгорает |
+| Tide+Whisper | Shadow (skill) | **Утопление тени** | урон **36**, Silence 2,5 с; тень скилла расходуется |
+| Tide+Root | Water + RootAnchor ≤3 м apart | **Болото-клетка** | кольцо 3 м × 4 с: не выйти, speed ×0,4; оба носителя |
+| Whisper+Ash | Corpse | **Пепельный двойник** | мираж-союзник 4 с, удар 12 / 1,2 с; труп расходуется |
+| Ash+Root | Corpse | **Костяной терн** | взрыв r=2,5 м: урон **32**, Rooted 1,0 с |
+| Spark+Whisper | Shadow (skill) | **Невидимый разряд** | урон **38** + agro-drop 1,5 с |
+| Tide+Ash | Water | **Пар-завеса** | зона 3 м: потеря lock 2 с, **10/с** |
+| Whisper+Root | Shadow (skill) **или** RootAnchor | **Скрытый силок** | капкан 5 с: урон **34**, притяг 1 м |
 
-| Явление | Катализатор | Усиленный модус |
-|---------|-------------|-----------------|
-| Ионный Прилив | Wet / Conductive | Chain +1 прыжок; Conductive: +self-arc риск 15% → 8 HP |
-| Немой Разряд | WhisperFog | Hushed +0,8 с; урон **38** |
-| Тлеющая Вспышка | AshBed | Радиус 2,6 м; DoT 6/с × 4 с; AshBed расходуется |
-| Живая Проволока | RootedGround / Conductive | Tick 9/с первые 2 с; якорь сгорает |
-| Утопленный Шёпот | Wet + WhisperFog | Miss +40%; длительность 4 с |
-| Грязевой Шторм | Wet | Slow 50%; гасит AshBed в радиусе |
-| Топь | Wet + RootedGround ≤ 3 м | Стена-кольцо 3 м × 4 с (клетка); оба носителя− |
-| Пепельная Завеса | AshBed | Stealth 1,6 с; burst **22** |
-| Терновник-Психе | RootedGround | Pull 2 м + turn; урон **24** |
-| Угольный Склеп | AshBed / труп | DoT 9/с; труп расходуется |
+**Тени — канон без двусмысленности:**
+- **Geometry Shadow** (под колоннами, у северной стены): дают **бонус позиционирования** (+15% Whisper Edge уже покрыт руной; для Tier-2 **недостаточно сами по себе**). Не расходуются.
+- **Skill Shadow** (от Whisper Tier-0 / части явлений): **расходуемый** носитель для Tier-2.
 
-Если катализатор невалиден → базовое явление, **без** Backfire.
-
-### E4. Иерархия Spark (анти-путаница)
+### 7.4 Иерархия Spark (пример «руна ≠ скилл»)
 
 | Слой | Делает | Не делает |
 |------|--------|-----------|
-| Skill Spark | Active bolt, Focus | Не модифицирует автоатаки постоянно |
-| Weapon Rune Spark | Мутирует A или B on-hit | Не даёт кнопку каста |
-| Armor rune | Passive tradeoff | Не кастует Spark |
-| Environment Conductive/AshBed | Меняет модус Combine | Не бьёт само |
+| Skill Spark | луч, Focus, телеграф каста | не бафает автоатаки постоянно |
+| Weapon Rune Spark Tip | 25% шанс +6 Spark на хит A/B | не кастует луч по L1 |
+| Armor Rune (нет Spark Skin в демо-каталоге) | — | — |
+| Environment Torch/Oil | каталит Tier-2 Spark-пар | не бьёт без действия игрока |
 
-Визуальный приоритет: **enemy telegraph > player silhouette > skill VFX > catalyst highlight (Touchpad) > rune idle particles**.
-
----
-
-## F. Weapon runes rules + examples
-
-### F1. Слоты
-- Ровно **2** слота: **Rune A** (мутирует Attack A), **Rune B** (мутирует Attack B).
-- Один слот = одна руна; установка = overwrite (старая → банк частей).
-- Только на prefight bench; **в бою руны не меняются**.
-- Пустые слоты допустимы.
-
-### F2. Конфликты
-1. Нельзя два одинаковых Rune ID.
-2. `Forbids[]` / `Tags[]`: две руны с одним Verb (`Explode`, `Chain`, `Mark`, …) — блок.
-3. `ForceExclusive`: не более одной руны одной Силы.
-4. `Stance`: не более одной Stance.
-5. `RequiresAffinity`: материал должен совпадать (или Iron = universal).
-6. `Family`: `Martial` / `Magic` / `Any`.
-7. UI: одна фраза «конфликт с [X]».
-
-### F3. Каталог демо — 12 weapon runes
-
-| ID | Слот | Verb / Tags | Эффект | Штраф / gate |
-|----|------|-------------|--------|--------------|
-| WR-CHAIN | A | Chain, ForceExclusive Spark | 25% on-hit: chain +6 Spark на 2-ю цель ≤ 3 м | −5% A dmg; Requires Embersteel **или** Any+Iron |
-| WR-MARK | A | Mark | A накладывает Mark 3 с; расход Mark усиливает следующий B +30% dmg | −8% A poise |
-| WR-ECHO | A | Echo | Через 0,25 с второй хитбокс 50% урона A | +3 STA на A |
-| WR-BLEED | A | Bleed | A: Bleed 4/с × 2 с | −6% direct HP |
-| WR-REACH | A | Stance | +0,25 м длина / радиус A; −0,03 с startup A | −6% B dmg |
-| WR-BEAM | A | Magic, ChargeMorph | Staff/Orb/Book: hold A → beam tick 8/с до 0,8 с | Martial forbidden; +4 Focus если прерван |
-| WR-DETONATE | B | Explode | B взрывает Mark / орбиталь: +AoE 1,4 м | +4 STA на B |
-| WR-SWEEP | B | Sweep, Martial | B +30° дуга / +0,4 м knock | −10% B dmg |
-| WR-COUNTER | B | Stance, Counter | B в 0,20 с после блока/parry = riposte ×1,35 | Conflict other Stance |
-| WR-ZONE | B | Deploy, Magic | B оставляет зону 2 с (8/с) | Martial forbidden; −0,05 с move в deploy |
-| WR-ORBIT | B | Orbit, Magic | Orb: +1 орбиталь cap (3); Book: сигил +0,3 с life | −8% B dmg |
-| WR-ROOTW | B | ForceExclusive Root | +12 poise на B; Entangled 0,4 с on B hit | −8% move в B recovery; Requires Rootbone или Iron |
-
-**Примеры валидных:** Mark(A)+Detonate(B); Reach(A)+Sweep(B); Beam(A)+Zone(B) на Staff; Chain(A)+Orbit(B) на Orb.  
-**Невалидно:** Reach+Counter (2 Stance); Chain+другая Spark ForceExclusive; Zone на Sword.
+Приоритет визуального шума: **телеграф врага > силуэт игрока > VFX скилла > L2/Touchpad носители > idle рун**.
 
 ---
 
-## G. Armor runes rules + examples
+## 8. Тайминги каста, телеграфы, Backfire
 
-### G1. Слоты
-- Ровно **2** слота брони (Chest + Boots эквивалент).
-- Макс **1 Major**. Второй слот — только Minor.
-- Каждая руна: **Effect + обязательный Cost** (одна строка).
-- Нельзя две с одним `ArmorFamily`.
-- Нельзя чистый +dmg/+crit без цены.
-- Armor **не** даёт новые active skills.
+### 8.1 Одиночный скилл
+1. Input → wind-up **0,28 с** (цвет Силы).
+2. T+0,00–0,10: dodge-cancel; Focus/Debt возврат 100%.
+3. После 0,10: commitment; входящий poise ≥25 → **cast stagger**: fail, Focus spent, Debt не снимается, **Backfire нет**.
+4. Release эффекта.
+5. Recovery **0,22 с**.
 
-### G2. Каталог — 6 armor runes
-
-| ID | Tier | Family | Effect | Cost |
-|----|------|--------|--------|------|
-| AR-ANCHOR | **Major** | Guard | −20% incoming poise; hyperarmor на последние 40% startup Attack B | −15% dodge distance |
-| AR-GLASS | **Major** | Tempo | После dodge: A startup −20% на 1,5 с | Max HP **−15** (85); +10% chip through block |
-| AR-FOCUSV | **Major** | Focus | Primary/Combine не прерывается хитами poise < 20 | Move ×0,50 во время wind-up каста |
-| AR-THORN | Minor | Thorns | Reflect 10 melee 1/1,5 с (**Thorn Plate**) | +10% incoming ranged HP |
-| AR-BLOOD | Minor | Toll | A hit restores **2 Focus** | A costs **2 HP** (не убивает: floor 1 HP) |
-| AR-WIDE | Minor | Step | Dodge i-frames **0,22 с** | Dodge STA **34** instead of 28 |
-
-**Валидно:** Anchor + Thorn; Glass + Blood; Focus Veil + Wide.  
-**Невалидно:** Anchor + Glass (2 Major); Anchor + другая Guard.
-
-### G3. Anti-menu
-На bench **запрещён** суммарный DPS-number. Только слоты, текст бонуса/штрафа, конфликты, имя явления Skill1×Skill2.
-
----
-
-## H. Cast / combine / backfire timing
-
-### H1. Primary timeline
-1. Input → wind-up **0,28 с** (цвет Силы под ногами + trigger charge).
-2. T+0,00–0,10: dodge-cancel; Focus/Debt refund 100%.
-3. После 0,10: commitment. Враг poise hit ≥ 25 → cast stagger: fail, Focus spent, Debt остаётся, **Backfire нет**.
-4. Active → recovery **0,22 с**.
-
-### H2. Combine timeline
-1. L1+L2 ≥ 120 мс → wind-up **0,50 с** (уникальный glyph = цвета обеих сил).
-2. T+0,00–0,12: dodge-cancel + refund.
-3. T+0,12–0,50: уязвимость (нет hyperarmor); проверка катализатора на release.
-4. Release: усиленный модус или база; +4 Debt.
+### 8.2 Combine (L1+L2)
+1. Удержание ≥120 мс → wind-up **0,45 с**.
+2. T+0,00–0,12: dodge-cancel; ресурс возврат.
+3. T+0,12–0,45: commitment; на кадре release — проверка носителя.
+4. Release: Tier-2 или Tier-1.
 5. Recovery **0,30 с**.
+6. Cast stagger во время combine commitment → fail + **Backfire** (§8.4 B).
 
-### H3. Enemy telegraphs
-- Жёлтый floor: ≤ 0,45 с до active.
-- Красный + haptic: active / unblockable.
-- Форма: круг / линия / конус (colorblind-safe).
-- Max 2 particle layers: 1 player heavy + 1 enemy heavy.
-- Screen shake только на poise break / boss slam.
+### 8.3 Телеграфы врага
+| Цвет | Значение |
+|------|----------|
+| Жёлтый контур | атака ≤0,45 с до active |
+| Красный + haptic | active hitbox или unblockable |
 
-### H4. Backfire — точные числа
-Триггер **только** если:
-- **(A)** Primary/Combine начат при Debt ≥ 40, **или**
-- **(B)** Combine прерван врагом после commitment (T > 0,12 с).
+L2/Touchpad Env Read **не** скрывает телеграфы.
 
-Эффект:
-- **12 HP** (сквозь thorns/reflect),
-- Poise **−30**,
-- Self-stagger **0,35 с**,
-- Каст отменён; Focus spent,
-- Haptic §C2,
-- Опционально: polarity flip катализатора под ногами на 2 с (Wet↔AshBed visual only).
+### 8.4 Backfire — только так
+Срабатывает если:
+- **(A)** каст/combine начат при Debt ≥ 40, **или**
+- **(B)** cast stagger прервал **combine** после commitment (не одиночный скилл).
 
-Нет RNG Backfire при Debt < 40 и чистом касте.
+Эффект: **12 HP** (игнор thorns); Poise −30; self-stagger **0,35 с**; каст отменён; Focus уже потрачен; haptic §4.1.
 
-### H5. Input priority (высокий → низкий)
-1. Уже идущий commitment  
-2. Dodge (если cancel-окно)  
-3. Combine (L1+L2)  
-4. Skill tap  
-5. Attack B  
-6. Attack A  
-7. Block / Parry / Interact  
-8. Swap △  
+Нет RNG-Backfire при Debt < 40 и чистом касте.
 
 ---
 
-## I. Environment carriers / catalysts
+## 9. Weapon Runes
 
-### I1. Tagged volumes (канон тегов)
+### 9.1 Слоты
+2 слота на оружие. Пустые ок. Только вне боя.
 
-| Тег | Источник | Взаимодействие |
-|-----|----------|----------------|
-| **Wet** | Лужи арены; Tide Primary | Усиливает Tide-линии; Spark chain; гасит Ash |
-| **AshBed** | Зольные пятна; трупы + Ash | Whisper длиннее; Spark → flash; Root → Ember |
-| **WhisperFog** | Гео-тени (постоянные); Whisper Primary (расход) | Soft stealth/crit window; Tide рассеивает; Spark детонирует |
-| **RootedGround** | Корневые плиты; Root Primary якорь | Root дешевле visually; Tide → Топь+; Ash → toxic |
-| **Conductive** | Металлические плиты | Spark комбо +ампер / self-risk |
-| **Oil** (подтип AshBed) | Одно пятно | Spark/Ash поджиг пола 12/с × 3 с |
-| **Torch** | Интерактив × | Источник огня; Ash тушит; × зажигает снова |
-| **Corpse** | Смерть адда | Расходуемый носитель для Ash/Root усилений |
+### 9.2 Конфликты
+1. Один и тот же Rune ID ×2 — нет.
+2. Две руны одной Force с тегом `ForceExclusive` — нет.
+3. Две `Stance` — нет.
+4. UI блокирует; в бой такой стейт не попадает.
 
-### I2. Правила
-- Катализатор меняет **модус** (§E3), не скрытый +% DPS.
-- Геометрический WhisperFog (под колоннами) **не** расходуется; скилловый — расходуется.
-- Max 1 player Field одновременно; новый Combine схлопывает старое поле игрока.
-- CC diminishing: повторный Entangled/Hushed на той же цели в 6 с → длительность ×0,5.
+### 9.3 Каталог
 
----
+| ID | Имя | Эффект | Штраф | Тег |
+|----|-----|--------|-------|-----|
+| WR-SPK | Spark Tip | 25% хит: +6 Spark; поджиг Oil/Torch | −5% урона Attack A | ForceExclusive Spark |
+| WR-TID | Tide Bit | +0,4 м knockback на Attack B | +4 STA на Attack B | ForceExclusive Tide |
+| WR-WSP | Whisper Edge | +15% урона по врагам, не смотрящим на игрока | −10% poise-урона | ForceExclusive Whisper |
+| WR-ASH | Ash Groove | DoT 3/с × 2 с на Attack B хит | −8% прямого HP | ForceExclusive Ash |
+| WR-ROT | Root Weight | +12 poise на Attack A | −8% move speed в recovery атак | ForceExclusive Root |
+| WR-STN | Steady Haft | −0,04 с startup Attack A | −6% урона Attack B | Stance |
+| WR-HVR | Weaver Coil | Orb weave +0,15 с; иначе после скилла +3 к след. A | +3 Focus cost Tier-0 | Stance |
 
-## J. Prefight loadout bench
-
-### J1. Таймер
-- **60–90 с** на решение (UI таймер; default **75 с**).
-- По истечении — **auto-LOCK** текущего пресета (или M1 если пусто).
-- Игрок может нажать Confirm раньше → LOCK.
-
-### J2. Порядок сборки
-1. Выбрать Chassis (схема A/B + risk icons).  
-2. Material blank (affinity + one-line cost).  
-3. Rune A + Rune B (live preview dummy 3 с).  
-4. Выбрать Skill 1 + Skill 2 → UI показывает **имя явления**.  
-5. Armor: 1 Major max + 1 Minor.  
-6. Опционально Weapon B (запас).  
-7. **LOCK** → арена. В бою: только использование.
-
-### J3. Запрещено на bench
-- Affix rares / legendary rolls  
-- Support gems  
-- Skills-as-items  
-- Mid-fight перековка (после LOCK)  
-- Суммарный DPS score  
+Валидно: Spark Tip + Steady Haft; Root Weight + Weaver Coil; Spark Tip + Ash Groove (разные Force).  
+Невалидно: Spark Tip ×2; Steady Haft + Weaver Coil.
 
 ---
 
-## K. Demo arena encounter
+## 10. Armor Runes
 
-### K1. Layout
-- Пол: **18 × 14 м**, замкнутый зал, изометрия.
-- Старт игрока: (9, 2) юг.
-- Колонны (укрытие): (4, 7), (14, 7).
-- Ритуальный круг босса фаза 2: центр (9, 8) радиус 2 м.
-- Выход: дверь север (9, 13) — открывается при смерти Doorwarden.
+### 10.1 Жёсткие правила
+- Ровно **2** слота.
+- У каждой руны **обязательный штраф**.
+- Нельзя две с одним `ArmorFamily` (`Guard`, `Focus`, `Thorns`, `Glass`).
+- Нельзя дублировать один числовой бонус двумя рунами.
+- На loadout UI **запрещён** суммарный DPS одной цифрой.
 
-**Стартовые катализаторы:**
+### 10.2 Каталог
 
-| Объект | Позиции | Кол-во | Respawn |
-|--------|---------|--------|---------|
-| Torch | (3,5), (15,5), (9,11) | 3 | нет; × зажечь если потушены |
-| Wet puddle | (6,9), (12,9) | 2 | Tide может создать новые |
-| Oil / AshBed | (9,4) | 1 | нет |
-| WhisperFog geo | под колоннами + (9,12) | 3 | постоянные |
-| RootedGround | (5,11), (13,11) | 2 | нет |
-| Conductive plates | (8,6), (10,6) | 2 | постоянные |
-| Corpses | — | 0→N | от аддов |
+| ID | Имя | Family | Бонус | Штраф | Условие |
+|----|-----|--------|-------|-------|---------|
+| AR-BRC | Brace | Guard | −20% входящего poise | −10% move speed | всегда |
+| AR-THN | Thornmail | Thorns | 10 reflect melee / 1,5 с | +10% входящего ranged HP | всегда |
+| AR-FCW | Focusweave | Focus | Focus regen +3/с | Max STA −15 | всегда |
+| AR-GLM | Glassmind | Glass | +12% урон скиллов | +20% входящего, пока Debt≥20 | штраф условный |
+| AR-BLD | Bloodroot | Guard | при HP≤40: +8% урона A/B | нельзя Block/Parry | бонус while HP≤40 |
+| AR-DBT | Debtwalker | Focus | Debt≥20: dodge −8 STA | Debt≥20: −15% урона A | while Debt≥20 |
 
-### K2. Wave / encounter script
-1. **Wave 1:** 2× **Ash Raider** (одновременно).  
-2. Когда оба мертвы **или** 40 с: **Wave 2:** 1× **Cinder Archer** + 1× Ash Raider.  
-3. Опционально mid: **Warden Construct** вместо второго Raider в wave 2 (флаг демо `WITH_WARDEN`).  
-4. Когда арена чиста **или** суммарно 90 с от старта: решётка ↑, входит **Doorwarden** (walk 2 с, неуязвим).  
-5. Одновременно на экране: max 3 малых **или** 1 элита+1 малый **или** босс (+1 add только в фазе 2 босса).  
-6. Победа: смерть Doorwarden → дверь север.
+Валидно: Brace+Thornmail; Focusweave+Glassmind; Brace+Focusweave.  
+Невалидно: Brace+Bloodroot (оба Guard).
 
-### K3. Ash Raider (melee tutor)
+---
+
+## 11. Демо-арена
+
+### 11.1 Комната
+- Пол **18×14 м**, изометрия, один зал.
+- Старт игрока: (9, 2). Вход юг.
+- Колонны: (4,7), (14,7) — LOS-блок.
+- Ритуальный круг: центр (9,8), r=2 м — фаза 2 босса.
+- Победа: дверь (9,13) при смерти босса.
+
+### 11.2 Носители (старт)
+
+| Носитель | Позиции | Кол-во | Возобновление |
+|----------|---------|--------|---------------|
+| Torch | (3,5), (15,5), (9,11) | 3 | не респавн; × зажечь если потушил Ash |
+| Water | (6,9), (12,9) | 2 | + создание Tide |
+| Oil | (9,4) | 1 | нет |
+| Geometry Shadow | под колоннами; (9,12) | 3 зоны | постоянные; **не** Tier-2 носитель |
+| Skill Shadow | от Whisper | 0→n | расходуемые |
+| Corpse | смерть аддов | 0→2 | адды не респавнятся |
+
+### 11.3 Адд A — Ash Grunt
 - HP **70**, Poise **50**, speed 3,2 м/с.
-- (1) 2-hit slash: startup 0,40 с, урон 18, poise 20, радиус 1,5 м.  
-- (2) Leap-slam: круг telegraph 0,55 с, урон 22, poise 24.  
-- (3) Shield raise 1,2 с: блок фронта 180° (нужен flank / interrupt Skill).  
+- **Рубка:** startup 0,40 (жёлтый) / active 0,12 / recover 0,35; урон 18, poise 20, r=1,5.
+- **Плевок:** startup 0,55 / projectile / recover 0,40; урон 14 + Ash DoT 4/с × 2 с.
 - Смерть → Corpse.
+- Failure для игрока: стоять в active рубки без dodge/block.
 
-### K4. Cinder Archer (ranged pressure)
-- HP **55**, Poise **40**; держит 5–7 м.
-- (1) 3-volley line: startup 0,35 с, урон 10×3.  
-- (2) Charged sniper: лазер-телеграф 0,70 с, урон 22.  
-- (3) Panic roll + melee poke урон 12.  
-- Может создать Wet под игроком (0,70 с telegraph) — игрок может использовать.
+### 11.4 Адд B — Tide Wretch
+- HP **55**, Poise **40**; дистанция AI 5–7 м.
+- **Болт:** startup 0,35 / projectile / recover 0,30; урон 12; Grimoire B absorb.
+- **Смачивание:** телеграф 0,70 → Water под игроком 3 с.
+- Слабость: Spark+Tide Tier-2 по луже.
 
-### K5. Warden Construct (optional elite)
-- HP **140**, Poise **100**.
-- Wide sweep / stomp AoE / interruptible beam channel 1,2 с.  
-- Учит stamina discipline и Hammer/Combine (Staff B / Combine).
+### 11.5 Босс — Gate Saint
+- HP **280**, Poise **120** (после stagger → 60; окно stagger 1,2 с).
 
-### K6. Doorwarden (boss)
-- HP **280**, Poise **120** (после stagger → 60; window 1,2 с).
+| Фаза | HP | Атаки |
+|------|-----|-------|
+| 1 | >60% | **Cleave:** 0,55 / 0,14 / 0,50; дуга 120°; урон 26; poise 28; **unblockable**. **Bolt:** 0,40 / proj / 0,35; урон 16 |
+| 2 | 60–30% | уходит в круг; VFX-искры (без новых аддов); **Root snare:** телеграф круг 1,4 м под игроком 0,70 → Rooted 1,0 + 10 урона |
+| 3 | ≤30% | cleave startup −0,10; каждые **8 с** Ash wave (dodge; урон 22); **первый** Ash wave тушит все Torch |
 
-**Фаза 1 (HP > 60%) — Melee gate**  
-- Horizontal → horizontal → delayed overhead (фейк +0,20 с).  
-- Side thrust.  
-- Shield-bash: blockstun игрока 0,35 с.  
-- Unblockable: max 1 за фазу (overhead).
+**Справедливость:** босс убиваем Attack A/B + dodge без скиллов и без Tier-2. Носители ускоряют, не валидируют.
 
-**Фаза 2 (60–30%) — Hybrid**  
-- Уходит в круг (9,8).  
-- Призывает **1 Ash Raider** **или** 2 стационарные rune-turrets (Cinder AI, HP 30).  
-- Line wave по полу; teleport-slam (круг 0,60 с).
+### 11.6 Скрипт
+1. Старт: 2 адда; босс за решёткой север (силуэт виден, неуязвим).
+2. Оба адда мертвы **или** 45 с → решётка вверх; босс walk 2 с (неуязвим) → бой.
+3. Если сработал таймер 45 с и адд жив — бой босс+адд.
+4. Дверь победы только при смерти босса. Адды не респавнятся.
 
-**Фаза 3 (≤ 30%) — Commit check**  
-- Recover −15–20%, но big windup **+0,10 с**.  
-- Ultimate каждые 8 с: арена → 3 полосы, безопасная читается заранее (урон 22 вне safe).  
-- После ultimate: poise break window **2,0 с** — любой loadout казнит.  
-- Первый каст фазы 3 тушит все Torch.
+### 11.7 Три маршрута (acceptance)
 
-**Честность:** нет invisible tracking >45° без поворота корпуса; ни одна фаза не требует обязательно magic или melee.
+#### Route M1 — Pure Melee
+1. Grunt: читать жёлтый → Cleaver R2 в окно → stagger → R1 R1. Плевки только ○. Рубка: □ Parry/Block.
+2. △ swap на Spear (commitment 0,60). Wretch из-за колонны: R1 poke; L1 Root на телеграф болта → R2.
+3. Босс: Spear/Cleaver R1/R2 + ○. Cleave unblockable → только ○. Ash (L2) — DoT в окне stagger босса (не обязателен).
+4. Tier-2 не использовать (или использовать — не влияет на валидность).
+5. **Критерий:** босс мёртв; Debt ≤ 20; Tier-2 не требуется; Env Read не требуется.
 
-### K7. Три clear routes
+#### Route M2 — Pure Magic
+1. Старт Orb: выйти к Water (6,9) или (12,9). L2 Tide при необходимости долить лужу.
+2. Soft-aim в лужу ≤1,5 м → L1+L2 Combine → **Грозовой столб** (Tier-2) в Grunt. Добивание Orb weave (A после скилла).
+3. Wretch: Grimoire △ swap **или** сразу запасной если уже свапнуты; метки A + щит B на болт. Повтор Spark+Tide по новой луже от смачивания/Tide.
+4. Босс: дистанция >3 м; Orb A/B; Combine на лужах; Focus не ронять в Critical без плана. Glassmind: держать Debt <20 или принимать +20% входящего.
+5. **Критерий:** ≥50% урона по боссу от скиллов/явлений; Attack A/B ≤25% урона по боссу; ≥2 Tier-2 за бой.
 
-#### Melee (M1)
-1. Ash Raider: Sword B на leap recover → A A; Root на shield.  
-2. Archer: Spear poke из-за колонны; Ash DoT в окне.  
-3. Doorwarden: только A/B + dodge + parry; Tier-усиления не обязательны.  
-4. Критерий: босс мёртв; Debt ≤ 20; Flask ≤ 1.
+#### Route M3 — Hybrid
+Пресет фиксирован: Skill1=Spark, Skill2=Root → единственный Tier-2 пары = **Проводная казнь** (носитель RootAnchor). Corpse/Oil Tier-2 **не** требуются на M3.
 
-#### Magic (M2)
-1. Tide → Wet; Combine **Ионный Прилив** на Raider.  
-2. Orb weave + Book сигилы vs Archer.  
-3. Босс: дистанция Orb; Combine по лужам/Conductive.  
-4. Критерий: ≥ 50% урона боссу от Skills/Combine; weapon A/B ≤ 25%.
-
-#### Hybrid (M3)
-1. Spear kite; Spark поджигает Oil.  
-2. Трупы → Угольный Склеп / пепельные усиления.  
-3. Ровно **1** weapon swap на Orb в фазе 2.  
-4. Критерий: ≥ 1 усиленный катализатором Combine; ни Skills ни weapon не > 70% урона.
+1. Spear kite vs Grunt; R1 poke, dodge плевка.
+2. L2 Root в ноги Grunt → RootAnchor; L1+L2 Combine у якоря → **Проводная казнь** (Tier-2). Добивание Spear.
+3. Wretch: колонна + Spear; при необходимости снова Root → капкан Tier-1 или якорь Tier-2.
+4. Босс фаза 1: Spear A/B + Spark (L1) в окна. Фаза 2: **ровно один** △ swap на Orb → безопасный урон по кругу + Root snare dodge.
+5. Фаза 3: Orb/Spear (уже свапнуты) + dodge Ash wave; Focus не уводить в Critical без нужды.
+6. **Критерий:** ровно **1** weapon swap; ≥1 Tier-2 (Проводная казнь); доля урона по боссу — ни скиллы, ни оружие >70%.
 
 ---
 
-## L. Acceptance criteria for demo pass
+## 12. Скоуп: v0 арена vs позже
 
-### L1. Playtest (3 игрока × 3 маршрута)
-1. В слепой записи игрок называет телеграф босса раньше носителя рядом в ≥ **80%** опасных окон.  
-2. Медианное время клира M1 vs M2 отличается ≤ **20%**.  
-3. Среднее Combine за клир ∈ **[3, 10]**; Backfire хотя бы раз у новичка, избегается на 3-м заходе.  
-4. M1 проходит без усиленных катализаторов; M2 без катализаторов длиннее ≥ **30%**.  
-5. Ни один armor pair не даёт автовин; Glass Tempo (Major) наказуем chip, если взят.  
-6. Swap commitment наказуем попаданием.  
-7. После 1 баннера игрок использует R1/R2/L1/L2/Combine/○/□/△ без подсказки HUD.
+### v0 SHIPS (этот документ)
+- DualSense map §4 целиком (кроме опционального directional haptic fallback).
+- Ресурсы §3.
+- 6 шасси, 5 Material, 7 Weapon Runes, 6 Armor Runes.
+- 5 Tier-0, 10 Tier-1, Tier-2 для носителей на арене.
+- 2 адда + Gate Saint.
+- Пресеты M1/M2/M3 + простой loadout.
+- Backfire, Debt/Heat, Env Read на Touchpad.
 
-### L2. Technical checklist
-- [ ] Ресурсы §B с числами ±0  
-- [ ] DualSense map §C полностью  
-- [ ] 6 chassis §D с таймингами  
-- [ ] 5 Primary + полная матрица §E задокументирована; ≥ 6 cross shipped  
-- [ ] 4 materials, 12 weapon runes, 6 armor runes, конфликты  
-- [ ] Prefight bench 60–90 с → LOCK  
-- [ ] Backfire только §H4  
-- [ ] Encounter §K тремя пресетами  
-- [ ] Enemy warm floor telegraph не перекрыт player VFX  
-- [ ] Swap: 0,60 с / CD 4,00 с / только оружие  
+### v0 DOES NOT SHIP
+- Лечение, флаконы, уровень персонажа.
+- Роглайк-мета, магазин, эндлесс.
+- >2 активных скилла, element queue.
+- Полный крафт / редкости / random affixes.
+- Кооп, скакуны, стелс-миссия вне арены.
+- Armor Rune «Spark Skin» и прочий расширенный каталог.
+- Sprint, верховая, паркур.
 
-### L3. Читаемость магии
-- A / B / Combine отличаются силуэтом < 0,5 с на записи.  
-- Miscombine < 15% после 2-мин tutorial shrine.  
-- Нет infinite CC > 1,5 с на элите без DR.
+### Сразу после v0 (не блокирует демо)
+- Больше носителей/сил в каталоге.
+- Второй босс / вторая комната.
+- Расширение рун при сохранении конфликтов.
+- Настраиваемые бинды (канон демо остаётся DualSense-default).
 
 ---
 
-## M. Explicit non-goals for demo
+## 13. Acceptance (демо проходит, если)
 
-- Роглайк-мета, магазины между забегами, дерево уровней, XP  
-- Magicka-очередь из 5 элементов mid-fight  
-- 8 школ на face buttons / 4 режима каста на отдельных кнопках  
-- Affix soup, support gems, skills-as-items  
-- Mid-fight смена рун / сил  
-- Полный Noita pixel sim  
-- Friendly fire по умолчанию  
-- Кооп, скакуны, стелс-миссия вне арены  
-- Hammer и Bow как playable chassis (только frame-feel спек; контент пост-демо)  
-- Более 2 активных скиллов  
-- Третья полоска ресурса кроме STA/Focus (+ Debt как вторичный счётчик, Poise скрыт)  
-- Скрытые оппозиции без UI  
-- Суммарный DPS на экране loadout  
+### 13.1 Playtest (3 человека × 3 маршрута)
+1. В слепую: телеграф босса назван раньше носителя в ≥80% опасных окон.
+2. Медианное время клира M1 vs M2 отличается ≤**20%**.
+3. Combine за клир ∈ [3, 10]; новичок ловит Backfire ≥1 раз; на 3-м заходе избегает.
+4. M1 без Tier-2 валиден; M2 без носителей ≥+30% времени боя.
+5. Ни один 2-рунный сет брони = автовин; Glassmind наказывает Debt.
+6. Hit в swap-commitment = урон/stagger.
+7. После 1 баннера туториала: R1/R2/L1/L2/L1+L2/○/□/△ читаются без HUD-подсказок.
+
+### 13.2 Техника
+- [ ] §3 ресурсы ±0 от чисел
+- [ ] §4 карта: Combine = L1+L2; Attack = R1/R2
+- [ ] 6 шасси с полными таймингами
+- [ ] 5+10 явлений + Tier-2 носителей арены
+- [ ] Конфликты рун до старта
+- [ ] Backfire только §8.4
+- [ ] M1/M2/M3 клир без читов
+- [ ] Env Read не перекрывает красные телеграфы
+- [ ] Swap 0,60 / CD 4,00; только оружие
 
 ---
 
-## Приложение: словарь реализации
+## Приложение A — словарь
 
 | Термин | Значение |
 |--------|----------|
-| Commitment | Нельзя отменить атакой/кастом; dodge только в явном окне |
-| Combine / Fusion | L1+L2 → phenomenon |
-| Debt / Heat | Одна шкала 0–50 |
-| Catalyst / носитель | Tagged volume для усиления модуса |
-| Residue+Strike | Book/Orb: метка → удар/сила усиливает |
-| Soft-lock | R3 toggle; без hard camera lock |
-| Major armor | Макс 1; сильный playstyle shift |
-| Chassis ≫ Rune ≫ Material | Иерархия власти ощущения |
+| Commitment | нельзя отменить атакой/кастом; dodge только в явном окне |
+| Heat | UI/haptic-лента Debt, не отдельный ресурс |
+| Carrier / носитель | объект среды для Tier-2 |
+| ForceExclusive | ≤1 руна данной Силы на оружии |
+| Soft-aim | точка ≤3 м, П стик |
+| Tier-0/1/2 | одиночный / combine без носителя / combine с носителем |
+| Weave window | усиление Attack A после скилла (Orb / Weaver Coil) |
+| Geometry Shadow | постоянная тень уровня; не расходник Tier-2 |
+| Skill Shadow | тень от скилла; расходник Tier-2 |
 
-**Конец канона.** Любое изменение чисел — только правка этого файла с бампом версии.
+## Приложение B — анти-противоречия (закрыто)
+
+| Было (ошибочно / устарело) | Стало (канон v2) |
+|----------------------------|------------------|
+| Combine = R1+R2 | **Combine = L1+L2** |
+| Attack A/B на □/△ | **Attack A/B = R1/R2** |
+| Skills на R1/R2 | **Skills = L1/L2** |
+| Dodge на × | **Dodge = ○** |
+| Block на ○ / conflict с L1 | **Block/Parry = □** |
+| Interact на ○ | **Interact = ×** |
+| Swap = L1+△ | **Swap = △** |
+| Env Read на L2 | **Env Read = Touchpad hold** |
+| Тень то расходуется, то нет | Geometry ≠ Skill Shadow |
+| Debt без Heat | Debt число + Heat лента |
+
+**Конец канона v2.**
