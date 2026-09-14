@@ -1,0 +1,113 @@
+:root {
+  --bg0: #0c1218;
+  --bg1: #152029;
+  --stone: #2a3844;
+  --teal: #3d7a7a;
+  --ember: #c45c2a;
+  --ash: #8a6a4a;
+  --ink: #d7e0e6;
+  --muted: #7a8a96;
+  --warn: #e6c84a;
+  --danger: #e04545;
+  --ok: #5cbf8a;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, #1a3038 0%, transparent 55%),
+    linear-gradient(165deg, #0a1014 0%, #121c24 45%, #0e161c 100%);
+  color: var(--ink);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px 18px 28px;
+}
+
+.top h1 {
+  margin: 0;
+  font-family: "Libre Baskerville", Georgia, serif;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  letter-spacing: 0.04em;
+  color: #e8eef2;
+  text-shadow: 0 1px 0 #0008;
+}
+.top .sub {
+  margin: 6px 0 14px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.stage-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 960px) minmax(220px, 280px);
+  gap: 14px;
+  align-items: start;
+}
+
+#game {
+  width: 100%;
+  max-width: 960px;
+  height: auto;
+  background: #0a0e12;
+  border: 1px solid #2a3a46;
+  box-shadow: 0 12px 40px #0007;
+  cursor: crosshair;
+  display: block;
+  outline: none;
+}
+
+#side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#routes-panel, #tips {
+  background: linear-gradient(180deg, #152029, #101820);
+  border: 1px solid #2a3a46;
+  padding: 12px 14px;
+}
+#routes-panel h2, #tips h2 {
+  margin: 0 0 10px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--teal);
+}
+.route {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #243038;
+}
+.route:last-child { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
+.route strong { display: block; color: #e8eef2; margin-bottom: 4px; font-size: 0.85rem; }
+.route p { margin: 0; color: var(--muted); font-size: 0.72rem; line-height: 1.45; }
+.route em { color: var(--ember); font-style: normal; }
+
+#tips ul { margin: 0; padding-left: 1.1em; color: var(--muted); font-size: 0.75rem; line-height: 1.55; }
+kbd {
+  display: inline-block;
+  padding: 0 5px;
+  border: 1px solid #3a4a56;
+  background: #1a242c;
+  font-size: 0.7rem;
+  border-radius: 2px;
+}
+
+.foot {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+.foot code { color: #9ab; }
+
+@media (max-width: 980px) {
+  .stage-wrap { grid-template-columns: 1fr; }
+  #side { order: 2; }
+}
