@@ -34,7 +34,7 @@
 | 1 | Neon Bullet | Top-down экшен |
 | 2 | Работник месяца | Office escape arcade |
 | 3 | Море Реликвий | Naval FTL-like |
-| 4 | Легенды Поля | Football CCG + autochess |
+| 4 | Живи Футболом | Football manager (SoccerLife × FM-lite) |
 | 5 | Базар Слияний | Merge-tycoon |
 | 6 | Кристаллы Архипелага | Match-3 |
 | 7 | Кузница Вечности | Idle |

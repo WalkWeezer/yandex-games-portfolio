@@ -18,7 +18,7 @@ GAMES = [
     {"id": "01", "slug": "neon-bullet", "name": "Neon Bullet", "genre": "Top-down экшен", "wave": 3, "prio": "P1", "segment": "Экшен / 14–35"},
     {"id": "02", "slug": "deadline-escape", "name": "Работник месяца", "genre": "Офисная escape-аркада", "wave": 1, "prio": "P0", "segment": "Вирусный юмор / 18–45"},
     {"id": "03", "slug": "tide-of-relics", "name": "Море Реликвий", "genre": "Naval FTL-like", "wave": 4, "prio": "P1", "segment": "Стратегия midcore / 20–40"},
-    {"id": "04", "slug": "legends-of-the-pitch", "name": "Легенды Поля", "genre": "Футбол CCG + autochess", "wave": 4, "prio": "P1", "segment": "Спорт / коллекционеры"},
+    {"id": "04", "slug": "soccer-life", "name": "Живи Футболом", "genre": "Футбольный менеджер (SoccerLife × FM-lite)", "wave": 4, "prio": "P1", "segment": "Спорт / менеджеры"},
     {"id": "05", "slug": "merge-bazaar", "name": "Базар Слияний", "genre": "Merge-tycoon", "wave": 1, "prio": "P0", "segment": "Уютный казуал / 25–55"},
     {"id": "06", "slug": "crystal-archipelago", "name": "Кристаллы Архипелага", "genre": "Match-3", "wave": 2, "prio": "P0", "segment": "Головоломки / 25–60"},
     {"id": "07", "slug": "idle-forge", "name": "Кузница Вечности", "genre": "Idle / incremental", "wave": 2, "prio": "P0", "segment": "AFK / idle"},

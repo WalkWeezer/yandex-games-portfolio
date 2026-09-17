@@ -2,18 +2,10 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8"/>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
-<meta http-equiv="Pragma" content="no-cache"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Работник месяца — Портфель Яндекс Игры</title>
-<link rel="stylesheet" href="../assets/dashboard.css?v=w250722d"/>
-<link rel="stylesheet" href="../assets/wireframe-ui.css?v=w250722d"/>
-<link rel="stylesheet" href="../assets/sprite-catalog.css?v=w250722d"/>
-<link rel="stylesheet" href="../assets/sprite-demo.css?v=w250722d"/>
-<link rel="stylesheet" href="../assets/sfx-catalog.css?v=w250722d"/>
-<link rel="stylesheet" href="../assets/deadline-mock-ui.css?v=mu250720e"/>
+<link rel="stylesheet" href="../assets/dashboard.css"/>
 </head>
-
 <body>
 <div class="layout">
   <aside class="sidebar">
@@ -23,9 +15,9 @@
     <a class="nav-link" href="../pipeline.html">Пайплайн</a>
     <div class="side-section">Игры</div>
     <div class="nav-games"><a class="nav-game " href="neon-bullet.html">01. Neon Bullet</a>
-<a class="nav-game active" href="deadline-escape.html?v=w250722d">02. Работник месяца</a>
+<a class="nav-game active" href="deadline-escape.html">02. Работник месяца</a>
 <a class="nav-game " href="tide-of-relics.html">03. Море Реликвий</a>
-<a class="nav-game " href="legends-of-the-pitch.html">04. Легенды Поля</a>
+<a class="nav-game " href="soccer-life.html">04. Живи Футболом</a>
 <a class="nav-game " href="merge-bazaar.html">05. Базар Слияний</a>
 <a class="nav-game " href="crystal-archipelago.html">06. Кристаллы Архипелага</a>
 <a class="nav-game " href="idle-forge.html">07. Кузница Вечности</a>
@@ -43,9 +35,9 @@
         <div>
           <div class="muted">02 · P0 · Волна 1 — кэшфлоу</div>
           <h1>Работник месяца</h1>
-          <p class="lead">Офисный grid dodge · 09:00→18:00 · Вирусный юмор / 18–45</p>
+          <p class="lead">Офисная escape-аркада · Вирусный юмор / 18–45</p>
           <div class="inline-status">
-            Статус дизайна: <span class="status-pill" data-status-for="deadline-escape">На ревью</span>
+            Статус дизайна: <span class="status-pill" data-status-for="deadline-escape">Черновик</span>
             · Гейт: <span data-gate-label-for="deadline-escape">—</span>
           </div>
         </div>
@@ -54,11 +46,7 @@
 
     <nav class="tabs" role="tablist">
       <button class="tab active" data-tab="overview">Обзор</button>
-      <button class="tab" data-tab="beta">Бета-тест</button>
       <button class="tab" data-tab="demo">Демка</button>
-      <button class="tab" data-tab="wireframe">Wireframe UI</button>
-      <button class="tab" data-tab="sprites">Спрайты</button>
-      <button class="tab" data-tab="sfx">SFX</button>
       <button class="tab" data-tab="classic">Классический диздок</button>
       <button class="tab" data-tab="llm">LLM-спека</button>
       <button class="tab" data-tab="refs">Референсы</button>
@@ -71,26 +59,24 @@
         <div class="panel">
           <h3>Что смотреть</h3>
           <ul class="checklist-static">
-            <li><strong>Бета-тест</strong> — UI shell + feel SoT в Run</li>
-            <li><strong>Демка</strong> — feel отдельно (DEV <code>?dev=1</code>)</li>
-            <li><strong>Clean play</strong> — <code>games/deadline-escape/play/</code> · feel без читов</li>
-            <li><strong>Wireframe / Спрайты / SFX</strong> — сверка</li>
-            <li>GDD / LLM / PORT.md — канон переноса</li>
+            <li><strong>Демка</strong> — сначала пощупай feel простыми фигурами</li>
+            <li>Классический GDD — видение, лупы, экономика</li>
+            <li>LLM-спека — контракты для агентов, UI, уровни, ассеты</li>
+            <li>Референсы — арт, вайрфреймы, уровни, спрайты</li>
+            <li>Промпты — готовые задания для арт/код агентов</li>
           </ul>
           <h3>Правило</h3>
-          <p class="warn">Пока статус не <strong>Подтверждён</strong>, папку <code>src/</code> не создавать. CONFIRM только после playtest. См. <code>docs/STATUS.md</code> · <code>docs/PORT.md</code>.</p>
+          <p class="warn">Пока статус не <strong>Подтверждён</strong>, папку <code>src/</code> не создавать. CONFIRM только после playtest демки (F1→F2). См. <code>docs/METHODOLOGY.md</code>.</p>
         </div>
         <div class="panel">
           <h3>Файлы проекта</h3>
           <ul class="file-list">
-            <li><code>docs/STATUS.md</code> — статус <strong>REVIEW</strong></li>
-            <li><code>docs/DESIGN.md</code> / <code>DESIGN_LLM.md</code></li>
-            <li><code>docs/REFS.md</code> · <code>GAP_VS_CHAS_PIK.md</code></li>
-            <li><code>prompts/*.md</code> · <code>refs/**</code></li>
-            <li><code>archive/</code> — старые пакеты</li>
-            <li><code>docs/PORT.md</code> — ALLOW/DENY переноса</li>
-            <li><code>play/</code> — production вход без DEV</li>
-            <li><code>management/demos/</code> — feel SoT + mock-ui</li>
+            <li><code>games/deadline-escape/docs/DESIGN.md</code></li>
+            <li><code>games/deadline-escape/docs/DESIGN_LLM.md</code></li>
+            <li><code>games/deadline-escape/docs/REFS.md</code></li>
+            <li><code>games/deadline-escape/prompts/*.md</code></li>
+            <li><code>games/deadline-escape/refs/**</code></li>
+            <li><code>management/demos/</code> — feel demo</li>
           </ul>
           <div class="progress big"><i data-progress-for="deadline-escape"></i></div>
           <div class="muted" style="margin-top:8px">Прогресс готовности (дизайн + гейты)</div>
@@ -98,143 +84,1611 @@
       </div>
     </section>
 
-    <section class="tab-panel" id="tab-beta">
-      <div class="panel">
-        <h3>Бета-тест — UI + Feel</h3>
-        <p class="lead">Shell экранов MVP. В <strong>Run</strong> — канон FeelDemo. Clean play: <a href="../../games/deadline-escape/play/index.html" target="_blank" rel="noopener"><code>play/</code></a>. Порт: <code>docs/PORT.md</code>.</p>
-        <div class="lan-box">Бета Run = feel SoT. Вкладка Демка — отдельный canvas (DEV). Production: <code>/games/deadline-escape/play/</code>.</div>
-        <div id="mu-app"></div>
-      </div>
-    </section>
-
     <section class="tab-panel" id="tab-demo">
       <div class="panel demo-wrap">
-        <h3>Feel — со спрайтами</h3>
-        <p class="lead">Канон геймплея. По умолчанию <strong>без DEV∞</strong>. Читы: добавь <code>?dev=1</code> к URL. Production-сборка: <a href="../../games/deadline-escape/play/index.html"><code>play/</code></a>.</p>
-        <div class="lan-box">С телефона: запусти <code>serve-dashboard.bat</code> (корень репо), открой <code>/management/projects/deadline-escape.html</code>.</div>
-        <p class="muted" style="margin:0 0 8px">Офисная сетка 7×9, боссы с 4 краёв, день ≈60с. По умолчанию без DEV. Читы: <code>?dev=1</code>. Production: <code>play/</code>. Cache <strong>w250722d</strong>.</p>
+        <h3>Feel-демка (простые фигуры)</h3>
+        <p class="lead">Цель — проверить управление и «хочу ещё раз». На телефоне удобнее через LAN-сервер.</p>
+        <div class="lan-box">С телефона: запусти <code>serve-dashboard.bat</code> на ПК, открой URL из окна батника (одна Wi-Fi сеть).</div>
+        <p class="muted" style="margin:0 0 8px">«Работник месяца» = ядро chas-pik (сетка, 3 колонны, 09:00→18:00).</p>
         <p class="demo-hint" id="demo-hint">Загрузка демки…</p>
         <canvas id="feel-demo" width="360" height="640" aria-label="Feel demo"></canvas>
         <div class="demo-actions">
           <button class="btn" type="button" id="demo-restart">Рестарт</button>
-          <button class="btn" type="button" id="demo-fullscreen">На весь экран</button>
-          <span class="muted demo-controls-hint">На телефоне: «На весь экран» → стики · WASD / свайпы вне FS</span>
+          <span class="muted">Стик: левая половина экрана · WASD/стрелки · кнопки справа</span>
         </div>
-      </div>
-    </section>
-
-    <section class="tab-panel" id="tab-wireframe">
-      <div class="panel">
-        <h3>Wireframe UI — сверка</h3>
-        <p class="lead">Режим <strong>Экраны</strong> — телефон с layout. Режим <strong>Компоненты UI</strong> — полный перечень кнопок/панелей/иконок без PNG.</p>
-        <div id="wf-app"></div>
-      </div>
-    </section>
-
-    <section class="tab-panel" id="tab-sprites">
-      <div class="panel">
-        <h3>Спрайты — Pipeline v1</h3>
-        <p class="lead">Утверждение <strong>style-seed</strong> (кнопка APPROVED). Остальной арт в архиве. UI — Wireframe → Компоненты.</p>
-        <div id="sp-app" class="sp-app"></div>
-      </div>
-    </section>
-
-    <section class="tab-panel" id="tab-sfx">
-      <div class="panel">
-        <h3>SFX — звуки</h3>
-        <p class="lead">Процедурный Web Audio (без wav). Превью здесь; в Демке — SFX + office_loop.</p>
-        <div id="sfx-app" class="sfx-app"></div>
       </div>
     </section>
 
     <section class="tab-panel" id="tab-classic">
-      <p class="md-source">Источник: <code>games/deadline-escape/docs/DESIGN.md</code> · оглавление слева → прыжок к разделу</p>
-      <div class="md-shell" data-md-src="docs/DESIGN.md" data-md-prefix="gdd">
-        <aside class="md-toc" aria-label="Оглавление GDD"></aside>
-        <article class="doc md-body">Загрузка…</article>
-      </div>
+      <article class="doc"><h1 id="design-gdd">Работник месяца — DESIGN (GDD)</h1>
+<blockquote>
+<p><strong>Статус:</strong> <code>REVIEW</code> · slug <code>deadline-escape</code> · EN: Employee of the Month<br />
+<strong>SoT feel:</strong> <code>management/demos/demos-01-02.js</code> → <code>FEEL_DEMOS["deadline-escape"]</code><br />
+<strong>Не кодировать</strong> <code>src/</code>, пока статус ≠ <code>CONFIRMED</code> (см. <code>STATUS.md</code>).<br />
+Архив старого пакета: <code>archive/2026-07-17-pre-feel-sync/</code>.</p>
+</blockquote>
+<hr />
+<h2 id="1-pitch">1. Pitch</h2>
+<p>Офисный <strong>top-down dodge на сетке</strong>: доживи рабочий день <strong>09:00→18:00</strong>, уворачиваясь от начальства, которое заходит со всех сторон. Юмор корпоративного абсурда, короткие portrait-сессии для Яндекс Игр.</p>
+<p><strong>Core fantasy:</strong> «ещё один день — и повышение на этаж».<br />
+<strong>Не MVP:</strong> free-move chase, hide/LOS/stealth, endless score-runner без дня.</p>
+<hr />
+<h2 id="2-core-loop">2. Core loop</h2>
+<pre><code>Hub (этаж / Daily) → Run
+  → ходи по светлым клеткам ↑↓←→
+  → боссы с краёв карты
+  → 18:00 = ПОВЫШЕНИЕ (этаж+1)
+  → удар = ЗАСТАВИЛИ РАБОТАТЬ → RV / Result → Hub
+</code></pre>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Win</strong></td>
+<td><code>gameMin ≥ 540</code> (часы 09→18) → баннер <strong>ПОВЫШЕНИЕ!</strong> → <code>floor += 1</code></td>
+</tr>
+<tr>
+<td><strong>Fail</strong></td>
+<td>касание угрозы / зоны ОТЧ без щита → <strong>ЗАСТАВИЛИ РАБОТАТЬ</strong></td>
+</tr>
+<tr>
+<td><strong>Soft</strong></td>
+<td>монеты с пола; мета: best floor, shop, daily</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-locked-feel-numbers">3. Locked feel numbers</h2>
+<p>Источник: feel-демка. Менять только через re-freeze F2.</p>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ориентация</td>
+<td>Portrait-primary (логич. 720×1280; демо 360×640)</td>
+</tr>
+<tr>
+<td><code>TIME_SCALE</code></td>
+<td><strong>0.5</strong></td>
+</tr>
+<tr>
+<td><code>minutesPerSecond</code></td>
+<td><strong>18</strong></td>
+</tr>
+<tr>
+<td><code>totalMin</code></td>
+<td><strong>540</strong> → реальный день <strong>≈60 с</strong></td>
+</tr>
+<tr>
+<td>Базовый шаг</td>
+<td><strong>0.095 с</strong> slide ease-out</td>
+</tr>
+<tr>
+<td>Скорость/этаж</td>
+<td><strong>+1%</strong> игроку и мобам: <code>1 + (floor−1)×0.01</code></td>
+</tr>
+<tr>
+<td>Старт i-frames</td>
+<td><strong>~1.45–1.5 с</strong></td>
+</tr>
+<tr>
+<td>Сетка база</td>
+<td><strong>5×7</strong> play (+fog 1 с каждой стороны); рост: каждые <strong>25</strong> этажей +1 col <strong>или</strong> +1 row</td>
+</tr>
+<tr>
+<td>Лимит мобов</td>
+<td><code>3 + ⌊(floor−1)/15⌋</code></td>
+</tr>
+<tr>
+<td>Дубли kinds</td>
+<td>только <code>hr</code>, <code>client</code>; остальные max 1 на поле</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_1">Фазы дня</h3>
+<table>
+<thead>
+<tr>
+<th>Фаза</th>
+<th><code>gameMin</code></th>
+<th><code>speedMul</code></th>
+<th><code>spawnMul</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Утро</td>
+<td>&lt; 80</td>
+<td>1.00</td>
+<td>1.45</td>
+</tr>
+<tr>
+<td>Работа</td>
+<td>&lt; 280</td>
+<td>1.08</td>
+<td>1.12</td>
+</tr>
+<tr>
+<td>Аврал</td>
+<td>&lt; 430</td>
+<td>1.16</td>
+<td>0.92</td>
+</tr>
+<tr>
+<td>Переработка</td>
+<td>иначе</td>
+<td><strong>1.25</strong></td>
+<td>0.78</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4">4. Пространство и ввод</h2>
+<ul>
+<li>Клетки: <code>0</code> пол · <code>1</code> стол 1×1 · <code>2</code> стена · <code>3</code> растение · <code>4</code> кулер · <code>5</code>/<code>6</code> стол 2×1 (запад/восток) · <code>7</code> окно.</li>
+<li>Play-зона база <strong>5×7</strong> (+рост); с каждой стороны всегда <strong>+1</strong> клетка <strong>полосы тумана</strong> (только вход/выход мобов, не walk).</li>
+<li>Игрок ходит только по play-полу; полоса тумана, пропы, стены и окна <strong>непроходимы</strong>.</li>
+<li><strong>Туман войны:</strong> <strong>поклеточно</strong> на каждой клетке края (локальный градиент внешний→play). <strong>На клетках со стеной/окном туман отключён.</strong> На открытых клетках рисуется поверх сущностей (силуэты спавна).</li>
+<li><strong>Стены/окна:</strong> декоративные препятствия на полосе тумана (каркас офиса как в концепте); seed как у мебели; большая часть полосы открыта под спавн. Окна чаще на севере.</li>
+<li>Мобы входят/выходят через открытые клетки края; <strong>по краю не ходят</strong> — арена = только play; директор (<code>ghost</code>) может лезть сквозь препятствия (~×0.5 скорости).</li>
+<li><strong>Коллизия с мобом:</strong> пересечение тел (непрерывные <code>px/py</code> игрока и позиция моба + <code>HIT_BODY</code>), <strong>не</strong> «общая клетка сетки».</li>
+<li>Layout детерминирован от этажа; граф play связный; спавн отвергается без пути побега (<code>hasEscape</code>).</li>
+<li><strong>Play-пропы:</strong> бюджет по bands (1–2 open → denser); столы не на периметре входов; центральные проходы предпочтительно свободны; входы края → соседняя play-клетка свободна от soft-пропов.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Ввод</th>
+<th>Поведение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mobile</td>
+<td>тап по клетке / свайп / стик → <strong>один шаг</strong> на соседнюю ходимую</td>
+</tr>
+<tr>
+<td>Desktop</td>
+<td>WASD / стрелки → один шаг на нажатие (latch)</td>
+</tr>
+<tr>
+<td>Tutorial</td>
+<td>«ходи по светлым, избегай боссов, доживи до вечера»</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-12-kinds">5. Боссы (12 kinds)</h2>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>с этажа</th>
+<th>pattern</th>
+<th>label</th>
+<th>суть</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hr</td>
+<td>1</td>
+<td>weave</td>
+<td>HR</td>
+<td>обходит препятствия (BFS)</td>
+</tr>
+<tr>
+<td>director</td>
+<td>3</td>
+<td>ghost</td>
+<td>Дир</td>
+<td>сквозь столы/пропы, медленнее внутри</td>
+</tr>
+<tr>
+<td>looker</td>
+<td>5</td>
+<td>peek</td>
+<td>ГЛЯД</td>
+<td>зашёл → пауза → ушёл</td>
+</tr>
+<tr>
+<td>urgent</td>
+<td>9</td>
+<td>dash</td>
+<td>СРОЧ</td>
+<td>рывок по линии</td>
+</tr>
+<tr>
+<td>meeting</td>
+<td>13</td>
+<td>hold</td>
+<td>ВСТР</td>
+<td>удерживает клетку/зону</td>
+</tr>
+<tr>
+<td>guard</td>
+<td>17</td>
+<td>patrol</td>
+<td>ОХР</td>
+<td>патруль коридора</td>
+</tr>
+<tr>
+<td>intern</td>
+<td>21</td>
+<td>chaos</td>
+<td>СТАЖ</td>
+<td>хаотичные шаги</td>
+</tr>
+<tr>
+<td>account</td>
+<td>25</td>
+<td>report</td>
+<td>БУХ</td>
+<td>зоны <strong>ОТЧ</strong> (урон без щита)</td>
+</tr>
+<tr>
+<td>kpi</td>
+<td>29</td>
+<td>hunt</td>
+<td>KPI</td>
+<td>тянется к игроку</td>
+</tr>
+<tr>
+<td>client</td>
+<td>33</td>
+<td>pincer</td>
+<td>КЛИ</td>
+<td>пара с флангов (дубли ок)</td>
+</tr>
+<tr>
+<td>it</td>
+<td>37</td>
+<td>blink</td>
+<td>IT</td>
+<td>быстрый smooth dash на 2 клетки</td>
+</tr>
+<tr>
+<td>secretary</td>
+<td>41</td>
+<td>wide</td>
+<td>СЕКР</td>
+<td>hitbox шире (2 клетки)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-mvp">6. Бонусы MVP</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Как получить</th>
+<th>Эффект</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>coffee</strong></td>
+<td>пикап с пола</td>
+<td>world <strong>slow-mo</strong> <code>0.42</code>, <strong>3.0 с</strong> (не ускорение шага игрока)</td>
+</tr>
+<tr>
+<td><strong>badge / shield</strong></td>
+<td>пикап с пола</td>
+<td><strong>1 удар</strong> поглощается (<code>shield_break</code>)</td>
+</tr>
+<tr>
+<td><strong>coin</strong></td>
+<td>пикап с пола</td>
+<td>soft currency</td>
+</tr>
+</tbody>
+</table>
+<p>Бонусы спавнятся сразу на проходимых клетках карты — моба-коллеги нет.</p>
+<hr />
+<h2 id="7">7. Мета и экраны</h2>
+<p>Wireframe SoT: <code>management/demos/deadline-wireframes.js</code>.</p>
+<pre><code>boot → menu → hub → (daily) → run HUD ↔ pause
+                 ↘ caught/RV → result → shop / hub
+</code></pre>
+<ul>
+<li><strong>Hub:</strong> сетка этажей + карточка <strong>Daily</strong> (1/день). Daily <strong>не</strong> модалка перед каждым этажом.</li>
+<li><strong>Caught:</strong> «ЗАСТАВИЛИ РАБОТАТЬ» + RV / пропуск → Result.</li>
+<li><strong>Result:</strong> повышение vs fail; следующий этаж / хаб.</li>
+<li>Retention: daily «побег из планёрки», рекорд этажа, unlock этажей, скины, streak.</li>
+</ul>
+<p>Монетизация (после CONFIRM): RV revive, interstitial после 1–2 ранов, IAP remove ads / starter / skins.</p>
+<hr />
+<h2 id="8-">8. Арт-направление</h2>
+<ul>
+<li>Яркая <strong>офисная сатира</strong>, flat cartoon, читаемые силуэты top-down 32×32.</li>
+<li>Палитра: серо-голубой ковролин, кубиклы, жёлтые sticky, красные «СРОЧНО»; не horror, не purple-glow spam.</li>
+<li>UI: cool gray-blue панели, sticky-yellow CTA.</li>
+<li>Инвентарь кадров: <code>management/demos/deadline-sprites.js</code> + <code>prompts/SPRITE_ANIM_PROMPTS.md</code>.</li>
+<li>Style/pose lock: <code>docs/STYLE_LOCK.md</code> + <code>refs/sprites/rig/</code>.</li>
+<li>Vibe refs: <code>refs/art|sprites|ui|levels/</code> (см. <code>REFS.md</code>).</li>
+</ul>
+<h3 id="art-freeze-mvp-scope-art_status-frozen_concepts">Art freeze + MVP scope (<code>ART_STATUS = FROZEN_CONCEPTS</code>)</h3>
+<p>Стоп gen-loop. Look SoT — концепты в <code>refs/art/</code>; production = paint-over, не «ещё один промпт».</p>
+<table>
+<thead>
+<tr>
+<th>Scope</th>
+<th>Содержание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ГГ</td>
+<td>idle + walk 6f + caught</td>
+</tr>
+<tr>
+<td>HR</td>
+<td>idle 4-dir + walk 6×4, <strong>без special</strong> (reart: <code>boss-hr.png</code> + камера ГГ)</td>
+</tr>
+<tr>
+<td>11 боссов</td>
+<td><strong>4-dir only</strong> до отдельного OK</td>
+</tr>
+<tr>
+<td>Коллега</td>
+<td>4-dir turnaround</td>
+</tr>
+<tr>
+<td>Пикапы</td>
+<td><code>pu_coin</code>, <code>pu_coffee</code>, <code>pu_badge</code></td>
+</tr>
+<tr>
+<td>Env-тайлы (feel)</td>
+<td>см. ниже — <strong>необходимые спрайты</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="env-feel-mvp">Необходимые env-спрайты (feel / MVP)</h3>
+<table>
+<thead>
+<tr>
+<th>Файл</th>
+<th>Клетка / роль</th>
+<th>Статус</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>frames/tile_floor_a.png</code></td>
+<td>пол A</td>
+<td>scaffolding</td>
+</tr>
+<tr>
+<td><code>frames/tile_floor_b.png</code></td>
+<td>пол B</td>
+<td>scaffolding</td>
+</tr>
+<tr>
+<td><code>frames/tile_desk.png</code></td>
+<td><code>1</code> стол 1×1</td>
+<td>scaffolding</td>
+</tr>
+<tr>
+<td><code>frames/tile_desk2.png</code></td>
+<td><code>5</code>/<code>6</code> стол 2×1</td>
+<td>scaffolding</td>
+</tr>
+<tr>
+<td><code>frames/tile_plant.png</code></td>
+<td><code>3</code> растение</td>
+<td>scaffolding</td>
+</tr>
+<tr>
+<td><code>frames/tile_cooler.png</code></td>
+<td><code>4</code> кулер</td>
+<td>scaffolding</td>
+</tr>
+<tr>
+<td><code>frames/tile_fog.png</code></td>
+<td>туман / FoW текстура</td>
+<td>scaffolding</td>
+</tr>
+<tr>
+<td><code>frames/tile_wall_{n,s,e,w}.png</code></td>
+<td><code>2</code> стена: полоса ~42% к play · <strong>Option A</strong></td>
+<td><strong>есть</strong></td>
+</tr>
+<tr>
+<td><code>frames/tile_window_{n,s,e,w}.png</code></td>
+<td><code>7</code> окно</td>
+<td><strong>есть</strong></td>
+</tr>
+<tr>
+<td><code>frames/tile_wall_{nw,ne,sw,se}</code> · <code>*_stub_*</code> · <code>*_{nwe,…}</code></td>
+<td>L / stub / U (solid rim)</td>
+<td><strong>есть</strong></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>n</code>/<code>s</code> — горизонтальная полоса (юг = вплотную <strong>снизу</strong> клетки)  </li>
+<li><code>w</code>/<code>e</code> — <strong>боковые</strong> спрайты (вплотную слева/справа)  </li>
+<li>Пропы play: desk / plant / cooler  </li>
+<li>Стиль: cream panels + wood baseboard (Option A APPROVED)  </li>
+<li>Сборка: <code>python management/tools/build_layoutfeel_walls.py</code><br />
+Концепт-якорь: <code>refs/art/wall-option-a-cream-wood.png</code>.</li>
+</ul>
+<p><strong>CONFIRM дизайна</strong> = human playtest feel на телефоне, не идеальный roster арта.</p>
+<hr />
+<h2 id="9">9. Аудио</h2>
+<p>Процедурный MVP в демке (<code>DEADLINE_SFX</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Ключ</th>
+<th>Когда</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>step</code></td>
+<td>шаг</td>
+</tr>
+<tr>
+<td><code>coin</code> / <code>coffee</code> / <code>badge</code> / <code>drop</code></td>
+<td>пикапы / падение бейджа</td>
+</tr>
+<tr>
+<td><code>shield_break</code> / <code>caught</code> / <code>promote</code></td>
+<td>щит / смерть / повышение</td>
+</tr>
+<tr>
+<td><code>near_miss</code></td>
+<td>босс близко по телу (не по клетке)</td>
+</tr>
+<tr>
+<td><code>ui_click</code></td>
+<td>UI</td>
+</tr>
+<tr>
+<td>BGM <code>office_loop</code></td>
+<td>луп в ране; rate от фазы; slow на кофе</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-gate">10. Gate</h2>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Lock</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F0</td>
+<td>vector (этот документ §1–2)</td>
+</tr>
+<tr>
+<td>F1</td>
+<td>feel demo на дашборде</td>
+</tr>
+<tr>
+<td>F2</td>
+<td><code>DESIGN_LLM</code> Feel+Retention freeze + human <strong>CONFIRMED</strong></td>
+</tr>
+<tr>
+<td>G0+</td>
+<td>bootstrap <code>src/</code></td>
+</tr>
+</tbody>
+</table>
+<p>Методология: <code>docs/METHODOLOGY.md</code>. Машинный контракт: <code>DESIGN_LLM.md</code>. Gap: <code>GAP_VS_CHAS_PIK.md</code>.</p></article>
     </section>
 
     <section class="tab-panel" id="tab-llm">
-      <p class="md-source">Источник: <code>games/deadline-escape/docs/</code> · полный текст + оглавление</p>
-      <div class="md-toolbar">
-        <label class="muted" for="llm-doc-select">Документ:</label>
-        <select id="llm-doc-select" data-md-doc-select data-md-shell="llm-md-shell">
-          <option value="PORT.md">PORT.md</option>
-          <option value="DESIGN_LLM.md" selected>DESIGN_LLM.md</option>
-          <option value="STATUS.md">STATUS.md</option>
-          <option value="SPRITE_PIPELINE.md">SPRITE_PIPELINE.md</option>
-          <option value="STYLE_LOCK.md">STYLE_LOCK.md</option>
-          <option value="GAP_VS_CHAS_PIK.md">GAP_VS_CHAS_PIK.md</option>
-          <option value="REFS.md">REFS.md</option>
-        </select>
-      </div>
-      <div class="md-shell" id="llm-md-shell" data-md-src="docs/DESIGN_LLM.md" data-md-prefix="llm">
-        <aside class="md-toc" aria-label="Оглавление LLM"></aside>
-        <article class="doc md-body">Загрузка…</article>
-      </div>
+      <article class="doc"><h1 id="design_llm">Работник месяца — DESIGN_LLM (исполняемая спецификация)</h1>
+<blockquote>
+<p><strong>СТАТУС:</strong> <code>REVIEW</code><br />
+<strong>⛔ НЕ КОДИРОВАТЬ <code>src/**</code>, пока статус ≠ <code>CONFIRMED</code></strong><br />
+<strong>SoT feel:</strong> <code>management/demos/demos-01-02.js</code> → <code>FEEL_DEMOS["deadline-escape"]</code><br />
+<strong>Human GDD:</strong> <code>docs/DESIGN.md</code> · <strong>STATUS:</strong> <code>docs/STATUS.md</code><br />
+После CONFIRM этот файл — единственный machine SoT для агентов.</p>
+</blockquote>
+<hr />
+<h2 id="0-project-contract">0. Project Contract</h2>
+<h3 id="01-identity">0.1 Identity</h3>
+<table>
+<thead>
+<tr>
+<th>Ключ</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>slug</code></td>
+<td><code>deadline-escape</code></td>
+</tr>
+<tr>
+<td><code>displayName.ru</code></td>
+<td>Работник месяца</td>
+</tr>
+<tr>
+<td><code>displayName.en</code></td>
+<td>Employee of the Month</td>
+</tr>
+<tr>
+<td><code>engine</code></td>
+<td>Phaser 3.80+ (план)</td>
+</tr>
+<tr>
+<td><code>language</code></td>
+<td>TypeScript 5.x strict</td>
+</tr>
+<tr>
+<td><code>bundler</code></td>
+<td>Vite 5.x</td>
+</tr>
+<tr>
+<td><code>platform</code></td>
+<td>Yandex Games HTML5</td>
+</tr>
+<tr>
+<td><code>orientation</code></td>
+<td><strong>portrait-primary</strong> 720×1280 logical; scale FIT</td>
+</tr>
+<tr>
+<td><code>targetFPS</code></td>
+<td>60</td>
+</tr>
+<tr>
+<td><code>tileSize</code></td>
+<td>32×32</td>
+</tr>
+<tr>
+<td><code>feelDemo</code></td>
+<td><code>management/demos/demos-01-02.js</code> key <code>"deadline-escape"</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="02-folder-layout">0.2 Folder layout</h3>
+<pre><code>games/deadline-escape/
+  docs/ DESIGN.md DESIGN_LLM.md STATUS.md REFS.md GAP_VS_CHAS_PIK.md
+  prompts/ ART_ UI_ SPRITE_ANIM_ LEVEL_ CODE_AGENT_
+  refs/ art|ui|levels|sprites/
+  archive/2026-07-17-pre-feel-sync/   # legacy — не SoT
+  public/assets/{textures,audio,levels}/   # после G0
+  src/                                 # ⛔ до CONFIRMED
+</code></pre>
+<h3 id="03-naming">0.3 Naming</h3>
+<table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Правило</th>
+<th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TS</td>
+<td>PascalCase scenes/systems</td>
+<td><code>RunScene.ts</code>, <code>GridMove.ts</code></td>
+</tr>
+<tr>
+<td>Assets</td>
+<td><code>domain_subject_variant</code></td>
+<td><code>char_hero_walk_s</code>, <code>boss_hr_idle</code></td>
+</tr>
+<tr>
+<td>SFX keys</td>
+<td>как в демке</td>
+<td><code>step</code>, <code>caught</code>, <code>promote</code></td>
+</tr>
+<tr>
+<td>Floor IDs</td>
+<td><code>floor_&lt;n&gt;</code></td>
+<td><code>floor_1</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="04-invariants-inv">0.4 Invariants (INV)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Правило</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>INV-DE-01</td>
+<td>Portrait 720×1280 logical; no landscape-only MVP</td>
+</tr>
+<tr>
+<td>INV-DE-02</td>
+<td><strong>Full office grid</strong> dodge (base 5×7 play + fog edge enter/exit); NOT free-move chase; NOT hide/LOS MVP</td>
+</tr>
+<tr>
+<td>INV-DE-03</td>
+<td>Win = survive clock <strong>09:00→18:00</strong> (<code>totalMin=540</code>); Fail = contact threat/zone without shield</td>
+</tr>
+<tr>
+<td>INV-DE-04</td>
+<td>Coffee = <strong>world slow-mo</strong> (scale 0.42, 3s); Badge = <strong>1-hit shield</strong> from floor drop</td>
+</tr>
+<tr>
+<td>INV-DE-05</td>
+<td>Hit = immediate <strong>body overlap</strong> (player <code>px/py</code> ↔ threat fractional pos, <code>HIT_BODY</code>); not shared grid cell</td>
+</tr>
+<tr>
+<td>INV-DE-06</td>
+<td>SDK: <code>LoadingAPI.ready()</code>, <code>GameplayAPI.start/stop</code> as methods (post-G0)</td>
+</tr>
+<tr>
+<td>INV-DE-07</td>
+<td>Feel file = <code>demos-01-02.js</code> FEEL_DEMOS key — <strong>не</strong> отдельный <code>deadline-escape.js</code></td>
+</tr>
+<tr>
+<td>INV-DE-08</td>
+<td>No <code>src/</code> writes while <code>designStatus != CONFIRMED</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-scenes-flow">1. Scenes / flow</h2>
+<pre><code>Boot → Menu → Hub ⇄ DailySelect → Run
+                      ↕ Pause
+                 CaughtRevive → Result → Shop | Hub
+</code></pre>
+<p>Wireframe UI inventory: <code>management/demos/deadline-wireframes.js</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Scene</th>
+<th>Job</th>
+<th>Exit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Boot</td>
+<td>splash / SDK init</td>
+<td>→ Menu</td>
+</tr>
+<tr>
+<td>Menu</td>
+<td>Play, Settings</td>
+<td>→ Hub</td>
+</tr>
+<tr>
+<td>Hub</td>
+<td>floor grid, Daily card, Shop</td>
+<td>→ Run / Daily / Shop</td>
+</tr>
+<tr>
+<td>DailySelect</td>
+<td>1/day mission pick</td>
+<td>→ Run</td>
+</tr>
+<tr>
+<td>Run</td>
+<td>grid dodge day</td>
+<td>→ Caught / Result(win) / Pause</td>
+</tr>
+<tr>
+<td>Pause</td>
+<td>resume / quit hub</td>
+<td>→ Run / Hub</td>
+</tr>
+<tr>
+<td>CaughtRevive</td>
+<td>ЗАСТАВИЛИ + RV / skip</td>
+<td>→ Run(i-frames) / Result</td>
+</tr>
+<tr>
+<td>Result</td>
+<td>ПОВЫШЕНИЕ or fail stats</td>
+<td>→ Hub / next floor Run</td>
+</tr>
+<tr>
+<td>Shop</td>
+<td>cosmetics / IAP</td>
+<td>→ Hub</td>
+</tr>
+</tbody>
+</table>
+<p><strong>AC:</strong> Daily entry only from Hub card, never forced modal before every floor.</p>
+<hr />
+<h2 id="2-systems-ac-mvp">2. Systems + AC (MVP)</h2>
+<h3 id="21-gridmove">2.1 GridMove</h3>
+<ul>
+<li>4-dir; one step per input edge; blocked by non-floor cells.</li>
+<li>Slide duration base <code>0.095 / floorSpeedMul</code>.</li>
+<li>Inputs: tap-cell stepToward, swipe, stick latch, WASD latch.</li>
+</ul>
+<p><strong>AC:</strong> cannot enter desk/props; holding key does not auto-repeat without release.</p>
+<h3 id="22-dayclock">2.2 DayClock</h3>
+<ul>
+<li><code>gameMin += minutesPerSecond * dt * TIME_SCALE</code> (<code>18 * 0.5</code>).</li>
+<li>Phases: Утро/Работа/Аврал/Переработка (см. DESIGN.md §3).</li>
+<li><code>gameMin &gt;= 540</code> → win promote.</li>
+</ul>
+<p><strong>AC:</strong> real day length ≈ 60s ±10% at default pace.</p>
+<h3 id="23-threatspawn-threatai">2.3 ThreatSpawn / ThreatAI</h3>
+<ul>
+<li>Spawn off-map, enter from 4 edges.</li>
+<li>Cap: <code>3 + floor((floor-1)/15)</code>.</li>
+<li>Unlock table + patterns: DESIGN.md §5 (must match KINDS in feel demo).</li>
+<li>Dup only <code>hr</code>|<code>client</code>.</li>
+<li>Fairness: reject spawn if no escape path for player.</li>
+</ul>
+<p><strong>AC:</strong> director ghost moves slower inside obstacles; account drops ОТЧ zones that kill without shield.</p>
+<h3 id="24-bonuses">2.4 Bonuses</h3>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Trigger</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Coffee</td>
+<td>overlap pickup on floor</td>
+<td><code>worldScale=0.42</code> for 3s</td>
+</tr>
+<tr>
+<td>Badge</td>
+<td>overlap pickup on floor</td>
+<td>next hit → <code>shield_break</code>, i-frames ~0.65s</td>
+</tr>
+<tr>
+<td>Shield</td>
+<td>hold badge</td>
+<td>next hit → <code>shield_break</code>, i-frames ~0.65s</td>
+</tr>
+<tr>
+<td>Coin</td>
+<td>overlap pickup</td>
+<td>+1 soft</td>
+</tr>
+</tbody>
+</table>
+<p>Bonuses spawn directly on walkable floor cells — no colleague mob.<br />
+<strong>AC:</strong> coffee does <strong>not</strong> speed player step; badge is <strong>not</strong> invisibility.</p>
+<h3 id="25-floorprogression">2.5 FloorProgression</h3>
+<ul>
+<li><code>gridSizeForFloor</code>: base 5×7 play; every 25 floors alternate +col/+row.</li>
+<li>Layout seeded by floor; connected play; prop budget by floor band; desks keep off entry perimeter.</li>
+<li>On win: <code>floor++</code>, new day layout.</li>
+</ul>
+<h3 id="26-metasave-prod">2.6 MetaSave (prod)</h3>
+<ul>
+<li>Persist bestFloor, unlocked floors, coins, dailyClaim date, settings mute.</li>
+<li>Hub floor select; death returns to startFloor (default 1) unless promote chain.</li>
+</ul>
+<hr />
+<h2 id="3-level-grammar">3. Level grammar</h2>
+<p>Cell codes: <code>0</code> floor · <code>1</code> desk 1×1 · <code>2</code> wall · <code>3</code> plant · <code>4</code> cooler · <code>5</code>/<code>6</code> desk 2×1 (W/E) · <code>7</code> window.</p>
+<pre><code>play = interior walkable office (base 5×7 + growth)
+fog  = 1 cell band each side (enter/exit only for mobs; not walk graph)
+# / W = decorative wall/window on fog band
+wallDecor = visual-only prop IN the same wall/window cell → draws tile_wall_{edge}_{prop}
+</code></pre>
+<p><strong>Rules:</strong> fog band depth <strong>always 1</strong> cell each side; FoW is <strong>per edge cell</strong> (local gradient outer→play); <strong>disabled on wall/window cells (<code>2</code>/<code>7</code>)</strong>; open fog cells are <strong>spawn enter/exit only</strong> (mobs do not path along edge); wall props are baked composites in the same cell; desks/props solid only in play; enemies enter from open fog cells then walk play only; play aisles connected; Hit = body overlap.</p>
+<p><strong>Required env sprites:</strong> floors/props/fog + <strong><code>tile_wall_{n,s,e,w}</code> / <code>tile_window_{n,s,e,w}</code></strong> + <strong><code>tile_wall_{edge}_{prop}</code> / <code>tile_window_{edge}_{prop}</code></strong> — DESIGN.md §8.</p>
+<p><strong>Forbidden in MVP maps:</strong> hideZones, LOS cones as primary verb, free-move navmesh chase.</p>
+<p>Encounter = spawn recipe (kind + edge + pattern + phase pressure), not only tint.</p>
+<hr />
+<h2 id="4-ui-copy-ru">4. UI copy (RU)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Text</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hud_clock</code></td>
+<td><code>HH:MM</code> from day clock</td>
+</tr>
+<tr>
+<td><code>caught_title</code></td>
+<td>ЗАСТАВИЛИ РАБОТАТЬ</td>
+</tr>
+<tr>
+<td><code>promote_title</code></td>
+<td>ПОВЫШЕНИЕ!</td>
+</tr>
+<tr>
+<td><code>btn_play</code></td>
+<td>Играть</td>
+</tr>
+<tr>
+<td><code>btn_rv</code></td>
+<td>Продолжить (реклама)</td>
+</tr>
+<tr>
+<td><code>btn_skip</code></td>
+<td>В меню</td>
+</tr>
+<tr>
+<td><code>hub_daily</code></td>
+<td>Daily · побег из планёрки</td>
+</tr>
+<tr>
+<td><code>tut_1</code></td>
+<td>Ходи по светлым · избегай боссов · доживи до 18:00</td>
+</tr>
+</tbody>
+</table>
+<p>Tone: office comedy, short, no horror.</p>
+<hr />
+<h2 id="5-art-bible">5. Art bible</h2>
+<table>
+<thead>
+<tr>
+<th>Lock</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Style</td>
+<td>cartoon office satire, bright, meme-readable top-down</td>
+</tr>
+<tr>
+<td>Palette</td>
+<td>carpet <code>#C8D2E0</code>, cubicle <code>#6B7C93</code>, sticky <code>#F4D35E</code>, danger <code>#E63946</code>, player <code>#1D3557</code>, UI <code>#E8EEF5</code>, CTA <code>#E9C46A</code></td>
+</tr>
+<tr>
+<td>No</td>
+<td>horror, gore, purple glow spam, cream+terracotta serif cliché, hide-shimmer as core VFX identity</td>
+</tr>
+<tr>
+<td>Priority</td>
+<td>hero → HR+director → tiles → pickups → other bosses → VFX</td>
+</tr>
+<tr>
+<td><strong>ART_STATUS</strong></td>
+<td><code>FROZEN_CONCEPTS</code> — paint-over only; no open-ended regen</td>
+</tr>
+<tr>
+<td>MVP scope</td>
+<td>hero idle+walk+caught; HR idle+walk; other bosses <strong>4-dir only</strong>; env tiles incl. <strong>wall + window</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Sprite inventory: <code>management/demos/deadline-sprites.js</code> + DESIGN.md §8 env table.<br />
+Look SoT: <code>docs/STYLE_LOCK.md</code> + <code>docs/REFS.md</code> (<code>art/boss-hr.png</code>, <code>art/concept-boss-*</code>, <code>levels/layout-feel.png</code>).<br />
+CONFIRM = feel playtest, not perfect roster art.</p>
+<hr />
+<h2 id="6-audio-ids">6. Audio IDs</h2>
+<p>SFX MVP: <code>step</code>, <code>coin</code>, <code>coffee</code>, <code>badge</code>, <code>drop</code>, <code>shield_break</code>, <code>caught</code>, <code>promote</code>, <code>ui_click</code><br />
+Nice: <code>near_miss</code><br />
+BGM: <code>office_loop</code> (rate←phase speedMul; slow←coffee)</p>
+<p>Lib preview: <code>management/demos/deadline-sfx-lib.js</code>.</p>
+<hr />
+<h2 id="7-asset-paths-post-g0-targets">7. Asset paths (post-G0 targets)</h2>
+<pre><code>public/assets/textures/keyart/keyart_deadline_escape.png
+public/assets/textures/characters/char_hero_*.png
+public/assets/textures/enemies/boss_&lt;id&gt;_sheet.png
+public/assets/textures/tiles/tile_office_sheet.png
+public/assets/textures/items/pu_{coin,coffee,badge}.png
+public/assets/textures/ui/ui_kit.png
+public/assets/audio/sfx/sfx_*.wav|mp3
+public/assets/audio/music/bgm_office_loop.mp3
+</code></pre>
+<p>Until G0: only <code>refs/</code> + procedural demo audio.</p>
+<hr />
+<h2 id="8-sdk-store-post-confirm">8. SDK / store (post-CONFIRM)</h2>
+<ul>
+<li><code>ysdk.features.LoadingAPI.ready()</code></li>
+<li>GameplayAPI start/stop on Run enter/exit</li>
+<li>RV on Caught; interstitial after 1–2 runs</li>
+<li>IAP: <code>remove_ads</code>, <code>starter_pack</code>, <code>skin_&lt;id&gt;</code></li>
+</ul>
+<hr />
+<h2 id="9-feel-retention-freeze-f2">9. Feel + Retention freeze (F2)</h2>
+<h3 id="feel-ac">Feel AC</h3>
+<ul>
+<li>[ ] Understand dodge in &lt;10s without text wall</li>
+<li>[ ] Day ≈60s; promote readable; fail copy ЗАСТАВИЛИ</li>
+<li>[ ] Walls block; threats from multiple edges</li>
+<li>[ ] Coffee slows world; badge absorbs one hit</li>
+<li>[ ] Restart / next floor &lt;1s feel</li>
+</ul>
+<h3 id="retention-hooks-design">Retention hooks (design)</h3>
+<ul>
+<li>[ ] Daily 1/day from Hub</li>
+<li>[ ] Best floor visible</li>
+<li>[ ] Floor unlock progression</li>
+<li>[ ] Cosmetics hook (shop row)</li>
+</ul>
+<p><strong>coding_allowed:</strong> false until human sets <code>CONFIRMED</code> in <code>STATUS.md</code> / dashboard.</p>
+<hr />
+<h2 id="10-agent-playbook">10. Agent playbook</h2>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Reads</th>
+<th>Writes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Art</td>
+<td>§5, REFS, ART_PROMPTS</td>
+<td><code>refs/</code>, later <code>public/assets/textures</code></td>
+</tr>
+<tr>
+<td>Sprite</td>
+<td>SPRITE_ANIM_PROMPTS</td>
+<td>sheets</td>
+</tr>
+<tr>
+<td>UI</td>
+<td>§4, UI_PROMPTS, wireframes</td>
+<td>UI kit</td>
+</tr>
+<tr>
+<td>Level</td>
+<td>§3, LEVEL_PROMPTS</td>
+<td>layout JSON / ASCII</td>
+</tr>
+<tr>
+<td>Code</td>
+<td>§1–2, CODE_AGENT_PROMPT</td>
+<td><code>src/</code> <strong>only if CONFIRMED</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Orchestrator answers only: <strong>ACCEPT / REWORK / CUT</strong>.</p></article>
     </section>
 
     <section class="tab-panel" id="tab-refs">
-      <div class="panel">
-        <p class="lead">Pipeline v1: активен только style-seed. Остальное — <code>archive/2026-07-18-pipeline-v1-reset/</code>. Индекс: <code>docs/REFS.md</code>.</p>
-        <div class="ref-grid">
-          <figure class="ref-card">
-            <a href="../../games/deadline-escape/refs/art/style-seed-hero.png" target="_blank" rel="noopener">
-              <img src="../../games/deadline-escape/refs/art/style-seed-hero.png" alt="Style seed" loading="lazy" style="background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 50%/16px 16px"/>
-            </a>
-            <figcaption><strong>Style seed</strong><span>P1 gate · кнопка APPROVED во вкладке Спрайты</span><code>art/style-seed-hero.png</code></figcaption>
-          </figure>
-          <figure class="ref-card">
-            <a href="../../games/deadline-escape/refs/art/style-seed-hero-board.png" target="_blank" rel="noopener">
-              <img src="../../games/deadline-escape/refs/art/style-seed-hero-board.png" alt="Style seed board" loading="lazy"/>
-            </a>
-            <figcaption><strong>Seed board</strong><span>seed + idle sheet</span><code>art/style-seed-hero-board.png</code></figcaption>
-          </figure>
-          <figure class="ref-card">
-            <a href="../../games/deadline-escape/refs/sprites/char_hero_idle_sheet.png" target="_blank" rel="noopener">
-              <img src="../../games/deadline-escape/refs/sprites/char_hero_idle_sheet.png" alt="Hero idle" loading="lazy" style="background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 50%/16px 16px"/>
-            </a>
-            <figcaption><strong>Hero idle sheet</strong><span>носитель стиля</span><code>sprites/char_hero_idle_sheet.png</code></figcaption>
-          </figure>
-          <figure class="ref-card">
-            <a href="../../games/deadline-escape/refs/sprites/char_hero_walk_sheet.png" target="_blank" rel="noopener">
-              <img src="../../games/deadline-escape/refs/sprites/char_hero_walk_sheet.png" alt="Hero walk" loading="lazy" style="background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 50%/16px 16px"/>
-            </a>
-            <figcaption><strong>Hero walk sheet</strong><span>после APPROVED seed</span><code>sprites/char_hero_walk_sheet.png</code></figcaption>
-          </figure>
-          <figure class="ref-card">
-            <a href="../../games/deadline-escape/refs/ui/tone-ui.png" target="_blank" rel="noopener">
-              <img src="../../games/deadline-escape/refs/ui/tone-ui.png" alt="UI tone" loading="lazy"/>
-            </a>
-            <figcaption><strong>UI tone</strong><span>Панели + CTA</span><code>ui/tone-ui.png</code></figcaption>
-          </figure>
-          <figure class="ref-card">
-            <a href="../../games/deadline-escape/refs/levels/layout-feel.png" target="_blank" rel="noopener">
-              <img src="../../games/deadline-escape/refs/levels/layout-feel.png" alt="Layout feel" loading="lazy"/>
-            </a>
-            <figcaption><strong>Layout feel</strong><span>Сетка 7×9 mood</span><code>levels/layout-feel.png</code></figcaption>
-          </figure>
-        </div>
-      </div>
+      <div class="refs-intro doc"><h1 id="refs">Работник месяца — REFS</h1>
+<p>Визуальные якоря. <strong>SoT геймплея</strong> — feel/beta демка.<br />
+<strong>SoT look/motion</strong> — <a href="STYLE_LOCK.md"><code>STYLE_LOCK.md</code></a> + <a href="SPRITE_PIPELINE.md"><code>SPRITE_PIPELINE.md</code></a>.</p>
+<h2 id="active-pipeline-v1">Active (Pipeline v1)</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>refs/art/style-seed-hero.png</code></td>
+<td><strong>Style seed</strong> — P1 gate</td>
+</tr>
+<tr>
+<td><code>refs/art/style-seed-hero-board.png</code></td>
+<td>seed + idle sheet</td>
+</tr>
+<tr>
+<td><code>refs/art/style-seed-hero.APPROVED.json</code></td>
+<td>маркер после кнопки APPROVED (Спрайты)</td>
+</tr>
+<tr>
+<td><code>char_hero_idle_sheet.png</code></td>
+<td>носитель стиля / idle</td>
+</tr>
+<tr>
+<td><code>char_hero_walk_sheet.png</code></td>
+<td>walk ГГ</td>
+</tr>
+<tr>
+<td><code>char_hero_caught_sheet.png</code></td>
+<td>caught</td>
+</tr>
+<tr>
+<td><code>char_hero_sheet.png</code></td>
+<td>legacy turnaround (= idle₀)</td>
+</tr>
+<tr>
+<td><code>rig/pose_walk_6x4.png</code></td>
+<td>POSE LOCK walk (Slynyrd 6f)</td>
+</tr>
+<tr>
+<td><code>rig/pose_idle_4x4.png</code></td>
+<td>POSE LOCK idle</td>
+</tr>
+<tr>
+<td><code>rig/pose_caught_1x4.png</code></td>
+<td>POSE LOCK caught</td>
+</tr>
+<tr>
+<td><code>frames/char_hero/*</code></td>
+<td>кадры ГГ для демки</td>
+</tr>
+<tr>
+<td><code>frames/tile_floor_a.png</code> · <code>tile_floor_b.png</code></td>
+<td>пол</td>
+</tr>
+<tr>
+<td><code>frames/tile_desk.png</code> · <code>tile_desk2.png</code></td>
+<td>столы</td>
+</tr>
+<tr>
+<td><code>frames/tile_plant.png</code> · <code>tile_cooler.png</code></td>
+<td>пропы</td>
+</tr>
+<tr>
+<td><code>frames/tile_fog.png</code></td>
+<td>текстура FoW</td>
+</tr>
+<tr>
+<td><code>frames/tile_wall_{n,s,e,w}.png</code></td>
+<td>прямая стена (Option A, полоса к play)</td>
+</tr>
+<tr>
+<td><code>frames/tile_window_{n,s,e,w}.png</code></td>
+<td>окно на прямой</td>
+</tr>
+<tr>
+<td><code>frames/tile_wall_{nw,ne,sw,se}.png</code></td>
+<td>L-угол (solid rim)</td>
+</tr>
+<tr>
+<td><code>frames/tile_wall_{nwe,nsw,nse,swe}.png</code></td>
+<td>U</td>
+</tr>
+<tr>
+<td><code>frames/tile_wall_stub_{nw,ne,sw,se}.png</code></td>
+<td>stub угла карты</td>
+</tr>
+<tr>
+<td><code>art/wall-option-a-cream-wood.png</code> · <code>wall-option-a-window.png</code></td>
+<td><strong>APPROVED</strong> masters стен</td>
+</tr>
+<tr>
+<td><code>frames/pu_*</code> · <code>vfx_*</code></td>
+<td>пикапы / VFX scaffolding</td>
+</tr>
+<tr>
+<td><code>art/ai-wall-n-layoutfeel.png</code> · <code>ai-window-n-layoutfeel.png</code></td>
+<td>AI masters стен (legacy)</td>
+</tr>
+</tbody>
+</table>
+<p>Motion tutorial: <a href="https://www.slynyrd.com/blog/2025/3/24/pixelblog-55-top-down-character-animation">Slynyrd Pixelblog 55</a></p>
+<h2 id="archive-sot">Archive (не SoT)</h2>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>archive/2026-07-18-pipeline-v1-reset/</code></td>
+<td>концепты, HR, боссы, chroma/sheets — вынесены из <code>refs/</code></td>
+</tr>
+<tr>
+<td><code>archive/2026-07-18-sprites-cleanup/</code></td>
+<td>более ранний cleanup</td>
+</tr>
+<tr>
+<td><code>archive/2026-07-17-pre-feel-sync/</code></td>
+<td>pre-feel пакет</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ui-levels-character-art">UI / levels (не character art)</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>refs/ui/tone-ui.png</code></td>
+<td>UI tone</td>
+</tr>
+<tr>
+<td><code>refs/levels/layout-feel.png</code></td>
+<td>сетка 7×9 mood · якорь стен</td>
+</tr>
+</tbody>
+</table>
+<h2 id="rebuild">Rebuild</h2>
+<pre><code class="language-bash">python management/tools/build_layoutfeel_walls.py
+python management/tools/sync-deadline-docs-bundle.py
+</code></pre></div>
+      <h3 class="gallery-title">Галерея референсов</h3>
+      <div class="ref-grid">
+            <figure class="ref-card missing">
+              <div class="missing-box">Нет файла</div>
+              <figcaption><strong>Ключевой арт</strong><code>art/key-art.png</code></figcaption>
+            </figure>
+            <figure class="ref-card missing">
+              <div class="missing-box">Нет файла</div>
+              <figcaption><strong>Вайрфрейм UI</strong><code>ui/wireframe-main.png</code></figcaption>
+            </figure>
+            <figure class="ref-card missing">
+              <div class="missing-box">Нет файла</div>
+              <figcaption><strong>Раскладка уровней</strong><code>levels/layout-main.png</code></figcaption>
+            </figure>
+            <figure class="ref-card missing">
+              <div class="missing-box">Нет файла</div>
+              <figcaption><strong>Спрайт-лист</strong><code>sprites/sheet-main.png</code></figcaption>
+            </figure></div>
     </section>
 
-    <section class="tab-panel" id="tab-prompts" data-md-prompt-root>
-      <p class="md-source">Источник: <code>games/deadline-escape/prompts/</code> · старые в <code>archive/2026-07-17-pre-feel-sync/</code></p>
-      <div class="md-toolbar">
-        <label class="muted" for="prompt-doc-select">Промпт:</label>
-        <select id="prompt-doc-select" data-md-prompt-select>
-          <option value="ART_PROMPTS.md">ART_PROMPTS.md</option>
-          <option value="SPRITE_ANIM_PROMPTS.md">SPRITE_ANIM_PROMPTS.md</option>
-          <option value="UI_PROMPTS.md">UI_PROMPTS.md</option>
-          <option value="LEVEL_PROMPTS.md">LEVEL_PROMPTS.md</option>
-          <option value="CODE_AGENT_PROMPT.md">CODE_AGENT_PROMPT.md</option>
-        </select>
-      </div>
-      <div class="md-shell" data-md-src="prompts/ART_PROMPTS.md" data-md-prefix="prompt-art">
-        <aside class="md-toc" aria-label="Оглавление промпта"></aside>
-        <article class="doc md-body">Загрузка…</article>
-      </div>
+    <section class="tab-panel" id="tab-prompts">
+      <p class="lead">Атомарные промпты — копируй в отдельного агента вместе с нужным референсом из вкладки «Референсы».</p>
+      
+          <details class="prompt-acc" open>
+            <summary>Арт <span class="muted">ART_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="art_prompts">Работник месяца — ART_PROMPTS</h1>
+<p><strong>Канон:</strong> <code>docs/DESIGN_LLM.md</code> §5 + <code>docs/REFS.md</code>. <strong>Не писать <code>src/</code>.</strong><br />
+<strong>Запрет:</strong> hide shimmer как идентичность; free-move chase fantasy; horror; purple glow spam.</p>
+<h2 id="_1">Контекст агенту</h2>
+<pre><code>Art agent — Employee of the Month (slug: deadline-escape).
+Genre: top-down office grid dodge (NOT stealth hide).
+Style: bright cartoon office satire, meme-readable shapes.
+Palette: carpet #C8D2E0, cubicle #6B7C93, sticky #F4D35E, danger #E63946,
+player #1D3557, UI #E8EEF5, CTA #E9C46A.
+Gameplay art 32x32 top-down. Key art vertical 1080x1920 full-bleed.
+NO text, NO logo, NO UI chrome on key art.
+</code></pre>
+<h2 id="job-a-key-art-refsartkey-artpng">JOB A — Key art → <code>refs/art/key-art.png</code></h2>
+<pre><code>Vertical mobile game key art &quot;Employee of the Month&quot;: cartoon office worker dodging between cubicle desks on a bright open-plan floor while caricature managers and HR with urgent folders approach from multiple sides, satirical corporate comedy, yellow sticky-note accents, energetic but readable, full-bleed portrait 1080x1920, no text no logo no UI
+</code></pre>
+<h2 id="job-b-mood-top-down-refsartmood-office-topdownpng">JOB B — Mood top-down → <code>refs/art/mood-office-topdown.png</code></h2>
+<pre><code>Top-down cartoon office moodboard: gray-blue carpet grid, desks and cubicle walls forming aisles, plants and water cooler, bright satirical corporate, empty of UI, readable walkable lanes vs blocked desks, game concept art
+</code></pre>
+<h2 id="job-c-hero-refsartchar-heropng">JOB C — Hero → <code>refs/art/char-hero.png</code></h2>
+<pre><code>Top-down 3/4 or orthographic cartoon office employee hero, blue sweater, readable silhouette, slightly panicked comedy expression, single character design sheet on plain light background, game-ready concept, no text
+</code></pre>
+<h2 id="job-d-hr-refsartboss-hrpng">JOB D — HR → <code>refs/art/boss-hr.png</code></h2>
+<pre><code>Top-down cartoon HR boss character, pink accent, clipboard or badge lanyard, exaggerated corporate caricature, readable at small size, plain background, no text
+</code></pre>
+<h2 id="job-e-director-refsartboss-directorpng">JOB E — Director → <code>refs/art/boss-director.png</code></h2>
+<pre><code>Top-down cartoon office director boss, red accent, power suit and urgent folder, intimidating comedy caricature, readable silhouette, plain background, no text
+</code></pre>
+<h2 id="job-f-concept-sheet-refsspritessheet-conceptpng">JOB F — Concept sheet → <code>refs/sprites/sheet-concept.png</code></h2>
+<pre><code>Game concept sprite sheet style board: top-down hero, HR, director, carpet tile, desk tile, coin, coffee cup, employee badge shield icon, bright cartoon office satire, labeled only by silhouette clarity not text if possible, white/light gray background
+</code></pre>
+<h2 id="job-g-ui-tone-refsuitone-uipng">JOB G — UI tone → <code>refs/ui/tone-ui.png</code></h2>
+<pre><code>Mobile game UI tone board cool gray-blue panels #E8EEF5 with sticky yellow CTA buttons #E9C46A, simple HUD clock bar and revive dialog frame, comedy office, flat clean, no phone mockup, no purple gradients
+</code></pre>
+<h2 id="job-h-layout-feel-refslevelslayout-feelpng">JOB H — Layout feel → <code>refs/levels/layout-feel.png</code></h2>
+<pre><code>Top-down cartoon 7 by 9 office floor plan illustration: border walls, desks blocking some cells, open aisles for dodging, plants and cooler props, bright satirical corporate, no characters required, clear grid readability
+</code></pre>
+<h2 id="job-i-env-tiles-fog-frame-refsspritesframes">JOB I — Env tiles (fog-frame) → <code>refs/sprites/frames/</code></h2>
+<p>Каркас полосы тумана. <strong>APPROVED Option A:</strong> cream panels + wood<br />
+Masters: <code>refs/art/wall-option-a-cream-wood.png</code> · <code>wall-option-a-window.png</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Out</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tile_wall_{n,s,e,w}</code></td>
+<td>прямая стена flush</td>
+</tr>
+<tr>
+<td><code>tile_window_{n,s,e,w}</code></td>
+<td>то же с окном</td>
+</tr>
+<tr>
+<td><code>tile_wall_{nw,ne,sw,se}</code></td>
+<td>L (solid rim, без panel-cross)</td>
+</tr>
+<tr>
+<td><code>tile_wall_stub_*</code></td>
+<td>квадрат стыка угла карты</td>
+</tr>
+<tr>
+<td><code>tile_wall_{nwe,nsw,nse,swe}</code></td>
+<td>U</td>
+</tr>
+</tbody>
+</table>
+<p>Сборка: <code>python management/tools/build_layoutfeel_walls.py</code><br />
+Feel: <code>wallTileKey</code> ← <code>wallPictureOf</code></p>
+<h2 id="dod">DoD</h2>
+<ul>
+<li>[ ] Paths match REFS.md  </li>
+<li>[ ] HR pink / Director red readable  </li>
+<li>[ ] Key art portrait full-bleed, no text  </li>
+<li>[ ] No hide-zone green shimmer as brand  </li>
+<li>[ ] <code>tile_wall</code> + <code>tile_window</code> listed in DESIGN.md §8 / REFS.md  </li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Спрайты и анимация <span class="muted">SPRITE_ANIM_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="sprite_anim_prompts">Работник месяца — SPRITE_ANIM_PROMPTS</h1>
+<p><strong>Pipeline:</strong> <code>docs/SPRITE_PIPELINE.md</code> (seed → strip → normalize → GIF QA)<br />
+<strong>Look:</strong> <code>docs/STYLE_LOCK.md</code> + <code>refs/art/style-seed-hero.png</code><br />
+<strong>Motion:</strong> <a href="https://www.slynyrd.com/blog/2025/3/24/pixelblog-55-top-down-character-animation">Slynyrd Pixelblog 55</a> (6-frame run)<br />
+<strong>Fundamentals:</strong> <a href="https://www.slynyrd.com/blog/2024/5/24/pixelblog-50-human-walk-cycle">Pixelblog 50</a><br />
+<strong>Не писать <code>src/</code>.</strong><br />
+<strong>ART_STATUS = PIPELINE_V1</strong> — визуал с нуля; сначала APPROVED style-seed, потом strips.</p>
+<h2 id="style-pose-lock">Style + pose lock</h2>
+<pre><code>ALWAYS references:
+  1) refs/art/style-seed-hero.png — game style + proportions
+  2) refs/sprites/rig/pose_walk_6x4.png — Slynyrd phases (for walk)
+  3) character seed / concept (after P1 APPROVED)
+
+Generate STRIPS from seed. Magenta #FF00FF → chroma → normalize.
+Top-down 3/4. No portrait. No duplicate cells.
+FORBIDDEN: independent idle+walk gens · warp/graft · open regen loops.
+</code></pre>
+<h2 id="walk-6-frames-linear-050-half-stride-per-cell">Walk — 6 frames (linear 0→5→0; half-stride per cell)</h2>
+<table>
+<thead>
+<tr>
+<th>Col</th>
+<th>Phase</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>contact A</td>
+<td>lowest, limbs extreme</td>
+</tr>
+<tr>
+<td>1</td>
+<td>down A</td>
+<td>front foot flat, back lifting</td>
+</tr>
+<tr>
+<td>2</td>
+<td>pass A</td>
+<td><strong>tallest</strong>, legs under torso</td>
+</tr>
+<tr>
+<td>3</td>
+<td>contact B</td>
+<td>opposite of A</td>
+</tr>
+<tr>
+<td>4</td>
+<td>down B</td>
+<td>opposite down</td>
+</tr>
+<tr>
+<td>5</td>
+<td>pass B</td>
+<td>tallest, <strong>opposite limbs of pass A</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Bob: variable (down/down/up), not sine. W = mirror <strong>each</strong> E cell (keep phase order).</p>
+<p>Fallback: <code>contacts(2) + downs(2) + pass_a + pass_b</code> →<br />
+<code>python management/tools/compose_hero_walk.py</code> · HR: <code>compose_hr_walk.py</code><br />
+<strong>Forbidden:</strong> reuse pass A as pass B; flip whole strip for W (reverses frames).</p>
+<h2 id="idle">Idle</h2>
+<p>4 frames/dir; playback holds extremities longer than in-betweens.</p>
+<h2 id="caught">Caught</h2>
+<p>1×4: startle → panic → hands-head → defeat</p>
+<h2 id="bosses">Bosses</h2>
+<p>HR: idle + Slynyrd walk 6f (<code>rebuild_hr_sprites.py</code> from chroma rows); <strong>no special</strong>. Look = <code>art/boss-hr.png</code> + камера ГГ.<br />
+Other bosses: legacy 4-dir OK until re-done.</p>
+<h3 id="concept-locks-2026-07-redesign">Concept locks (2026-07 redesign)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Concept file</th>
+<th>Must</th>
+<th>Avoid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>looker / ГЛЯД</td>
+<td><code>refs/art/concept-boss-looker.png</code></td>
+<td>beige cardigan, normal glasses, coffee, cubicle peek</td>
+<td>binocular-face, purple spy trench</td>
+</tr>
+<tr>
+<td>meeting / ВСТР</td>
+<td><code>refs/art/concept-boss-meeting.png</code></td>
+<td>mustard office shirt, agenda clipboard, sticky notes</td>
+<td>mic/host energy, alien palette</td>
+</tr>
+<tr>
+<td>kpi</td>
+<td><code>refs/art/concept-boss-kpi.png</code></td>
+<td>slim analyst, clear glasses, chart board, teal accent</td>
+<td>red power suit, sunglasses (=director)</td>
+</tr>
+<tr>
+<td>it</td>
+<td><code>refs/art/concept-boss-it.png</code></td>
+<td>muted sage/teal polo, plain laptop</td>
+<td>acid neon green, RGB glow</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_1">Методология (кратко)</h2>
+<p>Locks → phased gen → opposite-limb fix (flip/validate) → normalize feet/height → half-stride playback → GIF QA.<br />
+Details: <code>docs/STYLE_LOCK.md</code> § «Методология анимационных спрайтов».</p>
+<h2 id="cut-up-bake-experiment">Cut-up bake (ГГ experiment)</h2>
+<p>Parts sheet (1 row) → <code>hero_cutup_bake.py</code> (angles) → baked <code>walk_*</code> frames.<br />
+See <code>STYLE_LOCK.md</code> § Cut-up rig bake.</p>
+<h2 id="qa">QA</h2>
+<ul>
+<li>[ ] 6 phases, opposite contacts  </li>
+<li>[ ] pass taller than contact  </li>
+<li>[ ] no magenta in frames  </li>
+<li>[ ] demo maps step → frames 0..5 linear  </li>
+</ul>
+<p>Rebuild: <code>compose_hero_walk.py</code> then hard-refresh demo.</p></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Интерфейс <span class="muted">UI_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="ui_prompts">Работник месяца — UI_PROMPTS</h1>
+<p><strong>Канон:</strong> <code>DESIGN_LLM.md</code> §4, screens <code>management/demos/deadline-wireframes.js</code>.<br />
+<strong>Не писать <code>src/</code>.</strong></p>
+<h2 id="style-lock">Style lock</h2>
+<pre><code>Comedy office UI: cool gray-blue #E8EEF5 panels, sticky yellow CTA #E9C46A,
+flat readable type, portrait mobile 720x1280 frames, no purple glow, no phone hardware mock as the deliverable.
+</code></pre>
+<h2 id="job-a-ui-kit-production-later-ui_kitpng-vibe-refsuitone-uipng">JOB A — UI kit → production later <code>ui_kit.png</code> / vibe <code>refs/ui/tone-ui.png</code></h2>
+<pre><code>Mobile game UI kit Employee of the Month: primary/secondary buttons, modal panel, HUD clock + day progress bar, buff icons coffee and shield, revive dialog, floor select node, shop row — cool gray-blue and sticky yellow, flat comedy office, no device bezel
+</code></pre>
+<h2 id="job-b-screen-copy-ru-implement-exactly">JOB B — Screen copy (RU) — implement exactly</h2>
+<table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>Copy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Menu</td>
+<td>Играть / Настройки</td>
+</tr>
+<tr>
+<td>Hub</td>
+<td>Этажи · Daily · Магазин</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td>Побег из планёрки · 1/день</td>
+</tr>
+<tr>
+<td>HUD</td>
+<td><code>HH:MM</code> · фаза · этаж · монеты · баффы</td>
+</tr>
+<tr>
+<td>Pause</td>
+<td>Продолжить · Настройки · В хаб</td>
+</tr>
+<tr>
+<td>Caught</td>
+<td><strong>ЗАСТАВИЛИ РАБОТАТЬ</strong> · Продолжить (реклама) · В меню</td>
+</tr>
+<tr>
+<td>Result win</td>
+<td><strong>ПОВЫШЕНИЕ!</strong> · Следующий этаж · Хаб</td>
+</tr>
+<tr>
+<td>Result fail</td>
+<td>Этаж / время · Ещё раз · Хаб</td>
+</tr>
+<tr>
+<td>Tutorial</td>
+<td>Ходи по светлым · избегай боссов · доживи до 18:00</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Запрет copy:</strong> «Спрячься», hide tutorial, stealth tips.</p>
+<h2 id="job-c-wireflow-check">JOB C — Wireflow check</h2>
+<p>boot → menu → hub → daily? → run ↔ pause → caught → result → shop/hub</p>
+<p>Daily <strong>only</strong> from hub card.</p>
+<h2 id="dod">DoD</h2>
+<ul>
+<li>[ ] ЗАСТАВИЛИ / ПОВЫШЕНИЕ exact  </li>
+<li>[ ] No hide language  </li>
+<li>[ ] CTA sticky yellow readable on gray-blue  </li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Уровни <span class="muted">LEVEL_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="level_prompts">Работник месяца — LEVEL_PROMPTS</h1>
+<p><strong>Канон:</strong> <code>DESIGN_LLM.md</code> §3, feel <code>FEEL_DEMOS["deadline-escape"]</code>.<br />
+<strong>Не писать <code>src/</code>.</strong> Forbidden: hideZones, LOS cones as primary, free-move chase maps.</p>
+<h2 id="grammar">Grammar</h2>
+<pre><code>Cell: 0 floor · 1 desk · 2 wall · 3 plant · 4 cooler · 5/6 desk2×1 · 7 window
+Play grid: 5×7 (+growth every 25 floors)
+Fog band: always +1 cell each side; FoW per edge cell, disabled on wall/window; edge = mob enter/exit only (not walk)
+Decor: wall/window on fog frame; baked composites tile_wall_{edge}_{prop} IN the same wall cell
+Required sprites: tile_wall/window_{n,s,e,w} + L/U/stub + floor/desk/plant/cooler/fog
+Interior: desks/props solid in play only; wallDecor does not change map codes; aisles connected
+Spawn: from open fog-band edge cells (≥2/side); visible under FoW
+Hit: body overlap (px/py), not shared cell
+Fairness: hasEscape on play floor
+</code></pre>
+<h2 id="job-a-floor-card-template">JOB A — Floor card template</h2>
+<pre><code class="language-yaml">floor: N
+cols: 7+|growth
+rows: 9+|growth
+seed: floor_N
+biomes_tint: openspace|accounting|it|board  # visual only
+props: desks, plants, cooler
+encounters:
+  - kinds_unlocked: [from KIND_UNLOCK where from &lt;= N]
+  - max_threats: 3 + floor((N-1)/15)
+  - phase_pressure: morning|work|rush|overtime
+notes: no hide zones; no soft-lock pockets
+</code></pre>
+<h2 id="job-b-ascii-sketch-example-floor-1-play-57">JOB B — ASCII sketch (example floor 1, play 5×7)</h2>
+<pre><code>(fog 1; desks not on entry perimeter)
+.2.7.2.
+2.....2
+.......
+..1[]..
+2.....2
+....3..
+....4..
+2.....2
+.2...2.
+</code></pre>
+<p>(Outer fog <code>.</code> = spawn enter/exit; <code>2</code>/<code>7</code> = wall/window. Play aisles connected; props prefer interior.)</p>
+<h2 id="job-c-encounter-recipes-not-tint-only">JOB C — Encounter recipes (not tint-only)</h2>
+<table>
+<thead>
+<tr>
+<th>Floor band</th>
+<th>Signature</th>
+<th>Encounter focus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1–2</td>
+<td>Open aisles</td>
+<td>HR weave only</td>
+</tr>
+<tr>
+<td>3–8</td>
+<td>More desks</td>
+<td>+ director ghost</td>
+</tr>
+<tr>
+<td>9–16</td>
+<td>Longer corridors</td>
+<td>+ urgent dash / looker peek</td>
+</tr>
+<tr>
+<td>17–24</td>
+<td>Guarded lanes</td>
+<td>+ patrol / meeting hold</td>
+</tr>
+<tr>
+<td>25+</td>
+<td>Dense props</td>
+<td>+ account report zones, later pincer/IT/wide</td>
+</tr>
+</tbody>
+</table>
+<h2 id="job-d-layout-feel-ref">JOB D — Layout feel ref</h2>
+<p>Compose / illustrate → <code>refs/levels/layout-feel.png</code> (see ART_PROMPTS JOB H).<br />
+Playable truth remains the feel demo generator.</p>
+<h2 id="dod">DoD</h2>
+<ul>
+<li>[ ] No hideZones in any card  </li>
+<li>[ ] Cap and unlock match DESIGN.md §5  </li>
+<li>[ ] Escape path check described  </li>
+</ul></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Код-агент <span class="muted">CODE_AGENT_PROMPT.md</span></summary>
+            <article class="doc"><h1 id="code_agent_prompt">Работник месяца — CODE_AGENT_PROMPT</h1>
+<p><strong>Канон:</strong> <code>docs/DESIGN_LLM.md</code> + feel demo.<br />
+<strong>⛔ Если <code>docs/STATUS.md</code> designStatus ≠ <code>CONFIRMED</code> — FORBIDDEN писать <code>src/**</code>.</strong></p>
+<h2 id="identity">Identity</h2>
+<pre><code>Code agent — Employee of the Month (deadline-escape).
+MVP verb: top-down GRID DODGE, 4-dir cell steps, day clock 09→18.
+NOT ChaseAI free-move. NOT hide/LOS/stealth systems as MVP.
+Port feel numbers from FEEL_DEMOS[&quot;deadline-escape&quot;] unless DESIGN_LLM says otherwise.
+</code></pre>
+<h2 id="pre-flight">Pre-flight</h2>
+<ol>
+<li>Read <code>docs/STATUS.md</code> — abort coding if not CONFIRMED.  </li>
+<li>Read <code>DESIGN_LLM.md</code> INV-DE-01…08.  </li>
+<li>Play / read feel demo path: <code>management/demos/demos-01-02.js</code>.  </li>
+<li>Orchestrator: ACCEPT / REWORK / CUT only.</li>
+</ol>
+<h2 id="systems-to-implement-post-confirm">Systems to implement (post-CONFIRM)</h2>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GridMap</code></td>
+<td>cell codes, walkable, growth every 25 floors</td>
+</tr>
+<tr>
+<td><code>GridMove</code></td>
+<td>step + slide 0.095s, input latches</td>
+</tr>
+<tr>
+<td><code>DayClock</code></td>
+<td>TIME_SCALE 0.5, phases, promote at 540</td>
+</tr>
+<tr>
+<td><code>ThreatSystem</code></td>
+<td>off-map spawn, 12 kinds/patterns, caps, fairness</td>
+</tr>
+<tr>
+<td><code>BonusSystem</code></td>
+<td>coffee slow-mo, badge drop/shield, coins</td>
+</tr>
+<tr>
+<td><code>RunScene</code></td>
+<td>HUD, pause, caught, result</td>
+</tr>
+<tr>
+<td><code>MetaHub</code></td>
+<td>floors, daily, shop, save</td>
+</tr>
+<tr>
+<td><code>Audio</code></td>
+<td>SFX keys + office_loop</td>
+</tr>
+<tr>
+<td><code>YandexSDK</code></td>
+<td>ready, gameplay start/stop, RV</td>
+</tr>
+</tbody>
+</table>
+<h2 id="explicit-non-goals-mvp">Explicit non-goals (MVP)</h2>
+<ul>
+<li><code>ChaseAI</code> continuous pursuit on navmesh  </li>
+<li><code>hideZone</code> / LOS detection loops  </li>
+<li>Coffee as player move-speed buff  </li>
+<li>Badge as invisibility  </li>
+<li>Lane-only 3-column runner as the whole map  </li>
+</ul>
+<h2 id="ac-smoke-after-g0">AC smoke (after G0)</h2>
+<ul>
+<li>[ ] Walls block player  </li>
+<li>[ ] Threats enter from multiple edges  </li>
+<li>[ ] 18:00 → ПОВЫШЕНИЕ  </li>
+<li>[ ] Hit → ЗАСТАВИЛИ  </li>
+<li>[ ] Coffee slows threats; badge absorbs one hit  </li>
+<li>[ ] LoadingAPI.ready called once  </li>
+</ul>
+<h2 id="dod-session">DoD session</h2>
+<ul>
+<li>Match DESIGN_LLM paths and IDs  </li>
+<li>No drive-by refactors outside slug folder  </li>
+<li>Feel regress: day length and move slide still in band  </li>
+</ul></article>
+          </details>
     </section>
 
     <section class="tab-panel" id="tab-manage">
@@ -272,20 +1726,14 @@
   </main>
 </div>
 <script>
-window.PORTFOLIO_GAMES = [{"id": "01", "slug": "neon-bullet", "name": "Neon Bullet", "wave": 3, "prio": "P1"}, {"id": "02", "slug": "deadline-escape", "name": "Работник месяца", "wave": 1, "prio": "P0"}, {"id": "03", "slug": "tide-of-relics", "name": "Море Реликвий", "wave": 4, "prio": "P1"}, {"id": "04", "slug": "legends-of-the-pitch", "name": "Легенды Поля", "wave": 4, "prio": "P1"}, {"id": "05", "slug": "merge-bazaar", "name": "Базар Слияний", "wave": 1, "prio": "P0"}, {"id": "06", "slug": "crystal-archipelago", "name": "Кристаллы Архипелага", "wave": 2, "prio": "P0"}, {"id": "07", "slug": "idle-forge", "name": "Кузница Вечности", "wave": 2, "prio": "P0"}, {"id": "08", "slug": "cozy-plot", "name": "Уютный Участок", "wave": 3, "prio": "P1"}, {"id": "09", "slug": "auto-towers", "name": "Автобашни", "wave": 3, "prio": "P1"}, {"id": "10", "slug": "night-courier", "name": "Ночной Курьер", "wave": 1, "prio": "P0"}];
+window.PORTFOLIO_GAMES = [{"id": "01", "slug": "neon-bullet", "name": "Neon Bullet", "wave": 3, "prio": "P1"}, {"id": "02", "slug": "deadline-escape", "name": "Работник месяца", "wave": 1, "prio": "P0"}, {"id": "03", "slug": "tide-of-relics", "name": "Море Реликвий", "wave": 4, "prio": "P1"}, {"id": "04", "slug": "soccer-life", "name": "Живи Футболом", "wave": 4, "prio": "P1"}, {"id": "05", "slug": "merge-bazaar", "name": "Базар Слияний", "wave": 1, "prio": "P0"}, {"id": "06", "slug": "crystal-archipelago", "name": "Кристаллы Архипелага", "wave": 2, "prio": "P0"}, {"id": "07", "slug": "idle-forge", "name": "Кузница Вечности", "wave": 2, "prio": "P0"}, {"id": "08", "slug": "cozy-plot", "name": "Уютный Участок", "wave": 3, "prio": "P1"}, {"id": "09", "slug": "auto-towers", "name": "Автобашни", "wave": 3, "prio": "P1"}, {"id": "10", "slug": "night-courier", "name": "Ночной Курьер", "wave": 1, "prio": "P0"}];
 window.CURRENT_SLUG = "deadline-escape";
 </script>
-<script src="../demos/deadline-sfx-lib.js?v=w250722d"></script>
-<script src="../demos/demo-engine.js?v=w250720e"></script>
-<script src="../demos/demos-01-02.js?v=w250720e"></script>
-<script src="../demos/demos-03-06.js?v=w250722d"></script>
-<script src="../demos/demos-07-10.js?v=w250722d"></script>
-<script src="../demos/deadline-wireframes.js?v=w250722d"></script>
-<script src="../demos/deadline-mock-ui.js?v=mu250720e"></script>
-<script src="../demos/deadline-sprites.js?v=w250722d"></script>
-<script src="../demos/deadline-sfx.js?v=w250722d"></script>
-<script src="../assets/deadline-docs-bundle.js?v=w250722d"></script>
-<script src="../assets/md-doc.js?v=w250722d"></script>
-<script src="../assets/dashboard.js?v=w250722d"></script>
+<script src="../demos/demo-engine.js"></script>
+<script src="../demos/demos-01-02.js"></script>
+<script src="../demos/demos-03-06.js"></script>
+<script src="../demos/legends-pitch-demo.js"></script>
+<script src="../demos/demos-07-10.js"></script>
+<script src="../assets/dashboard.js"></script>
 </body>
 </html>

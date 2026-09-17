@@ -17,7 +17,7 @@
     <div class="nav-games"><a class="nav-game active" href="neon-bullet.html">01. Neon Bullet</a>
 <a class="nav-game " href="deadline-escape.html">02. Работник месяца</a>
 <a class="nav-game " href="tide-of-relics.html">03. Море Реликвий</a>
-<a class="nav-game " href="legends-of-the-pitch.html">04. Легенды Поля</a>
+<a class="nav-game " href="soccer-life.html">04. Живи Футболом</a>
 <a class="nav-game " href="merge-bazaar.html">05. Базар Слияний</a>
 <a class="nav-game " href="crystal-archipelago.html">06. Кристаллы Архипелага</a>
 <a class="nav-game " href="idle-forge.html">07. Кузница Вечности</a>
@@ -94,8 +94,7 @@
         <canvas id="feel-demo" width="360" height="640" aria-label="Feel demo"></canvas>
         <div class="demo-actions">
           <button class="btn" type="button" id="demo-restart">Рестарт</button>
-          <button class="btn" type="button" id="demo-fullscreen">На весь экран</button>
-          <span class="muted demo-controls-hint">На телефоне: «На весь экран» → стики · WASD / свайпы вне FS</span>
+          <span class="muted">Стик: левая половина экрана · WASD/стрелки · кнопки справа</span>
         </div>
       </div>
     </section>
@@ -144,7 +143,7 @@
 </tr>
 <tr>
 <td><strong>Версия документа</strong></td>
-<td>1.0</td>
+<td>1.1</td>
 </tr>
 <tr>
 <td><strong>Дата</strong></td>
@@ -153,8 +152,115 @@
 </tbody>
 </table>
 <hr />
+<h2 id="pass-2-feel-lock-f1">Pass-2 — Feel lock (F1 демка)</h2>
+<blockquote>
+<p>Зафиксировано 2026-07-17. Источник правды раунда: <code>management/demos/demos-01-02.js</code> → <code>FEEL_DEMOS["neon-bullet"]</code>.<br />
+Реф feel: JSooter/Neontron (cones + EXIT + restart); бренд/пейджер <strong>не</strong> копировать.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Core verb</strong></td>
+<td>Планируй маршрут → обходи vision cones → убивай → стой на EXIT</td>
+</tr>
+<tr>
+<td><strong>Пространство</strong></td>
+<td>1–2 комнаты + стены (честные AABB); не open arena</td>
+</tr>
+<tr>
+<td><strong>Win</strong></td>
+<td>clear (все враги мертвы) <strong>и</strong> игрок в зоне EXIT</td>
+</tr>
+<tr>
+<td><strong>Fail</strong></td>
+<td>попадание / контакт → death → рестарт той же миссии <strong>&lt;400ms</strong></td>
+</tr>
+<tr>
+<td><strong>Ввод</strong></td>
+<td>twin-stick: левый стик = move, правый стик/мышь = aim, кнопка/Space = огонь (на мобиле aim-stick также стреляет)</td>
+</tr>
+<tr>
+<td><strong>VFX</strong></td>
+<td>фигуры; смерть = dissolve (12+); <strong>blood не канон</strong></td>
+</tr>
+<tr>
+<td><strong>Анти-вектор</strong></td>
+<td>wave-arena / endless spawn; fire-only-along-facing; win без EXIT; free-roam без стен</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Feel targets (демка):</strong> за 5–10с понятно «конусы → clear → EXIT».</p>
+<table>
+<thead>
+<tr>
+<th>Число (как у Работника)</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Миссии</td>
+<td>М1…М12; смерть = рестарт той же; победа → следующая</td>
+</tr>
+<tr>
+<td>Пресеты комнат</td>
+<td>3 (Дверь / Коридор / Зал), цикл по миссии</td>
+</tr>
+<tr>
+<td>Разлок ролей</td>
+<td>patrol@1 → shotgun@2 → shield@3</td>
+</tr>
+<tr>
+<td>Лимит живых</td>
+<td>2 + ⌊(M−1)/2⌋, потолок <strong>4</strong></td>
+</tr>
+<tr>
+<td>Между миссиями</td>
+<td><strong>+1%</strong> скорость/агрессия за миссию</td>
+</tr>
+<tr>
+<td>Внутри миссии (alarm)</td>
+<td>до <strong>+25%</strong> turn/shoot после первого обнаружения</td>
+</tr>
+<tr>
+<td>Feel</td>
+<td>dash (Shift/Q/Рывок), combo window 2.2s, kill-rush +35% spd, slow-mo на киллах, cam-kick</td>
+</tr>
+<tr>
+<td>Карта</td>
+<td>мир <strong>540×780</strong> &gt; окна 360×640, камера + миникарта; узкие щели 16px</td>
+</tr>
+<tr>
+<td>Щит</td>
+<td><strong>3 хита</strong> в фронт → ломается; flinch + BLOCK popup</td>
+</tr>
+<tr>
+<td>Обоймы</td>
+<td>пист 6 · дробовик <strong>2</strong> · SMG 12; пусто → нож</td>
+</tr>
+<tr>
+<td>Silent</td>
+<td>нож тихий; <strong>backstab</strong> = SILENT + combo×2</td>
+</tr>
+<tr>
+<td>AI</td>
+<td>chase + стрейф + слух выстрелов + каскад тревоги</td>
+</tr>
+<tr>
+<td>Dev</td>
+<td>DEV∞ + ghost-deaths · м−/м+</td>
+</tr>
+</tbody>
+</table>
+<hr />
 <h2 id="1-vision">1. Vision</h2>
-<p><strong>One-liner:</strong> Короткие кроваво-стильные рейды сверху: зайди в локацию, зачисть всех, не умри от одной пули — и сделай это под неоновый саундтрек.</p>
+<p><strong>One-liner:</strong> Короткие неоновые combat-puzzle рейды сверху: зайди в комнаты, обойди конусы зрения, зачисть, выйди через EXIT — одна ошибка = смерть, рестарт мгновенный.</p>
 <p><strong>Fantasy:</strong> Неоновый нуар конца 80-х. Игрок — наёмник в маске, выполняющий «грязные» заказы в ночном городе. Уровни — квартиры, клубы, парковки, склады. Эстетика важнее реализма: розовый/циан неон, резкий контраст, ударный саунд, стилизованное насилие без расчленёнки.</p>
 <p><strong>Эмоциональный хук:</strong> «Я король комнаты» — чувство контроля через скорость, комбо и рискованный агрессивный стиль. Смерть мгновенна, но рестарт мгновенный. Каждая миссия — 60–120 секунд чистого напряжения.</p>
 <p><strong>Почему Яндекс Игры:</strong> короткий session loop идеально стыкуется с interstitial/RV; маски и оружие дают IAP/косметику; рейтинги миссий — лидерборды платформы; midcore-экшен закрывает сегмент A портфеля.</p>
@@ -2608,12 +2714,13 @@ src/data/missions.json
   </main>
 </div>
 <script>
-window.PORTFOLIO_GAMES = [{"id": "01", "slug": "neon-bullet", "name": "Neon Bullet", "wave": 3, "prio": "P1"}, {"id": "02", "slug": "deadline-escape", "name": "Работник месяца", "wave": 1, "prio": "P0"}, {"id": "03", "slug": "tide-of-relics", "name": "Море Реликвий", "wave": 4, "prio": "P1"}, {"id": "04", "slug": "legends-of-the-pitch", "name": "Легенды Поля", "wave": 4, "prio": "P1"}, {"id": "05", "slug": "merge-bazaar", "name": "Базар Слияний", "wave": 1, "prio": "P0"}, {"id": "06", "slug": "crystal-archipelago", "name": "Кристаллы Архипелага", "wave": 2, "prio": "P0"}, {"id": "07", "slug": "idle-forge", "name": "Кузница Вечности", "wave": 2, "prio": "P0"}, {"id": "08", "slug": "cozy-plot", "name": "Уютный Участок", "wave": 3, "prio": "P1"}, {"id": "09", "slug": "auto-towers", "name": "Автобашни", "wave": 3, "prio": "P1"}, {"id": "10", "slug": "night-courier", "name": "Ночной Курьер", "wave": 1, "prio": "P0"}];
+window.PORTFOLIO_GAMES = [{"id": "01", "slug": "neon-bullet", "name": "Neon Bullet", "wave": 3, "prio": "P1"}, {"id": "02", "slug": "deadline-escape", "name": "Работник месяца", "wave": 1, "prio": "P0"}, {"id": "03", "slug": "tide-of-relics", "name": "Море Реликвий", "wave": 4, "prio": "P1"}, {"id": "04", "slug": "soccer-life", "name": "Живи Футболом", "wave": 4, "prio": "P1"}, {"id": "05", "slug": "merge-bazaar", "name": "Базар Слияний", "wave": 1, "prio": "P0"}, {"id": "06", "slug": "crystal-archipelago", "name": "Кристаллы Архипелага", "wave": 2, "prio": "P0"}, {"id": "07", "slug": "idle-forge", "name": "Кузница Вечности", "wave": 2, "prio": "P0"}, {"id": "08", "slug": "cozy-plot", "name": "Уютный Участок", "wave": 3, "prio": "P1"}, {"id": "09", "slug": "auto-towers", "name": "Автобашни", "wave": 3, "prio": "P1"}, {"id": "10", "slug": "night-courier", "name": "Ночной Курьер", "wave": 1, "prio": "P0"}];
 window.CURRENT_SLUG = "neon-bullet";
 </script>
 <script src="../demos/demo-engine.js"></script>
 <script src="../demos/demos-01-02.js"></script>
 <script src="../demos/demos-03-06.js"></script>
+<script src="../demos/legends-pitch-demo.js"></script>
 <script src="../demos/demos-07-10.js"></script>
 <script src="../assets/dashboard.js"></script>
 </body>

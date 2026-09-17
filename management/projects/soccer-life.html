@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Живи Футболом — Портфель Яндекс Игры</title>
+<link rel="stylesheet" href="../assets/dashboard.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="../portfolio-dashboard.html">Портфель<br/><span>Яндекс Игры</span></a>
+    <div class="side-section">Навигация</div>
+    <a class="nav-link" href="../portfolio-dashboard.html">Все проекты</a>
+    <a class="nav-link" href="../pipeline.html">Пайплайн</a>
+    <div class="side-section">Игры</div>
+    <div class="nav-games"><a class="nav-game " href="neon-bullet.html">01. Neon Bullet</a>
+<a class="nav-game " href="deadline-escape.html">02. Работник месяца</a>
+<a class="nav-game " href="tide-of-relics.html">03. Море Реликвий</a>
+<a class="nav-game active" href="soccer-life.html">04. Живи Футболом</a>
+<a class="nav-game " href="merge-bazaar.html">05. Базар Слияний</a>
+<a class="nav-game " href="crystal-archipelago.html">06. Кристаллы Архипелага</a>
+<a class="nav-game " href="idle-forge.html">07. Кузница Вечности</a>
+<a class="nav-game " href="cozy-plot.html">08. Уютный Участок</a>
+<a class="nav-game " href="auto-towers.html">09. Автобашни</a>
+<a class="nav-game " href="night-courier.html">10. Ночной Курьер</a></div>
+    <div class="side-foot">Код запрещён до статуса<br/><strong>Подтверждён</strong></div>
+  </aside>
+  <main class="main">
+
+    <header class="page-head project-head">
+      <div class="crumb"><a href="../portfolio-dashboard.html">← Все проекты</a></div>
+      <div class="project-hero">
+        <div class="hero-art" style="background-image:url('../../games/soccer-life/refs/art/key-art.png')"></div>
+        <div>
+          <div class="muted">04 · P1 · Волна 4 — флагманы</div>
+          <h1>Живи Футболом</h1>
+          <p class="lead">Футбольный менеджер (SoccerLife × FM-lite) · Спорт / менеджеры</p>
+          <div class="inline-status">
+            Статус дизайна: <span class="status-pill" data-status-for="soccer-life">Черновик</span>
+            · Гейт: <span data-gate-label-for="soccer-life">—</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="overview">Обзор</button>
+      <button class="tab" data-tab="demo">Демка</button>
+      <button class="tab" data-tab="classic">Классический диздок</button>
+      <button class="tab" data-tab="llm">LLM-спека</button>
+      <button class="tab" data-tab="refs">Референсы</button>
+      <button class="tab" data-tab="prompts">Промпты</button>
+      <button class="tab" data-tab="manage">Управление</button>
+    </nav>
+
+    <section class="tab-panel active" id="tab-overview">
+      <div class="two-col">
+        <div class="panel">
+          <h3>Что смотреть</h3>
+          <ul class="checklist-static">
+            <li><strong>Демка</strong> — сначала пощупай feel простыми фигурами</li>
+            <li>Классический GDD — видение, лупы, экономика</li>
+            <li>LLM-спека — контракты для агентов, UI, уровни, ассеты</li>
+            <li>Референсы — арт, вайрфреймы, уровни, спрайты</li>
+            <li>Промпты — готовые задания для арт/код агентов</li>
+          </ul>
+          <h3>Правило</h3>
+          <p class="warn">Пока статус не <strong>Подтверждён</strong>, папку <code>src/</code> не создавать. CONFIRM только после playtest демки (F1→F2). См. <code>docs/METHODOLOGY.md</code>.</p>
+        </div>
+        <div class="panel">
+          <h3>Файлы проекта</h3>
+          <ul class="file-list">
+            <li><code>games/soccer-life/docs/DESIGN.md</code></li>
+            <li><code>games/soccer-life/docs/DESIGN_LLM.md</code></li>
+            <li><code>games/soccer-life/docs/REFS.md</code></li>
+            <li><code>games/soccer-life/prompts/*.md</code></li>
+            <li><code>games/soccer-life/refs/**</code></li>
+            <li><code>management/demos/</code> — feel demo</li>
+          </ul>
+          <div class="progress big"><i data-progress-for="soccer-life"></i></div>
+          <div class="muted" style="margin-top:8px">Прогресс готовности (дизайн + гейты)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-demo">
+      <div class="panel demo-wrap">
+        <h3>Feel-демка (простые фигуры)</h3>
+        <p class="lead">Цель — проверить управление и «хочу ещё раз». На телефоне удобнее через LAN-сервер.</p>
+        <div class="lan-box">С телефона: запусти <code>serve-dashboard.bat</code> на ПК, открой URL из окна батника (одна Wi-Fi сеть).</div>
+        <p class="muted" style="margin:0 0 8px">«Работник месяца» = ядро chas-pik (сетка, 3 колонны, 09:00→18:00).</p>
+        <p class="demo-hint" id="demo-hint">Загрузка демки…</p>
+        <canvas id="feel-demo" width="360" height="640" aria-label="Feel demo"></canvas>
+        <div class="demo-actions">
+          <button class="btn" type="button" id="demo-restart">Рестарт</button>
+          <span class="muted">Стик: левая половина экрана · WASD/стрелки · кнопки справа</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-classic">
+      <article class="doc"><h1 id="design-document-gdd">Живи Футболом — Design Document (GDD)</h1>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Slug</strong></td>
+<td><code>soccer-life</code></td>
+</tr>
+<tr>
+<td><strong>Название RU</strong></td>
+<td>Живи Футболом</td>
+</tr>
+<tr>
+<td><strong>Название EN</strong></td>
+<td>Soccer Life</td>
+</tr>
+<tr>
+<td><strong>Жанр</strong></td>
+<td>Online football manager (SoccerLife-shell × FM-lite match)</td>
+</tr>
+<tr>
+<td><strong>Платформа</strong></td>
+<td>Яндекс Игры (HTML5)</td>
+</tr>
+<tr>
+<td><strong>Движок</strong></td>
+<td>Phaser 3 + TypeScript + Vite</td>
+</tr>
+<tr>
+<td><strong>Сегмент ЦА</strong></td>
+<td>D — спорт / менеджеры, 16–45</td>
+</tr>
+<tr>
+<td><strong>Приоритет</strong></td>
+<td>P1 (флагман LTV)</td>
+</tr>
+<tr>
+<td><strong>Статус дизайна</strong></td>
+<td><code>DRAFT</code> (код запрещён до <code>CONFIRMED</code>)</td>
+</tr>
+<tr>
+<td><strong>Концепт</strong></td>
+<td><code>docs/concepts/04-soccer-life.md</code></td>
+</tr>
+<tr>
+<td><strong>Ключевой арт</strong></td>
+<td><code>refs/art/key-art.png</code> (TBD)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Слот портфеля #04.</strong> Заменяет «Легенды Поля» (отменены: механика CCG×autochess не формулируется).</p>
+</blockquote>
+<hr />
+<h2 id="1-vision">1. Vision</h2>
+<p>Игрок — менеджер футбольного клуба. Между матчами он ведёт клуб как в классическом онлайн-менеджере (календарь, состав, трансферы, база). В матче думает как в Football Manager: формация, роли, инструкции — и может 2–3 раза вмешаться live. Никаких карт, гачи и autochess.</p>
+<p><strong>Эмоциональный тон:</strong> вечерний спортивный хаб — зелень поля, тёмно-синий UI клуба, белый текст таблицы, акцент на гербе и счёте. Без неона и «карточных рамок».</p>
+<h2 id="2-design-pillars">2. Design Pillars</h2>
+<ol>
+<li><strong>Один жанр</strong> — только футбольный менеджер; всё, что не клуб/матч/таблица, режется.  </li>
+<li><strong>Компоновка, не изобретение</strong> — SoccerLife-оболочка + FM-lite ядро + live-control.  </li>
+<li><strong>Матч читается</strong> — игрок понимает <em>почему</em> проиграл (отчёт + xG-лайт + ключевые события).  </li>
+<li><strong>Сила = решения</strong>, не paywall статов.  </li>
+<li><strong>5 вкладок хаба максимум</strong> — Hub / Squad / Tactics / Match / Club.</li>
+</ol>
+<h2 id="3-target-audience-session">3. Target Audience &amp; Session</h2>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Возраст</td>
+<td>16–45, в основном м</td>
+</tr>
+<tr>
+<td>Сессия короткая</td>
+<td>3–7 мин (хаб, тренировка, рынок)</td>
+</tr>
+<tr>
+<td>Сессия матч-дня</td>
+<td>8–15 мин</td>
+</tr>
+<tr>
+<td>Первый «вау»</td>
+<td>≤90 сек: расставил состав → свисток → гол/момент</td>
+</tr>
+<tr>
+<td>Удержание</td>
+<td>D1 ≥35%, D7 ≥15% (midcore-спорт)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-core-loop">4. Core Loop</h2>
+<pre><code class="language-text">Хаб → (Состав / Тактика) → Матч (симуляция + live) → Отчёт
+        ↑_________________________________________|
+                         ↓
+              Тренировка / Трансфер / База / Таблица
+</code></pre>
+<ol>
+<li>Открыл клуб → увидел следующий матч и место в таблице.  </li>
+<li>Выставил 11 и 3 инструкции.  </li>
+<li>Сыграл/досмотрел матч с live-вмешательствами.  </li>
+<li>Получил очки, деньги, сдвиг формы.  </li>
+<li>Потратил 2–5 минут на развитие клуба до следующего тура.</li>
+</ol>
+<h2 id="5-systems-overview">5. Systems Overview</h2>
+<h3 id="51-soccerlife">5.1 Клуб и сезон (оболочка SoccerLife)</h3>
+<table>
+<thead>
+<tr>
+<th>Система</th>
+<th>MVP</th>
+<th>Позже</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Лига</td>
+<td>16 клубов, круговой мини-сезон</td>
+<td>несколько дивизионов</td>
+</tr>
+<tr>
+<td>Календарь</td>
+<td>2–3 матча/нед, кубок later</td>
+<td>полный кубок + евро</td>
+</tr>
+<tr>
+<td>Финансы</td>
+<td>баланс, зарплата-паушально, приз за матч</td>
+<td>спонсоры-тиры</td>
+</tr>
+<tr>
+<td>Инфраструктура</td>
+<td>База / Стадион / Академия (ур. 1–5)</td>
+<td>ещё 2 здания</td>
+</tr>
+<tr>
+<td>Ячейки клубов</td>
+<td>1 бесплатно, +1 VIP</td>
+<td>как SoccerLife</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-fm">5.2 Игрок и атрибуты (сжатый FM)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Имя</th>
+<th>На что влияет</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PAC</td>
+<td>Темп</td>
+<td>контратаки, 1v1 в штрафной</td>
+</tr>
+<tr>
+<td>SHT</td>
+<td>Удар</td>
+<td>реализация моментов</td>
+</tr>
+<tr>
+<td>PAS</td>
+<td>Пас</td>
+<td>удержание, создание шансов</td>
+</tr>
+<tr>
+<td>DEF</td>
+<td>Оборона</td>
+<td>отборы, меньше xG соперника</td>
+</tr>
+<tr>
+<td>PHY</td>
+<td>Физика</td>
+<td>усталость, воздух</td>
+</tr>
+<tr>
+<td>MEN</td>
+<td>Менталка</td>
+<td>форма, давление счёта</td>
+</tr>
+</tbody>
+</table>
+<p>Позиции: GK, CB, FB, DM, CM, AM, W, ST.<br />
+Роли MVP (навешиваются на слот): <em>Защитник</em>, <em>Плеймейкер</em>, <em>Бокс-ту-бокс</em>, <em>Инсайд</em>, <em>Чистый нападающий</em>, <em>Вратарь-свипер</em> (6 ролей).</p>
+<h3 id="53-fm-lite">5.3 Тактика FM-lite</h3>
+<p><strong>Формации:</strong> <code>4-3-3</code>, <code>4-4-2</code>, <code>3-5-2</code>.<br />
+<strong>Инструкции (4):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Инструкция</th>
+<th>Low</th>
+<th>Med</th>
+<th>High</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Прессинг</td>
+<td>низкий блок</td>
+<td>стандарт</td>
+<td>высокий пресс</td>
+</tr>
+<tr>
+<td>Ширина</td>
+<td>узко</td>
+<td>норма</td>
+<td>широко</td>
+</tr>
+<tr>
+<td>Темп</td>
+<td>медленно</td>
+<td>норма</td>
+<td>быстро</td>
+</tr>
+<tr>
+<td>Риск</td>
+<td>держать счёт</td>
+<td>баланс</td>
+<td>все вперёд</td>
+</tr>
+</tbody>
+</table>
+<h3 id="54-">5.4 Матч-движок (событийный)</h3>
+<p>Не физика 11v11. Тики ≈ минуты матча. На тике считаются: контроль, создание шанса, удар, сейв — от сумм атрибутов линий + модификаторов инструкций + формы + home bonus.</p>
+<p><strong>Live-control (лимит 3 за матч):</strong></p>
+<ol>
+<li>Сменить одну инструкцию.  </li>
+<li>Замена (1 игрок).  </li>
+<li>Эмо-кнопка: «Автобус» или «Все вперёд» на 10–15 мин.</li>
+</ol>
+<h3 id="55-post-match">5.5 Post-match</h3>
+<p>Счёт, xG обеих команд, лучший игрок, 3 ключевых события, совет «что не сработало» (1 строка). Это и есть «ощущение FM» без Excel.</p>
+<h2 id="6-economy-lock">6. Economy Lock</h2>
+<table>
+<thead>
+<tr>
+<th>Валюта</th>
+<th>Роль</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cash</code></td>
+<td>soft: зарплаты-лайт, мелкие трансферы, апгрейд зданий</td>
+</tr>
+<tr>
+<td><code>tokens</code></td>
+<td>hard: ускорения, скаут-отчёт, VIP-сутки, undo</td>
+</tr>
+<tr>
+<td><code>fan_pts</code></td>
+<td>battle pass XP</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Доход soft:</strong> приз за матч, место в таблице, academies.<br />
+<strong>Сток hard:</strong> daily, RV, IAP, pass.<br />
+<strong>Paywall силы запрещён:</strong> нельзя купить +атрибут напрямую.</p>
+<h2 id="7-monetization">7. Monetization</h2>
+<table>
+<thead>
+<tr>
+<th>Источник</th>
+<th>Триггер</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RV</td>
+<td>скаут дня, +форма капитану, x2 daily</td>
+</tr>
+<tr>
+<td>Interstitial</td>
+<td>после матча / выход с рынка</td>
+</tr>
+<tr>
+<td>IAP</td>
+<td>пакеты tokens, VIP 7/30 дней, remove ads, pass</td>
+</tr>
+<tr>
+<td>VIP</td>
+<td>2-я ячейка клуба, расширенный отчёт, +1 live-слот (4 вместо 3)</td>
+</tr>
+<tr>
+<td>Косметика</td>
+<td>форма, герб, тема хаба</td>
+</tr>
+</tbody>
+</table>
+<h2 id="8-ux-ia-5">8. UX / IA (5 вкладок)</h2>
+<ol>
+<li><strong>Home</strong> — следующий матч, таблица, daily.  </li>
+<li><strong>Squad</strong> — список, карточка игрока, форма.  </li>
+<li><strong>Tactics</strong> — формация + инструкции + роли.  </li>
+<li><strong>Match</strong> — таймлайн / live-кнопки / отчёт.  </li>
+<li><strong>Club</strong> — здания, трансферы, VIP-магазин.</li>
+</ol>
+<p>Онбординг: 1 матч vs слабого AI с подсказками на 3 live-кнопки.</p>
+<h2 id="9-mvp-store">9. MVP → Store</h2>
+<ul>
+<li>[ ] 16 клубов, генерация составов, 1 сезон.  </li>
+<li>[ ] 3 формации, 4 инструкции, 6 ролей.  </li>
+<li>[ ] Событийный матч + отчёт + 3 live.  </li>
+<li>[ ] Тренировка, трансферы-лайт, 3 здания.  </li>
+<li>[ ] Cloud save, ads, VIP, pass light.  </li>
+<li>[ ] Лидерборд сезона Яндекса.</li>
+</ul>
+<h2 id="10-non-goals">10. Non-goals (жёстко)</h2>
+<ol>
+<li>Нет CCG / паков карт / ★-merge / autochess.  </li>
+<li>Нет полной симуляции футбола как FIFA.  </li>
+<li>Нет глобальной базы реальных игроков в MVP.  </li>
+<li>Нет PvP до стабилизации AI-матча.  </li>
+<li>Нет букмекера и ставок.</li>
+</ol>
+<h2 id="11-success-criteria">11. Success criteria</h2>
+<ul>
+<li>Игрок объясняет игру одной фразой: «менеджер клуба с умным матчем».  </li>
+<li>После поражения читает отчёт, а не пишет «рандом».  </li>
+<li>VIP покупают ради удобства/ячейки, не ради статов.</li>
+</ul></article>
+    </section>
+
+    <section class="tab-panel" id="tab-llm">
+      <article class="doc"><h1 id="design_llm">Живи Футболом — DESIGN_LLM (исполняемая спецификация)</h1>
+<blockquote>
+<p><strong>Аудитория:</strong> LLM-агенты (арт, UI, код).<br />
+<strong>Правило:</strong> код (<code>src/</code>) <strong>запрещён</strong>, пока <code>design_status</code> ≠ <code>CONFIRMED</code>.<br />
+<strong>GDD:</strong> <code>docs/DESIGN.md</code>. При конфликте побеждает этот файл.<br />
+<strong>Концепт:</strong> <code>docs/concepts/04-soccer-life.md</code>.</p>
+</blockquote>
+<hr />
+<h2 id="0-">0. Мета-контракт</h2>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>slug</td>
+<td><code>soccer-life</code></td>
+</tr>
+<tr>
+<td>title_ru</td>
+<td>Живи Футболом</td>
+</tr>
+<tr>
+<td>title_en</td>
+<td>Soccer Life</td>
+</tr>
+<tr>
+<td>engine</td>
+<td>Phaser 3 + TypeScript + Vite</td>
+</tr>
+<tr>
+<td>platform</td>
+<td>Яндекс Игры</td>
+</tr>
+<tr>
+<td>orientation_primary</td>
+<td>portrait (720×1280 logical)</td>
+</tr>
+<tr>
+<td>design_status</td>
+<td><code>DRAFT</code></td>
+</tr>
+<tr>
+<td>coding_allowed</td>
+<td><code>false</code> until <code>CONFIRMED</code></td>
+</tr>
+<tr>
+<td>concept_ref</td>
+<td><code>docs/concepts/04-soccer-life.md</code></td>
+</tr>
+<tr>
+<td>key_art</td>
+<td><code>games/soccer-life/refs/art/key-art.png</code></td>
+</tr>
+<tr>
+<td>replaces</td>
+<td><code>legends-of-the-pitch</code> (CANCELLED)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="01">0.1 Формула продукта (не нарушать)</h3>
+<pre><code class="language-text">SoccerLife shell + FM-lite tactics/match + live-control USP
+</code></pre>
+<h3 id="02">0.2 Запреты скоупа</h3>
+<ol>
+<li>Нет CCG, карт, гачи, autochess, ★-merge, синергий-стаков.  </li>
+<li>Нет физической симуляции мяча / камеры FIFA.  </li>
+<li>Нет полного Football Manager (контракты Excel, 50 экранов).  </li>
+<li>Нет реальных клубов/имён/гербов в MVP.  </li>
+<li>Нет букмекера / ставок.  </li>
+<li>Нет realtime PvP в MVP.</li>
+</ol>
+<hr />
+<h2 id="1-repo-layout">1. Repo layout</h2>
+<pre><code class="language-text">games/soccer-life/
+├── docs/
+│   ├── DESIGN.md
+│   ├── DESIGN_LLM.md
+│   └── REFS.md
+├── prompts/
+│   ├── ART_PROMPTS.md
+│   ├── SPRITE_ANIM_PROMPTS.md
+│   ├── UI_PROMPTS.md
+│   ├── LEVEL_PROMPTS.md
+│   └── CODE_AGENT_PROMPT.md
+├── refs/
+│   ├── art/
+│   ├── ui/
+│   ├── levels/
+│   └── sprites/
+├── public/assets/{images,atlases,audio,data}/
+├── src/                    ← НЕ до CONFIRMED
+├── index.html
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+├── STATUS.md
+└── STORE_CHECKLIST.md
+</code></pre>
+<h3 id="11-naming">1.1 Naming</h3>
+<table>
+<thead>
+<tr>
+<th>Сущность</th>
+<th>Правило</th>
+<th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scene key</td>
+<td><code>SC_{Name}</code></td>
+<td><code>SC_Hub</code></td>
+</tr>
+<tr>
+<td>Events</td>
+<td><code>EVT_{Domain}_{Action}</code></td>
+<td><code>EVT_Match_Goal</code></td>
+</tr>
+<tr>
+<td>Save</td>
+<td><code>slf_{snake}</code></td>
+<td><code>slf_club_v1</code></td>
+</tr>
+<tr>
+<td>Asset ID</td>
+<td><code>{domain}_{name}</code></td>
+<td><code>ui_btn_live_press</code></td>
+</tr>
+<tr>
+<td>Data JSON</td>
+<td>kebab-case</td>
+<td><code>league-clubs.json</code></td>
+</tr>
+</tbody>
+</table>
+<p>domains: <code>ui_</code>, <code>bg_</code>, <code>pitch_</code>, <code>player_</code>, <code>club_</code>, <code>fx_</code>, <code>icon_</code></p>
+<hr />
+<h2 id="2-ia-mvp">2. IA — экраны MVP</h2>
+<table>
+<thead>
+<tr>
+<th>Scene</th>
+<th>Назначение</th>
+<th>CTA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SC_Boot</code></td>
+<td>load + SDK</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>SC_Tutorial</code></td>
+<td>1 матч-обучение</td>
+<td>Далее</td>
+</tr>
+<tr>
+<td><code>SC_Hub</code></td>
+<td>Home: следующий матч, таблица, daily</td>
+<td>Играть</td>
+</tr>
+<tr>
+<td><code>SC_Squad</code></td>
+<td>список игроков</td>
+<td>Карточка / в состав</td>
+</tr>
+<tr>
+<td><code>SC_Tactics</code></td>
+<td>формация + инструкции + роли</td>
+<td>Сохранить</td>
+</tr>
+<tr>
+<td><code>SC_Match</code></td>
+<td>таймлайн + live</td>
+<td>Live-кнопки</td>
+</tr>
+<tr>
+<td><code>SC_Report</code></td>
+<td>отчёт матча</td>
+<td>В хаб</td>
+</tr>
+<tr>
+<td><code>SC_Club</code></td>
+<td>здания / трансфер / shop</td>
+<td>Купить / апгрейд</td>
+</tr>
+<tr>
+<td><code>SC_Shop</code></td>
+<td>VIP / tokens / pass / ads-off</td>
+<td>IAP</td>
+</tr>
+</tbody>
+</table>
+<p>Корневых вкладок ≤5: Home, Squad, Tactics, Match/Report, Club.</p>
+<hr />
+<h2 id="3-data-model-mvp">3. Data model (MVP)</h2>
+<h3 id="31-player">3.1 Player</h3>
+<pre><code class="language-ts">type Player = {
+  id: string;
+  name: string;
+  pos: &quot;GK&quot;|&quot;CB&quot;|&quot;FB&quot;|&quot;DM&quot;|&quot;CM&quot;|&quot;AM&quot;|&quot;W&quot;|&quot;ST&quot;;
+  age: number;
+  attrs: { pac: number; sht: number; pas: number; def: number; phy: number; men: number }; // 1..20
+  form: number;      // 0..100
+  fatigue: number;   // 0..100
+  role?: RoleId;
+  value: number;
+};
+</code></pre>
+<h3 id="32-club">3.2 Club</h3>
+<pre><code class="language-ts">type Club = {
+  id: string;
+  name: string;
+  colors: [string, string];
+  cash: number;
+  stadiumLvl: number;
+  trainingLvl: number;
+  academyLvl: number;
+  players: Player[];
+  tactics: Tactics;
+};
+</code></pre>
+<h3 id="33-tactics">3.3 Tactics</h3>
+<pre><code class="language-ts">type FormationId = &quot;433&quot; | &quot;442&quot; | &quot;352&quot;;
+type InstrLevel = 0 | 1 | 2; // low med high
+type Tactics = {
+  formation: FormationId;
+  press: InstrLevel;
+  width: InstrLevel;
+  tempo: InstrLevel;
+  risk: InstrLevel;
+  lineup: string[]; // 11 player ids
+  bench: string[];  // up to 7
+};
+</code></pre>
+<h3 id="34-match-event">3.4 Match event</h3>
+<pre><code class="language-ts">type MatchEvent =
+  | { t: number; type: &quot;chance&quot;; side: &quot;home&quot;|&quot;away&quot;; xg: number; scorerId?: string; outcome: &quot;goal&quot;|&quot;save&quot;|&quot;miss&quot;|&quot;block&quot; }
+  | { t: number; type: &quot;card&quot;|&quot;injury&quot;|&quot;sub&quot;; side: &quot;home&quot;|&quot;away&quot;; playerId: string }
+  | { t: number; type: &quot;live&quot;; side: &quot;home&quot;|&quot;away&quot;; action: &quot;instr&quot;|&quot;sub&quot;|&quot;emotion&quot; };
+</code></pre>
+<hr />
+<h2 id="4-match-engine-contract">4. Match engine contract</h2>
+<h3 id="41-tick">4.1 Tick</h3>
+<ul>
+<li>Match length: 90 ticks (1 tick ≈ 1 min). UI может ускорять x2/x4.  </li>
+<li>Каждый тик: обновить fatigue; с шансом <code>pChance</code> создать момент.</li>
+</ul>
+<h3 id="42-chance-probability">4.2 Chance probability (целевая чувственность)</h3>
+<pre><code class="language-text">attackPower = line(FWD attrs) * tempoMult * riskMult * formMult
+defensePower = line(DEF attrs) * pressMult_opponent * homeMult
+pChance ≈ clamp(0.02 .. 0.18, attack/(attack+defense) * base)
+xg ≈ f(SHT, DEF_opp, chanceType)
+pGoal ≈ xg
+</code></pre>
+<p>Инструкции дают <strong>мультипликаторы 0.85–1.20</strong>, не ломают матч одним тапом.</p>
+<h3 id="43-live-actions">4.3 Live actions</h3>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Effect</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Change instruction</td>
+<td>set one InstrLevel</td>
+<td>1 live charge</td>
+</tr>
+<tr>
+<td>Substitution</td>
+<td>swap lineup↔bench</td>
+<td>1 live charge</td>
+</tr>
+<tr>
+<td>Emotion bus/all-out</td>
+<td>risk=0 or 2 for 12 ticks</td>
+<td>1 live charge</td>
+</tr>
+</tbody>
+</table>
+<p>Default charges: <strong>3</strong>. VIP: <strong>4</strong>.</p>
+<h3 id="44-report-must-answer">4.4 Report must answer</h3>
+<ol>
+<li>Счёт + xG.  </li>
+<li>Лучший игрок.  </li>
+<li>Три события.  </li>
+<li>Одна строка совета (<code>press too low</code>, <code>no width</code>, <code>stamina collapse</code>…).</li>
+</ol>
+<hr />
+<h2 id="5-meta-systems">5. Meta systems</h2>
+<h3 id="51-training-1-plan-day">5.1 Training (1 plan / day)</h3>
+<p>Plans: Attack / Defense / Fitness.<br />
+Effect: +form to 3 players OR −fatigue squad (числа в <code>data/training.json</code>).</p>
+<h3 id="52-transfers-lite">5.2 Transfers lite</h3>
+<ul>
+<li>Рынок: 8–12 листингов, реролл 1/day free, RV extra.  </li>
+<li>Buy if <code>cash &gt;= value</code>. Tokens: sniper bid skip wait (convenience).</li>
+</ul>
+<h3 id="53-buildings">5.3 Buildings</h3>
+<table>
+<thead>
+<tr>
+<th>Building</th>
+<th>Effect per level</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Training</td>
+<td>+training yield</td>
+</tr>
+<tr>
+<td>Stadium</td>
+<td>+match income</td>
+</tr>
+<tr>
+<td>Academy</td>
+<td>+youth soft player раз в N дней</td>
+</tr>
+</tbody>
+</table>
+<p>Max level 5 in MVP.</p>
+<h3 id="54-season">5.4 Season</h3>
+<ul>
+<li>16 clubs, double round-robin truncated <strong>OR</strong> 14 matchdays — выбрать одно в data: default <strong>14 matchdays</strong> (каждый играет каждого почти раз).  </li>
+<li>Points 3/1/0. Table on Hub.  </li>
+<li>Season reset → keep buildings −1 floor soft, keep VIP cosmetics.</li>
+</ul>
+<hr />
+<h2 id="6-economy-iap-ids">6. Economy &amp; IAP ids</h2>
+<table>
+<thead>
+<tr>
+<th>SKU</th>
+<th>Type</th>
+<th>Grant</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tokens_100</code></td>
+<td>IAP</td>
+<td>100 tokens</td>
+</tr>
+<tr>
+<td><code>tokens_550</code></td>
+<td>IAP</td>
+<td>550 tokens</td>
+</tr>
+<tr>
+<td><code>vip_7</code></td>
+<td>IAP</td>
+<td>VIP 7d</td>
+</tr>
+<tr>
+<td><code>vip_30</code></td>
+<td>IAP</td>
+<td>VIP 30d</td>
+</tr>
+<tr>
+<td><code>pass_season</code></td>
+<td>IAP</td>
+<td>battle pass</td>
+</tr>
+<tr>
+<td><code>ads_off</code></td>
+<td>IAP</td>
+<td>remove interstitial</td>
+</tr>
+</tbody>
+</table>
+<p>RV rewards: <code>scout_report</code>, <code>captain_form</code>, <code>daily_x2</code>.</p>
+<p>Soft <code>cash</code> never sold 1:1 as pure power; only bundles with tokens OK if cosmetic-weighted.</p>
+<hr />
+<h2 id="7-sdk-hooks-yandex">7. SDK hooks (Yandex)</h2>
+<ul>
+<li><code>init</code> → player auth optional, cloud save <code>slf_club_v1</code>.  </li>
+<li>Interstitial: after <code>SC_Report</code> confirm / leaving <code>SC_Club</code> market (rate-limit).  </li>
+<li>Rewarded: only on explicit buttons.  </li>
+<li>Purchases: consume + restore on boot.  </li>
+<li>Leaderboard: <code>season_points</code>.</li>
+</ul>
+<hr />
+<h2 id="8-art-ui-direction">8. Art / UI direction</h2>
+<ul>
+<li>Palette CSS vars: <code>--pitch-green</code>, <code>--club-navy</code>, <code>--ink</code>, <code>--accent-amber</code> (не фиолетовый неон).  </li>
+<li>Hub: герб + next opponent large; no card-game frames.  </li>
+<li>Match: top-down abstract pitch OR event feed + mini pitch; prefer <strong>event feed + scoreboard</strong> for MVP readability.  </li>
+<li>Typography: expressive sports sans (not Inter/Roboto as brand voice in mockups).</li>
+</ul>
+<hr />
+<h2 id="9-content-bank-mvp">9. Content bank MVP</h2>
+<table>
+<thead>
+<tr>
+<th>Content</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Clubs</td>
+<td>16</td>
+</tr>
+<tr>
+<td>Players generated</td>
+<td>~20×16 ≈ 320</td>
+</tr>
+<tr>
+<td>Formations</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Roles</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Instructions</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Training plans</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Buildings</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>Names: fictional RU/EN pool in <code>data/names.json</code>.</p>
+<hr />
+<h2 id="10-gates-code-after-confirmed">10. Gates (code, after CONFIRMED)</h2>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Deliverable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G0</td>
+<td>Vite+Phaser skeleton, STATUS.md</td>
+</tr>
+<tr>
+<td>G1</td>
+<td>Club/Player data + Hub table + calendar stub</td>
+</tr>
+<tr>
+<td>G2</td>
+<td>Squad + Tactics UI save</td>
+</tr>
+<tr>
+<td>G3</td>
+<td>MatchEngine ticks + report + 3 live</td>
+</tr>
+<tr>
+<td>G4</td>
+<td>Training, transfers, buildings</td>
+</tr>
+<tr>
+<td>G5</td>
+<td>SDK cloud/ads/IAP VIP, tutorial, STORE_CHECKLIST</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ac-smoke">AC (smoke)</h3>
+<ul>
+<li>Start → Hub → set tactics → play match → report → cash changes.  </li>
+<li>Live instruction changes subsequent chance rates.  </li>
+<li>Cloud restore club.  </li>
+<li>No red console; 20 matches vs AI without crash.</li>
+</ul>
+<hr />
+<h2 id="11-anti-regression-vs-cancelled-project">11. Anti-regression vs cancelled project</h2>
+<p>Если агент предлагает карты, колоду, магазин бойцов, ★-merge, TFT-трейты, 6v6 сетку — <strong>STOP</strong>. Это <code>legends-of-the-pitch</code>, проект отменён. Вернуться к формуле §0.1.</p></article>
+    </section>
+
+    <section class="tab-panel" id="tab-refs">
+      <div class="refs-intro doc"><h1 id="visual-references-index">Живи Футболом — Visual References Index</h1>
+<table>
+<thead>
+<tr>
+<th>Слот</th>
+<th>Путь</th>
+<th>Статус</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key art</td>
+<td><code>refs/art/key-art.png</code></td>
+<td>TBD</td>
+</tr>
+<tr>
+<td>UI wireframe</td>
+<td><code>refs/ui/wireframe-main.png</code></td>
+<td>TBD</td>
+</tr>
+<tr>
+<td>Match / hub layout</td>
+<td><code>refs/levels/layout-main.png</code></td>
+<td>TBD</td>
+</tr>
+<tr>
+<td>Sprites / icons</td>
+<td><code>refs/sprites/sheet-main.png</code></td>
+<td>TBD</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_1">Референсы продукта (внешние)</h2>
+<ol>
+<li><strong>SoccerLife / Живи Футболом</strong> — хаб клуба, календарь, VIP/ячейки, live-матч.  </li>
+<li><strong>Football Manager</strong> — роли, инструкции, post-match отчёт (не UI Excel целиком).  </li>
+<li><strong>Top Eleven</strong> — сезон 28 дней, convenience IAP, RV, campus/buildings.</li>
+</ol>
+<h2 id="_2">Визуальный якорь</h2>
+<p>Матч-день на стадионе + планшет менеджера (состав/тактика), без карточных рамок и hologram-CCG.</p></div>
+      <h3 class="gallery-title">Галерея референсов</h3>
+      <div class="ref-grid">
+            <figure class="ref-card missing">
+              <div class="missing-box">Нет файла</div>
+              <figcaption><strong>Ключевой арт</strong><code>art/key-art.png</code></figcaption>
+            </figure>
+            <figure class="ref-card missing">
+              <div class="missing-box">Нет файла</div>
+              <figcaption><strong>Вайрфрейм UI</strong><code>ui/wireframe-main.png</code></figcaption>
+            </figure>
+            <figure class="ref-card missing">
+              <div class="missing-box">Нет файла</div>
+              <figcaption><strong>Раскладка уровней</strong><code>levels/layout-main.png</code></figcaption>
+            </figure>
+            <figure class="ref-card missing">
+              <div class="missing-box">Нет файла</div>
+              <figcaption><strong>Спрайт-лист</strong><code>sprites/sheet-main.png</code></figcaption>
+            </figure></div>
+    </section>
+
+    <section class="tab-panel" id="tab-prompts">
+      <p class="lead">Атомарные промпты — копируй в отдельного агента вместе с нужным референсом из вкладки «Референсы».</p>
+      
+          <details class="prompt-acc" open>
+            <summary>Арт <span class="muted">ART_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="art_prompts">ART_PROMPTS — Живи Футболом</h1>
+<pre><code class="language-text">Сгенерируй key art для HTML5 football manager «Живи Футболом».
+Жанр: онлайн-менеджер (SoccerLife shell × FM-lite), НЕ card battler.
+Кадр: край поля / бровка, планшет менеджера с составом, стадион full-bleed на фоне.
+Бренд-сигнал: название «Живи Футболом» как hero-level текст.
+Палитра: pitch green + club navy + amber accent. Без фиолетового неона, без карточных рамок, без hologram CCG.
+Стиль: реалистичный спортивный midcore UI illustration, portrait 3:4.
+Не изображать: карты, ★, shop packs, autochess сетку.
+</code></pre>
+<h2 id="ui-chrome">UI chrome</h2>
+<pre><code class="language-text">Набор иконок вкладок Hub / Squad / Tactics / Match / Club.
+Плоский sports UI, крупные тап-зоны, без pill-кластеров.
+</code></pre></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Спрайты и анимация <span class="muted">SPRITE_ANIM_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="sprite_anim_prompts">SPRITE_ANIM_PROMPTS — Живи Футболом</h1>
+<pre><code class="language-text">MVP спрайты (2D UI-game):
+- 8 силуэтов амплуа (GK CB FB DM CM AM W ST) в едином стиле токенов на мини-поле.
+- Иконки инструкций: press, width, tempo, risk (on/off states).
+- VFX: гол flash, карточка, замена — короткие 6–12 кадров, не физика мяча.
+Не делать: полноценный run-цикл 11 игроков FIFA-style.
+</code></pre></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Интерфейс <span class="muted">UI_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="ui_prompts">UI_PROMPTS — Живи Футболом</h1>
+<pre><code class="language-text">Спроектируй wireframe portrait 720×1280 для «Живи Футболом».
+Экраны: Hub, Squad, Tactics, Match timeline, Report, Club (buildings+market).
+Правила: ≤5 корневых вкладок; CTA «Играть матч» всегда читаем на Hub.
+Match: scoreboard + event feed + 3 live-кнопки внизу (не mini-FIFA камера).
+Tactics: схема формации + 4 слайдера/сегмента инструкций.
+Язык UI: русский. Без карточных паков и гачи.
+Референс компоновки: SoccerLife hub + FM tactics panel + Top Eleven season clarity.
+</code></pre></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Уровни <span class="muted">LEVEL_PROMPTS.md</span></summary>
+            <article class="doc"><h1 id="level_prompts">LEVEL_PROMPTS — Живи Футболом</h1>
+<blockquote>
+<p>«Уровни» = сезонная структура и контент-банки, не платформер-стейджи.</p>
+</blockquote>
+<pre><code class="language-text">Сгенерируй JSON data packs для soccer-life MVP:
+1) league-clubs.json — 16 вымышленных клубов (id, name, colors, strengthTier 1..5)
+2) names.json — пулы имён RU (50 first + 80 last)
+3) formations.json — 433/442/352 slot maps
+4) training.json — 3 плана и числа form/fatigue
+5) buildings.json — training/stadium/academy levels 1..5 economy
+
+Не включать реальные клубы, игроков, гербы.
+Сила клубов через тир атрибутов генератора, не через paywall.
+</code></pre></article>
+          </details>
+          <details class="prompt-acc" >
+            <summary>Код-агент <span class="muted">CODE_AGENT_PROMPT.md</span></summary>
+            <article class="doc"><h1 id="code_agent_prompt">CODE_AGENT_PROMPT — Живи Футболом</h1>
+<pre><code class="language-text">Ты — единственный разработчик «Живи Футболом» (slug: soccer-life) для Яндекс Игр.
+
+ПРАВИЛА:
+1) Код только после design CONFIRMED. Иначе stop.
+2) Стек: Phaser 3 + TypeScript + Vite, portrait 720×1280.
+3) Канон: games/soccer-life/docs/DESIGN_LLM.md &gt; DESIGN.md &gt; docs/concepts/04-soccer-life.md.
+4) Формула: SoccerLife shell + FM-lite tactics/match + live-control. Один жанр — футбольный менеджер.
+5) ЗАПРЕЩЕНО: CCG, карты, гача, autochess, ★-merge, TFT-трейты, физика FIFA, реальные лицензии, букмекер, ранний PvP.
+6) Проект legends-of-the-pitch ОТМЕНЁН — не продолжать его механики.
+7) Ассеты по § DESIGN_LLM. Не трогать другие games/*.
+
+ПОРЯДОК:
+G0: Vite+Phaser skeleton, STATUS.md
+G1: Club/Player model + Hub table + calendar stub + local save
+G2: Squad + Tactics (3 formations, 4 instructions) persist
+G3: MatchEngine ticks + live×3 + Report (score, xG, tip)
+G4: Training + transfers lite + 3 buildings
+G5: Yandex SDK cloud, RV, interstitial, VIP/tokens/pass/ads-off, tutorial, STORE_CHECKLIST
+
+AC:
+- Hub → tactics → match → report → cash/points update
+- Live instruction shifts chance rates measurably
+- Cloud restore
+- Tutorial ≤1 match
+- 20 AI matches no crash; no red console
+
+DoD: store-ready MVP менеджера. Срезай косметику и PvP, не срезай match engine + tactics + hub season.
+</code></pre>
+<h2 id="status-template">STATUS template</h2>
+<pre><code class="language-markdown"># STATUS — soccer-life
+Design: DRAFT|CONFIRMED
+Gate: 0-5
+Done / Next / Blockers
+</code></pre></article>
+          </details>
+    </section>
+
+    <section class="tab-panel" id="tab-manage">
+      <div class="panel manage-panel" data-manage-slug="soccer-life">
+        <h3>Статус дизайна</h3>
+        <div class="seg-btns" data-role="design-status">
+          <button data-v="DRAFT">Черновик</button>
+          <button data-v="REVIEW">На ревью</button>
+          <button data-v="CONFIRMED">Подтверждён</button>
+          <button data-v="BLOCKED">Заблокирован</button>
+        </div>
+
+        <h3>Готовность документов</h3>
+        <label class="check"><input type="checkbox" data-k="classic"/> Классический GDD прочитан</label>
+        <label class="check"><input type="checkbox" data-k="llm"/> LLM-спека прочитана</label>
+        <label class="check"><input type="checkbox" data-k="refs"/> Референсы проверены</label>
+
+        <h3>Гейт разработки</h3>
+        <p class="muted">Доступен только после статуса «Подтверждён».</p>
+        <select data-role="gate">
+          <option value="—">— не начато</option>
+          <option value="G0">G0 — Каркас</option>
+          <option value="G1">G1 — Вертикальный слайс</option>
+          <option value="G2">G2 — Контент MVP</option>
+          <option value="G3">G3 — Мета и удержание</option>
+          <option value="G4">G4 — SDK монетизация</option>
+          <option value="G5">G5 — Готово к стору</option>
+        </select>
+
+        <h3>Заметки</h3>
+        <textarea data-role="note" rows="5" placeholder="Комментарии к ревью..."></textarea>
+      </div>
+    </section>
+    
+  </main>
+</div>
+<script>
+window.PORTFOLIO_GAMES = [{"id": "01", "slug": "neon-bullet", "name": "Neon Bullet", "wave": 3, "prio": "P1"}, {"id": "02", "slug": "deadline-escape", "name": "Работник месяца", "wave": 1, "prio": "P0"}, {"id": "03", "slug": "tide-of-relics", "name": "Море Реликвий", "wave": 4, "prio": "P1"}, {"id": "04", "slug": "soccer-life", "name": "Живи Футболом", "wave": 4, "prio": "P1"}, {"id": "05", "slug": "merge-bazaar", "name": "Базар Слияний", "wave": 1, "prio": "P0"}, {"id": "06", "slug": "crystal-archipelago", "name": "Кристаллы Архипелага", "wave": 2, "prio": "P0"}, {"id": "07", "slug": "idle-forge", "name": "Кузница Вечности", "wave": 2, "prio": "P0"}, {"id": "08", "slug": "cozy-plot", "name": "Уютный Участок", "wave": 3, "prio": "P1"}, {"id": "09", "slug": "auto-towers", "name": "Автобашни", "wave": 3, "prio": "P1"}, {"id": "10", "slug": "night-courier", "name": "Ночной Курьер", "wave": 1, "prio": "P0"}];
+window.CURRENT_SLUG = "soccer-life";
+</script>
+<script src="../demos/demo-engine.js"></script>
+<script src="../demos/demos-01-02.js"></script>
+<script src="../demos/demos-03-06.js"></script>
+<script src="../demos/legends-pitch-demo.js"></script>
+<script src="../demos/demos-07-10.js"></script>
+<script src="../assets/dashboard.js"></script>
+</body>
+</html>
