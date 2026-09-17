@@ -17,8 +17,8 @@
 | engine | Phaser 3 + TypeScript + Vite |
 | platform | Яндекс Игры |
 | orientation_primary | portrait (720×1280 logical) |
-| design_status | `DRAFT` |
-| coding_allowed | `false` until `CONFIRMED` |
+| design_status | `CONFIRMED` |
+| coding_allowed | `true` |
 | concept_ref | `docs/concepts/04-soccer-life.md` |
 | key_art | `games/soccer-life/refs/art/key-art.png` |
 | replaces | `legends-of-the-pitch` (CANCELLED) |
